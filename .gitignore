@@ -1,0 +1,9 @@
+.env
+*.pem
+*.key
+backend/data/
+node_modules/
+frontend/dist/
+frontend/server/
+frontend/tmp/
+*.tsbuildinfo

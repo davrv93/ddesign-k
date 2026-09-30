@@ -1,0 +1,104 @@
+# Baruka Design · CRM WhatsApp (kddesign)
+#
+# Stack aislado: red, volúmenes y nombres propios (prefijo kddesign_) para no tocar
+# los contenedores existentes del EC2. Sólo el frontend publica un puerto, y sólo en
+# 127.0.0.1: el nginx del host hace de proxy HTTPS hacia él.
+#
+#   KD_HTTP_PORT (18480)  → panel + API          (127.0.0.1, lo usa el nginx del host)
+#   KD_EVO_PORT  (18481)  → manager evolution-go (127.0.0.1, sólo para diagnóstico por túnel SSH)
+
+name: kddesign
+
+services:
+  evolution-db:
+    image: postgres:16-alpine
+    container_name: kddesign_evolution_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: evogo
+      POSTGRES_PASSWORD: ${EVOLUTION_DB_PASSWORD:?define EVOLUTION_DB_PASSWORD en .env}
+      POSTGRES_DB: evogo_users
+    volumes:
+      - evolution_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evogo -d evogo_users"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 128m
+    networks: [kddesign]
+
+  evolution:
+    # Fork de evolution-go (davrv93). Se compila desde GitHub; para fijar versión usa #<commit>.
+    build:
+      context: ${EVOLUTION_GIT_CONTEXT:-https://github.com/davrv93/evolution-go.git#main}
+    image: kddesign/evolution-go:local
+    container_name: kddesign_evolution
+    restart: unless-stopped
+    depends_on:
+      evolution-db:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: "8080"
+      POSTGRES_AUTH_DB: postgresql://evogo:${EVOLUTION_DB_PASSWORD}@evolution-db:5432/evogo_auth?sslmode=disable
+      POSTGRES_USERS_DB: postgresql://evogo:${EVOLUTION_DB_PASSWORD}@evolution-db:5432/evogo_users?sslmode=disable
+      GLOBAL_API_KEY: ${EVOLUTION_GLOBAL_API_KEY:?define EVOLUTION_GLOBAL_API_KEY en .env}
+      DATABASE_SAVE_MESSAGES: "false"
+      CLIENT_NAME: kddesign
+      OS_NAME: Baruka Design CRM
+      WADEBUG: INFO
+      LOGTYPE: console
+      # El backend descarga las fotos con /message/downloadmedia sólo cuando las necesita.
+      WEBHOOK_FILES: "false"
+      CONNECT_ON_STARTUP: "true"
+      EVENT_IGNORE_GROUP: "true"
+      EVENT_IGNORE_STATUS: "true"
+      MINIO_ENABLED: "false"
+      TZ: America/Lima
+      GOMEMLIMIT: 100MiB
+    ports:
+      - "127.0.0.1:${KD_EVO_PORT:-18481}:8080"
+    mem_limit: 160m
+    networks: [kddesign]
+
+  backend:
+    build: ./backend
+    image: kddesign/backend:local
+    container_name: kddesign_backend
+    restart: unless-stopped
+    depends_on:
+      - evolution
+    env_file: .env
+    environment:
+      PORT: "8080"
+      DATA_DIR: /data
+      EVOLUTION_URL: http://evolution:8080
+      WEBHOOK_BASE_URL: http://backend:8080
+      MEDIA_BASE_URL: http://backend:8080
+    volumes:
+      - backend_data:/data
+    mem_limit: 128m
+    networks: [kddesign]
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        PUBLIC_URL: ${PUBLIC_URL:-https://kddesign.pjgfactsalud.com.pe}
+    image: kddesign/frontend:local
+    container_name: kddesign_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:${KD_HTTP_PORT:-18480}:80"
+    mem_limit: 64m
+    networks: [kddesign]
+
+volumes:
+  evolution_db:
+  backend_data:
+
+networks:
+  kddesign:
+    name: kddesign_net
