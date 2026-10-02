@@ -18,7 +18,7 @@
   * { box-sizing:border-box }
   html, body { height:100% }
   body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.4 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif }
-  main { height:100%; max-width:1180px; margin:0 auto; display:grid; grid-template-columns: minmax(0,1fr) 340px; gap:0 }
+  main { height:100%; max-width:1180px; margin:0 auto; display:grid; grid-template-columns: minmax(0,1fr) minmax(260px, 340px); gap:0 }
   @media (max-width: 900px) { main { grid-template-columns: minmax(0,1fr) } aside { display:none } aside.abierto { display:block; position:fixed; inset:0; z-index:5 } }
 
   .chat { display:flex; flex-direction:column; min-height:0; height:100%; background:var(--wall); border-left:1px solid var(--line); border-right:1px solid var(--line) }
@@ -32,15 +32,17 @@
 
   .msgs { flex:1; overflow-y:auto; padding:16px 5%; display:flex; flex-direction:column; gap:2px }
   .dia { align-self:center; background:var(--head); color:var(--muted); font-size:12px; padding:4px 10px; border-radius:8px; margin:6px 0 10px }
-  .b { position:relative; max-width:min(75%, 460px); padding:6px 9px 18px; border-radius:8px; white-space:pre-wrap; overflow-wrap:anywhere; box-shadow:0 1px .5px rgba(11,20,26,.13); margin-top:6px; animation:entra .18s ease-out }
+  .b { max-width:min(75%, 460px); padding:6px 9px 7px; min-width:72px; border-radius:8px; white-space:pre-wrap; overflow-wrap:anywhere; box-shadow:0 1px .5px rgba(11,20,26,.13); margin-top:6px; animation:entra .18s ease-out }
   .b + .b.mismo { margin-top:2px }
   .b.cliente { align-self:flex-end; background:var(--me) }
   .b.bot { align-self:flex-start; background:var(--bot) }
-  .b .hora { position:absolute; right:8px; bottom:3px; font-size:11px; color:var(--muted) }
+  /* Como en WhatsApp: la hora flota al final de la última línea y empuja el texto, nunca lo pisa. */
+  .b .hora { float:right; position:relative; top:7px; margin-left:12px; font-size:11px; line-height:1; color:var(--muted); white-space:nowrap }
   .b.cliente .hora::after { content:" ✓✓"; color:var(--tick) }
-  .b.foto { padding:3px 3px 18px; width:min(75%, 300px) }
+  .b.foto { padding:3px 3px 7px; width:min(75%, 300px) }
   .b.foto img { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; background:#fff; cursor:zoom-in }
-  .b.foto .pie { padding:6px 6px 0 }
+  .b.foto .pie { padding:6px 6px 0; display:inline }
+  .b.foto .hora { margin-right:6px }
   .escribiendo { align-self:flex-start; background:var(--bot); border-radius:8px; padding:10px 14px; margin-top:6px; display:flex; gap:4px; box-shadow:0 1px .5px rgba(11,20,26,.13) }
   .escribiendo i { width:7px; height:7px; border-radius:50%; background:var(--dot); animation:salta 1.2s infinite }
   .escribiendo i:nth-child(2) { animation-delay:.15s } .escribiendo i:nth-child(3) { animation-delay:.3s }
@@ -55,7 +57,7 @@
   form button { width:44px; height:44px; flex:none; border-radius:50%; border:0; background:#00a884; color:#fff; font-size:18px; cursor:pointer }
   form button:disabled { opacity:.5 }
 
-  aside { background:var(--panel); padding:14px 16px; font-size:13px; overflow-y:auto; height:100% }
+  aside { background:var(--panel); padding:14px 16px; font-size:13px; overflow-y:auto; overflow-x:hidden; height:100%; min-width:0; overflow-wrap:anywhere }
   aside h2 { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:16px 0 6px }
   aside h2:first-of-type { margin-top:4px }
   aside .cerrar { display:none }
@@ -148,7 +150,7 @@ async function enviar(texto) {
   for (const s of (j.sugerencias || [])) {
     tecleando(true); await espera(700);
     tecleando(false);
-    burbuja('bot', `<img src="${esc(s.imagen.replace(/^\//, ''))}" alt="${esc(s.codigo)}" loading="lazy"><div class="pie">${wa(s.pie)}</div>`, 'foto');
+    burbuja('bot', `<img src="${esc(s.imagen.replace(/^\//, ''))}" alt="${esc(s.codigo)}" loading="lazy"><span class="pie">${wa(s.pie)}</span>`, 'foto');
     hist.push({ rol:'bot', texto: s.pie });
   }
   tecleando(false);
