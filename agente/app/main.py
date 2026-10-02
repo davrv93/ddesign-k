@@ -47,6 +47,18 @@ _http = httpx.Client(timeout=LLM_TIMEOUT, headers={
 })
 CATALOG_URL = os.environ.get("CATALOG_URL", "")  # http://backend:8080/api/public/catalog
 NEGOCIO = os.environ.get("BUSINESS_NAME", "Baruka Design")
+PUBLIC_URL = os.environ.get("PUBLIC_URL", "").rstrip("/")
+MAX_VITRINA = int(os.environ.get("MAX_VITRINA", "4"))
+# El catálogo ya no es una acción del bot: lo presenta el agente como lo haría una vendedora,
+# con texto y fotos. Las demás intenciones siguen yendo a los flujos del bot Go.
+ACCIONES_BOT = datos.ACCIONES - {"catalogo"}
+# Texto humano para las acciones que resuelve el bot Go; lo usa la UI de prueba (el bot manda el suyo).
+TEXTO_ACCION = {
+    "foto": "📸 ¡Claro! Mándame la foto del modelo que te gustó y reviso si lo tenemos.",
+    "pedido_estado": "Dame un segundito, reviso tu pedido 🔎",
+    "asesora": "Te paso con una asesora 🙋‍♀️ En un ratito te escribe por aquí.",
+    "codigo": "¡Buena elección! Te paso los detalles 👇",
+}
 MONEDA = os.environ.get("CURRENCY", "S/")
 UMBRAL_INTENCION = float(os.environ.get("INTENT_THRESHOLD", "0.35"))
 UMBRAL_ACCION = float(os.environ.get("ACTION_THRESHOLD", "0.55"))
@@ -208,6 +220,15 @@ Opciones del bot que puedes sugerir: *1* catálogo, *2* consultar con foto, *3* 
 Escribe solo el texto del mensaje, sin comillas ni prefijos."""
 
 
+def nota_catalogo(cl: dict) -> str:
+    if cl["intencion"] != "catalogo":
+        return ""
+    enlace = f" Al final da el catálogo completo: {PUBLIC_URL}/catalogo" if PUBLIC_URL else ""
+    return ("QUIERE VER EL CATÁLOGO: el bot le enviará cada foto con su código, nombre y precio, así que NO las listes. "
+            "Escribe como una vendedora: una frase corta de entrada («te paso algunos que tenemos ahorita») y, en otro "
+            "párrafo, pregúntale para qué ocasión o estilo busca." + enlace + "\n")
+
+
 def _prompt(req: ChatIn, cl: dict, fichas, ejemplos, sugeridas=()) -> list[dict]:
     hist = "\n".join(f"{t.rol}: {t.texto}" for t in req.historial[-8:]) or "(sin mensajes previos)"
     fich = "\n".join(f"- {f.texto()}" for f in fichas) or "(ninguna relevante)"
@@ -225,7 +246,7 @@ FICHAS:
 EJEMPLOS DE TONO (respuestas de referencia a mensajes parecidos; imita el estilo, no copies datos ajenos):
 {ejs}
 
-PRENDAS A SUGERIR (el bot enviará sus fotos justo después de tu texto): {", ".join(f"{f.codigo} {f.nombre}" for f in sugeridas) or "ninguna"}
+{nota_catalogo(cl)}PRENDAS A SUGERIR (el bot enviará sus fotos justo después de tu texto): {", ".join(f"{f.codigo} {f.nombre}" for f in sugeridas) or "ninguna"}
 
 MENSAJE NUEVO DEL CLIENTE:
 {req.mensaje}"""
@@ -327,6 +348,27 @@ def sugerir(req: ChatIn, cl: dict, fichas: list) -> list:
     return [f for f in candidatas if _imagen(f)][:MAX_SUGERENCIAS]
 
 
+RE_CATEGORIA = [("jeans", re.compile(r"\bjean|vaquer|pantal", re.I)), ("polo", re.compile(r"\bpolo|camiset|polera", re.I)),
+                ("blusa", re.compile(r"\bblus|camis[ae]\b", re.I)), ("vestido", re.compile(r"\bvestid", re.I))]
+
+
+def vitrina(req: ChatIn, qv: np.ndarray) -> list:
+    """Lo que una vendedora enseñaría al pedirle «el catálogo»: de la categoría que nombró o, si no
+    nombró ninguna, lo que hay en tienda con stock; nunca lo que ya le mostró."""
+    cat = next((c for c, rx in RE_CATEGORIA if rx.search(req.mensaje)), None)
+    vistos = _ya_mostrados(req)
+    with E.lock:
+        fichas, Xf = E.fichas, E.Xf
+    sims = Xf @ qv
+    orden = sorted(range(len(fichas)), key=lambda i: -sims[i])
+    def en_stock(f):
+        return f.fuente == "seed" and any(n is None or n > 0 for n in f.stock.values())
+    pool = [fichas[i] for i in orden if fichas[i].codigo not in vistos and _imagen(fichas[i])
+            and (datos.categoria_por_nombre(fichas[i]) == cat if cat else en_stock(fichas[i]))]
+    pool.sort(key=lambda f: not en_stock(f))  # estable: lo que se puede pedir ya, primero
+    return pool[:MAX_VITRINA]
+
+
 def conversar(req: ChatIn) -> dict:
     t0 = time.time()
     if not req.mensaje.strip():
@@ -346,15 +388,19 @@ def conversar(req: ChatIn) -> dict:
     sugeridas = []
     # sólo los códigos escritos en ESTE mensaje pueden disparar la oferta del bot
     seed_cods = [c for c in datos.codigos_en(req.mensaje) if c in E.por_codigo and E.fichas[E.por_codigo[c]].fuente == "seed"]
-    if cl["intencion"] in datos.ACCIONES and cl["confianza"] >= UMBRAL_ACCION:
-        accion = cl["intencion"]
+    if cl["intencion"] in ACCIONES_BOT and cl["confianza"] >= UMBRAL_ACCION:
+        accion, respuesta = cl["intencion"], TEXTO_ACCION[cl["intencion"]]
     elif len(seed_cods) == 1 and cl["intencion"] in ("producto_descripcion", "consulta_precio", "consulta_stock"):
-        accion = "codigo"  # el bot Go muestra foto, precio y tallas y arranca el pedido
+        accion, respuesta = "codigo", TEXTO_ACCION["codigo"]  # el bot Go muestra foto, precio y tallas y arranca el pedido
+        sugeridas = [E.fichas[E.por_codigo[seed_cods[0]]]]
     elif (cl["intencion"] in RESPUESTA_DIRECTA and cl["confianza"] >= UMBRAL_DIRECTA and not req.historial
           and ejemplos and ejemplos[0][0].intencion == cl["intencion"]):
         respuesta, modelo = ejemplos[0][0].respuesta, "referencia_dataset"  # saludo claro: sin esperar al LLM
     else:
-        sugeridas = sugerir(req, cl, fichas)
+        es_catalogo = cl["intencion"] == "catalogo" and cl["confianza"] >= UMBRAL_ACCION
+        sugeridas = vitrina(req, qv) if es_catalogo else sugerir(req, cl, fichas)
+        if es_catalogo:
+            fichas = sugeridas + [f for f in fichas if f not in sugeridas]
         if req.usar_llm:
             try:
                 respuesta, modelo = llamar_llm(_prompt(req, cl, fichas, ejemplos, sugeridas))
@@ -415,6 +461,17 @@ def imagen_catalogo(archivo: str):
     if not re.fullmatch(r"(VES|POL|BLU|JEA)-\d{3}\.jpg", archivo):
         raise HTTPException(404)
     ruta = os.path.join(IMG_DIR, archivo)
+    if not os.path.exists(ruta):
+        raise HTTPException(404)
+    return FileResponse(ruta, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=86400"})
+
+
+@app.get("/media/products/{archivo}")
+def imagen_tienda(archivo: str):
+    """Copia de las fotos del seed para la UI de prueba; el bot usa las del backend, que son las vivas."""
+    if not re.fullmatch(r"v\d{2}\.jpg", archivo):
+        raise HTTPException(404)
+    ruta = os.path.join(IMG_DIR, "tienda", archivo)
     if not os.path.exists(ruta):
         raise HTTPException(404)
     return FileResponse(ruta, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=86400"})

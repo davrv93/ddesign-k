@@ -96,6 +96,7 @@ services:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       OPENROUTER_MODEL: ${OPENROUTER_MODEL:-deepseek/deepseek-v4-flash,deepseek/deepseek-chat-v3.1}
       CATALOG_URL: http://backend:8080/api/public/catalog
+      PUBLIC_URL: ${PUBLIC_URL:-https://kddesign.pjgfactsalud.com.pe}
       BUSINESS_NAME: ${BUSINESS_NAME:-Baruka Design}
       CURRENCY: ${CURRENCY:-S/}
       EMBED_THREADS: "2"

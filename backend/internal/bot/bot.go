@@ -247,7 +247,11 @@ func (b *Bot) step(ctx context.Context, conv *store.Conversation, in *Incoming, 
 	}
 
 	switch {
-	case isAny(text, "1", "catalogo", "ver catalogo", "precios", "modelos") || hasAny(text, "catalogo"):
+	case isAny(text, "1", "catalogo", "ver catalogo", "precios", "modelos"):
+		b.sendCatalog(ctx, conv)
+		return
+	// «quiero ver su catálogo» en una frase: con agente lo presenta él, con fotos; sin agente, la lista.
+	case hasAny(text, "catalogo") && b.Agent == nil:
 		b.sendCatalog(ctx, conv)
 		return
 	case isAny(text, "2") || hasAny(text, "foto", "consultar modelo"):
@@ -809,7 +813,12 @@ func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *conv
 		if strings.TrimSpace(r.Respuesta) == "" {
 			return false
 		}
-		b.reply(ctx, conv, r.Respuesta)
+		// Un párrafo por mensaje, como escribe una persona por WhatsApp.
+		for _, parte := range strings.Split(r.Respuesta, "\n\n") {
+			if parte = strings.TrimSpace(parte); parte != "" {
+				b.reply(ctx, conv, parte)
+			}
+		}
 		for _, sg := range r.Sugerencias {
 			b.replySuggestion(ctx, conv, sg)
 		}

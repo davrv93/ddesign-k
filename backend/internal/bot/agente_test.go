@@ -27,6 +27,9 @@ func fakeAgente(t *testing.T, last *agente.Request) *agente.Client {
 					{Codigo: "VES-003", Fuente: "catalogo100", Imagen: "/media/catalogo/VES-003.jpg", Pie: "*VES-003* Línea A terracota"},
 					{Codigo: "X", Imagen: "http://evil.example/x.jpg", Pie: "no debe salir"},
 				}}
+		case "quiero ver su catalogo":
+			rep = agente.Reply{Intencion: "catalogo", Accion: "responder", Respuesta: "¡Claro! Mira estos 😍\n\n¿Para qué ocasión buscas?",
+				Sugerencias: []agente.Sugerencia{{Codigo: "V01", Fuente: "seed", Imagen: "/media/products/v01.jpg", Pie: "*V01* Vestido Esmeralda"}}}
 		case "kiero ablar con una persona":
 			rep = agente.Reply{Intencion: "asesora", Accion: "asesora"}
 		case "cuanto cuesta el vestido esmeralda":
@@ -79,6 +82,21 @@ func TestAgenteOfreceProducto(t *testing.T) {
 	b.Agent = fakeAgente(t, &last)
 	handle(b, text("cuanto cuesta el vestido esmeralda"))
 	mustContain(t, fe.lastText(), "Vestido Esmeralda")
+}
+
+func TestAgentePresentaCatalogo(t *testing.T) {
+	b, _, fe := setup(t, `{}`, false)
+	var last agente.Request
+	b.Agent = fakeAgente(t, &last)
+	handle(b, text("hola"))
+	n := len(fe.sent)
+	handle(b, text("quiero ver su catalogo"))
+	if got := len(fe.sent) - n; got != 3 {
+		t.Fatalf("se esperaban 2 párrafos + 1 foto, salieron %d: %+v", got, fe.sent[n:])
+	}
+	mustContain(t, fe.sent[n]["text"].(string), "Mira estos")
+	mustContain(t, fe.sent[n+1]["text"].(string), "ocasión")
+	mustContain(t, fe.sent[n+2]["caption"].(string), "V01")
 }
 
 func TestAgenteCaidoVuelveAGemini(t *testing.T) {

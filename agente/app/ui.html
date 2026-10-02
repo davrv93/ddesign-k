@@ -3,95 +3,180 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agente kddesign</title>
+<title>Chat de prueba</title>
 <style>
-  :root { --bg:#f6f4f1; --panel:#fff; --ink:#1f1d1a; --muted:#6d675f; --line:#e4dfd8; --me:#dcf8c6; --bot:#fff; --acc:#8a3b55; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#151412; --panel:#1f1d1a; --ink:#ece8e2; --muted:#a39c92; --line:#34302b; --me:#1f4d3a; --bot:#26231f; --acc:#d58aa3; } }
+  :root {
+    --bg:#e9e4dc; --wall:#efeae2; --panel:#fff; --ink:#111b21; --muted:#667781; --line:#e2ddd5;
+    --me:#d9fdd3; --bot:#fff; --head:#f0f2f5; --acc:#8a3b55; --tick:#53bdeb; --dot:#8696a0;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg:#0b141a; --wall:#0b141a; --panel:#111b21; --ink:#e9edef; --muted:#8696a0; --line:#222d34;
+    --me:#005c4b; --bot:#202c33; --head:#202c33; --acc:#d58aa3; --tick:#53bdeb; --dot:#8696a0; } }
+  :root[data-theme="dark"] {
+    --bg:#0b141a; --wall:#0b141a; --panel:#111b21; --ink:#e9edef; --muted:#8696a0; --line:#222d34;
+    --me:#005c4b; --bot:#202c33; --head:#202c33; --acc:#d58aa3; }
   * { box-sizing:border-box }
-  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 system-ui, sans-serif }
-  main { max-width:1100px; margin:0 auto; padding:16px; display:grid; gap:16px; grid-template-columns: 1fr 360px }
-  @media (max-width: 860px) { main { grid-template-columns: 1fr } }
-  h1 { font-size:18px; margin:0 0 4px } .sub { color:var(--muted); font-size:13px; margin:0 0 12px }
-  .chat { background:var(--panel); border:1px solid var(--line); border-radius:12px; display:flex; flex-direction:column; height:calc(100vh - 120px); min-height:420px }
-  .msgs { flex:1; overflow:auto; padding:16px; display:flex; flex-direction:column; gap:8px }
-  .m { max-width:80%; padding:8px 12px; border-radius:10px; white-space:pre-wrap; border:1px solid var(--line) }
-  .m.cliente { align-self:flex-end; background:var(--me) } .m.bot { align-self:flex-start; background:var(--bot) }
-  .m small { display:block; color:var(--muted); font-size:11px; margin-top:4px }
-  form { display:flex; gap:8px; padding:12px; border-top:1px solid var(--line) }
-  input { flex:1; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font:inherit }
-  button { padding:10px 16px; border-radius:8px; border:0; background:var(--acc); color:#fff; font:inherit; cursor:pointer }
-  button.sec { background:transparent; color:var(--muted); border:1px solid var(--line) }
-  aside { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; font-size:13px; overflow:auto; max-height:calc(100vh - 120px) }
-  aside h2 { font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:14px 0 6px }
-  aside h2:first-child { margin-top:0 }
-  .bar { height:6px; background:var(--line); border-radius:3px; overflow:hidden } .bar i { display:block; height:100%; background:var(--acc) }
-  .row { display:grid; grid-template-columns: 1fr 48px; gap:6px; align-items:center; margin:4px 0 }
-  .fotos { display:flex; gap:8px; flex-wrap:wrap; align-self:flex-start; max-width:80% }
-  .foto { width:150px; background:var(--bot); border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:12px }
-  .foto img { width:100%; aspect-ratio:1; object-fit:cover; display:block; background:#fff }
-  .foto div { padding:6px 8px; white-space:pre-wrap }
-  code { font-size:12px } ul { margin:0; padding-left:18px }
+  html, body { height:100% }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.4 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif }
+  main { height:100%; max-width:1180px; margin:0 auto; display:grid; grid-template-columns: minmax(0,1fr) 340px; gap:0 }
+  @media (max-width: 900px) { main { grid-template-columns: minmax(0,1fr) } aside { display:none } aside.abierto { display:block; position:fixed; inset:0; z-index:5 } }
+
+  .chat { display:flex; flex-direction:column; min-height:0; height:100%; background:var(--wall); border-left:1px solid var(--line); border-right:1px solid var(--line) }
+  header { display:flex; align-items:center; gap:12px; padding:10px 16px; background:var(--head); border-bottom:1px solid var(--line) }
+  .avatar { width:40px; height:40px; border-radius:50%; background:var(--acc); color:#fff; display:grid; place-items:center; font-weight:600; flex:none }
+  header .quien { flex:1; min-width:0 }
+  header b { display:block; font-weight:600 }
+  header small { color:var(--muted); font-size:13px }
+  header small.tecleando { color:#25a35a }
+  header button { background:none; border:1px solid var(--line); color:var(--muted); border-radius:8px; padding:6px 10px; font:inherit; font-size:13px; cursor:pointer }
+
+  .msgs { flex:1; overflow-y:auto; padding:16px 5%; display:flex; flex-direction:column; gap:2px }
+  .dia { align-self:center; background:var(--head); color:var(--muted); font-size:12px; padding:4px 10px; border-radius:8px; margin:6px 0 10px }
+  .b { position:relative; max-width:min(75%, 460px); padding:6px 9px 18px; border-radius:8px; white-space:pre-wrap; overflow-wrap:anywhere; box-shadow:0 1px .5px rgba(11,20,26,.13); margin-top:6px; animation:entra .18s ease-out }
+  .b + .b.mismo { margin-top:2px }
+  .b.cliente { align-self:flex-end; background:var(--me) }
+  .b.bot { align-self:flex-start; background:var(--bot) }
+  .b .hora { position:absolute; right:8px; bottom:3px; font-size:11px; color:var(--muted) }
+  .b.cliente .hora::after { content:" ✓✓"; color:var(--tick) }
+  .b.foto { padding:3px 3px 18px; width:min(75%, 300px) }
+  .b.foto img { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; background:#fff; cursor:zoom-in }
+  .b.foto .pie { padding:6px 6px 0 }
+  .escribiendo { align-self:flex-start; background:var(--bot); border-radius:8px; padding:10px 14px; margin-top:6px; display:flex; gap:4px; box-shadow:0 1px .5px rgba(11,20,26,.13) }
+  .escribiendo i { width:7px; height:7px; border-radius:50%; background:var(--dot); animation:salta 1.2s infinite }
+  .escribiendo i:nth-child(2) { animation-delay:.15s } .escribiendo i:nth-child(3) { animation-delay:.3s }
+  @keyframes salta { 0%,60%,100% { transform:none; opacity:.5 } 30% { transform:translateY(-4px); opacity:1 } }
+  @keyframes entra { from { opacity:0; transform:translateY(4px) } }
+  @media (prefers-reduced-motion: reduce) { .b, .escribiendo i { animation:none } }
+
+  .rapidas { display:flex; gap:6px; overflow-x:auto; padding:8px 12px 0; background:var(--head) }
+  .rapidas button { flex:none; border:1px solid var(--line); background:var(--panel); color:var(--ink); border-radius:16px; padding:6px 12px; font:inherit; font-size:13px; cursor:pointer }
+  form { display:flex; gap:8px; padding:8px 12px 12px; background:var(--head) }
+  input { flex:1; min-width:0; padding:10px 14px; border-radius:20px; border:1px solid var(--line); background:var(--panel); color:var(--ink); font:inherit }
+  form button { width:44px; height:44px; flex:none; border-radius:50%; border:0; background:#00a884; color:#fff; font-size:18px; cursor:pointer }
+  form button:disabled { opacity:.5 }
+
+  aside { background:var(--panel); padding:14px 16px; font-size:13px; overflow-y:auto; height:100% }
+  aside h2 { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:16px 0 6px }
+  aside h2:first-of-type { margin-top:4px }
+  aside .cerrar { display:none }
+  @media (max-width: 900px) { aside .cerrar { display:inline-block; float:right } }
+  .bar { height:5px; background:var(--line); border-radius:3px; overflow:hidden } .bar i { display:block; height:100%; background:var(--acc) }
+  .row { display:grid; grid-template-columns: 1fr 40px; gap:6px; align-items:center; margin:4px 0 }
+  .sub { color:var(--muted) } code { font-size:12px } ul { margin:0; padding-left:18px }
+
+  .zoom { position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; place-items:center; z-index:10; cursor:zoom-out }
+  .zoom.on { display:grid } .zoom img { max-width:92vw; max-height:92vh; border-radius:6px }
 </style>
 </head>
 <body>
 <main>
-  <section>
-    <h1>Agente conversacional · kddesign</h1>
-    <p class="sub">Embeddings locales (jina v2 es) → clasificador → RAG del catálogo → DeepSeek por OpenRouter.</p>
-    <div class="chat">
-      <div class="msgs" id="msgs"></div>
-      <form id="f">
-        <input id="t" autocomplete="off" placeholder="Escribe como cliente… (prueba: «ola kiero el VES-003 cuanto cuesta»)">
-        <button>Enviar</button>
-        <button type="button" class="sec" id="reset">Nuevo</button>
-      </form>
+  <section class="chat">
+    <header>
+      <div class="avatar">BD</div>
+      <div class="quien"><b>Baruka Design</b><small id="estado">en línea</small></div>
+      <button id="nuevo" title="Empezar otra conversación">Nuevo chat</button>
+      <button id="verInfo" title="Ver cómo entendió el mensaje">Análisis</button>
+    </header>
+    <div class="msgs" id="msgs"><div class="dia">HOY</div></div>
+    <div class="rapidas" id="rapidas">
+      <button>quiero ver los modelos</button>
+      <button>busco un vestido para una boda</button>
+      <button>tienen jeans acampanados?</button>
+      <button>cuanto cuesta el V05</button>
+      <button>de que marca es?</button>
+      <button>gracias, chau</button>
     </div>
+    <form id="f">
+      <input id="t" autocomplete="off" placeholder="Escribe un mensaje">
+      <button id="enviar" aria-label="Enviar">➤</button>
+    </form>
   </section>
-  <aside id="info"><h2>Análisis</h2><p class="sub">Envía un mensaje para ver intención, prenda y fuentes.</p></aside>
+  <aside id="info">
+    <button class="cerrar" id="cerrarInfo">Cerrar</button>
+    <h2>Análisis</h2><p class="sub">Escribe como clienta para ver la intención, la prenda y las fuentes.</p>
+  </aside>
 </main>
+<div class="zoom" id="zoom"><img alt=""></div>
 <script>
-const msgs = document.getElementById('msgs'), info = document.getElementById('info');
-let hist = [];
+const $ = id => document.getElementById(id);
+const msgs = $('msgs'), info = $('info'), estado = $('estado');
+let hist = [], ocupado = false, ultimoRol = '';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function add(rol, texto, meta) {
-  const d = document.createElement('div'); d.className = 'm ' + rol;
-  d.innerHTML = esc(texto) + (meta ? '<small>' + esc(meta) + '</small>' : '');
-  msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
+// *negrita* y _cursiva_ de WhatsApp
+const wa = s => esc(s).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(^|\s)_([^_\n]+)_/g, '$1<i>$2</i>');
+const hora = () => new Date().toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
+const espera = ms => new Promise(r => setTimeout(r, ms));
+const bajar = () => { msgs.scrollTop = msgs.scrollHeight; };
+
+function burbuja(rol, html, extra = '') {
+  const d = document.createElement('div');
+  d.className = `b ${rol} ${extra} ${ultimoRol === rol ? 'mismo' : ''}`;
+  d.innerHTML = html + `<span class="hora">${hora()}</span>`;
+  msgs.appendChild(d); ultimoRol = rol; bajar(); return d;
 }
-const ACCIONES = { catalogo:'→ el bot envía el catálogo (opción 1)', foto:'→ el bot pide la foto (opción 2)',
-  pedido_estado:'→ el bot muestra el estado del pedido (opción 3)', asesora:'→ el bot deriva a una asesora (opción 4)' };
-function bars(list) { return list.map(x => `<div class="row"><div>${esc(x.etiqueta)}<div class="bar"><i style="width:${x.p*100}%"></i></div></div><div>${(x.p*100).toFixed(0)}%</div></div>`).join(''); }
-document.getElementById('reset').onclick = () => { hist = []; msgs.innerHTML = ''; };
-document.getElementById('f').onsubmit = async ev => {
-  ev.preventDefault();
-  const t = document.getElementById('t'), texto = t.value.trim(); if (!texto) return;
-  t.value = ''; add('cliente', texto);
+let puntos = null;
+function tecleando(on) {
+  estado.textContent = on ? 'escribiendo…' : 'en línea';
+  estado.className = on ? 'tecleando' : '';
+  if (on && !puntos) { puntos = document.createElement('div'); puntos.className = 'escribiendo'; puntos.innerHTML = '<i></i><i></i><i></i>'; msgs.appendChild(puntos); bajar(); }
+  if (!on && puntos) { puntos.remove(); puntos = null; }
+}
+// Una persona tarda más en escribir un mensaje largo: ~25 ms por carácter, entre 0,6 y 2,2 s.
+const pausa = texto => Math.min(2200, Math.max(600, texto.length * 25));
+
+async function enviar(texto) {
+  if (ocupado || !texto.trim()) return;
+  ocupado = true; $('enviar').disabled = true;
+  burbuja('cliente', wa(texto));
+  await espera(350); tecleando(true);
+  let j;
   try {
     const r = await fetch('chat', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Prueba' }) });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j.detail || r.status);
-    const resp = j.respuesta || ACCIONES[j.accion] || (j.accion === 'codigo' ? `→ el bot ofrece ${j.codigo} con foto, precio y tallas` : '(sin respuesta)');
-    add('bot', resp, `${j.intencion} ${(j.confianza*100).toFixed(0)}% · ${j.accion} · ${j.modelo_llm || 'sin LLM'} · ${j.ms} ms`);
-    hist.push({ rol:'cliente', texto }, { rol:'bot', texto: resp });
-    if (j.sugerencias && j.sugerencias.length) {
-      const box = document.createElement('div'); box.className = 'fotos';
-      for (const s of j.sugerencias) {
-        // las fotos de la tienda las sirve el backend, que este puerto no alcanza
-        const src = s.imagen.startsWith('/media/catalogo/') ? s.imagen.slice(1) : '';
-        box.insertAdjacentHTML('beforeend', `<div class="foto">${src ? `<img src="${esc(src)}" alt="">` : ''}<div>${esc(s.pie)}</div></div>`);
-        hist.push({ rol:'bot', texto: s.pie });
-      }
-      msgs.appendChild(box); msgs.scrollTop = msgs.scrollHeight;
-    }
-    hist = hist.slice(-12);
-    info.innerHTML = `<h2>Intención</h2>${bars(j.top_intenciones)}
-      <h2>Categoría de prenda</h2><div>${esc(j.categoria_prenda)} (${(j.confianza_categoria*100).toFixed(0)}%)</div>
-      <h2>Códigos</h2><div>${j.codigos.length ? j.codigos.map(esc).join(', ') : '—'}</div>
-      <h2>Fichas recuperadas (RAG)</h2><ul>${j.fichas.map(f => `<li><code>${esc(f.codigo)}</code> ${esc(f.nombre)} <span class="sub">${esc(f.fuente)}</span></li>`).join('')}</ul>
-      <h2>Ejemplos del dataset</h2><ul>${j.ejemplos.map(e => `<li>[${esc(e.intencion)}] ${esc(e.texto)} <span class="sub">${e.sim}</span></li>`).join('')}</ul>`;
-  } catch (e) { add('bot', 'Error: ' + e.message); }
-};
+      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana' }) });
+    j = await r.json();
+    if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
+  } catch (e) {
+    tecleando(false); burbuja('bot', 'Uy, se me cortó la conexión 😅 ¿Me lo repites?'); ocupado = false; $('enviar').disabled = false; return;
+  }
+  hist.push({ rol:'cliente', texto });
+  // Los párrafos salen como mensajes separados, igual que escribe una persona.
+  const partes = (j.respuesta || '').split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
+  for (let i = 0; i < partes.length; i++) {
+    if (i > 0) { tecleando(true); await espera(pausa(partes[i])); }
+    tecleando(false); burbuja('bot', wa(partes[i])); hist.push({ rol:'bot', texto: partes[i] });
+  }
+  for (const s of (j.sugerencias || [])) {
+    tecleando(true); await espera(700);
+    tecleando(false);
+    burbuja('bot', `<img src="${esc(s.imagen.replace(/^\//, ''))}" alt="${esc(s.codigo)}" loading="lazy"><div class="pie">${wa(s.pie)}</div>`, 'foto');
+    hist.push({ rol:'bot', texto: s.pie });
+  }
+  tecleando(false);
+  hist = hist.slice(-14);
+  pintarInfo(j);
+  ocupado = false; $('enviar').disabled = false; $('t').focus();
+}
+
+function bars(list) { return list.map(x => `<div class="row"><div>${esc(x.etiqueta)}<div class="bar"><i style="width:${x.p*100}%"></i></div></div><div>${(x.p*100).toFixed(0)}%</div></div>`).join(''); }
+function pintarInfo(j) {
+  info.innerHTML = `<button class="cerrar" id="cerrarInfo">Cerrar</button>
+    <h2>Intención</h2>${bars(j.top_intenciones)}
+    <div class="sub">acción: <b>${esc(j.accion)}</b> · ${esc(j.modelo_llm || 'sin LLM')} · ${j.ms} ms</div>
+    <h2>Prenda</h2><div>${esc(j.categoria_prenda)} (${(j.confianza_categoria*100).toFixed(0)}%)</div>
+    <h2>Códigos</h2><div>${j.codigos.length ? j.codigos.map(esc).join(', ') : '—'}</div>
+    <h2>Fichas (RAG)</h2><ul>${j.fichas.map(f => `<li><code>${esc(f.codigo)}</code> ${esc(f.nombre)} <span class="sub">${esc(f.fuente)}</span></li>`).join('')}</ul>
+    <h2>Ejemplos del dataset</h2><ul>${j.ejemplos.map(e => `<li>[${esc(e.intencion)}] ${esc(e.texto)} <span class="sub">${e.sim}</span></li>`).join('')}</ul>`;
+  $('cerrarInfo').onclick = () => info.classList.remove('abierto');
+}
+
+$('f').onsubmit = ev => { ev.preventDefault(); const t = $('t'); const v = t.value; t.value = ''; enviar(v); };
+$('rapidas').onclick = ev => { if (ev.target.tagName === 'BUTTON') enviar(ev.target.textContent); };
+$('nuevo').onclick = () => { if (ocupado) return; hist = []; ultimoRol = ''; msgs.innerHTML = '<div class="dia">HOY</div>'; };
+$('verInfo').onclick = () => info.classList.add('abierto');
+$('cerrarInfo').onclick = () => info.classList.remove('abierto');
+msgs.onclick = ev => { if (ev.target.tagName === 'IMG') { $('zoom').querySelector('img').src = ev.target.src; $('zoom').classList.add('on'); } };
+$('zoom').onclick = () => $('zoom').classList.remove('on');
+$('t').focus();
 </script>
 </body>
 </html>
