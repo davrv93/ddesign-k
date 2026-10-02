@@ -7,3 +7,5 @@ frontend/dist/
 frontend/server/
 frontend/tmp/
 *.tsbuildinfo
+__pycache__/
+*.pyc
