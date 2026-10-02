@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/davrv93/ddesign-k/backend/internal/agente"
 	"github.com/davrv93/ddesign-k/backend/internal/ai"
 	"github.com/davrv93/ddesign-k/backend/internal/config"
 	"github.com/davrv93/ddesign-k/backend/internal/evolution"
@@ -47,6 +48,8 @@ type Bot struct {
 	store *store.Store
 	evo   *evolution.Client
 	ai    *ai.Client
+	// Agent atiende el texto libre (clasificador local + DeepSeek). nil = sólo Gemini.
+	Agent *agente.Client
 	// Notify avisa al panel que algo cambió ("orders", "conversations", ...).
 	Notify func(topic string)
 
@@ -709,6 +712,9 @@ func (b *Bot) handleLocation(ctx context.Context, conv *store.Conversation, cc *
 }
 
 func (b *Bot) freeText(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) {
+	if b.Agent != nil && strings.TrimSpace(raw) != "" && b.agentReply(ctx, conv, cc, raw) {
+		return
+	}
 	if !b.ai.Enabled() || strings.TrimSpace(raw) == "" {
 		b.sendMenu(ctx, conv)
 		return
@@ -746,6 +752,65 @@ func (b *Bot) freeText(ctx context.Context, conv *store.Conversation, cc *convCo
 		}
 		b.reply(ctx, conv, reply+"\n\nEscribe *menu* para ver las opciones 😊")
 	}
+}
+
+// agentReply delega el texto libre al servicio agente. Devuelve false si no respondió,
+// para que freeText siga con Gemini.
+func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) bool {
+	timeout := time.Duration(b.cfg.AgentTimeoutSec) * time.Second
+	if timeout <= 0 {
+		timeout = 35 * time.Second
+	}
+	actx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	req := agente.Request{Mensaje: raw, Estado: conv.State, Negocio: b.cfg.BusinessName}
+	if conv.Customer != nil {
+		req.Cliente = conv.Customer.Name
+	}
+	// El mensaje actual ya está guardado: se toma el historial previo, sin él.
+	if msgs, err := b.store.ListMessages(ctx, conv.ID, 11); err == nil {
+		for _, m := range msgs {
+			if m.Kind != "text" || strings.TrimSpace(m.Body) == "" {
+				continue
+			}
+			rol := m.Author
+			if m.Direction == "in" {
+				rol = "cliente"
+			}
+			req.Historial = append(req.Historial, agente.Turn{Rol: rol, Texto: m.Body})
+		}
+		if n := len(req.Historial); n > 0 && req.Historial[n-1].Rol == "cliente" && req.Historial[n-1].Texto == raw {
+			req.Historial = req.Historial[:n-1]
+		}
+	}
+	r, err := b.Agent.Chat(actx, req)
+	if err != nil {
+		log.Printf("bot: agente: %v", err)
+		return false
+	}
+	switch r.Accion {
+	case "catalogo":
+		b.sendCatalog(ctx, conv)
+	case "foto":
+		b.setState(ctx, conv, stPhoto, *cc)
+		b.reply(ctx, conv, "📸 ¡Claro! Envíanos la *foto* del modelo y verificamos el stock al toque.")
+	case "pedido_estado":
+		b.sendOrderStatus(ctx, conv)
+	case "asesora":
+		b.handoff(ctx, conv)
+	case "codigo":
+		p, err := b.store.GetProductByCode(ctx, r.Codigo)
+		if err != nil || !p.Active {
+			return false
+		}
+		b.offerProduct(ctx, conv, cc, p, "", 0, nil)
+	default:
+		if strings.TrimSpace(r.Respuesta) == "" {
+			return false
+		}
+		b.reply(ctx, conv, r.Respuesta)
+	}
+	return true
 }
 
 // ---------------------------------------------------------------------------

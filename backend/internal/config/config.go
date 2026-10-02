@@ -31,6 +31,9 @@ type Config struct {
 	GeminiFallbackModel string
 	GeminiTimeoutSec    int
 
+	AgentURL        string // servicio agente (embeddings + DeepSeek); vacío = sólo Gemini
+	AgentTimeoutSec int
+
 	WhatsAppNumber string // número público de la tienda (sólo dígitos) para los enlaces wa.me del catálogo
 
 	MatchThreshold float64
@@ -61,6 +64,9 @@ func Load() *Config {
 		GeminiModel:         env("GEMINI_MODEL", "gemini-3.5-flash-lite"),
 		GeminiFallbackModel: env("GEMINI_FALLBACK_MODEL", "gemma-4-26b-a4b-it,gemma-4-31b-it"),
 		GeminiTimeoutSec:    envInt("GEMINI_TIMEOUT_SECONDS", 40),
+
+		AgentURL:        strings.TrimRight(env("AGENT_URL", ""), "/"),
+		AgentTimeoutSec: envInt("AGENT_TIMEOUT_SECONDS", 35),
 
 		WhatsAppNumber: strings.Trim(env("WHATSAPP_NUMBER", ""), "+ "),
 

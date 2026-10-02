@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/davrv93/ddesign-k/backend/internal/agente"
 	"github.com/davrv93/ddesign-k/backend/internal/ai"
 	"github.com/davrv93/ddesign-k/backend/internal/api"
 	"github.com/davrv93/ddesign-k/backend/internal/auth"
@@ -41,6 +42,7 @@ func main() {
 	hub := api.NewHub()
 	b := bot.New(cfg, st, evo, aic)
 	b.Notify = hub.Publish
+	b.Agent = agente.New(cfg.AgentURL, time.Duration(cfg.AgentTimeoutSec)*time.Second)
 	srv := api.New(cfg, st, evo, aic, b, auth.New(cfg.JWTSecret, cfg.AdminUser, cfg.AdminPassword), hub)
 
 	go srv.Bootstrap(ctx)

@@ -23,6 +23,7 @@ Navegador ─► nginx del host (HTTPS) ─► 127.0.0.1:18480 frontend (nginx +
 | `backend` | `kddesign_backend` | — (sólo red interna) | API REST, webhook, bot, IA, SQLite en el volumen `backend_data` |
 | `evolution` | `kddesign_evolution` | `127.0.0.1:18481` | Fork evolution-go (compilado desde GitHub) |
 | `evolution-db` | `kddesign_evolution_db` | — | Postgres propio de evolution-go (sesión de WhatsApp) |
+| `agente` | `kddesign_agente` | `127.0.0.1:18482` | Agente conversacional: embeddings locales + clasificador + RAG + DeepSeek. Ver [`agente/README.md`](agente/README.md) |
 
 Todo usa el proyecto de compose `kddesign`, la red `kddesign_net` y volúmenes propios: **no comparte nada con los contenedores `pjg_*`** ya existentes en el EC2. Los puertos se publican sólo en `127.0.0.1`, así que no quedan expuestos a internet ni chocan con los de otros servicios.
 
@@ -63,7 +64,9 @@ Actualizar: `git pull && docker compose up -d --build`. Respaldo: el volumen `kd
 | `3` | Estado de sus pedidos |
 | `4` | Pausa el bot en ese chat y avisa en el panel |
 
-Texto libre que no encaja se interpreta con la IA. Si una asesora responde desde el panel o desde el celular, el bot se pausa en ese chat (se reactiva desde el panel o solo, pasadas las horas configuradas en *Ajustes*).
+Texto libre que no encaja lo atiende el **agente conversacional** (`agente/`): clasifica la intención con
+embeddings locales, busca en el catálogo y responde con DeepSeek (saludo, repreguntas, estado de ánimo, cambio
+de tema, insultos, preguntas de producto). Si el agente no responde, se interpreta con Gemini como antes. Si una asesora responde desde el panel o desde el celular, el bot se pausa en ese chat (se reactiva desde el panel o solo, pasadas las horas configuradas en *Ajustes*).
 
 ### Kanban
 

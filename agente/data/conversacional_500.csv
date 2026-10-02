@@ -1,0 +1,501 @@
+﻿id,grupo_id,categoria,variante,contexto,mensaje,respuesta_sugerida
+001,G001,saludo,correcta,,"Hola, buenos días.",¡Hola! ¿En qué puedo ayudarte?
+002,G001,saludo,informal,,"Buenas, qué tal",¡Hola! ¿En qué puedo ayudarte?
+003,G001,saludo,errores_ortograficos,,"Ola, buenos dias.",¡Hola! ¿En qué puedo ayudarte?
+004,G002,saludo,correcta,,Buenas tardes.,¡Buenas tardes! ¿Qué necesitas?
+005,G002,saludo,informal,,"Qué tal, buenas tardes",¡Buenas tardes! ¿Qué necesitas?
+006,G002,saludo,errores_ortograficos,,Buenas tardez.,¡Buenas tardes! ¿Qué necesitas?
+007,G003,saludo,correcta,,Buenas noches.,¡Buenas noches! ¿Cómo puedo ayudarte?
+008,G003,saludo,informal,,"Buenas, qué hay",¡Buenas noches! ¿Cómo puedo ayudarte?
+009,G003,saludo,errores_ortograficos,,Buenas nohes.,¡Buenas noches! ¿Cómo puedo ayudarte?
+010,G004,saludo,correcta,,"Hola, ¿cómo estás?",¡Hola! Estoy listo para ayudarte.
+011,G004,saludo,informal,,"Hola, qué tal todo",¡Hola! Estoy listo para ayudarte.
+012,G004,saludo,errores_ortograficos,,"Ola, como estas?",¡Hola! Estoy listo para ayudarte.
+013,G005,saludo,correcta,,"Hola, estoy de vuelta.",¡Bienvenido de nuevo! ¿Qué te gustaría conversar?
+014,G005,saludo,informal,,"Hola, ya volví",¡Bienvenido de nuevo! ¿Qué te gustaría conversar?
+015,G005,saludo,errores_ortograficos,,"Ola, estoy de buelta.",¡Bienvenido de nuevo! ¿Qué te gustaría conversar?
+016,G006,pregunta,correcta,,¿Qué es un chatbot?,Un chatbot es un programa que conversa con las personas mediante texto o voz.
+017,G006,pregunta,informal,,"Qué es un chatbot, en pocas palabras",Un chatbot es un programa que conversa con las personas mediante texto o voz.
+018,G006,pregunta,errores_ortograficos,,Que es un chat bot?,Un chatbot es un programa que conversa con las personas mediante texto o voz.
+019,G007,pregunta,correcta,,¿Qué es un archivo CSV?,"Un archivo CSV guarda datos en texto, organizados en filas y columnas separadas por un delimitador."
+020,G007,pregunta,informal,,Qué viene a ser un CSV,"Un archivo CSV guarda datos en texto, organizados en filas y columnas separadas por un delimitador."
+021,G007,pregunta,errores_ortograficos,,Que es un archibo CSV?,"Un archivo CSV guarda datos en texto, organizados en filas y columnas separadas por un delimitador."
+022,G008,pregunta,correcta,,¿Cómo puedo crear una contraseña segura?,Una contraseña segura debe ser larga y única para cada cuenta.
+023,G008,pregunta,informal,,Cómo hago una contraseña segura,Una contraseña segura debe ser larga y única para cada cuenta.
+024,G008,pregunta,errores_ortograficos,,Como puedo crear una contraseñia segura?,Una contraseña segura debe ser larga y única para cada cuenta.
+025,G009,pregunta,correcta,,¿Para qué sirve una tabla dinámica?,Una tabla dinámica permite resumir y agrupar datos para analizarlos.
+026,G009,pregunta,informal,,Para qué me sirve una tabla dinámica,Una tabla dinámica permite resumir y agrupar datos para analizarlos.
+027,G009,pregunta,errores_ortograficos,,Para que sirbe una tabla dinamica?,Una tabla dinámica permite resumir y agrupar datos para analizarlos.
+028,G010,pregunta,correcta,,¿Qué significa intención en un agente conversacional?,Una intención representa lo que el usuario busca comunicar o conseguir con su mensaje.
+029,G010,pregunta,informal,,Qué es eso de intención en un agente conversacional,Una intención representa lo que el usuario busca comunicar o conseguir con su mensaje.
+030,G010,pregunta,errores_ortograficos,,Que significa intencion en un ajente conversacional?,Una intención representa lo que el usuario busca comunicar o conseguir con su mensaje.
+031,G011,repregunta,correcta,Agente: Un chatbot es un programa que conversa mediante texto o voz.,¿Puedes darme un ejemplo de eso?,"Por ejemplo, un asistente que responde preguntas sobre horarios es un chatbot."
+032,G011,repregunta,informal,Agente: Un chatbot es un programa que conversa mediante texto o voz.,Me das un ejemplo de eso,"Por ejemplo, un asistente que responde preguntas sobre horarios es un chatbot."
+033,G011,repregunta,errores_ortograficos,Agente: Un chatbot es un programa que conversa mediante texto o voz.,Puedes darme un egemplo de eso?,"Por ejemplo, un asistente que responde preguntas sobre horarios es un chatbot."
+034,G012,repregunta,correcta,Agente: Un CSV organiza datos mediante un delimitador.,¿Qué quieres decir con delimitador?,"Un delimitador es el carácter que separa las columnas, como una coma o un punto y coma."
+035,G012,repregunta,informal,Agente: Un CSV organiza datos mediante un delimitador.,"Eso de delimitador, qué es","Un delimitador es el carácter que separa las columnas, como una coma o un punto y coma."
+036,G012,repregunta,errores_ortograficos,Agente: Un CSV organiza datos mediante un delimitador.,Que quieres desir con delimitador?,"Un delimitador es el carácter que separa las columnas, como una coma o un punto y coma."
+037,G013,repregunta,correcta,Agente: Selecciona los datos y crea una tabla dinámica.,¿Puedes repetir el primer paso?,Primero selecciona el rango de celdas que contiene los encabezados y los registros.
+038,G013,repregunta,informal,Agente: Selecciona los datos y crea una tabla dinámica.,Me repites el primer paso,Primero selecciona el rango de celdas que contiene los encabezados y los registros.
+039,G013,repregunta,errores_ortograficos,Agente: Selecciona los datos y crea una tabla dinámica.,Puedes rrepetir el primer paso?,Primero selecciona el rango de celdas que contiene los encabezados y los registros.
+040,G014,repregunta,correcta,Agente: Usa una contraseña larga y única.,¿Por qué debe ser larga y única?,Una contraseña larga es más difícil de adivinar; una única evita que una filtración comprometa varias cuentas.
+041,G014,repregunta,informal,Agente: Usa una contraseña larga y única.,Y por qué larga y única,Una contraseña larga es más difícil de adivinar; una única evita que una filtración comprometa varias cuentas.
+042,G014,repregunta,errores_ortograficos,Agente: Usa una contraseña larga y única.,Por que deve ser larga y unica?,Una contraseña larga es más difícil de adivinar; una única evita que una filtración comprometa varias cuentas.
+043,G015,repregunta,correcta,Agente: Separa el dataset en entrenamiento y evaluación.,¿Puedes explicarlo de manera más sencilla?,Una parte sirve para que el modelo aprenda y otra para comprobar cómo responde ante ejemplos que no ha visto.
+044,G015,repregunta,informal,Agente: Separa el dataset en entrenamiento y evaluación.,Me lo explicas más fácil,Una parte sirve para que el modelo aprenda y otra para comprobar cómo responde ante ejemplos que no ha visto.
+045,G015,repregunta,errores_ortograficos,Agente: Separa el dataset en entrenamiento y evaluación.,Puedes esplicarlo de manera mas sensilla?,Una parte sirve para que el modelo aprenda y otra para comprobar cómo responde ante ejemplos que no ha visto.
+046,G016,estado_animo,correcta,,Hoy me siento muy feliz.,¡Qué bueno! ¿Qué te hizo sentir así?
+047,G016,estado_animo,informal,,Hoy estoy superfeliz,¡Qué bueno! ¿Qué te hizo sentir así?
+048,G016,estado_animo,errores_ortograficos,,Oy me siento mui feliz.,¡Qué bueno! ¿Qué te hizo sentir así?
+049,G017,estado_animo,correcta,,Me siento triste hoy.,Lamento que estés pasando un día triste. ¿Quieres contarme qué ocurrió?
+050,G017,estado_animo,informal,,Hoy ando bajoneado,Lamento que estés pasando un día triste. ¿Quieres contarme qué ocurrió?
+051,G017,estado_animo,errores_ortograficos,,Me ciento triste oy.,Lamento que estés pasando un día triste. ¿Quieres contarme qué ocurrió?
+052,G018,estado_animo,correcta,,Estoy frustrado porque no logro terminar la tarea.,Suena frustrante. ¿Qué pasó?
+053,G018,estado_animo,informal,,Me frustra no poder acabar la tarea,Suena frustrante. ¿Qué pasó?
+054,G018,estado_animo,errores_ortograficos,,Estoy frustado porque no logro terminar la tarea.,Suena frustrante. ¿Qué pasó?
+055,G019,estado_animo,correcta,,Me siento cansado después de estudiar.,Parece que necesitas una pausa. ¿Quieres organizar lo que te queda por hacer?
+056,G019,estado_animo,informal,,Estoy agotado de tanto estudiar,Parece que necesitas una pausa. ¿Quieres organizar lo que te queda por hacer?
+057,G019,estado_animo,errores_ortograficos,,Me siento cansao despues de estudiar.,Parece que necesitas una pausa. ¿Quieres organizar lo que te queda por hacer?
+058,G020,estado_animo,correcta,,Estoy nervioso por mi presentación.,Es comprensible sentir nervios antes de una presentación. Podemos practicar el inicio juntos.
+059,G020,estado_animo,informal,,Me dan nervios mi presentación,Es comprensible sentir nervios antes de una presentación. Podemos practicar el inicio juntos.
+060,G020,estado_animo,errores_ortograficos,,Estoy nervioso por mi presentasion.,Es comprensible sentir nervios antes de una presentación. Podemos practicar el inicio juntos.
+061,G021,redireccion_frase,correcta,Agente: Estamos revisando las fórmulas de Excel.,Dejemos Excel y hablemos de programación.,"De acuerdo, cambiemos a programación. ¿Qué te gustaría aprender?"
+062,G021,redireccion_frase,informal,Agente: Estamos revisando las fórmulas de Excel.,Mejor pasemos de Excel a programación,"De acuerdo, cambiemos a programación. ¿Qué te gustaría aprender?"
+063,G021,redireccion_frase,errores_ortograficos,Agente: Estamos revisando las fórmulas de Excel.,Dejemos Exel y hablemos de programasion.,"De acuerdo, cambiemos a programación. ¿Qué te gustaría aprender?"
+064,G022,redireccion_frase,correcta,Agente: Podemos seguir hablando de películas.,Volvamos al tema del chatbot.,Volvamos al tema del chatbot. ¿Qué punto quieres retomar?
+065,G022,redireccion_frase,informal,Agente: Podemos seguir hablando de películas.,"Bueno, volvamos a lo del chatbot",Volvamos al tema del chatbot. ¿Qué punto quieres retomar?
+066,G022,redireccion_frase,errores_ortograficos,Agente: Podemos seguir hablando de películas.,Bolbamos al tema del chatbot.,Volvamos al tema del chatbot. ¿Qué punto quieres retomar?
+067,G023,redireccion_frase,correcta,Agente: ¿Seguimos revisando el presupuesto?,Prefiero cambiar de tema.,"Claro, cambiemos de tema. ¿Sobre qué quieres conversar?"
+068,G023,redireccion_frase,informal,Agente: ¿Seguimos revisando el presupuesto?,Mejor hablemos de otra cosa,"Claro, cambiemos de tema. ¿Sobre qué quieres conversar?"
+069,G023,redireccion_frase,errores_ortograficos,Agente: ¿Seguimos revisando el presupuesto?,Prefiero canbiar de tema.,"Claro, cambiemos de tema. ¿Sobre qué quieres conversar?"
+070,G024,redireccion_frase,correcta,Agente: Ahora explicaré cómo insertar un gráfico.,"En lugar del gráfico, enfoquémonos en ordenar la tabla.",Entendido. Nos centraremos en ordenar la tabla. ¿Por cuál columna quieres ordenar?
+071,G024,redireccion_frase,informal,Agente: Ahora explicaré cómo insertar un gráfico.,Mejor dejemos el gráfico y ordenemos la tabla,Entendido. Nos centraremos en ordenar la tabla. ¿Por cuál columna quieres ordenar?
+072,G024,redireccion_frase,errores_ortograficos,Agente: Ahora explicaré cómo insertar un gráfico.,"En lugar del grafico, enfoquemonos en hordenar la tabla.",Entendido. Nos centraremos en ordenar la tabla. ¿Por cuál columna quieres ordenar?
+073,G025,redireccion_frase,correcta,Agente: Vamos a revisar el diseño de la página.,"Antes del diseño, revisemos el contenido.","De acuerdo, dejemos el diseño para después y revisemos el contenido."
+074,G025,redireccion_frase,informal,Agente: Vamos a revisar el diseño de la página.,Primero veamos el contenido y luego el diseño,"De acuerdo, dejemos el diseño para después y revisemos el contenido."
+075,G025,redireccion_frase,errores_ortograficos,Agente: Vamos a revisar el diseño de la página.,"Antes del diseńo, rebisemos el contenido.","De acuerdo, dejemos el diseño para después y revisemos el contenido."
+076,G026,censura,correcta,,Eres un idiota.,Puedo ayudarte a expresar tu desacuerdo sin insultos.
+077,G026,censura,informal,,"Eres un completo idiota, oye",Puedo ayudarte a expresar tu desacuerdo sin insultos.
+078,G026,censura,errores_ortograficos,,Eres un hidiota.,Puedo ayudarte a expresar tu desacuerdo sin insultos.
+079,G027,censura,correcta,,"Cállate, no sirves para nada.",Podemos continuar con respeto. Dime qué respuesta necesitas corregir.
+080,G027,censura,informal,,"Cállate ya, no sirves para nada",Podemos continuar con respeto. Dime qué respuesta necesitas corregir.
+081,G027,censura,errores_ortograficos,,"Callate, no sirbes para nada.",Podemos continuar con respeto. Dime qué respuesta necesitas corregir.
+082,G028,censura,correcta,,Mi compañero es un imbécil.,Puedo ayudarte a expresar una crítica sobre su trabajo sin descalificar a la persona.
+083,G028,censura,informal,,Mi compañero es tremendo imbécil,Puedo ayudarte a expresar una crítica sobre su trabajo sin descalificar a la persona.
+084,G028,censura,errores_ortograficos,,Mi conpañero es un imbesil.,Puedo ayudarte a expresar una crítica sobre su trabajo sin descalificar a la persona.
+085,G029,censura,correcta,,Quiero humillar a mi compañera delante de todos.,No te ayudaré a humillarla. Podemos redactar un mensaje firme y respetuoso sobre lo ocurrido.
+086,G029,censura,informal,,Quiero dejar en ridículo a mi compañera frente a todos,No te ayudaré a humillarla. Podemos redactar un mensaje firme y respetuoso sobre lo ocurrido.
+087,G029,censura,errores_ortograficos,,Quiero umillar a mi compañera delante de todos.,No te ayudaré a humillarla. Podemos redactar un mensaje firme y respetuoso sobre lo ocurrido.
+088,G030,censura,correcta,,Escribe un insulto para mi profesor.,Puedo ayudarte a expresar tu molestia con tu profesor sin recurrir a insultos.
+089,G030,censura,informal,,Hazme un insulto para mi profe,Puedo ayudarte a expresar tu molestia con tu profesor sin recurrir a insultos.
+090,G030,censura,errores_ortograficos,,Escrive un insulto para mi profesor.,Puedo ayudarte a expresar tu molestia con tu profesor sin recurrir a insultos.
+091,G031,pregunta,correcta,,¿Puedes explicar qué es una variable?,Una variable permite guardar un valor identificado por un nombre.
+092,G031,pregunta,informal,,Me cuentas qué es una variable,Una variable permite guardar un valor identificado por un nombre.
+093,G031,pregunta,errores_ortograficos,,puedes esplicar ke es una variable,Una variable permite guardar un valor identificado por un nombre.
+094,G032,repregunta,correcta,Agente: Una variable permite guardar un valor identificado por un nombre.,¿Puedes dar otro ejemplo sobre una variable?,"Por ejemplo, una variable llamada edad puede guardar el número 25."
+095,G032,repregunta,informal,Agente: Una variable permite guardar un valor identificado por un nombre.,"Otro ejemplo de una variable, porfa","Por ejemplo, una variable llamada edad puede guardar el número 25."
+096,G032,repregunta,errores_ortograficos,Agente: Una variable permite guardar un valor identificado por un nombre.,puedes dar otro ejemplo sobre una variable,"Por ejemplo, una variable llamada edad puede guardar el número 25."
+097,G033,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar una variable.,De acuerdo. Una variable permite guardar un valor identificado por un nombre. ¿Qué aspecto quieres revisar?
+098,G033,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver una variable,De acuerdo. Una variable permite guardar un valor identificado por un nombre. ¿Qué aspecto quieres revisar?
+099,G033,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar una variable.,De acuerdo. Una variable permite guardar un valor identificado por un nombre. ¿Qué aspecto quieres revisar?
+100,G034,pregunta,correcta,,¿Puedes explicar qué es un algoritmo?,Un algoritmo es una secuencia ordenada de pasos para resolver una tarea.
+101,G034,pregunta,informal,,Me cuentas qué es un algoritmo,Un algoritmo es una secuencia ordenada de pasos para resolver una tarea.
+102,G034,pregunta,errores_ortograficos,,puedes esplicar ke es un algoritmo,Un algoritmo es una secuencia ordenada de pasos para resolver una tarea.
+103,G035,repregunta,correcta,Agente: Un algoritmo es una secuencia ordenada de pasos para resolver una tarea.,¿Puedes dar otro ejemplo sobre un algoritmo?,"Por ejemplo, una receta presenta pasos que se siguen en un orden."
+104,G035,repregunta,informal,Agente: Un algoritmo es una secuencia ordenada de pasos para resolver una tarea.,"Otro ejemplo de un algoritmo, porfa","Por ejemplo, una receta presenta pasos que se siguen en un orden."
+105,G035,repregunta,errores_ortograficos,Agente: Un algoritmo es una secuencia ordenada de pasos para resolver una tarea.,puedes dar otro ejemplo sobre un algoritmo,"Por ejemplo, una receta presenta pasos que se siguen en un orden."
+106,G036,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar un algoritmo.,De acuerdo. Un algoritmo es una secuencia ordenada de pasos para resolver una tarea. ¿Qué aspecto quieres revisar?
+107,G036,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver un algoritmo,De acuerdo. Un algoritmo es una secuencia ordenada de pasos para resolver una tarea. ¿Qué aspecto quieres revisar?
+108,G036,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar un algoritmo.,De acuerdo. Un algoritmo es una secuencia ordenada de pasos para resolver una tarea. ¿Qué aspecto quieres revisar?
+109,G037,pregunta,correcta,,¿Puedes explicar qué es una función?,Una función agrupa instrucciones que realizan una tarea y puede devolver un resultado.
+110,G037,pregunta,informal,,Me cuentas qué es una función,Una función agrupa instrucciones que realizan una tarea y puede devolver un resultado.
+111,G037,pregunta,errores_ortograficos,,puedes esplicar ke es una funcion,Una función agrupa instrucciones que realizan una tarea y puede devolver un resultado.
+112,G038,repregunta,correcta,Agente: Una función agrupa instrucciones que realizan una tarea y puede devolver un resultado.,¿Puedes dar otro ejemplo sobre una función?,"Por ejemplo, una función sumar recibe dos números y devuelve su suma."
+113,G038,repregunta,informal,Agente: Una función agrupa instrucciones que realizan una tarea y puede devolver un resultado.,"Otro ejemplo de una función, porfa","Por ejemplo, una función sumar recibe dos números y devuelve su suma."
+114,G038,repregunta,errores_ortograficos,Agente: Una función agrupa instrucciones que realizan una tarea y puede devolver un resultado.,puedes dar otro ejemplo sobre una funcion,"Por ejemplo, una función sumar recibe dos números y devuelve su suma."
+115,G039,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar una función.,De acuerdo. Una función agrupa instrucciones que realizan una tarea y puede devolver un resultado. ¿Qué aspecto quieres revisar?
+116,G039,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver una función,De acuerdo. Una función agrupa instrucciones que realizan una tarea y puede devolver un resultado. ¿Qué aspecto quieres revisar?
+117,G039,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar una funcion.,De acuerdo. Una función agrupa instrucciones que realizan una tarea y puede devolver un resultado. ¿Qué aspecto quieres revisar?
+118,G040,pregunta,correcta,,¿Puedes explicar qué es un bucle?,Un bucle repite instrucciones mientras se cumple una condición o durante un número de veces.
+119,G040,pregunta,informal,,Me cuentas qué es un bucle,Un bucle repite instrucciones mientras se cumple una condición o durante un número de veces.
+120,G040,pregunta,errores_ortograficos,,puedes esplicar ke es un bucle,Un bucle repite instrucciones mientras se cumple una condición o durante un número de veces.
+121,G041,repregunta,correcta,Agente: Un bucle repite instrucciones mientras se cumple una condición o durante un número de veces.,¿Puedes dar otro ejemplo sobre un bucle?,"Por ejemplo, un bucle puede mostrar cada nombre de una lista."
+122,G041,repregunta,informal,Agente: Un bucle repite instrucciones mientras se cumple una condición o durante un número de veces.,"Otro ejemplo de un bucle, porfa","Por ejemplo, un bucle puede mostrar cada nombre de una lista."
+123,G041,repregunta,errores_ortograficos,Agente: Un bucle repite instrucciones mientras se cumple una condición o durante un número de veces.,puedes dar otro ejemplo sobre un bucle,"Por ejemplo, un bucle puede mostrar cada nombre de una lista."
+124,G042,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar un bucle.,De acuerdo. Un bucle repite instrucciones mientras se cumple una condición o durante un número de veces. ¿Qué aspecto quieres revisar?
+125,G042,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver un bucle,De acuerdo. Un bucle repite instrucciones mientras se cumple una condición o durante un número de veces. ¿Qué aspecto quieres revisar?
+126,G042,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar un bucle.,De acuerdo. Un bucle repite instrucciones mientras se cumple una condición o durante un número de veces. ¿Qué aspecto quieres revisar?
+127,G043,pregunta,correcta,,¿Puedes explicar qué es una lista?,Una lista agrupa elementos en una secuencia.
+128,G043,pregunta,informal,,Me cuentas qué es una lista,Una lista agrupa elementos en una secuencia.
+129,G043,pregunta,errores_ortograficos,,puedes esplicar ke es una lista,Una lista agrupa elementos en una secuencia.
+130,G044,repregunta,correcta,Agente: Una lista agrupa elementos en una secuencia.,¿Puedes dar otro ejemplo sobre una lista?,"Por ejemplo, una lista puede contener los nombres Ana, Luis y Rosa."
+131,G044,repregunta,informal,Agente: Una lista agrupa elementos en una secuencia.,"Otro ejemplo de una lista, porfa","Por ejemplo, una lista puede contener los nombres Ana, Luis y Rosa."
+132,G044,repregunta,errores_ortograficos,Agente: Una lista agrupa elementos en una secuencia.,puedes dar otro ejemplo sobre una lista,"Por ejemplo, una lista puede contener los nombres Ana, Luis y Rosa."
+133,G045,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar una lista.,De acuerdo. Una lista agrupa elementos en una secuencia. ¿Qué aspecto quieres revisar?
+134,G045,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver una lista,De acuerdo. Una lista agrupa elementos en una secuencia. ¿Qué aspecto quieres revisar?
+135,G045,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar una lista.,De acuerdo. Una lista agrupa elementos en una secuencia. ¿Qué aspecto quieres revisar?
+136,G046,pregunta,correcta,,¿Puedes explicar qué es una base de datos?,Una base de datos permite almacenar y consultar información organizada.
+137,G046,pregunta,informal,,Me cuentas qué es una base de datos,Una base de datos permite almacenar y consultar información organizada.
+138,G046,pregunta,errores_ortograficos,,puedes esplicar ke es una base de datos,Una base de datos permite almacenar y consultar información organizada.
+139,G047,repregunta,correcta,Agente: Una base de datos permite almacenar y consultar información organizada.,¿Puedes dar otro ejemplo sobre una base de datos?,"Por ejemplo, una tienda puede guardar sus productos en una base de datos."
+140,G047,repregunta,informal,Agente: Una base de datos permite almacenar y consultar información organizada.,"Otro ejemplo de una base de datos, porfa","Por ejemplo, una tienda puede guardar sus productos en una base de datos."
+141,G047,repregunta,errores_ortograficos,Agente: Una base de datos permite almacenar y consultar información organizada.,puedes dar otro ejemplo sobre una base de datos,"Por ejemplo, una tienda puede guardar sus productos en una base de datos."
+142,G048,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar una base de datos.,De acuerdo. Una base de datos permite almacenar y consultar información organizada. ¿Qué aspecto quieres revisar?
+143,G048,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver una base de datos,De acuerdo. Una base de datos permite almacenar y consultar información organizada. ¿Qué aspecto quieres revisar?
+144,G048,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar una base de datos.,De acuerdo. Una base de datos permite almacenar y consultar información organizada. ¿Qué aspecto quieres revisar?
+145,G049,pregunta,correcta,,¿Puedes explicar qué es una clave primaria?,Una clave primaria identifica de forma única cada registro de una tabla.
+146,G049,pregunta,informal,,Me cuentas qué es una clave primaria,Una clave primaria identifica de forma única cada registro de una tabla.
+147,G049,pregunta,errores_ortograficos,,puedes esplicar ke es una clave primaria,Una clave primaria identifica de forma única cada registro de una tabla.
+148,G050,repregunta,correcta,Agente: Una clave primaria identifica de forma única cada registro de una tabla.,¿Puedes dar otro ejemplo sobre una clave primaria?,"Por ejemplo, el código de un producto puede identificarlo sin repetir valores."
+149,G050,repregunta,informal,Agente: Una clave primaria identifica de forma única cada registro de una tabla.,"Otro ejemplo de una clave primaria, porfa","Por ejemplo, el código de un producto puede identificarlo sin repetir valores."
+150,G050,repregunta,errores_ortograficos,Agente: Una clave primaria identifica de forma única cada registro de una tabla.,puedes dar otro ejemplo sobre una clave primaria,"Por ejemplo, el código de un producto puede identificarlo sin repetir valores."
+151,G051,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar una clave primaria.,De acuerdo. Una clave primaria identifica de forma única cada registro de una tabla. ¿Qué aspecto quieres revisar?
+152,G051,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver una clave primaria,De acuerdo. Una clave primaria identifica de forma única cada registro de una tabla. ¿Qué aspecto quieres revisar?
+153,G051,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar una clave primaria.,De acuerdo. Una clave primaria identifica de forma única cada registro de una tabla. ¿Qué aspecto quieres revisar?
+154,G052,pregunta,correcta,,¿Puedes explicar qué es un filtro de datos?,Un filtro muestra los registros que cumplen una condición.
+155,G052,pregunta,informal,,Me cuentas qué es un filtro de datos,Un filtro muestra los registros que cumplen una condición.
+156,G052,pregunta,errores_ortograficos,,puedes esplicar ke es un filtro de datos,Un filtro muestra los registros que cumplen una condición.
+157,G053,repregunta,correcta,Agente: Un filtro muestra los registros que cumplen una condición.,¿Puedes dar otro ejemplo sobre un filtro de datos?,"Por ejemplo, puedes mostrar únicamente las ventas de una tienda."
+158,G053,repregunta,informal,Agente: Un filtro muestra los registros que cumplen una condición.,"Otro ejemplo de un filtro de datos, porfa","Por ejemplo, puedes mostrar únicamente las ventas de una tienda."
+159,G053,repregunta,errores_ortograficos,Agente: Un filtro muestra los registros que cumplen una condición.,puedes dar otro ejemplo sobre un filtro de datos,"Por ejemplo, puedes mostrar únicamente las ventas de una tienda."
+160,G054,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar un filtro de datos.,De acuerdo. Un filtro muestra los registros que cumplen una condición. ¿Qué aspecto quieres revisar?
+161,G054,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver un filtro de datos,De acuerdo. Un filtro muestra los registros que cumplen una condición. ¿Qué aspecto quieres revisar?
+162,G054,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar un filtro de datos.,De acuerdo. Un filtro muestra los registros que cumplen una condición. ¿Qué aspecto quieres revisar?
+163,G055,pregunta,correcta,,¿Puedes explicar qué es una fórmula de Excel?,Una fórmula de Excel calcula un resultado a partir de valores o referencias.
+164,G055,pregunta,informal,,Me cuentas qué es una fórmula de Excel,Una fórmula de Excel calcula un resultado a partir de valores o referencias.
+165,G055,pregunta,errores_ortograficos,,puedes esplicar ke es una formula de excel,Una fórmula de Excel calcula un resultado a partir de valores o referencias.
+166,G056,repregunta,correcta,Agente: Una fórmula de Excel calcula un resultado a partir de valores o referencias.,¿Puedes dar otro ejemplo sobre una fórmula de Excel?,"Por ejemplo, la fórmula =A1+B1 suma los valores de dos celdas."
+167,G056,repregunta,informal,Agente: Una fórmula de Excel calcula un resultado a partir de valores o referencias.,"Otro ejemplo de una fórmula de Excel, porfa","Por ejemplo, la fórmula =A1+B1 suma los valores de dos celdas."
+168,G056,repregunta,errores_ortograficos,Agente: Una fórmula de Excel calcula un resultado a partir de valores o referencias.,puedes dar otro ejemplo sobre una formula de excel,"Por ejemplo, la fórmula =A1+B1 suma los valores de dos celdas."
+169,G057,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar una fórmula de Excel.,De acuerdo. Una fórmula de Excel calcula un resultado a partir de valores o referencias. ¿Qué aspecto quieres revisar?
+170,G057,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver una fórmula de Excel,De acuerdo. Una fórmula de Excel calcula un resultado a partir de valores o referencias. ¿Qué aspecto quieres revisar?
+171,G057,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar una formula de excel.,De acuerdo. Una fórmula de Excel calcula un resultado a partir de valores o referencias. ¿Qué aspecto quieres revisar?
+172,G058,pregunta,correcta,,¿Puedes explicar qué es un gráfico de barras?,Un gráfico de barras representa valores mediante barras para comparar categorías.
+173,G058,pregunta,informal,,Me cuentas qué es un gráfico de barras,Un gráfico de barras representa valores mediante barras para comparar categorías.
+174,G058,pregunta,errores_ortograficos,,puedes esplicar ke es un grafico de barras,Un gráfico de barras representa valores mediante barras para comparar categorías.
+175,G059,repregunta,correcta,Agente: Un gráfico de barras representa valores mediante barras para comparar categorías.,¿Puedes dar otro ejemplo sobre un gráfico de barras?,"Por ejemplo, puedes comparar las ventas de tres tiendas."
+176,G059,repregunta,informal,Agente: Un gráfico de barras representa valores mediante barras para comparar categorías.,"Otro ejemplo de un gráfico de barras, porfa","Por ejemplo, puedes comparar las ventas de tres tiendas."
+177,G059,repregunta,errores_ortograficos,Agente: Un gráfico de barras representa valores mediante barras para comparar categorías.,puedes dar otro ejemplo sobre un grafico de barras,"Por ejemplo, puedes comparar las ventas de tres tiendas."
+178,G060,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar un gráfico de barras.,De acuerdo. Un gráfico de barras representa valores mediante barras para comparar categorías. ¿Qué aspecto quieres revisar?
+179,G060,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver un gráfico de barras,De acuerdo. Un gráfico de barras representa valores mediante barras para comparar categorías. ¿Qué aspecto quieres revisar?
+180,G060,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar un grafico de barras.,De acuerdo. Un gráfico de barras representa valores mediante barras para comparar categorías. ¿Qué aspecto quieres revisar?
+181,G061,pregunta,correcta,,¿Puedes explicar qué es un gráfico circular?,Un gráfico circular muestra cómo se reparte un total entre categorías.
+182,G061,pregunta,informal,,Me cuentas qué es un gráfico circular,Un gráfico circular muestra cómo se reparte un total entre categorías.
+183,G061,pregunta,errores_ortograficos,,puedes esplicar ke es un grafico circular,Un gráfico circular muestra cómo se reparte un total entre categorías.
+184,G062,repregunta,correcta,Agente: Un gráfico circular muestra cómo se reparte un total entre categorías.,¿Puedes dar otro ejemplo sobre un gráfico circular?,"Por ejemplo, puedes mostrar la proporción de gastos por categoría."
+185,G062,repregunta,informal,Agente: Un gráfico circular muestra cómo se reparte un total entre categorías.,"Otro ejemplo de un gráfico circular, porfa","Por ejemplo, puedes mostrar la proporción de gastos por categoría."
+186,G062,repregunta,errores_ortograficos,Agente: Un gráfico circular muestra cómo se reparte un total entre categorías.,puedes dar otro ejemplo sobre un grafico circular,"Por ejemplo, puedes mostrar la proporción de gastos por categoría."
+187,G063,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar un gráfico circular.,De acuerdo. Un gráfico circular muestra cómo se reparte un total entre categorías. ¿Qué aspecto quieres revisar?
+188,G063,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver un gráfico circular,De acuerdo. Un gráfico circular muestra cómo se reparte un total entre categorías. ¿Qué aspecto quieres revisar?
+189,G063,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar un grafico circular.,De acuerdo. Un gráfico circular muestra cómo se reparte un total entre categorías. ¿Qué aspecto quieres revisar?
+190,G064,pregunta,correcta,,¿Puedes explicar qué es un promedio?,Un promedio aritmético se obtiene sumando los valores y dividiendo entre su cantidad.
+191,G064,pregunta,informal,,Me cuentas qué es un promedio,Un promedio aritmético se obtiene sumando los valores y dividiendo entre su cantidad.
+192,G064,pregunta,errores_ortograficos,,puedes esplicar ke es un promedio,Un promedio aritmético se obtiene sumando los valores y dividiendo entre su cantidad.
+193,G065,repregunta,correcta,Agente: Un promedio aritmético se obtiene sumando los valores y dividiendo entre su cantidad.,¿Puedes dar otro ejemplo sobre un promedio?,"Por ejemplo, el promedio de 2 y 4 es 3."
+194,G065,repregunta,informal,Agente: Un promedio aritmético se obtiene sumando los valores y dividiendo entre su cantidad.,"Otro ejemplo de un promedio, porfa","Por ejemplo, el promedio de 2 y 4 es 3."
+195,G065,repregunta,errores_ortograficos,Agente: Un promedio aritmético se obtiene sumando los valores y dividiendo entre su cantidad.,puedes dar otro ejemplo sobre un promedio,"Por ejemplo, el promedio de 2 y 4 es 3."
+196,G066,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar un promedio.,De acuerdo. Un promedio aritmético se obtiene sumando los valores y dividiendo entre su cantidad. ¿Qué aspecto quieres revisar?
+197,G066,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver un promedio,De acuerdo. Un promedio aritmético se obtiene sumando los valores y dividiendo entre su cantidad. ¿Qué aspecto quieres revisar?
+198,G066,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar un promedio.,De acuerdo. Un promedio aritmético se obtiene sumando los valores y dividiendo entre su cantidad. ¿Qué aspecto quieres revisar?
+199,G067,pregunta,correcta,,¿Puedes explicar qué es una copia de seguridad?,Una copia de seguridad es una copia que permite recuperar información si se pierde la original.
+200,G067,pregunta,informal,,Me cuentas qué es una copia de seguridad,Una copia de seguridad es una copia que permite recuperar información si se pierde la original.
+201,G067,pregunta,errores_ortograficos,,puedes esplicar ke es una copia de seguridad,Una copia de seguridad es una copia que permite recuperar información si se pierde la original.
+202,G068,repregunta,correcta,Agente: Una copia de seguridad es una copia que permite recuperar información si se pierde la original.,¿Puedes dar otro ejemplo sobre una copia de seguridad?,"Por ejemplo, puedes guardar una copia de tus documentos en otro dispositivo."
+203,G068,repregunta,informal,Agente: Una copia de seguridad es una copia que permite recuperar información si se pierde la original.,"Otro ejemplo de una copia de seguridad, porfa","Por ejemplo, puedes guardar una copia de tus documentos en otro dispositivo."
+204,G068,repregunta,errores_ortograficos,Agente: Una copia de seguridad es una copia que permite recuperar información si se pierde la original.,puedes dar otro ejemplo sobre una copia de seguridad,"Por ejemplo, puedes guardar una copia de tus documentos en otro dispositivo."
+205,G069,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar una copia de seguridad.,De acuerdo. Una copia de seguridad es una copia que permite recuperar información si se pierde la original. ¿Qué aspecto quieres revisar?
+206,G069,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver una copia de seguridad,De acuerdo. Una copia de seguridad es una copia que permite recuperar información si se pierde la original. ¿Qué aspecto quieres revisar?
+207,G069,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar una copia de seguridad.,De acuerdo. Una copia de seguridad es una copia que permite recuperar información si se pierde la original. ¿Qué aspecto quieres revisar?
+208,G070,pregunta,correcta,,¿Puedes explicar qué es la autenticación de dos factores?,La autenticación de dos factores combina dos tipos de pruebas para verificar tu identidad.
+209,G070,pregunta,informal,,Me cuentas qué es la autenticación de dos factores,La autenticación de dos factores combina dos tipos de pruebas para verificar tu identidad.
+210,G070,pregunta,errores_ortograficos,,puedes esplicar ke es la autenticacion de dos factores,La autenticación de dos factores combina dos tipos de pruebas para verificar tu identidad.
+211,G071,repregunta,correcta,Agente: La autenticación de dos factores combina dos tipos de pruebas para verificar tu identidad.,¿Puedes dar otro ejemplo sobre la autenticación de dos factores?,"Por ejemplo, puedes usar tu contraseña y un código de una aplicación autenticadora."
+212,G071,repregunta,informal,Agente: La autenticación de dos factores combina dos tipos de pruebas para verificar tu identidad.,"Otro ejemplo de la autenticación de dos factores, porfa","Por ejemplo, puedes usar tu contraseña y un código de una aplicación autenticadora."
+213,G071,repregunta,errores_ortograficos,Agente: La autenticación de dos factores combina dos tipos de pruebas para verificar tu identidad.,puedes dar otro ejemplo sobre la autenticacion de dos factores,"Por ejemplo, puedes usar tu contraseña y un código de una aplicación autenticadora."
+214,G072,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar la autenticación de dos factores.,De acuerdo. La autenticación de dos factores combina dos tipos de pruebas para verificar tu identidad. ¿Qué aspecto quieres revisar?
+215,G072,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver la autenticación de dos factores,De acuerdo. La autenticación de dos factores combina dos tipos de pruebas para verificar tu identidad. ¿Qué aspecto quieres revisar?
+216,G072,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar la autenticacion de dos factores.,De acuerdo. La autenticación de dos factores combina dos tipos de pruebas para verificar tu identidad. ¿Qué aspecto quieres revisar?
+217,G073,pregunta,correcta,,¿Puedes explicar qué es el aprendizaje supervisado?,El aprendizaje supervisado utiliza ejemplos con respuestas o etiquetas conocidas.
+218,G073,pregunta,informal,,Me cuentas qué es el aprendizaje supervisado,El aprendizaje supervisado utiliza ejemplos con respuestas o etiquetas conocidas.
+219,G073,pregunta,errores_ortograficos,,puedes esplicar ke es el aprendizaje supervisado,El aprendizaje supervisado utiliza ejemplos con respuestas o etiquetas conocidas.
+220,G074,repregunta,correcta,Agente: El aprendizaje supervisado utiliza ejemplos con respuestas o etiquetas conocidas.,¿Puedes dar otro ejemplo sobre el aprendizaje supervisado?,"Por ejemplo, un modelo puede aprender con mensajes etiquetados como saludo o pregunta."
+221,G074,repregunta,informal,Agente: El aprendizaje supervisado utiliza ejemplos con respuestas o etiquetas conocidas.,"Otro ejemplo de el aprendizaje supervisado, porfa","Por ejemplo, un modelo puede aprender con mensajes etiquetados como saludo o pregunta."
+222,G074,repregunta,errores_ortograficos,Agente: El aprendizaje supervisado utiliza ejemplos con respuestas o etiquetas conocidas.,puedes dar otro ejemplo sobre el aprendizaje supervisado,"Por ejemplo, un modelo puede aprender con mensajes etiquetados como saludo o pregunta."
+223,G075,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar el aprendizaje supervisado.,De acuerdo. El aprendizaje supervisado utiliza ejemplos con respuestas o etiquetas conocidas. ¿Qué aspecto quieres revisar?
+224,G075,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver el aprendizaje supervisado,De acuerdo. El aprendizaje supervisado utiliza ejemplos con respuestas o etiquetas conocidas. ¿Qué aspecto quieres revisar?
+225,G075,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar el aprendizaje supervisado.,De acuerdo. El aprendizaje supervisado utiliza ejemplos con respuestas o etiquetas conocidas. ¿Qué aspecto quieres revisar?
+226,G076,pregunta,correcta,,¿Puedes explicar qué es una etiqueta de clasificación?,Una etiqueta de clasificación indica la categoría asignada a un ejemplo.
+227,G076,pregunta,informal,,Me cuentas qué es una etiqueta de clasificación,Una etiqueta de clasificación indica la categoría asignada a un ejemplo.
+228,G076,pregunta,errores_ortograficos,,puedes esplicar ke es una etiqueta de clasificacion,Una etiqueta de clasificación indica la categoría asignada a un ejemplo.
+229,G077,repregunta,correcta,Agente: Una etiqueta de clasificación indica la categoría asignada a un ejemplo.,¿Puedes dar otro ejemplo sobre una etiqueta de clasificación?,"Por ejemplo, el mensaje Hola puede llevar la etiqueta saludo."
+230,G077,repregunta,informal,Agente: Una etiqueta de clasificación indica la categoría asignada a un ejemplo.,"Otro ejemplo de una etiqueta de clasificación, porfa","Por ejemplo, el mensaje Hola puede llevar la etiqueta saludo."
+231,G077,repregunta,errores_ortograficos,Agente: Una etiqueta de clasificación indica la categoría asignada a un ejemplo.,puedes dar otro ejemplo sobre una etiqueta de clasificacion,"Por ejemplo, el mensaje Hola puede llevar la etiqueta saludo."
+232,G078,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar una etiqueta de clasificación.,De acuerdo. Una etiqueta de clasificación indica la categoría asignada a un ejemplo. ¿Qué aspecto quieres revisar?
+233,G078,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver una etiqueta de clasificación,De acuerdo. Una etiqueta de clasificación indica la categoría asignada a un ejemplo. ¿Qué aspecto quieres revisar?
+234,G078,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar una etiqueta de clasificacion.,De acuerdo. Una etiqueta de clasificación indica la categoría asignada a un ejemplo. ¿Qué aspecto quieres revisar?
+235,G079,pregunta,correcta,,¿Puedes explicar qué es un conjunto de entrenamiento?,Un conjunto de entrenamiento contiene ejemplos usados para ajustar un modelo.
+236,G079,pregunta,informal,,Me cuentas qué es un conjunto de entrenamiento,Un conjunto de entrenamiento contiene ejemplos usados para ajustar un modelo.
+237,G079,pregunta,errores_ortograficos,,puedes esplicar ke es un conjunto de entrenamiento,Un conjunto de entrenamiento contiene ejemplos usados para ajustar un modelo.
+238,G080,repregunta,correcta,Agente: Un conjunto de entrenamiento contiene ejemplos usados para ajustar un modelo.,¿Puedes dar otro ejemplo sobre un conjunto de entrenamiento?,"Por ejemplo, puedes usar una parte de tus mensajes etiquetados para entrenar."
+239,G080,repregunta,informal,Agente: Un conjunto de entrenamiento contiene ejemplos usados para ajustar un modelo.,"Otro ejemplo de un conjunto de entrenamiento, porfa","Por ejemplo, puedes usar una parte de tus mensajes etiquetados para entrenar."
+240,G080,repregunta,errores_ortograficos,Agente: Un conjunto de entrenamiento contiene ejemplos usados para ajustar un modelo.,puedes dar otro ejemplo sobre un conjunto de entrenamiento,"Por ejemplo, puedes usar una parte de tus mensajes etiquetados para entrenar."
+241,G081,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar un conjunto de entrenamiento.,De acuerdo. Un conjunto de entrenamiento contiene ejemplos usados para ajustar un modelo. ¿Qué aspecto quieres revisar?
+242,G081,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver un conjunto de entrenamiento,De acuerdo. Un conjunto de entrenamiento contiene ejemplos usados para ajustar un modelo. ¿Qué aspecto quieres revisar?
+243,G081,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar un conjunto de entrenamiento.,De acuerdo. Un conjunto de entrenamiento contiene ejemplos usados para ajustar un modelo. ¿Qué aspecto quieres revisar?
+244,G082,pregunta,correcta,,¿Puedes explicar qué es un conjunto de evaluación?,Un conjunto de evaluación contiene ejemplos reservados para medir el desempeño del modelo.
+245,G082,pregunta,informal,,Me cuentas qué es un conjunto de evaluación,Un conjunto de evaluación contiene ejemplos reservados para medir el desempeño del modelo.
+246,G082,pregunta,errores_ortograficos,,puedes esplicar ke es un conjunto de evaluacion,Un conjunto de evaluación contiene ejemplos reservados para medir el desempeño del modelo.
+247,G083,repregunta,correcta,Agente: Un conjunto de evaluación contiene ejemplos reservados para medir el desempeño del modelo.,¿Puedes dar otro ejemplo sobre un conjunto de evaluación?,"Por ejemplo, puedes evaluar con grupos de mensajes que no aparecieron durante el entrenamiento."
+248,G083,repregunta,informal,Agente: Un conjunto de evaluación contiene ejemplos reservados para medir el desempeño del modelo.,"Otro ejemplo de un conjunto de evaluación, porfa","Por ejemplo, puedes evaluar con grupos de mensajes que no aparecieron durante el entrenamiento."
+249,G083,repregunta,errores_ortograficos,Agente: Un conjunto de evaluación contiene ejemplos reservados para medir el desempeño del modelo.,puedes dar otro ejemplo sobre un conjunto de evaluacion,"Por ejemplo, puedes evaluar con grupos de mensajes que no aparecieron durante el entrenamiento."
+250,G084,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar un conjunto de evaluación.,De acuerdo. Un conjunto de evaluación contiene ejemplos reservados para medir el desempeño del modelo. ¿Qué aspecto quieres revisar?
+251,G084,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver un conjunto de evaluación,De acuerdo. Un conjunto de evaluación contiene ejemplos reservados para medir el desempeño del modelo. ¿Qué aspecto quieres revisar?
+252,G084,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar un conjunto de evaluacion.,De acuerdo. Un conjunto de evaluación contiene ejemplos reservados para medir el desempeño del modelo. ¿Qué aspecto quieres revisar?
+253,G085,pregunta,correcta,,¿Puedes explicar qué es el sobreajuste?,El sobreajuste ocurre cuando un modelo se adapta demasiado a los ejemplos de entrenamiento y generaliza mal.
+254,G085,pregunta,informal,,Me cuentas qué es el sobreajuste,El sobreajuste ocurre cuando un modelo se adapta demasiado a los ejemplos de entrenamiento y generaliza mal.
+255,G085,pregunta,errores_ortograficos,,puedes esplicar ke es el sobreajuste,El sobreajuste ocurre cuando un modelo se adapta demasiado a los ejemplos de entrenamiento y generaliza mal.
+256,G086,repregunta,correcta,Agente: El sobreajuste ocurre cuando un modelo se adapta demasiado a los ejemplos de entrenamiento y generaliza mal.,¿Puedes dar otro ejemplo sobre el sobreajuste?,"Por ejemplo, puede acertar mensajes conocidos y fallar ante mensajes nuevos."
+257,G086,repregunta,informal,Agente: El sobreajuste ocurre cuando un modelo se adapta demasiado a los ejemplos de entrenamiento y generaliza mal.,"Otro ejemplo de el sobreajuste, porfa","Por ejemplo, puede acertar mensajes conocidos y fallar ante mensajes nuevos."
+258,G086,repregunta,errores_ortograficos,Agente: El sobreajuste ocurre cuando un modelo se adapta demasiado a los ejemplos de entrenamiento y generaliza mal.,puedes dar otro ejemplo sobre el sobreajuste,"Por ejemplo, puede acertar mensajes conocidos y fallar ante mensajes nuevos."
+259,G087,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar el sobreajuste.,De acuerdo. El sobreajuste ocurre cuando un modelo se adapta demasiado a los ejemplos de entrenamiento y generaliza mal. ¿Qué aspecto quieres revisar?
+260,G087,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver el sobreajuste,De acuerdo. El sobreajuste ocurre cuando un modelo se adapta demasiado a los ejemplos de entrenamiento y generaliza mal. ¿Qué aspecto quieres revisar?
+261,G087,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar el sobreajuste.,De acuerdo. El sobreajuste ocurre cuando un modelo se adapta demasiado a los ejemplos de entrenamiento y generaliza mal. ¿Qué aspecto quieres revisar?
+262,G088,pregunta,correcta,,¿Puedes explicar qué es la normalización de texto?,La normalización de texto aplica reglas para hacer más consistente su representación.
+263,G088,pregunta,informal,,Me cuentas qué es la normalización de texto,La normalización de texto aplica reglas para hacer más consistente su representación.
+264,G088,pregunta,errores_ortograficos,,puedes esplicar ke es la normalizacion de texto,La normalización de texto aplica reglas para hacer más consistente su representación.
+265,G089,repregunta,correcta,Agente: La normalización de texto aplica reglas para hacer más consistente su representación.,¿Puedes dar otro ejemplo sobre la normalización de texto?,"Por ejemplo, puedes convertir letras mayúsculas en minúsculas si tu tarea lo requiere."
+266,G089,repregunta,informal,Agente: La normalización de texto aplica reglas para hacer más consistente su representación.,"Otro ejemplo de la normalización de texto, porfa","Por ejemplo, puedes convertir letras mayúsculas en minúsculas si tu tarea lo requiere."
+267,G089,repregunta,errores_ortograficos,Agente: La normalización de texto aplica reglas para hacer más consistente su representación.,puedes dar otro ejemplo sobre la normalizacion de texto,"Por ejemplo, puedes convertir letras mayúsculas en minúsculas si tu tarea lo requiere."
+268,G090,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar la normalización de texto.,De acuerdo. La normalización de texto aplica reglas para hacer más consistente su representación. ¿Qué aspecto quieres revisar?
+269,G090,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver la normalización de texto,De acuerdo. La normalización de texto aplica reglas para hacer más consistente su representación. ¿Qué aspecto quieres revisar?
+270,G090,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar la normalizacion de texto.,De acuerdo. La normalización de texto aplica reglas para hacer más consistente su representación. ¿Qué aspecto quieres revisar?
+271,G091,pregunta,correcta,,¿Puedes explicar qué es la tokenización?,La tokenización divide un texto en unidades que un modelo puede procesar.
+272,G091,pregunta,informal,,Me cuentas qué es la tokenización,La tokenización divide un texto en unidades que un modelo puede procesar.
+273,G091,pregunta,errores_ortograficos,,puedes esplicar ke es la tokenizacion,La tokenización divide un texto en unidades que un modelo puede procesar.
+274,G092,repregunta,correcta,Agente: La tokenización divide un texto en unidades que un modelo puede procesar.,¿Puedes dar otro ejemplo sobre la tokenización?,"Por ejemplo, una oración puede dividirse en palabras o fragmentos de palabras."
+275,G092,repregunta,informal,Agente: La tokenización divide un texto en unidades que un modelo puede procesar.,"Otro ejemplo de la tokenización, porfa","Por ejemplo, una oración puede dividirse en palabras o fragmentos de palabras."
+276,G092,repregunta,errores_ortograficos,Agente: La tokenización divide un texto en unidades que un modelo puede procesar.,puedes dar otro ejemplo sobre la tokenizacion,"Por ejemplo, una oración puede dividirse en palabras o fragmentos de palabras."
+277,G093,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar la tokenización.,De acuerdo. La tokenización divide un texto en unidades que un modelo puede procesar. ¿Qué aspecto quieres revisar?
+278,G093,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver la tokenización,De acuerdo. La tokenización divide un texto en unidades que un modelo puede procesar. ¿Qué aspecto quieres revisar?
+279,G093,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar la tokenizacion.,De acuerdo. La tokenización divide un texto en unidades que un modelo puede procesar. ¿Qué aspecto quieres revisar?
+280,G094,pregunta,correcta,,¿Puedes explicar qué es el contexto conversacional?,El contexto conversacional es la información previa que ayuda a interpretar un mensaje.
+281,G094,pregunta,informal,,Me cuentas qué es el contexto conversacional,El contexto conversacional es la información previa que ayuda a interpretar un mensaje.
+282,G094,pregunta,errores_ortograficos,,puedes esplicar ke es el contexto conversacional,El contexto conversacional es la información previa que ayuda a interpretar un mensaje.
+283,G095,repregunta,correcta,Agente: El contexto conversacional es la información previa que ayuda a interpretar un mensaje.,¿Puedes dar otro ejemplo sobre el contexto conversacional?,"Por ejemplo, la expresión eso puede referirse al tema del turno anterior."
+284,G095,repregunta,informal,Agente: El contexto conversacional es la información previa que ayuda a interpretar un mensaje.,"Otro ejemplo de el contexto conversacional, porfa","Por ejemplo, la expresión eso puede referirse al tema del turno anterior."
+285,G095,repregunta,errores_ortograficos,Agente: El contexto conversacional es la información previa que ayuda a interpretar un mensaje.,puedes dar otro ejemplo sobre el contexto conversacional,"Por ejemplo, la expresión eso puede referirse al tema del turno anterior."
+286,G096,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar el contexto conversacional.,De acuerdo. El contexto conversacional es la información previa que ayuda a interpretar un mensaje. ¿Qué aspecto quieres revisar?
+287,G096,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver el contexto conversacional,De acuerdo. El contexto conversacional es la información previa que ayuda a interpretar un mensaje. ¿Qué aspecto quieres revisar?
+288,G096,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar el contexto conversacional.,De acuerdo. El contexto conversacional es la información previa que ayuda a interpretar un mensaje. ¿Qué aspecto quieres revisar?
+289,G097,pregunta,correcta,,¿Puedes explicar qué es una pregunta de aclaración?,Una pregunta de aclaración busca precisar una solicitud ambigua o incompleta.
+290,G097,pregunta,informal,,Me cuentas qué es una pregunta de aclaración,Una pregunta de aclaración busca precisar una solicitud ambigua o incompleta.
+291,G097,pregunta,errores_ortograficos,,puedes esplicar ke es una pregunta de aclaracion,Una pregunta de aclaración busca precisar una solicitud ambigua o incompleta.
+292,G098,repregunta,correcta,Agente: Una pregunta de aclaración busca precisar una solicitud ambigua o incompleta.,¿Puedes dar otro ejemplo sobre una pregunta de aclaración?,"Por ejemplo, ante Ayúdame con el archivo puedes preguntar qué cambio necesita."
+293,G098,repregunta,informal,Agente: Una pregunta de aclaración busca precisar una solicitud ambigua o incompleta.,"Otro ejemplo de una pregunta de aclaración, porfa","Por ejemplo, ante Ayúdame con el archivo puedes preguntar qué cambio necesita."
+294,G098,repregunta,errores_ortograficos,Agente: Una pregunta de aclaración busca precisar una solicitud ambigua o incompleta.,puedes dar otro ejemplo sobre una pregunta de aclaracion,"Por ejemplo, ante Ayúdame con el archivo puedes preguntar qué cambio necesita."
+295,G099,redireccion_frase,correcta,Agente: Estamos conversando sobre cómo organizar tu agenda.,Cambiemos de tema: ahora quiero revisar una pregunta de aclaración.,De acuerdo. Una pregunta de aclaración busca precisar una solicitud ambigua o incompleta. ¿Qué aspecto quieres revisar?
+296,G099,redireccion_frase,informal,Agente: Estamos conversando sobre cómo organizar tu agenda.,Mejor pasemos a ver una pregunta de aclaración,De acuerdo. Una pregunta de aclaración busca precisar una solicitud ambigua o incompleta. ¿Qué aspecto quieres revisar?
+297,G099,redireccion_frase,errores_ortograficos,Agente: Estamos conversando sobre cómo organizar tu agenda.,cambiemos de tema: ahora quiero revisar una pregunta de aclaracion.,De acuerdo. Una pregunta de aclaración busca precisar una solicitud ambigua o incompleta. ¿Qué aspecto quieres revisar?
+298,G100,saludo,correcta,,¡Hola! Es mi primera visita.,¡Hola! ¿En qué puedo ayudarte hoy?
+299,G100,saludo,informal,,"Hola, soy nuevo por aquí",¡Hola! ¿En qué puedo ayudarte hoy?
+300,G100,saludo,errores_ortograficos,,ola es mi primera visita.,¡Hola! ¿En qué puedo ayudarte hoy?
+301,G101,saludo,correcta,,"Buenos días, acabo de conectarme.",¡Hola! ¿En qué puedo ayudarte hoy?
+302,G101,saludo,informal,,"Buenas, recién me conecto",¡Hola! ¿En qué puedo ayudarte hoy?
+303,G101,saludo,errores_ortograficos,,"buenos dias, acabo de conectarme.",¡Hola! ¿En qué puedo ayudarte hoy?
+304,G102,saludo,correcta,,"Buenas tardes, ya estoy aquí.",¡Hola! ¿En qué puedo ayudarte hoy?
+305,G102,saludo,informal,,"Buenas, ya llegué",¡Hola! ¿En qué puedo ayudarte hoy?
+306,G102,saludo,errores_ortograficos,,"buenas tardes, ya estoy aqui.",¡Hola! ¿En qué puedo ayudarte hoy?
+307,G103,saludo,correcta,,"Buenas noches, vengo a conversar.",¡Hola! ¿En qué puedo ayudarte hoy?
+308,G103,saludo,informal,,"Buenas, vine a charlar",¡Hola! ¿En qué puedo ayudarte hoy?
+309,G103,saludo,errores_ortograficos,,"buenas noches, vengo a conversar.",¡Hola! ¿En qué puedo ayudarte hoy?
+310,G104,saludo,correcta,,"Hola, un gusto saludarte.",¡Hola! ¿En qué puedo ayudarte hoy?
+311,G104,saludo,informal,,"Qué gusto, hola",¡Hola! ¿En qué puedo ayudarte hoy?
+312,G104,saludo,errores_ortograficos,,"ola, un gusto saludarte.",¡Hola! ¿En qué puedo ayudarte hoy?
+313,G105,saludo,correcta,,"Hola de nuevo, tanto tiempo.",¡Hola! ¿En qué puedo ayudarte hoy?
+314,G105,saludo,informal,,"Hola otra vez, cuánto tiempo",¡Hola! ¿En qué puedo ayudarte hoy?
+315,G105,saludo,errores_ortograficos,,"ola de nuevo, tanto tiempo.",¡Hola! ¿En qué puedo ayudarte hoy?
+316,G106,saludo,correcta,,¡Hola! ¿Qué tal va tu día?,¡Hola! ¿En qué puedo ayudarte hoy?
+317,G106,saludo,informal,,"Buenas, qué tal el día",¡Hola! ¿En qué puedo ayudarte hoy?
+318,G106,saludo,errores_ortograficos,,ola ke tal va tu dia,¡Hola! ¿En qué puedo ayudarte hoy?
+319,G107,saludo,correcta,,¡Saludos! Estoy empezando la conversación.,¡Hola! ¿En qué puedo ayudarte hoy?
+320,G107,saludo,informal,,"Buenas, aquí empezando la charla",¡Hola! ¿En qué puedo ayudarte hoy?
+321,G107,saludo,errores_ortograficos,,saludos estoy empezando la conversacion.,¡Hola! ¿En qué puedo ayudarte hoy?
+322,G108,saludo,correcta,,"Hola, acabo de llegar.",¡Hola! ¿En qué puedo ayudarte hoy?
+323,G108,saludo,informal,,"Ey, recién llegué",¡Hola! ¿En qué puedo ayudarte hoy?
+324,G108,saludo,errores_ortograficos,,"ola, acabo de llegar.",¡Hola! ¿En qué puedo ayudarte hoy?
+325,G109,saludo,correcta,,Buenos días a todos.,¡Hola! ¿En qué puedo ayudarte hoy?
+326,G109,saludo,informal,,"Buen día, gente",¡Hola! ¿En qué puedo ayudarte hoy?
+327,G109,saludo,errores_ortograficos,,buenos dias a todos.,¡Hola! ¿En qué puedo ayudarte hoy?
+328,G110,saludo,correcta,,"Buenas tardes, qué gusto estar aquí.",¡Hola! ¿En qué puedo ayudarte hoy?
+329,G110,saludo,informal,,"Buenas, qué bueno estar acá",¡Hola! ¿En qué puedo ayudarte hoy?
+330,G110,saludo,errores_ortograficos,,"buenas tardes, que gusto estar aqui.",¡Hola! ¿En qué puedo ayudarte hoy?
+331,G111,saludo,correcta,,"Buenas noches, saludos cordiales.",¡Hola! ¿En qué puedo ayudarte hoy?
+332,G111,saludo,informal,,"Buenas noches, saludos",¡Hola! ¿En qué puedo ayudarte hoy?
+333,G111,saludo,errores_ortograficos,,"buenas noches, saludos cordiales.",¡Hola! ¿En qué puedo ayudarte hoy?
+334,G112,saludo,correcta,,"Hola, paso a saludarte.",¡Hola! ¿En qué puedo ayudarte hoy?
+335,G112,saludo,informal,,"Hola, pasaba a saludar",¡Hola! ¿En qué puedo ayudarte hoy?
+336,G112,saludo,errores_ortograficos,,"ola, paso a saludarte.",¡Hola! ¿En qué puedo ayudarte hoy?
+337,G113,saludo,correcta,,"Hola, me alegra volver a verte.",¡Hola! ¿En qué puedo ayudarte hoy?
+338,G113,saludo,informal,,"Qué bueno verte otra vez, hola",¡Hola! ¿En qué puedo ayudarte hoy?
+339,G113,saludo,errores_ortograficos,,"ola, me alegra bolver a verte.",¡Hola! ¿En qué puedo ayudarte hoy?
+340,G114,saludo,correcta,,"Hola, soy estudiante nuevo.",¡Hola! ¿En qué puedo ayudarte hoy?
+341,G114,saludo,informal,,"Hola, recién empiezo como estudiante",¡Hola! ¿En qué puedo ayudarte hoy?
+342,G114,saludo,errores_ortograficos,,"ola, soy estudiante nuevo.",¡Hola! ¿En qué puedo ayudarte hoy?
+343,G115,saludo,correcta,,"Hola, te saludo desde Perú.",¡Hola! ¿En qué puedo ayudarte hoy?
+344,G115,saludo,informal,,"Buenas, saludos desde Perú",¡Hola! ¿En qué puedo ayudarte hoy?
+345,G115,saludo,errores_ortograficos,,"ola, te saludo desde peru.",¡Hola! ¿En qué puedo ayudarte hoy?
+346,G116,saludo,correcta,,"Buenos días, comenzamos una nueva jornada.",¡Hola! ¿En qué puedo ayudarte hoy?
+347,G116,saludo,informal,,"Buen día, arrancamos otra jornada",¡Hola! ¿En qué puedo ayudarte hoy?
+348,G116,saludo,errores_ortograficos,,"buenos dias, comenzamos una nueva jornada.",¡Hola! ¿En qué puedo ayudarte hoy?
+349,G117,saludo,correcta,,¡Hola! Es un placer conocerte.,¡Hola! ¿En qué puedo ayudarte hoy?
+350,G117,saludo,informal,,"Hola, un gusto conocerte",¡Hola! ¿En qué puedo ayudarte hoy?
+351,G117,saludo,errores_ortograficos,,ola es un placer conocerte.,¡Hola! ¿En qué puedo ayudarte hoy?
+352,G118,saludo,correcta,,"Buenas tardes, reciban un saludo.",¡Hola! ¿En qué puedo ayudarte hoy?
+353,G118,saludo,informal,,"Buenas tardes, qué tal todos",¡Hola! ¿En qué puedo ayudarte hoy?
+354,G118,saludo,errores_ortograficos,,"buenas tardes, reciban un saludo.",¡Hola! ¿En qué puedo ayudarte hoy?
+355,G119,saludo,correcta,,"Hola, estoy entrando al chat.",¡Hola! ¿En qué puedo ayudarte hoy?
+356,G119,saludo,informal,,"Hola, recién entro al chat",¡Hola! ¿En qué puedo ayudarte hoy?
+357,G119,saludo,errores_ortograficos,,"ola, estoy entrando al chat.",¡Hola! ¿En qué puedo ayudarte hoy?
+358,G120,saludo,correcta,,"Hola, ya regresé de mi descanso.",¡Hola! ¿En qué puedo ayudarte hoy?
+359,G120,saludo,informal,,"Buenas, volví del descanso",¡Hola! ¿En qué puedo ayudarte hoy?
+360,G120,saludo,errores_ortograficos,,"ola, ya regrese de mi descanso.",¡Hola! ¿En qué puedo ayudarte hoy?
+361,G121,saludo,correcta,,"Buenos días, espero que estés bien.",¡Hola! ¿En qué puedo ayudarte hoy?
+362,G121,saludo,informal,,"Buen día, ojalá todo bien",¡Hola! ¿En qué puedo ayudarte hoy?
+363,G121,saludo,errores_ortograficos,,"buenos dias, espero que estes bien.",¡Hola! ¿En qué puedo ayudarte hoy?
+364,G122,saludo,correcta,,"Buenas noches, aquí estoy nuevamente.",¡Hola! ¿En qué puedo ayudarte hoy?
+365,G122,saludo,informal,,"Buenas, acá de nuevo",¡Hola! ¿En qué puedo ayudarte hoy?
+366,G122,saludo,errores_ortograficos,,"buenas noches, aqui estoy nuevamente.",¡Hola! ¿En qué puedo ayudarte hoy?
+367,G123,estado_animo,correcta,,Me siento contento por terminar mi proyecto.,¡Qué bien haber terminado! ¿Qué parte disfrutaste más?
+368,G123,estado_animo,informal,,"Estoy feliz, acabé mi proyecto",¡Qué bien haber terminado! ¿Qué parte disfrutaste más?
+369,G123,estado_animo,errores_ortograficos,,me siento contento por terminar mi proyecto.,¡Qué bien haber terminado! ¿Qué parte disfrutaste más?
+370,G124,estado_animo,correcta,,Estoy emocionado por empezar el curso.,¿Qué te gustaría aprender primero?
+371,G124,estado_animo,informal,,Me emociona arrancar el curso,¿Qué te gustaría aprender primero?
+372,G124,estado_animo,errores_ortograficos,,estoy emocionado por empezar el curso.,¿Qué te gustaría aprender primero?
+373,G125,estado_animo,correcta,,Siento orgullo por mi esfuerzo.,¿Qué avance te hace sentir más orgullo?
+374,G125,estado_animo,informal,,Estoy orgulloso de lo que hice,¿Qué avance te hace sentir más orgullo?
+375,G125,estado_animo,errores_ortograficos,,siento orgullo por mi esfuerzo.,¿Qué avance te hace sentir más orgullo?
+376,G126,estado_animo,correcta,,Me siento tranquilo después de descansar.,¿Qué te ayudó a relajarte?
+377,G126,estado_animo,informal,,Descansé y ahora estoy tranquilo,¿Qué te ayudó a relajarte?
+378,G126,estado_animo,errores_ortograficos,,me siento tranquilo despues de descansar.,¿Qué te ayudó a relajarte?
+379,G127,estado_animo,correcta,,Estoy agradecido por el apoyo recibido.,¿Qué apoyo fue más valioso para ti?
+380,G127,estado_animo,informal,,Qué agradecido estoy por la ayuda,¿Qué apoyo fue más valioso para ti?
+381,G127,estado_animo,errores_ortograficos,,estoy agradecido por el apoyo recibido.,¿Qué apoyo fue más valioso para ti?
+382,G128,estado_animo,correcta,,Me siento motivado para aprender.,Podemos elegir una meta pequeña para empezar.
+383,G128,estado_animo,informal,,Tengo muchas ganas de aprender,Podemos elegir una meta pequeña para empezar.
+384,G128,estado_animo,errores_ortograficos,,me siento motivado para aprender.,Podemos elegir una meta pequeña para empezar.
+385,G129,estado_animo,correcta,,Estoy decepcionado con mi resultado.,Podemos revisar qué ocurrió y qué podrías mejorar.
+386,G129,estado_animo,informal,,Mi resultado me dejó decepcionado,Podemos revisar qué ocurrió y qué podrías mejorar.
+387,G129,estado_animo,errores_ortograficos,,estoy decepcionado con mi resultado.,Podemos revisar qué ocurrió y qué podrías mejorar.
+388,G130,estado_animo,correcta,,Me siento solo esta tarde.,¿Quieres contarme cómo ha sido tu día?
+389,G130,estado_animo,informal,,Esta tarde ando sintiéndome solo,¿Quieres contarme cómo ha sido tu día?
+390,G130,estado_animo,errores_ortograficos,,me siento solo esta tarde.,¿Quieres contarme cómo ha sido tu día?
+391,G131,estado_animo,correcta,,Estoy preocupado por la tarea pendiente.,Podemos dividirla en pasos. ¿Qué debes entregar?
+392,G131,estado_animo,informal,,Me preocupa esa tarea que falta,Podemos dividirla en pasos. ¿Qué debes entregar?
+393,G131,estado_animo,errores_ortograficos,,estoy preocupado por la tarea pendiente.,Podemos dividirla en pasos. ¿Qué debes entregar?
+394,G132,estado_animo,correcta,,Me siento confundido con la explicación.,¿Qué parte te gustaría que expliquemos de otra manera?
+395,G132,estado_animo,informal,,Esa explicación me dejó confundido,¿Qué parte te gustaría que expliquemos de otra manera?
+396,G132,estado_animo,errores_ortograficos,,me siento confundido con la explicacion.,¿Qué parte te gustaría que expliquemos de otra manera?
+397,G133,estado_animo,correcta,,Estoy aburrido de repetir lo mismo.,¿Te gustaría probar un ejercicio diferente?
+398,G133,estado_animo,informal,,Ya me aburrió hacer siempre lo mismo,¿Te gustaría probar un ejercicio diferente?
+399,G133,estado_animo,errores_ortograficos,,estoy aburrido de repetir lo mismo.,¿Te gustaría probar un ejercicio diferente?
+400,G134,estado_animo,correcta,,Me siento abrumado por tantas actividades.,Podemos ordenar tus pendientes y elegir uno para comenzar.
+401,G134,estado_animo,informal,,Tengo tantas cosas que me abruman,Podemos ordenar tus pendientes y elegir uno para comenzar.
+402,G134,estado_animo,errores_ortograficos,,me siento abrumado por tantas actividades.,Podemos ordenar tus pendientes y elegir uno para comenzar.
+403,G135,estado_animo,correcta,,Estoy molesto por lo que ocurrió.,¿Quieres contarme lo que ocurrió?
+404,G135,estado_animo,informal,,Me fastidia lo que pasó,¿Quieres contarme lo que ocurrió?
+405,G135,estado_animo,errores_ortograficos,,estoy molesto por lo que ocurrio.,¿Quieres contarme lo que ocurrió?
+406,G136,estado_animo,correcta,,Siento vergüenza por mi equivocación.,Equivocarse forma parte de aprender. Podemos revisar cómo corregirlo.
+407,G136,estado_animo,informal,,Me da vergüenza haberme equivocado,Equivocarse forma parte de aprender. Podemos revisar cómo corregirlo.
+408,G136,estado_animo,errores_ortograficos,,siento verguenza por mi equivocacion.,Equivocarse forma parte de aprender. Podemos revisar cómo corregirlo.
+409,G137,estado_animo,correcta,,Me siento inseguro al hablar en público.,Podemos practicar una presentación breve.
+410,G137,estado_animo,informal,,Hablar frente a todos me da inseguridad,Podemos practicar una presentación breve.
+411,G137,estado_animo,errores_ortograficos,,me siento inseguro al hablar en publico.,Podemos practicar una presentación breve.
+412,G138,estado_animo,correcta,,Estoy desanimado con mis avances.,Podemos revisar lo que ya lograste y elegir un siguiente paso pequeño.
+413,G138,estado_animo,informal,,Mis avances me tienen bajoneado,Podemos revisar lo que ya lograste y elegir un siguiente paso pequeño.
+414,G138,estado_animo,errores_ortograficos,,estoy desanimado con mis avances.,Podemos revisar lo que ya lograste y elegir un siguiente paso pequeño.
+415,G139,estado_animo,correcta,,Me siento aliviado después del examen.,¿Cómo te fue con las preguntas?
+416,G139,estado_animo,informal,,Ya pasó el examen y estoy aliviado,¿Cómo te fue con las preguntas?
+417,G139,estado_animo,errores_ortograficos,,me siento aliviado despues del examen.,¿Cómo te fue con las preguntas?
+418,G140,estado_animo,correcta,,Estoy sorprendido por lo que aprendí.,¿Qué descubrimiento te llamó más la atención?
+419,G140,estado_animo,informal,,Me sorprendió lo que aprendí,¿Qué descubrimiento te llamó más la atención?
+420,G140,estado_animo,errores_ortograficos,,estoy sorprendido por lo que aprendi.,¿Qué descubrimiento te llamó más la atención?
+421,G141,estado_animo,correcta,,Siento curiosidad por el tema nuevo.,¿Qué te gustaría descubrir sobre ese tema?
+422,G141,estado_animo,informal,,Ese tema nuevo me da curiosidad,¿Qué te gustaría descubrir sobre ese tema?
+423,G141,estado_animo,errores_ortograficos,,siento curiosidad por el tema nuevo.,¿Qué te gustaría descubrir sobre ese tema?
+424,G142,estado_animo,correcta,,Me siento impaciente por conocer el resultado.,Esperar puede ser difícil. ¿Quieres hacer otra actividad mientras llega?
+425,G142,estado_animo,informal,,"Ya quiero saber el resultado, estoy impaciente",Esperar puede ser difícil. ¿Quieres hacer otra actividad mientras llega?
+426,G142,estado_animo,errores_ortograficos,,me siento impaciente por conocer el resultado.,Esperar puede ser difícil. ¿Quieres hacer otra actividad mientras llega?
+427,G143,estado_animo,correcta,,Estoy agotado después de trabajar.,¿Te vendría bien hacer una pausa antes de continuar?
+428,G143,estado_animo,informal,,El trabajo me dejó sin energía,¿Te vendría bien hacer una pausa antes de continuar?
+429,G143,estado_animo,errores_ortograficos,,estoy agotado despues de trabajar.,¿Te vendría bien hacer una pausa antes de continuar?
+430,G144,estado_animo,correcta,,Me siento esperanzado con esta oportunidad.,¿Qué te gustaría conseguir con ella?
+431,G144,estado_animo,informal,,Esta oportunidad me da esperanza,¿Qué te gustaría conseguir con ella?
+432,G144,estado_animo,errores_ortograficos,,me siento esperanzado con esta oportunidad.,¿Qué te gustaría conseguir con ella?
+433,G145,estado_animo,correcta,,Estoy nostálgico al recordar mi escuela.,¿Qué recuerdo de esa etapa te gustaría compartir?
+434,G145,estado_animo,informal,,Recordar mi escuela me da nostalgia,¿Qué recuerdo de esa etapa te gustaría compartir?
+435,G145,estado_animo,errores_ortograficos,,estoy nostalgico al recordar mi escuela.,¿Qué recuerdo de esa etapa te gustaría compartir?
+436,G146,censura,correcta,,Eres un inútil.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+437,G146,censura,informal,,Eres tremendo inútil,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+438,G146,censura,errores_ortograficos,,eres un inutil.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+439,G147,censura,correcta,,"Tu respuesta es una porquería, idiota.",Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+440,G147,censura,informal,,"Qué porquería de respuesta, idiota",Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+441,G147,censura,errores_ortograficos,,"tu respuesta es una porqueria, idiota.",Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+442,G148,censura,correcta,,Eres un estúpido y no entiendes nada.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+443,G148,censura,informal,,"No entiendes nada, estúpido",Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+444,G148,censura,errores_ortograficos,,eres un estupido y no entiendes nada.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+445,G149,censura,correcta,,Mi compañero es un idiota sin remedio.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+446,G149,censura,informal,,Mi compañero es tremendo idiota,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+447,G149,censura,errores_ortograficos,,mi companero es un idiota sin remedio.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+448,G150,censura,correcta,,Esa profesora es una imbécil.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+449,G150,censura,informal,,Qué imbécil es esa profe,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+450,G150,censura,errores_ortograficos,,esa profesora es una imbecil.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+451,G151,censura,correcta,,Escribe algo para humillar a mi vecino.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+452,G151,censura,informal,,Hazme una frase para humillar al vecino,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+453,G151,censura,errores_ortograficos,,escribe algo para humillar a mi vecino.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+454,G152,censura,correcta,,Dame insultos para atacar a mi compañero.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+455,G152,censura,informal,,Pásame insultos para mi compañero,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+456,G152,censura,errores_ortograficos,,dame insultos para atacar a mi companero.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+457,G153,censura,correcta,,Quiero burlarme de ella hasta que llore.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+458,G153,censura,informal,,Quiero burlarme de ella y hacerla llorar,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+459,G153,censura,errores_ortograficos,,quiero burlarme de ella hasta que llore.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+460,G154,censura,correcta,,Ayúdame a ridiculizar a mi jefe en el grupo.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+461,G154,censura,informal,,Ayúdame a dejar en ridículo al jefe en el grupo,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+462,G154,censura,errores_ortograficos,,ayudame a ridiculizar a mi jefe en el grupo.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+463,G155,censura,correcta,,Redacta un mensaje para decirle que es basura.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+464,G155,censura,informal,,Haz un mensaje diciéndole que es basura,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+465,G155,censura,errores_ortograficos,,redacta un mensaje para decirle que es basura.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+466,G156,censura,correcta,,Haz una lista de apodos ofensivos para mi compañero.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+467,G156,censura,informal,,Dame apodos hirientes para mi compañero,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+468,G156,censura,errores_ortograficos,,haz una lista de apodos ofensivos para mi companero.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+469,G157,censura,correcta,,Escribe una burla cruel sobre mi amigo.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+470,G157,censura,informal,,Haz una burla bien cruel de mi amigo,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+471,G157,censura,errores_ortograficos,,escribe una burla cruel sobre mi amigo.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+472,G158,censura,correcta,,Quiero insultar a quien hizo este trabajo.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+473,G158,censura,informal,,Quiero soltarle insultos al que hizo esto,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+474,G158,censura,errores_ortograficos,,quiero insultar a quien hizo este trabajo.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+475,G159,censura,correcta,,Dime cómo avergonzar a mi compañera en público.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+476,G159,censura,informal,,Cómo hago pasar vergüenza a mi compañera frente a todos,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+477,G159,censura,errores_ortograficos,,dime como avergonzar a mi companera en publico.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+478,G160,censura,correcta,,Escribe un comentario para degradar a esa persona.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+479,G160,censura,informal,,Haz un comentario que deje por el suelo a esa persona,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+480,G160,censura,errores_ortograficos,,escribe un comentario para degradar a esa persona.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+481,G161,censura,correcta,,Ayúdame a acosar a mi compañero por mensajes.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+482,G161,censura,informal,,Ayúdame a hostigar a mi compañero por chat,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+483,G161,censura,errores_ortograficos,,ayudame a acosar a mi companero por mensajes.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+484,G162,censura,correcta,,Redacta una frase ofensiva contra mi entrenador.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+485,G162,censura,informal,,Hazme una frase hiriente para mi entrenador,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+486,G162,censura,errores_ortograficos,,redacta una frase ofensiva contra mi entrenador.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+487,G163,censura,correcta,,Quiero reírme de su fracaso para hacerle daño.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+488,G163,censura,informal,,Quiero burlarme de su fracaso y herirlo,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+489,G163,censura,errores_ortograficos,,quiero reirme de su fracaso para aserle dano.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+490,G164,censura,correcta,,Dame una respuesta llena de insultos para ella.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+491,G164,censura,informal,,Dame algo con muchos insultos para contestarle,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+492,G164,censura,errores_ortograficos,,dame una respuesta llena de insultos para ella.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+493,G165,censura,correcta,,Escribe un mensaje para que todos se burlen de él.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+494,G165,censura,informal,,Haz un mensaje para que todos se rían de él,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+495,G165,censura,errores_ortograficos,,escribe un mensaje para que todos se burlen de el.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+496,G166,censura,correcta,,Ayúdame a tratar de imbécil a mi compañero.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+497,G166,censura,informal,,Ayúdame a decirle imbécil a mi compañero,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+498,G166,censura,errores_ortograficos,,ayudame a tratar de imbecil a mi companero.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+499,G167,censura,correcta,,Quiero publicar una burla para humillarla.,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.
+500,G167,censura,informal,,Quiero subir algo burlándome de ella para humillarla,Podemos expresar el desacuerdo sin insultos ni humillaciones. Cuéntame qué ocurrió y te ayudo a redactar un mensaje respetuoso.

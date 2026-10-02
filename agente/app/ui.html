@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agente kddesign</title>
+<style>
+  :root { --bg:#f6f4f1; --panel:#fff; --ink:#1f1d1a; --muted:#6d675f; --line:#e4dfd8; --me:#dcf8c6; --bot:#fff; --acc:#8a3b55; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#151412; --panel:#1f1d1a; --ink:#ece8e2; --muted:#a39c92; --line:#34302b; --me:#1f4d3a; --bot:#26231f; --acc:#d58aa3; } }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 system-ui, sans-serif }
+  main { max-width:1100px; margin:0 auto; padding:16px; display:grid; gap:16px; grid-template-columns: 1fr 360px }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr } }
+  h1 { font-size:18px; margin:0 0 4px } .sub { color:var(--muted); font-size:13px; margin:0 0 12px }
+  .chat { background:var(--panel); border:1px solid var(--line); border-radius:12px; display:flex; flex-direction:column; height:calc(100vh - 120px); min-height:420px }
+  .msgs { flex:1; overflow:auto; padding:16px; display:flex; flex-direction:column; gap:8px }
+  .m { max-width:80%; padding:8px 12px; border-radius:10px; white-space:pre-wrap; border:1px solid var(--line) }
+  .m.cliente { align-self:flex-end; background:var(--me) } .m.bot { align-self:flex-start; background:var(--bot) }
+  .m small { display:block; color:var(--muted); font-size:11px; margin-top:4px }
+  form { display:flex; gap:8px; padding:12px; border-top:1px solid var(--line) }
+  input { flex:1; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font:inherit }
+  button { padding:10px 16px; border-radius:8px; border:0; background:var(--acc); color:#fff; font:inherit; cursor:pointer }
+  button.sec { background:transparent; color:var(--muted); border:1px solid var(--line) }
+  aside { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; font-size:13px; overflow:auto; max-height:calc(100vh - 120px) }
+  aside h2 { font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:14px 0 6px }
+  aside h2:first-child { margin-top:0 }
+  .bar { height:6px; background:var(--line); border-radius:3px; overflow:hidden } .bar i { display:block; height:100%; background:var(--acc) }
+  .row { display:grid; grid-template-columns: 1fr 48px; gap:6px; align-items:center; margin:4px 0 }
+  code { font-size:12px } ul { margin:0; padding-left:18px }
+</style>
+</head>
+<body>
+<main>
+  <section>
+    <h1>Agente conversacional · kddesign</h1>
+    <p class="sub">Embeddings locales (jina v2 es) → clasificador → RAG del catálogo → DeepSeek por OpenRouter.</p>
+    <div class="chat">
+      <div class="msgs" id="msgs"></div>
+      <form id="f">
+        <input id="t" autocomplete="off" placeholder="Escribe como cliente… (prueba: «ola kiero el VES-003 cuanto cuesta»)">
+        <button>Enviar</button>
+        <button type="button" class="sec" id="reset">Nuevo</button>
+      </form>
+    </div>
+  </section>
+  <aside id="info"><h2>Análisis</h2><p class="sub">Envía un mensaje para ver intención, prenda y fuentes.</p></aside>
+</main>
+<script>
+const msgs = document.getElementById('msgs'), info = document.getElementById('info');
+let hist = [];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function add(rol, texto, meta) {
+  const d = document.createElement('div'); d.className = 'm ' + rol;
+  d.innerHTML = esc(texto) + (meta ? '<small>' + esc(meta) + '</small>' : '');
+  msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
+}
+const ACCIONES = { catalogo:'→ el bot envía el catálogo (opción 1)', foto:'→ el bot pide la foto (opción 2)',
+  pedido_estado:'→ el bot muestra el estado del pedido (opción 3)', asesora:'→ el bot deriva a una asesora (opción 4)' };
+function bars(list) { return list.map(x => `<div class="row"><div>${esc(x.etiqueta)}<div class="bar"><i style="width:${x.p*100}%"></i></div></div><div>${(x.p*100).toFixed(0)}%</div></div>`).join(''); }
+document.getElementById('reset').onclick = () => { hist = []; msgs.innerHTML = ''; };
+document.getElementById('f').onsubmit = async ev => {
+  ev.preventDefault();
+  const t = document.getElementById('t'), texto = t.value.trim(); if (!texto) return;
+  t.value = ''; add('cliente', texto);
+  try {
+    const r = await fetch('chat', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Prueba' }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.detail || r.status);
+    const resp = j.respuesta || ACCIONES[j.accion] || (j.accion === 'codigo' ? `→ el bot ofrece ${j.codigo} con foto, precio y tallas` : '(sin respuesta)');
+    add('bot', resp, `${j.intencion} ${(j.confianza*100).toFixed(0)}% · ${j.accion} · ${j.modelo_llm || 'sin LLM'} · ${j.ms} ms`);
+    hist.push({ rol:'cliente', texto }, { rol:'bot', texto: resp }); hist = hist.slice(-12);
+    info.innerHTML = `<h2>Intención</h2>${bars(j.top_intenciones)}
+      <h2>Categoría de prenda</h2><div>${esc(j.categoria_prenda)} (${(j.confianza_categoria*100).toFixed(0)}%)</div>
+      <h2>Códigos</h2><div>${j.codigos.length ? j.codigos.map(esc).join(', ') : '—'}</div>
+      <h2>Fichas recuperadas (RAG)</h2><ul>${j.fichas.map(f => `<li><code>${esc(f.codigo)}</code> ${esc(f.nombre)} <span class="sub">${esc(f.fuente)}</span></li>`).join('')}</ul>
+      <h2>Ejemplos del dataset</h2><ul>${j.ejemplos.map(e => `<li>[${esc(e.intencion)}] ${esc(e.texto)} <span class="sub">${e.sim}</span></li>`).join('')}</ul>`;
+  } catch (e) { add('bot', 'Error: ' + e.message); }
+};
+</script>
+</body>
+</html>

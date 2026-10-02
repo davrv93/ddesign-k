@@ -6,6 +6,7 @@
 #
 #   KD_HTTP_PORT (18480)  → panel + API          (127.0.0.1, lo usa el nginx del host)
 #   KD_EVO_PORT  (18481)  → manager evolution-go (127.0.0.1, sólo para diagnóstico por túnel SSH)
+#   KD_AGENT_PORT (18482) → agente conversacional: UI de prueba y API (127.0.0.1, túnel SSH)
 
 name: kddesign
 
@@ -75,9 +76,35 @@ services:
       EVOLUTION_URL: http://evolution:8080
       WEBHOOK_BASE_URL: http://backend:8080
       MEDIA_BASE_URL: http://backend:8080
+      AGENT_URL: ${AGENT_URL-http://agente:8000}
     volumes:
       - backend_data:/data
     mem_limit: 128m
+    networks: [kddesign]
+
+  agente:
+    # Embeddings locales (jina-embeddings-v2-base-es, ONNX) + clasificador + RAG + DeepSeek por OpenRouter.
+    # El bot le delega el texto libre; si no responde, el bot vuelve a Gemini.
+    build:
+      context: ./agente
+      args:
+        EMBED_MODEL: ${EMBED_MODEL:-jinaai/jina-embeddings-v2-base-es}
+    image: kddesign/agente:local
+    container_name: kddesign_agente
+    restart: unless-stopped
+    environment:
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-deepseek/deepseek-v4-flash,deepseek/deepseek-chat-v3.1}
+      CATALOG_URL: http://backend:8080/api/public/catalog
+      BUSINESS_NAME: ${BUSINESS_NAME:-Baruka Design}
+      CURRENCY: ${CURRENCY:-S/}
+      EMBED_THREADS: "2"
+      TZ: America/Lima
+    volumes:
+      - agente_data:/data
+    ports:
+      - "127.0.0.1:${KD_AGENT_PORT:-18482}:8000"
+    mem_limit: 1200m  # jina base en ONNX: ~940 MiB medidos en reposo
     networks: [kddesign]
 
   frontend:
@@ -98,6 +125,7 @@ services:
 volumes:
   evolution_db:
   backend_data:
+  agente_data:
 
 networks:
   kddesign:

@@ -1,0 +1,64 @@
+intencion,variante,mensaje
+catalogo,correcta,¿Me puedes mostrar el catálogo?
+catalogo,informal,pasame el catalogo porfa
+catalogo,errores_ortograficos,kiero ver el catalgo
+catalogo,correcta,¿Qué modelos tienen disponibles?
+catalogo,informal,q modelos tienes
+catalogo,errores_ortograficos,ke modelos ay
+catalogo,correcta,Quisiera ver la lista de precios.
+catalogo,informal,cuanto estan los vestidos? mandame la lista
+catalogo,errores_ortograficos,mandame la lista de presios
+catalogo,correcta,¿Qué vestidos tienen en este momento?
+catalogo,informal,q tienes pa ver
+catalogo,errores_ortograficos,tenes vestidos pa ver?
+catalogo,correcta,¿Tienen fotos de todas las prendas?
+catalogo,informal,muestrame todo lo q tienes
+catalogo,errores_ortograficos,enseñame tdo lo q tienen
+foto,correcta,Te voy a enviar la foto de un vestido que vi.
+foto,informal,te mando foto de uno q vi en insta
+foto,errores_ortograficos,te mamdo la foto del bestido
+foto,correcta,¿Puedo consultar un modelo con una foto?
+foto,informal,si te paso captura me dices si hay?
+foto,errores_ortograficos,si te paso kaptura me dises si ay
+foto,correcta,Vi un modelo en su página y quiero saber si lo tienen.
+foto,informal,vi uno en tiktok lo tienes?
+foto,errores_ortograficos,bi uno en tiktok lo tienes
+foto,correcta,Tengo una imagen de la prenda que busco.
+foto,informal,tengo la imagen del q quiero
+foto,errores_ortograficos,tengo la imajen del ke kiero
+pedido_estado,correcta,¿Cuál es el estado de mi pedido?
+pedido_estado,informal,y mi pedido q fue
+pedido_estado,errores_ortograficos,y mi pedio cuando yega
+pedido_estado,correcta,¿Ya enviaron mi compra?
+pedido_estado,informal,ya salio mi paquete?
+pedido_estado,errores_ortograficos,ya salio mi paqete?
+pedido_estado,correcta,Quisiera saber cuándo llega mi pedido.
+pedido_estado,informal,cuando me llega lo q pedi
+pedido_estado,errores_ortograficos,kuando me yega lo ke pedi
+pedido_estado,correcta,¿Confirmaron mi pedido de ayer?
+pedido_estado,informal,confirmaron lo de ayer o no
+pedido_estado,errores_ortograficos,konfirmaron lo de aller?
+asesora,correcta,Quiero hablar con una asesora.
+asesora,informal,pasame con alguien de verdad
+asesora,errores_ortograficos,kiero ablar con una persona
+asesora,correcta,¿Me puede atender una persona?
+asesora,informal,no quiero bot quiero humano
+asesora,errores_ortograficos,no kiero bot kiero umano
+asesora,correcta,Necesito que me llame alguien de la tienda.
+asesora,informal,q me llame la chica de la tienda
+asesora,errores_ortograficos,q me yame alguien d la tienda
+asesora,correcta,Prefiero que me atienda la vendedora.
+asesora,informal,la vendedora esta?
+asesora,errores_ortograficos,la bendedora esta?
+despedida,correcta,"Muchas gracias, eso es todo."
+despedida,informal,ya gracias bye
+despedida,errores_ortograficos,grasias chau
+despedida,correcta,"Gracias por la ayuda, hasta luego."
+despedida,informal,listo gracias nos vemos
+despedida,errores_ortograficos,lsto grax nos bemos
+despedida,correcta,"Perfecto, luego te escribo."
+despedida,informal,ok luego te escribo
+despedida,errores_ortograficos,ok lueguito te escrivo
+despedida,correcta,"Está bien, eso sería todo por hoy."
+despedida,informal,ya fue eso es todo
+despedida,errores_ortograficos,ya fue eso es tdo

@@ -1,0 +1,917 @@
+﻿CATÁLOGO DE 100 MODELOS DE PRENDAS
+
+Contenido: 25 vestidos, 25 polos, 25 blusas y 25 jeans.
+Cada categoría combina cinco diseños con cinco colores o lavados.
+Imágenes generadas con IA para un catálogo ficticio; vista frontal sobre fondo blanco.
+Las características describen el diseño propuesto. Las imágenes son orientativas.
+Los tejidos y las tallas son propuestas para el dataset, no datos de productos reales.
+No se especifican medidas corporales ni de confección: las tallas no garantizan ajuste.
+Polos significa camisetas; las tallas numéricas de jeans son etiquetas propuestas.
+El código relaciona cada ficha con el PNG del ZIP. No se incluyen precios ni stock.
+
+PROMPT DE GENERACIÓN
+Ilustración de catálogo con detalle de tejido; una prenda de color y corte indicados,
+vista frontal, completa y centrada sobre fondo blanco; sin personas, maniquíes,
+accesorios, texto ni marcas. Generación mediante la herramienta de imágenes integrada.
+
+========================================================================
+CÓDIGO: VES-001
+Archivo: vestidos/VES-001.png
+Categoría: Vestidos
+Modelo: Línea A verde esmeralda
+Color: Verde esmeralda
+Características: Sin mangas; escote redondo; cintura entallada; falda en línea A hasta la rodilla.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-002
+Archivo: vestidos/VES-002.png
+Categoría: Vestidos
+Modelo: Línea A azul marino
+Color: Azul marino
+Características: Sin mangas; escote redondo; cintura entallada; falda en línea A hasta la rodilla.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-003
+Archivo: vestidos/VES-003.png
+Categoría: Vestidos
+Modelo: Línea A terracota
+Color: Terracota
+Características: Sin mangas; escote redondo; cintura entallada; falda en línea A hasta la rodilla.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-004
+Archivo: vestidos/VES-004.png
+Categoría: Vestidos
+Modelo: Línea A marfil
+Color: Marfil
+Características: Sin mangas; escote redondo; cintura entallada; falda en línea A hasta la rodilla.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-005
+Archivo: vestidos/VES-005.png
+Categoría: Vestidos
+Modelo: Línea A borgoña
+Color: Borgoña
+Características: Sin mangas; escote redondo; cintura entallada; falda en línea A hasta la rodilla.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-006
+Archivo: vestidos/VES-006.png
+Categoría: Vestidos
+Modelo: Camisero midi verde esmeralda
+Color: Verde esmeralda
+Características: Manga corta; cuello camisero; botones frontales; cinturón; largo midi.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-007
+Archivo: vestidos/VES-007.png
+Categoría: Vestidos
+Modelo: Camisero midi azul marino
+Color: Azul marino
+Características: Manga corta; cuello camisero; botones frontales; cinturón; largo midi.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-008
+Archivo: vestidos/VES-008.png
+Categoría: Vestidos
+Modelo: Camisero midi terracota
+Color: Terracota
+Características: Manga corta; cuello camisero; botones frontales; cinturón; largo midi.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-009
+Archivo: vestidos/VES-009.png
+Categoría: Vestidos
+Modelo: Camisero midi marfil
+Color: Marfil
+Características: Manga corta; cuello camisero; botones frontales; cinturón; largo midi.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-010
+Archivo: vestidos/VES-010.png
+Categoría: Vestidos
+Modelo: Camisero midi borgoña
+Color: Borgoña
+Características: Manga corta; cuello camisero; botones frontales; cinturón; largo midi.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-011
+Archivo: vestidos/VES-011.png
+Categoría: Vestidos
+Modelo: Cruzado midi verde esmeralda
+Color: Verde esmeralda
+Características: Manga tres cuartos; escote en V; cierre cruzado con lazo lateral; largo midi.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-012
+Archivo: vestidos/VES-012.png
+Categoría: Vestidos
+Modelo: Cruzado midi azul marino
+Color: Azul marino
+Características: Manga tres cuartos; escote en V; cierre cruzado con lazo lateral; largo midi.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-013
+Archivo: vestidos/VES-013.png
+Categoría: Vestidos
+Modelo: Cruzado midi terracota
+Color: Terracota
+Características: Manga tres cuartos; escote en V; cierre cruzado con lazo lateral; largo midi.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-014
+Archivo: vestidos/VES-014.png
+Categoría: Vestidos
+Modelo: Cruzado midi marfil
+Color: Marfil
+Características: Manga tres cuartos; escote en V; cierre cruzado con lazo lateral; largo midi.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-015
+Archivo: vestidos/VES-015.png
+Categoría: Vestidos
+Modelo: Cruzado midi borgoña
+Color: Borgoña
+Características: Manga tres cuartos; escote en V; cierre cruzado con lazo lateral; largo midi.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-016
+Archivo: vestidos/VES-016.png
+Categoría: Vestidos
+Modelo: Maxi con tirantes verde esmeralda
+Color: Verde esmeralda
+Características: Tirantes anchos; escote cuadrado; falda larga y amplia.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-017
+Archivo: vestidos/VES-017.png
+Categoría: Vestidos
+Modelo: Maxi con tirantes azul marino
+Color: Azul marino
+Características: Tirantes anchos; escote cuadrado; falda larga y amplia.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-018
+Archivo: vestidos/VES-018.png
+Categoría: Vestidos
+Modelo: Maxi con tirantes terracota
+Color: Terracota
+Características: Tirantes anchos; escote cuadrado; falda larga y amplia.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-019
+Archivo: vestidos/VES-019.png
+Categoría: Vestidos
+Modelo: Maxi con tirantes marfil
+Color: Marfil
+Características: Tirantes anchos; escote cuadrado; falda larga y amplia.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-020
+Archivo: vestidos/VES-020.png
+Categoría: Vestidos
+Modelo: Maxi con tirantes borgoña
+Color: Borgoña
+Características: Tirantes anchos; escote cuadrado; falda larga y amplia.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-021
+Archivo: vestidos/VES-021.png
+Categoría: Vestidos
+Modelo: Recto mini verde esmeralda
+Color: Verde esmeralda
+Características: Manga corta; escote redondo; corte recto; largo sobre la rodilla.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-022
+Archivo: vestidos/VES-022.png
+Categoría: Vestidos
+Modelo: Recto mini azul marino
+Color: Azul marino
+Características: Manga corta; escote redondo; corte recto; largo sobre la rodilla.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-023
+Archivo: vestidos/VES-023.png
+Categoría: Vestidos
+Modelo: Recto mini terracota
+Color: Terracota
+Características: Manga corta; escote redondo; corte recto; largo sobre la rodilla.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-024
+Archivo: vestidos/VES-024.png
+Categoría: Vestidos
+Modelo: Recto mini marfil
+Color: Marfil
+Características: Manga corta; escote redondo; corte recto; largo sobre la rodilla.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: VES-025
+Archivo: vestidos/VES-025.png
+Categoría: Vestidos
+Modelo: Recto mini borgoña
+Color: Borgoña
+Características: Manga corta; escote redondo; corte recto; largo sobre la rodilla.
+Tejido propuesto: crepé de poliéster.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: POL-001
+Archivo: polos/POL-001.png
+Categoría: Polos
+Modelo: Básico redondo verde esmeralda
+Color: Verde esmeralda
+Características: Manga corta; cuello redondo; corte regular; acabado liso.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-002
+Archivo: polos/POL-002.png
+Categoría: Polos
+Modelo: Básico redondo azul marino
+Color: Azul marino
+Características: Manga corta; cuello redondo; corte regular; acabado liso.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-003
+Archivo: polos/POL-003.png
+Categoría: Polos
+Modelo: Básico redondo terracota
+Color: Terracota
+Características: Manga corta; cuello redondo; corte regular; acabado liso.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-004
+Archivo: polos/POL-004.png
+Categoría: Polos
+Modelo: Básico redondo marfil
+Color: Marfil
+Características: Manga corta; cuello redondo; corte regular; acabado liso.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-005
+Archivo: polos/POL-005.png
+Categoría: Polos
+Modelo: Básico redondo borgoña
+Color: Borgoña
+Características: Manga corta; cuello redondo; corte regular; acabado liso.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-006
+Archivo: polos/POL-006.png
+Categoría: Polos
+Modelo: Cuello V verde esmeralda
+Color: Verde esmeralda
+Características: Manga corta; escote en V; corte regular; acabado liso.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-007
+Archivo: polos/POL-007.png
+Categoría: Polos
+Modelo: Cuello V azul marino
+Color: Azul marino
+Características: Manga corta; escote en V; corte regular; acabado liso.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-008
+Archivo: polos/POL-008.png
+Categoría: Polos
+Modelo: Cuello V terracota
+Color: Terracota
+Características: Manga corta; escote en V; corte regular; acabado liso.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-009
+Archivo: polos/POL-009.png
+Categoría: Polos
+Modelo: Cuello V marfil
+Color: Marfil
+Características: Manga corta; escote en V; corte regular; acabado liso.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-010
+Archivo: polos/POL-010.png
+Categoría: Polos
+Modelo: Cuello V borgoña
+Color: Borgoña
+Características: Manga corta; escote en V; corte regular; acabado liso.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-011
+Archivo: polos/POL-011.png
+Categoría: Polos
+Modelo: Oversize verde esmeralda
+Color: Verde esmeralda
+Características: Manga corta amplia; hombros caídos; cuello redondo; corte holgado.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-012
+Archivo: polos/POL-012.png
+Categoría: Polos
+Modelo: Oversize azul marino
+Color: Azul marino
+Características: Manga corta amplia; hombros caídos; cuello redondo; corte holgado.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-013
+Archivo: polos/POL-013.png
+Categoría: Polos
+Modelo: Oversize terracota
+Color: Terracota
+Características: Manga corta amplia; hombros caídos; cuello redondo; corte holgado.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-014
+Archivo: polos/POL-014.png
+Categoría: Polos
+Modelo: Oversize marfil
+Color: Marfil
+Características: Manga corta amplia; hombros caídos; cuello redondo; corte holgado.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-015
+Archivo: polos/POL-015.png
+Categoría: Polos
+Modelo: Oversize borgoña
+Color: Borgoña
+Características: Manga corta amplia; hombros caídos; cuello redondo; corte holgado.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-016
+Archivo: polos/POL-016.png
+Categoría: Polos
+Modelo: Manga larga verde esmeralda
+Color: Verde esmeralda
+Características: Manga larga; cuello redondo; puños acanalados; corte regular.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-017
+Archivo: polos/POL-017.png
+Categoría: Polos
+Modelo: Manga larga azul marino
+Color: Azul marino
+Características: Manga larga; cuello redondo; puños acanalados; corte regular.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-018
+Archivo: polos/POL-018.png
+Categoría: Polos
+Modelo: Manga larga terracota
+Color: Terracota
+Características: Manga larga; cuello redondo; puños acanalados; corte regular.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-019
+Archivo: polos/POL-019.png
+Categoría: Polos
+Modelo: Manga larga marfil
+Color: Marfil
+Características: Manga larga; cuello redondo; puños acanalados; corte regular.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-020
+Archivo: polos/POL-020.png
+Categoría: Polos
+Modelo: Manga larga borgoña
+Color: Borgoña
+Características: Manga larga; cuello redondo; puños acanalados; corte regular.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-021
+Archivo: polos/POL-021.png
+Categoría: Polos
+Modelo: Con bolsillo verde esmeralda
+Color: Verde esmeralda
+Características: Manga corta; cuello redondo; bolsillo de parche en el pecho.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-022
+Archivo: polos/POL-022.png
+Categoría: Polos
+Modelo: Con bolsillo azul marino
+Color: Azul marino
+Características: Manga corta; cuello redondo; bolsillo de parche en el pecho.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-023
+Archivo: polos/POL-023.png
+Categoría: Polos
+Modelo: Con bolsillo terracota
+Color: Terracota
+Características: Manga corta; cuello redondo; bolsillo de parche en el pecho.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-024
+Archivo: polos/POL-024.png
+Categoría: Polos
+Modelo: Con bolsillo marfil
+Color: Marfil
+Características: Manga corta; cuello redondo; bolsillo de parche en el pecho.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: POL-025
+Archivo: polos/POL-025.png
+Categoría: Polos
+Modelo: Con bolsillo borgoña
+Color: Borgoña
+Características: Manga corta; cuello redondo; bolsillo de parche en el pecho.
+Tejido propuesto: jersey de algodón.
+Tallas sugeridas: XS, S, M, L, XL, XXL
+------------------------------------------------------------------------
+CÓDIGO: BLU-001
+Archivo: blusas/BLU-001.png
+Categoría: Blusas
+Modelo: Camisera verde esmeralda
+Color: Verde esmeralda
+Características: Manga larga; cuello camisero; botones frontales; puños abotonados.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-002
+Archivo: blusas/BLU-002.png
+Categoría: Blusas
+Modelo: Camisera azul marino
+Color: Azul marino
+Características: Manga larga; cuello camisero; botones frontales; puños abotonados.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-003
+Archivo: blusas/BLU-003.png
+Categoría: Blusas
+Modelo: Camisera terracota
+Color: Terracota
+Características: Manga larga; cuello camisero; botones frontales; puños abotonados.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-004
+Archivo: blusas/BLU-004.png
+Categoría: Blusas
+Modelo: Camisera marfil
+Color: Marfil
+Características: Manga larga; cuello camisero; botones frontales; puños abotonados.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-005
+Archivo: blusas/BLU-005.png
+Categoría: Blusas
+Modelo: Camisera borgoña
+Color: Borgoña
+Características: Manga larga; cuello camisero; botones frontales; puños abotonados.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-006
+Archivo: blusas/BLU-006.png
+Categoría: Blusas
+Modelo: Lazo al cuello verde esmeralda
+Color: Verde esmeralda
+Características: Manga larga; lazo al cuello; silueta ligeramente holgada.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-007
+Archivo: blusas/BLU-007.png
+Categoría: Blusas
+Modelo: Lazo al cuello azul marino
+Color: Azul marino
+Características: Manga larga; lazo al cuello; silueta ligeramente holgada.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-008
+Archivo: blusas/BLU-008.png
+Categoría: Blusas
+Modelo: Lazo al cuello terracota
+Color: Terracota
+Características: Manga larga; lazo al cuello; silueta ligeramente holgada.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-009
+Archivo: blusas/BLU-009.png
+Categoría: Blusas
+Modelo: Lazo al cuello marfil
+Color: Marfil
+Características: Manga larga; lazo al cuello; silueta ligeramente holgada.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-010
+Archivo: blusas/BLU-010.png
+Categoría: Blusas
+Modelo: Lazo al cuello borgoña
+Color: Borgoña
+Características: Manga larga; lazo al cuello; silueta ligeramente holgada.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-011
+Archivo: blusas/BLU-011.png
+Categoría: Blusas
+Modelo: Manga globo verde esmeralda
+Color: Verde esmeralda
+Características: Manga corta abullonada; escote cuadrado; cuerpo entallado.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-012
+Archivo: blusas/BLU-012.png
+Categoría: Blusas
+Modelo: Manga globo azul marino
+Color: Azul marino
+Características: Manga corta abullonada; escote cuadrado; cuerpo entallado.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-013
+Archivo: blusas/BLU-013.png
+Categoría: Blusas
+Modelo: Manga globo terracota
+Color: Terracota
+Características: Manga corta abullonada; escote cuadrado; cuerpo entallado.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-014
+Archivo: blusas/BLU-014.png
+Categoría: Blusas
+Modelo: Manga globo marfil
+Color: Marfil
+Características: Manga corta abullonada; escote cuadrado; cuerpo entallado.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-015
+Archivo: blusas/BLU-015.png
+Categoría: Blusas
+Modelo: Manga globo borgoña
+Color: Borgoña
+Características: Manga corta abullonada; escote cuadrado; cuerpo entallado.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-016
+Archivo: blusas/BLU-016.png
+Categoría: Blusas
+Modelo: Peplum verde esmeralda
+Color: Verde esmeralda
+Características: Sin mangas; escote redondo; cintura marcada; volante inferior.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-017
+Archivo: blusas/BLU-017.png
+Categoría: Blusas
+Modelo: Peplum azul marino
+Color: Azul marino
+Características: Sin mangas; escote redondo; cintura marcada; volante inferior.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-018
+Archivo: blusas/BLU-018.png
+Categoría: Blusas
+Modelo: Peplum terracota
+Color: Terracota
+Características: Sin mangas; escote redondo; cintura marcada; volante inferior.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-019
+Archivo: blusas/BLU-019.png
+Categoría: Blusas
+Modelo: Peplum marfil
+Color: Marfil
+Características: Sin mangas; escote redondo; cintura marcada; volante inferior.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-020
+Archivo: blusas/BLU-020.png
+Categoría: Blusas
+Modelo: Peplum borgoña
+Color: Borgoña
+Características: Sin mangas; escote redondo; cintura marcada; volante inferior.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-021
+Archivo: blusas/BLU-021.png
+Categoría: Blusas
+Modelo: Cuello V verde esmeralda
+Color: Verde esmeralda
+Características: Manga tres cuartos; escote en V; corte recto; sin botones.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-022
+Archivo: blusas/BLU-022.png
+Categoría: Blusas
+Modelo: Cuello V azul marino
+Color: Azul marino
+Características: Manga tres cuartos; escote en V; corte recto; sin botones.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-023
+Archivo: blusas/BLU-023.png
+Categoría: Blusas
+Modelo: Cuello V terracota
+Color: Terracota
+Características: Manga tres cuartos; escote en V; corte recto; sin botones.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-024
+Archivo: blusas/BLU-024.png
+Categoría: Blusas
+Modelo: Cuello V marfil
+Color: Marfil
+Características: Manga tres cuartos; escote en V; corte recto; sin botones.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: BLU-025
+Archivo: blusas/BLU-025.png
+Categoría: Blusas
+Modelo: Cuello V borgoña
+Color: Borgoña
+Características: Manga tres cuartos; escote en V; corte recto; sin botones.
+Tejido propuesto: popelina de algodón.
+Tallas sugeridas: XS, S, M, L, XL
+------------------------------------------------------------------------
+CÓDIGO: JEA-001
+Archivo: jeans/JEA-001.png
+Categoría: Jeans
+Modelo: Recto azul índigo
+Color: Azul índigo
+Características: Tiro medio; pernera recta; cinco bolsillos; cierre frontal con botón y cremallera.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-002
+Archivo: jeans/JEA-002.png
+Categoría: Jeans
+Modelo: Recto azul medio
+Color: Azul medio
+Características: Tiro medio; pernera recta; cinco bolsillos; cierre frontal con botón y cremallera.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-003
+Archivo: jeans/JEA-003.png
+Categoría: Jeans
+Modelo: Recto azul claro
+Color: Azul claro
+Características: Tiro medio; pernera recta; cinco bolsillos; cierre frontal con botón y cremallera.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-004
+Archivo: jeans/JEA-004.png
+Categoría: Jeans
+Modelo: Recto negro
+Color: Negro
+Características: Tiro medio; pernera recta; cinco bolsillos; cierre frontal con botón y cremallera.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-005
+Archivo: jeans/JEA-005.png
+Categoría: Jeans
+Modelo: Recto gris
+Color: Gris
+Características: Tiro medio; pernera recta; cinco bolsillos; cierre frontal con botón y cremallera.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-006
+Archivo: jeans/JEA-006.png
+Categoría: Jeans
+Modelo: Skinny azul índigo
+Color: Azul índigo
+Características: Tiro alto; pernera ajustada; cinco bolsillos; largo al tobillo.
+Tejido propuesto: denim de algodón con elastano.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-007
+Archivo: jeans/JEA-007.png
+Categoría: Jeans
+Modelo: Skinny azul medio
+Color: Azul medio
+Características: Tiro alto; pernera ajustada; cinco bolsillos; largo al tobillo.
+Tejido propuesto: denim de algodón con elastano.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-008
+Archivo: jeans/JEA-008.png
+Categoría: Jeans
+Modelo: Skinny azul claro
+Color: Azul claro
+Características: Tiro alto; pernera ajustada; cinco bolsillos; largo al tobillo.
+Tejido propuesto: denim de algodón con elastano.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-009
+Archivo: jeans/JEA-009.png
+Categoría: Jeans
+Modelo: Skinny negro
+Color: Negro
+Características: Tiro alto; pernera ajustada; cinco bolsillos; largo al tobillo.
+Tejido propuesto: denim de algodón con elastano.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-010
+Archivo: jeans/JEA-010.png
+Categoría: Jeans
+Modelo: Skinny gris
+Color: Gris
+Características: Tiro alto; pernera ajustada; cinco bolsillos; largo al tobillo.
+Tejido propuesto: denim de algodón con elastano.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-011
+Archivo: jeans/JEA-011.png
+Categoría: Jeans
+Modelo: Wide leg azul índigo
+Color: Azul índigo
+Características: Tiro alto; pernera ancha desde la cadera; cinco bolsillos.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-012
+Archivo: jeans/JEA-012.png
+Categoría: Jeans
+Modelo: Wide leg azul medio
+Color: Azul medio
+Características: Tiro alto; pernera ancha desde la cadera; cinco bolsillos.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-013
+Archivo: jeans/JEA-013.png
+Categoría: Jeans
+Modelo: Wide leg azul claro
+Color: Azul claro
+Características: Tiro alto; pernera ancha desde la cadera; cinco bolsillos.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-014
+Archivo: jeans/JEA-014.png
+Categoría: Jeans
+Modelo: Wide leg negro
+Color: Negro
+Características: Tiro alto; pernera ancha desde la cadera; cinco bolsillos.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-015
+Archivo: jeans/JEA-015.png
+Categoría: Jeans
+Modelo: Wide leg gris
+Color: Gris
+Características: Tiro alto; pernera ancha desde la cadera; cinco bolsillos.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-016
+Archivo: jeans/JEA-016.png
+Categoría: Jeans
+Modelo: Mom fit azul índigo
+Color: Azul índigo
+Características: Tiro alto; holgura en cadera; pernera que se estrecha al tobillo.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-017
+Archivo: jeans/JEA-017.png
+Categoría: Jeans
+Modelo: Mom fit azul medio
+Color: Azul medio
+Características: Tiro alto; holgura en cadera; pernera que se estrecha al tobillo.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-018
+Archivo: jeans/JEA-018.png
+Categoría: Jeans
+Modelo: Mom fit azul claro
+Color: Azul claro
+Características: Tiro alto; holgura en cadera; pernera que se estrecha al tobillo.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-019
+Archivo: jeans/JEA-019.png
+Categoría: Jeans
+Modelo: Mom fit negro
+Color: Negro
+Características: Tiro alto; holgura en cadera; pernera que se estrecha al tobillo.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-020
+Archivo: jeans/JEA-020.png
+Categoría: Jeans
+Modelo: Mom fit gris
+Color: Gris
+Características: Tiro alto; holgura en cadera; pernera que se estrecha al tobillo.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-021
+Archivo: jeans/JEA-021.png
+Categoría: Jeans
+Modelo: Acampanado azul índigo
+Color: Azul índigo
+Características: Tiro medio; ajuste en muslo; campana desde la rodilla; largo completo.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-022
+Archivo: jeans/JEA-022.png
+Categoría: Jeans
+Modelo: Acampanado azul medio
+Color: Azul medio
+Características: Tiro medio; ajuste en muslo; campana desde la rodilla; largo completo.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-023
+Archivo: jeans/JEA-023.png
+Categoría: Jeans
+Modelo: Acampanado azul claro
+Color: Azul claro
+Características: Tiro medio; ajuste en muslo; campana desde la rodilla; largo completo.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-024
+Archivo: jeans/JEA-024.png
+Categoría: Jeans
+Modelo: Acampanado negro
+Color: Negro
+Características: Tiro medio; ajuste en muslo; campana desde la rodilla; largo completo.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------
+CÓDIGO: JEA-025
+Archivo: jeans/JEA-025.png
+Categoría: Jeans
+Modelo: Acampanado gris
+Color: Gris
+Características: Tiro medio; ajuste en muslo; campana desde la rodilla; largo completo.
+Tejido propuesto: denim de algodón.
+Tallas sugeridas: 26, 28, 30, 32, 34, 36
+------------------------------------------------------------------------

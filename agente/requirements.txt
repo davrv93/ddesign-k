@@ -1,0 +1,6 @@
+fastembed==0.7.*
+scikit-learn==1.7.*
+fastapi==0.118.*
+uvicorn==0.37.*
+httpx==0.28.*
+numpy<3
