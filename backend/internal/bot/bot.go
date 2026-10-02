@@ -770,7 +770,8 @@ func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *conv
 	// El mensaje actual ya está guardado: se toma el historial previo, sin él.
 	if msgs, err := b.store.ListMessages(ctx, conv.ID, 11); err == nil {
 		for _, m := range msgs {
-			if m.Kind != "text" || strings.TrimSpace(m.Body) == "" {
+			// Los pies de foto cuentan: así el agente sabe qué prendas ya ofreció.
+			if (m.Kind != "text" && m.Kind != "image") || strings.TrimSpace(m.Body) == "" {
 				continue
 			}
 			rol := m.Author
@@ -809,8 +810,28 @@ func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *conv
 			return false
 		}
 		b.reply(ctx, conv, r.Respuesta)
+		for _, sg := range r.Sugerencias {
+			b.replySuggestion(ctx, conv, sg)
+		}
 	}
 	return true
+}
+
+// replySuggestion envía la foto de una prenda sugerida por el agente. Las fotos de la tienda
+// las sirve este backend; las del catálogo de 100 modelos, el agente. En el panel ambas se ven
+// por /media/ (el nginx del frontend reparte /media/catalogo/ al agente).
+func (b *Bot) replySuggestion(ctx context.Context, conv *store.Conversation, sg agente.Sugerencia) {
+	if !strings.HasPrefix(sg.Imagen, "/media/") || strings.Contains(sg.Imagen, "..") {
+		return
+	}
+	url := b.cfg.MediaBaseURL + sg.Imagen
+	if strings.HasPrefix(sg.Imagen, "/media/catalogo/") {
+		url = b.Agent.BaseURL + sg.Imagen
+	}
+	m := &store.Message{Kind: "image", Body: sg.Pie, Media: sg.Imagen, Author: "bot"}
+	if err := b.queueMessage(ctx, conv, m, outJob{image: url, caption: sg.Pie}); err != nil {
+		log.Printf("bot: guardar sugerencia: %v", err)
+	}
 }
 
 // ---------------------------------------------------------------------------

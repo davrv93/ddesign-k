@@ -26,6 +26,10 @@
   aside h2:first-child { margin-top:0 }
   .bar { height:6px; background:var(--line); border-radius:3px; overflow:hidden } .bar i { display:block; height:100%; background:var(--acc) }
   .row { display:grid; grid-template-columns: 1fr 48px; gap:6px; align-items:center; margin:4px 0 }
+  .fotos { display:flex; gap:8px; flex-wrap:wrap; align-self:flex-start; max-width:80% }
+  .foto { width:150px; background:var(--bot); border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:12px }
+  .foto img { width:100%; aspect-ratio:1; object-fit:cover; display:block; background:#fff }
+  .foto div { padding:6px 8px; white-space:pre-wrap }
   code { font-size:12px } ul { margin:0; padding-left:18px }
 </style>
 </head>
@@ -69,7 +73,18 @@ document.getElementById('f').onsubmit = async ev => {
     if (!r.ok) throw new Error(j.detail || r.status);
     const resp = j.respuesta || ACCIONES[j.accion] || (j.accion === 'codigo' ? `→ el bot ofrece ${j.codigo} con foto, precio y tallas` : '(sin respuesta)');
     add('bot', resp, `${j.intencion} ${(j.confianza*100).toFixed(0)}% · ${j.accion} · ${j.modelo_llm || 'sin LLM'} · ${j.ms} ms`);
-    hist.push({ rol:'cliente', texto }, { rol:'bot', texto: resp }); hist = hist.slice(-12);
+    hist.push({ rol:'cliente', texto }, { rol:'bot', texto: resp });
+    if (j.sugerencias && j.sugerencias.length) {
+      const box = document.createElement('div'); box.className = 'fotos';
+      for (const s of j.sugerencias) {
+        // las fotos de la tienda las sirve el backend, que este puerto no alcanza
+        const src = s.imagen.startsWith('/media/catalogo/') ? s.imagen.slice(1) : '';
+        box.insertAdjacentHTML('beforeend', `<div class="foto">${src ? `<img src="${esc(src)}" alt="">` : ''}<div>${esc(s.pie)}</div></div>`);
+        hist.push({ rol:'bot', texto: s.pie });
+      }
+      msgs.appendChild(box); msgs.scrollTop = msgs.scrollHeight;
+    }
+    hist = hist.slice(-12);
     info.innerHTML = `<h2>Intención</h2>${bars(j.top_intenciones)}
       <h2>Categoría de prenda</h2><div>${esc(j.categoria_prenda)} (${(j.confianza_categoria*100).toFixed(0)}%)</div>
       <h2>Códigos</h2><div>${j.codigos.length ? j.codigos.map(esc).join(', ') : '—'}</div>

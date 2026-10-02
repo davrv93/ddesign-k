@@ -17,6 +17,31 @@ mensaje ─► embedding local ─► clasificador de intención ─┬─► ac
 | Few-shot | Los 4 ejemplos más parecidos de los datasets se pasan al LLM como guía de tono. |
 | LLM | `deepseek/deepseek-v4-flash` por OpenRouter, con `deepseek/deepseek-chat-v3.1` de respaldo. Sin clave o sin red, devuelve la respuesta de referencia del ejemplo más parecido. |
 
+## Sugerencia de compra con fotos
+
+Cuando la clienta habla de ropa, `/chat` devuelve `sugerencias` (hasta 3) y el bot envía sus fotos justo
+después del texto, con un pie que invita a pedir:
+
+- **Prendas de la tienda** (V01…V20, precio y stock reales): foto desde el backend y «Escribe *V05* para pedirlo».
+  Escribir el código arranca el pedido normal del bot (talla, resumen, SI, ubicación).
+- **Catálogo de 100 modelos** del zip: foto servida por el agente en `/media/catalogo/<código>.jpg`
+  (JPG de 720 px, 6 MB en total, en `imagenes/`). Como no tienen precio ni stock, el pie dice
+  «Escribe *4* y una asesora te confirma precio y stock».
+
+Reglas: si nombró un código, sólo se manda ese; las de la tienda van primero; no se repiten prendas ya
+enviadas en los últimos turnos; no se mandan fotos en saludo, despedida, insulto o charla sin ropa.
+El nginx del panel reparte `/media/catalogo/` al agente para que las fotos se vean en Conversaciones.
+
+## Velocidad
+
+Mediana **1,3 s** por mensaje (antes 4–11 s), medida con 10 turnos de tres conversaciones:
+
+- `deepseek-v4-flash` razona por defecto y eso costaba ~8 s. Se apaga con `reasoning: {enabled: false}`.
+- OpenRouter elige el proveedor más rápido (`LLM_PROVIDER_SORT=latency`).
+- Conexión HTTP persistente con OpenRouter y tope de 220 tokens.
+- Saludo o despedida claros, sin historial, se contestan con la frase del dataset sin LLM (~0,1 s).
+- Clasificar y buscar en local cuesta ~0,1 s; el resto es el LLM.
+
 ## Datos de entrenamiento (de `BOT.zip`)
 
 | Archivo | Filas | Uso |

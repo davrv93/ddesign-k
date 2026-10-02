@@ -47,6 +47,15 @@ type Reply struct {
 	Codigo    string `json:"codigo"`
 	Respuesta string `json:"respuesta"`
 	ModeloLLM string `json:"modelo_llm"`
+	// Sugerencias son prendas para ofrecer con foto después del texto.
+	Sugerencias []Sugerencia `json:"sugerencias"`
+}
+
+type Sugerencia struct {
+	Codigo string `json:"codigo"`
+	Fuente string `json:"fuente"` // seed (tienda) | catalogo100
+	Imagen string `json:"imagen"` // /media/products/... (backend) o /media/catalogo/... (agente)
+	Pie    string `json:"pie"`
 }
 
 func (c *Client) Chat(ctx context.Context, req Request) (*Reply, error) {

@@ -18,6 +18,8 @@ COPY app/__init__.py app/datos.py app/modelo.py app/entrenar.py ./app/
 # Sólo depende de los datos y de estos tres módulos: tocar main.py no obliga a re-entrenar.
 RUN python -m app.entrenar && chmod -R a+rX /models /app/index
 COPY app ./app
+# Fotos del catálogo de 100 modelos (JPG 720 px), servidas en /media/catalogo/.
+COPY imagenes ./imagenes
 # El modelo ya está dentro: que nada intente bajarlo de Hugging Face al arrancar.
 ENV HF_HUB_OFFLINE=1
 

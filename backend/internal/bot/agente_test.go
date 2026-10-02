@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -20,7 +21,12 @@ func fakeAgente(t *testing.T, last *agente.Request) *agente.Client {
 		var rep agente.Reply
 		switch req.Mensaje {
 		case "estoy triste no encuentro vestido":
-			rep = agente.Reply{Intencion: "estado_animo", Accion: "responder", Respuesta: "Ánimo, te ayudo a encontrarlo 💖"}
+			rep = agente.Reply{Intencion: "estado_animo", Accion: "responder", Respuesta: "Ánimo, te ayudo a encontrarlo 💖",
+				Sugerencias: []agente.Sugerencia{
+					{Codigo: "V01", Fuente: "seed", Imagen: "/media/products/v01.jpg", Pie: "*V01* Vestido Esmeralda"},
+					{Codigo: "VES-003", Fuente: "catalogo100", Imagen: "/media/catalogo/VES-003.jpg", Pie: "*VES-003* Línea A terracota"},
+					{Codigo: "X", Imagen: "http://evil.example/x.jpg", Pie: "no debe salir"},
+				}}
 		case "kiero ablar con una persona":
 			rep = agente.Reply{Intencion: "asesora", Accion: "asesora"}
 		case "cuanto cuesta el vestido esmeralda":
@@ -41,8 +47,19 @@ func TestAgenteAtiendeTextoLibre(t *testing.T) {
 	b.Agent = fakeAgente(t, &last)
 
 	handle(b, text("hola"))
+	n := len(fe.sent)
 	handle(b, text("estoy triste no encuentro vestido"))
-	mustContain(t, fe.lastText(), "te ayudo a encontrarlo")
+	if got := len(fe.sent) - n; got != 3 {
+		t.Fatalf("se esperaban texto + 2 fotos, salieron %d", got)
+	}
+	mustContain(t, fe.sent[n]["text"].(string), "te ayudo a encontrarlo")
+	mustContain(t, fe.sent[n+2]["caption"].(string), "VES-003")
+	if u, _ := fe.sent[n+1]["url"].(string); !strings.HasSuffix(u, "/media/products/v01.jpg") || strings.HasPrefix(u, b.Agent.BaseURL) {
+		t.Fatalf("la foto de la tienda debe salir del backend: %q", u)
+	}
+	if u, _ := fe.sent[n+2]["url"].(string); u != b.Agent.BaseURL+"/media/catalogo/VES-003.jpg" {
+		t.Fatalf("la foto del catálogo de 100 debe salir del agente: %q", u)
+	}
 	if last.Cliente != "Ana López" || len(last.Historial) == 0 || last.Historial[0].Rol != "cliente" {
 		t.Fatalf("el agente debía recibir cliente e historial: %+v", last)
 	}
