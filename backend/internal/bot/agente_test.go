@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -105,4 +106,47 @@ func TestAgenteCaidoVuelveAGemini(t *testing.T) {
 	b.Agent = fakeAgente(t, &last)
 	handle(b, text("algo que el agente no sabe"))
 	mustContain(t, fe.lastText(), "respuesta de gemini")
+}
+
+// fakeAgenteFoto responde a /foto con la respuesta indicada y guarda la petición.
+func fakeAgenteFoto(t *testing.T, rep agente.Reply, last *agente.PhotoRequest) *agente.Client {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/foto" {
+			http.Error(w, "no", http.StatusNotFound)
+			return
+		}
+		_ = json.NewDecoder(r.Body).Decode(last)
+		_ = json.NewEncoder(w).Encode(rep)
+	}))
+	t.Cleanup(srv.Close)
+	return agente.New(srv.URL, 5*time.Second)
+}
+
+func TestAgenteFotoOfreceSiHayStock(t *testing.T) {
+	b, _, fe := setup(t, `{}`, false)
+	var last agente.PhotoRequest
+	b.Agent = fakeAgenteFoto(t, agente.Reply{Accion: "codigo", Codigo: "V01", Respuesta: "¡Sí lo tenemos!",
+		Foto: &agente.PhotoResult{Nivel: "exacto", Caso: "online", Codigo: "V01", Similitud: 0.95}}, &last)
+	handle(b, photo())
+	if last.ImagenB64 == "" {
+		t.Fatal("el agente debía recibir la foto")
+	}
+	mustContain(t, fe.lastText(), "Encontré tu modelo", "V01")
+}
+
+func TestAgenteFotoSucursalDejaConsulta(t *testing.T) {
+	b, st, fe := setup(t, `{}`, false)
+	var last agente.PhotoRequest
+	b.Agent = fakeAgenteFoto(t, agente.Reply{Accion: "responder", Respuesta: "Lo tenemos en Miraflores 👇",
+		Sugerencias: []agente.Sugerencia{{Codigo: "BLU-006", Imagen: "/media/catalogo/BLU-006.jpg", Pie: "*BLU-006* 📍 Sucursal Miraflores"}},
+		Foto:        &agente.PhotoResult{Nivel: "exacto", Caso: "sucursal", Codigo: "BLU-006", Similitud: 0.88}}, &last)
+	handle(b, photo())
+	mustContain(t, fe.sent[len(fe.sent)-2]["text"].(string), "Miraflores")
+	mustContain(t, fe.lastText(), "BLU-006")
+	conv, _ := st.ConversationByCustomer(context.Background(), 1)
+	orders, _ := st.ListOrders(context.Background(), conv.CustomerID)
+	if len(orders) != 1 || orders[0].Status != "consulta" || !strings.Contains(orders[0].Notes, "sucursal") {
+		t.Fatalf("debía quedar una consulta en el tablero: %+v", orders)
+	}
 }

@@ -94,7 +94,7 @@ services:
     restart: unless-stopped
     environment:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
-      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-deepseek/deepseek-v4-flash,deepseek/deepseek-chat-v3.1}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-deepseek/deepseek-chat-v3.1,deepseek/deepseek-v4-flash}
       CATALOG_URL: http://backend:8080/api/public/catalog
       PUBLIC_URL: ${PUBLIC_URL:-https://kddesign.pjgfactsalud.com.pe}
       BUSINESS_NAME: ${BUSINESS_NAME:-Baruka Design}
@@ -105,7 +105,7 @@ services:
       - agente_data:/data
     ports:
       - "127.0.0.1:${KD_AGENT_PORT:-18482}:8000"
-    mem_limit: 1200m  # jina base en ONNX: ~940 MiB medidos en reposo
+    mem_limit: 1800m  # texto (jina) + imagen (Unicom) en ONNX: ~1,52 GiB medidos en reposo
     networks: [kddesign]
 
   frontend:

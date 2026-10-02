@@ -22,15 +22,18 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, Field
 
+import base64
+
 from . import datos
 from .modelo import Embedder, cargar
+from .sucursales import Sucursales
 
 log = logging.getLogger("agente")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 OPENROUTER_URL = os.environ.get("OPENROUTER_URL", "https://openrouter.ai/api/v1/chat/completions")
 OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "")
-LLM_MODELOS = [m.strip() for m in os.environ.get("OPENROUTER_MODEL", "deepseek/deepseek-v4-flash,deepseek/deepseek-chat-v3.1").split(",") if m.strip()]
+LLM_MODELOS = [m.strip() for m in os.environ.get("OPENROUTER_MODEL", "deepseek/deepseek-chat-v3.1,deepseek/deepseek-v4-flash").split(",") if m.strip()]
 # Por modelo: si el primero tarda más que esto, se prueba el siguiente.
 LLM_TIMEOUT = float(os.environ.get("LLM_TIMEOUT_SECONDS", "12"))
 LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", "220"))
@@ -87,6 +90,14 @@ class Estado:
         self.lock = threading.Lock()
         self._poner_seed(datos.fichas_seed(), f["X"][len(self.fichas100):])
         self.seed_origen = "seed.json"
+        self.suc = Sucursales()
+        self.img = None
+        if os.environ.get("IMAGE_SEARCH", "1") == "1":
+            from .imagen import Buscador
+            try:
+                self.img = Buscador()
+            except FileNotFoundError:
+                log.warning("sin index/imagenes.pkl: búsqueda por foto desactivada")
 
     def _poner_seed(self, fichas, X):
         with self.lock:
@@ -206,6 +217,9 @@ Reglas que no se rompen:
   concreto sin fingir que ya lo hiciste: que una asesora (escribiendo *4*) pida al proveedor la cotización, la
   disponibilidad, la ficha de marca o la tabla de medidas, o confirme el envío a su ciudad. Sus tallas son sugeridas, no stock.
 - Las fichas de la tienda (códigos V01, V02...) sí tienen precio y stock real por talla: úsalos tal cual, en {moneda}.
+- Cada ficha trae el stock por SUCURSAL. Si algo está agotado en la tienda virtual o no tiene stock, revisa las
+  sucursales: di en cuál hay, su dirección y las tallas, y ofrece separarlo con una asesora (*4*). Si no hay en
+  ninguna, dilo y sugiere un parecido que sí haya.
 - Insultos o pedidos de humillar/agredir a alguien: no los repites ni ayudas; responde con calma, pon un límite
   respetuoso y reconduce a lo que la persona necesita.
 - Estado de ánimo: valida la emoción en una frase y ofrece ayuda concreta, sin sermones.
@@ -231,7 +245,7 @@ def nota_catalogo(cl: dict) -> str:
 
 def _prompt(req: ChatIn, cl: dict, fichas, ejemplos, sugeridas=()) -> list[dict]:
     hist = "\n".join(f"{t.rol}: {t.texto}" for t in req.historial[-8:]) or "(sin mensajes previos)"
-    fich = "\n".join(f"- {f.texto()}" for f in fichas) or "(ninguna relevante)"
+    fich = "\n".join(f"- {f.texto()} | sucursales: {E.suc.texto(f.codigo)}" for f in fichas) or "(ninguna relevante)"
     ejs = "\n".join(f"- [{e.intencion}] cliente: {e.texto}\n  respuesta modelo: {e.respuesta}" for e, _ in ejemplos)
     usuario = f"""CLIENTE: {req.cliente or "(sin nombre)"}   ESTADO DEL BOT: {req.estado or "idle"}
 INTENCIÓN DETECTADA: {cl['intencion']} (confianza {cl['confianza']:.2f}); alternativas: {", ".join(f"{x['etiqueta']} {x['p']:.2f}" for x in cl['top_intenciones'][1:])}
@@ -301,16 +315,33 @@ def _imagen(f) -> str:
     return f"/media/catalogo/{f.codigo}.jpg" if os.path.exists(os.path.join(IMG_DIR, f"{f.codigo}.jpg")) else ""
 
 
+def _en_sucursales(f) -> str:
+    hay = E.suc.de(f.codigo)
+    return "\n".join(f"📍 {s['nombre']}: {', '.join(tallas)}" for s, tallas in hay)
+
+
 def _pie(f) -> str:
     """Pie de foto que empuja a la compra sin prometer lo que no está en la ficha."""
+    suc = _en_sucursales(f)
     if f.fuente == "seed":
         disp = [t for t, n in f.stock.items() if n is None or n > 0]
         if not disp:
+            if suc:
+                return f"*{f.codigo}* {f.nombre}\nAgotado en la tienda virtual, pero hay en:\n{suc}\n👉 Escribe *4* y te lo separamos"
             return f"*{f.codigo}* {f.nombre}\nAgotado por ahora 😔 Escribe *4* y te avisamos cuando llegue."
         precio = f" — *{MONEDA} {f.precio:.2f}*" if f.precio is not None else ""
         return f"*{f.codigo}* {f.nombre}{precio}\nTallas: {', '.join(disp)}\n👉 Escribe *{f.codigo}* para pedirlo"
+    if suc:
+        return f"*{f.codigo}* {f.nombre}\n{f.detalle}.\nHay en:\n{suc}\n👉 Escribe *4* y una asesora te confirma precio y te lo separa"
     return (f"*{f.codigo}* {f.nombre}\n{f.detalle}.\nTallas: {f.tallas}\n"
             f"👉 Escribe *4* y una asesora te confirma precio y stock para separarlo")
+
+
+def disponible(f) -> str:
+    """'online' (se puede pedir ya por el bot), 'sucursal' (sólo en tienda física) o ''."""
+    if f.fuente == "seed" and any(n is None or n > 0 for n in f.stock.values()):
+        return "online"
+    return "sucursal" if E.suc.de(f.codigo) else ""
 
 
 def _ya_mostrados(req: ChatIn) -> set[str]:
@@ -431,7 +462,8 @@ def conversar(req: ChatIn) -> dict:
 def health():
     return {"ok": E is not None, "embeddings": E.emb.model_name if E else None, "llm": LLM_MODELOS,
             "llm_configurado": bool(OPENROUTER_KEY), "fichas": len(E.fichas) if E else 0,
-            "catalogo": E.seed_origen if E else None}
+            "catalogo": E.seed_origen if E else None,
+            "busqueda_foto": E.img.metricas if E and E.img else None}
 
 
 @app.get("/metricas")
@@ -454,6 +486,125 @@ def ruta_clasificar(req: TextoIn):
 @app.post("/chat")
 def ruta_chat(req: ChatIn):
     return conversar(req)
+
+
+# ---------------------------------------------------------------------------
+# Búsqueda por foto
+
+class FotoIn(BaseModel):
+    imagen_b64: str
+    mensaje: str = ""          # el texto que vino con la foto, si lo hay
+    historial: list[Turno] = []
+    cliente: str = ""
+    estado: str = ""
+    negocio: str = ""
+    usar_llm: bool = True
+
+
+PLANTILLA_FOTO = {
+    "online": "¡Sí lo tenemos! 😍 Es el *{codigo}* {nombre}.",
+    "sucursal": "¡Lo encontré! Es el *{codigo}* {nombre}. En la tienda virtual no lo tengo, pero sí en sucursal 👇",
+    "agotado": "Es el *{codigo}* {nombre}, pero se nos agotó en todas las tiendas 😔\n\nMira estos parecidos que sí tenemos 👇",
+    "parecido": "Creo que es el *{codigo}* {nombre} 🤔 ¿Es este?\n\nSi no, te dejo otros parecidos 👇",
+    "ninguno": "Ese modelo no lo tenemos 😔\n\nPero mira estos que se le parecen y sí hay 👇",
+}
+
+GUIA_FOTO = {
+    "online": "Es exactamente esa prenda y hay stock en la tienda virtual: celebra que la tiene y dile que le pasas los detalles para pedirla.",
+    "sucursal": "Es esa prenda pero sólo hay en sucursal: dile en qué sucursal, dirección y tallas, y ofrece separarla con una asesora (*4*).",
+    "agotado": "Es esa prenda pero no hay en ningún lado: dilo con empatía y presenta las PARECIDAS como alternativa.",
+    "parecido": "No es seguro que sea esa: pregúntale si es la de la foto que le enviarás y ofrece las PARECIDAS por si no.",
+    "ninguno": "No la vendemos: dilo con claridad y sin rodeos y ofrece las PARECIDAS, que sí están disponibles.",
+}
+
+
+def conversar_foto(req: FotoIn) -> dict:
+    t0 = time.time()
+    if E.img is None:
+        raise HTTPException(503, "búsqueda por foto desactivada")
+    try:
+        crudo = base64.b64decode(req.imagen_b64.split(",")[-1], validate=False)
+    except Exception:
+        raise HTTPException(400, "imagen_b64 inválida")
+    if not crudo or len(crudo) > 12 * 1024 * 1024:
+        raise HTTPException(400, "imagen vacía o mayor de 12 MB")
+    try:
+        top = E.img.buscar(crudo, k=10)
+    except Exception as e:
+        raise HTTPException(400, f"no se pudo leer la imagen: {e}")
+    with E.lock:
+        por_codigo, fichas = dict(E.por_codigo), E.fichas
+    top = [(c, sim) for c, sim in top if c in por_codigo]  # una prenda retirada del catálogo vivo no se ofrece
+    if not top:
+        raise HTTPException(503, "catálogo sin fotos indexadas")
+    codigo, sim = top[0]
+    f = fichas[por_codigo[codigo]]
+    nivel = E.img.nivel(sim)
+    otras = [fichas[por_codigo[c]] for c, _ in top[1:]]
+    # parecidas que se pueden conseguir: primero lo que se pide ya por el bot, luego lo de sucursal
+    parecidas = sorted([x for x in otras if disponible(x)], key=lambda x: disponible(x) != "online")
+    estado_f = disponible(f)
+
+    accion, codigo_oferta = "responder", ""
+    if nivel == "exacto" and estado_f == "online":
+        caso, sugeridas, accion, codigo_oferta = "online", [f], "codigo", f.codigo
+    elif nivel == "exacto" and estado_f == "sucursal":
+        caso, sugeridas = "sucursal", [f] + [x for x in parecidas if disponible(x) == "online"][:2]
+    elif nivel == "exacto":
+        caso, sugeridas = "agotado", parecidas[:3]
+    elif nivel == "parecido":
+        caso, sugeridas = "parecido", [f] + [x for x in parecidas if x is not f][:2]
+    else:
+        caso, sugeridas = "ninguno", parecidas[:3]
+
+    respuesta, modelo = "", ""
+    if req.usar_llm:
+        datos_f = f"{f.texto()} | sucursales: {E.suc.texto(f.codigo)}"
+        par = "\n".join(f"- {x.texto()} | sucursales: {E.suc.texto(x.codigo)}" for x in sugeridas if x is not f) or "(ninguna)"
+        hist = "\n".join(f"{t.rol}: {t.texto}" for t in req.historial[-6:]) or "(sin mensajes previos)"
+        usuario = f"""LA CLIENTA ENVIÓ UNA FOTO{f' con el texto: «{req.mensaje}»' if req.mensaje else ''}.
+CLIENTE: {req.cliente or "(sin nombre)"}
+
+HISTORIAL:
+{hist}
+
+RESULTADO DE LA BÚSQUEDA POR FOTO (similitud {sim:.2f}, nivel {nivel}):
+PRENDA MÁS PARECIDA: {datos_f}
+PARECIDAS DISPONIBLES:
+{par}
+
+QUÉ HACER: {GUIA_FOTO[caso]}
+El bot enviará después de tu texto las fotos de: {", ".join(x.codigo for x in sugeridas) or "ninguna"}. No las listes una por una.
+Máximo 3 frases."""
+        try:
+            respuesta, modelo = llamar_llm([{"role": "system", "content": SISTEMA.format(negocio=req.negocio or NEGOCIO, moneda=MONEDA)},
+                                            {"role": "user", "content": usuario}])
+            respuesta = _whatsapp(respuesta)
+        except Exception as e:
+            log.warning("sin LLM para la foto, uso plantilla: %s", e)
+    if not respuesta:
+        respuesta, modelo = PLANTILLA_FOTO[caso].format(codigo=f.codigo, nombre=f.nombre), "plantilla"
+
+    return {
+        "intencion": "foto", "confianza": round(sim, 3), "accion": accion, "codigo": codigo_oferta,
+        "respuesta": respuesta, "modelo_llm": modelo,
+        "foto": {"nivel": nivel, "caso": caso, "codigo": f.codigo, "similitud": round(sim, 3),
+                 "umbrales": {"exacto": E.img.metricas["umbral_exacto"], "parecido": E.img.metricas["umbral_parecido"]},
+                 "top": [{"codigo": c, "sim": round(x, 3)} for c, x in top[:5]]},
+        "sugerencias": [{"codigo": x.codigo, "nombre": x.nombre, "fuente": x.fuente, "imagen": _imagen(x),
+                         "pie": _pie(x)} for x in sugeridas],
+        "ms": int((time.time() - t0) * 1000),
+    }
+
+
+@app.post("/foto")
+def ruta_foto(req: FotoIn):
+    return conversar_foto(req)
+
+
+@app.get("/sucursales")
+def ruta_sucursales():
+    return {"sucursales": E.suc.lista}
 
 
 @app.get("/media/catalogo/{archivo}")

@@ -17,9 +17,15 @@ COPY app/__init__.py app/datos.py app/modelo.py app/entrenar.py ./app/
 # Descarga el modelo, entrena los clasificadores, imprime las métricas y guarda el índice.
 # Sólo depende de los datos y de estos tres módulos: tocar main.py no obliga a re-entrenar.
 RUN python -m app.entrenar && chmod -R a+rX /models /app/index
-COPY app ./app
-# Fotos del catálogo de 100 modelos (JPG 720 px), servidas en /media/catalogo/.
+# Fotos del catálogo de 100 modelos (JPG 720 px, servidas en /media/catalogo/) y copia de las de la tienda.
 COPY imagenes ./imagenes
+# Búsqueda por foto: indexa las fotos con el modelo de imagen y calibra los umbrales.
+ARG IMAGE_MODEL=Qdrant/Unicom-ViT-B-32
+ENV IMAGE_MODEL=${IMAGE_MODEL}
+COPY app/imagen.py ./app/
+RUN python -m app.imagen && chmod -R a+rX /models /app/index
+COPY seed ./seed
+COPY app ./app
 # El modelo ya está dentro: que nada intente bajarlo de Hugging Face al arrancar.
 ENV HF_HUB_OFFLINE=1
 

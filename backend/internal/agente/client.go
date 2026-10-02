@@ -49,6 +49,8 @@ type Reply struct {
 	ModeloLLM string `json:"modelo_llm"`
 	// Sugerencias son prendas para ofrecer con foto después del texto.
 	Sugerencias []Sugerencia `json:"sugerencias"`
+	// Foto sólo viene en las respuestas de /foto.
+	Foto *PhotoResult `json:"foto"`
 }
 
 type Sugerencia struct {
@@ -58,9 +60,35 @@ type Sugerencia struct {
 	Pie    string `json:"pie"`
 }
 
+// PhotoRequest pide buscar en el catálogo la prenda de una foto.
+type PhotoRequest struct {
+	ImagenB64 string `json:"imagen_b64"`
+	Mensaje   string `json:"mensaje"`
+	Historial []Turn `json:"historial"`
+	Cliente   string `json:"cliente"`
+	Estado    string `json:"estado"`
+	Negocio   string `json:"negocio"`
+}
+
+// PhotoResult dice qué tan seguro está el agente de haber encontrado la prenda.
+type PhotoResult struct {
+	Nivel     string  `json:"nivel"` // exacto | parecido | ninguno
+	Caso      string  `json:"caso"`  // online | sucursal | agotado | parecido | ninguno
+	Codigo    string  `json:"codigo"`
+	Similitud float64 `json:"similitud"`
+}
+
 func (c *Client) Chat(ctx context.Context, req Request) (*Reply, error) {
+	return c.post(ctx, "/chat", req)
+}
+
+func (c *Client) Photo(ctx context.Context, req PhotoRequest) (*Reply, error) {
+	return c.post(ctx, "/foto", req)
+}
+
+func (c *Client) post(ctx context.Context, path string, req any) (*Reply, error) {
 	body, _ := json.Marshal(req)
-	hreq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.BaseURL+"/chat", bytes.NewReader(body))
+	hreq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.BaseURL+path, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}

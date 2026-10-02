@@ -56,6 +56,7 @@
   input { flex:1; min-width:0; padding:10px 14px; border-radius:20px; border:1px solid var(--line); background:var(--panel); color:var(--ink); font:inherit }
   form button { width:44px; height:44px; flex:none; border-radius:50%; border:0; background:#00a884; color:#fff; font-size:18px; cursor:pointer }
   form button:disabled { opacity:.5 }
+  form .clip { background:none; color:var(--muted); font-size:22px; width:40px }
 
   aside { background:var(--panel); padding:14px 16px; font-size:13px; overflow-y:auto; overflow-x:hidden; height:100%; min-width:0; overflow-wrap:anywhere }
   aside h2 { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:16px 0 6px }
@@ -89,7 +90,9 @@
       <button>gracias, chau</button>
     </div>
     <form id="f">
-      <input id="t" autocomplete="off" placeholder="Escribe un mensaje">
+      <button type="button" class="clip" id="clip" aria-label="Adjuntar foto" title="Adjuntar foto">📎</button>
+      <input type="file" id="archivo" accept="image/*" hidden>
+      <input id="t" autocomplete="off" placeholder="Escribe un mensaje o adjunta una foto">
       <button id="enviar" aria-label="Enviar">➤</button>
     </form>
   </section>
@@ -141,6 +144,10 @@ async function enviar(texto) {
     tecleando(false); burbuja('bot', 'Uy, se me cortó la conexión 😅 ¿Me lo repites?'); ocupado = false; $('enviar').disabled = false; return;
   }
   hist.push({ rol:'cliente', texto });
+  await mostrar(j);
+}
+
+async function mostrar(j) {
   // Los párrafos salen como mensajes separados, igual que escribe una persona.
   const partes = (j.respuesta || '').split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
   for (let i = 0; i < partes.length; i++) {
@@ -159,8 +166,55 @@ async function enviar(texto) {
   ocupado = false; $('enviar').disabled = false; $('t').focus();
 }
 
+// Reduce la foto a 1024 px en el navegador: viaja rápido y al modelo no le hace falta más.
+function reducir(file) {
+  return new Promise((ok, mal) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 1024 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      ok(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => mal(new Error('no es una imagen'));
+    img.src = url;
+  });
+}
+
+async function enviarFoto(file) {
+  if (ocupado || !file) return;
+  ocupado = true; $('enviar').disabled = true;
+  const texto = $('t').value.trim(); $('t').value = '';
+  let dataUrl;
+  try { dataUrl = await reducir(file); } catch (e) { ocupado = false; $('enviar').disabled = false; return; }
+  burbuja('cliente', `<img src="${dataUrl}" alt="foto enviada">${texto ? `<span class="pie">${wa(texto)}</span>` : ''}`, 'foto');
+  await espera(350); tecleando(true);
+  let j;
+  try {
+    const r = await fetch('foto', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ imagen_b64: dataUrl, mensaje: texto, historial: hist, cliente: 'Ana' }) });
+    j = await r.json();
+    if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
+  } catch (e) {
+    tecleando(false); burbuja('bot', 'Uy, no pude ver bien la foto 😅 ¿Me la mandas otra vez?'); ocupado = false; $('enviar').disabled = false; return;
+  }
+  hist.push({ rol:'cliente', texto: '[foto]' + (texto ? ' ' + texto : '') });
+  await mostrar(j);
+}
+
 function bars(list) { return list.map(x => `<div class="row"><div>${esc(x.etiqueta)}<div class="bar"><i style="width:${x.p*100}%"></i></div></div><div>${(x.p*100).toFixed(0)}%</div></div>`).join(''); }
 function pintarInfo(j) {
+  if (j.foto) {
+    const f = j.foto;
+    info.innerHTML = `<button class="cerrar" id="cerrarInfo">Cerrar</button>
+      <h2>Búsqueda por foto</h2>
+      <div>Resultado: <b>${esc(f.caso)}</b> · nivel ${esc(f.nivel)}</div>
+      <div class="sub">umbral «es este» ≥ ${f.umbrales.exacto.toFixed(3)} · «se parece» ≥ ${f.umbrales.parecido.toFixed(3)} · ${j.ms} ms · ${esc(j.modelo_llm)}</div>
+      <h2>Más parecidas</h2>${f.top.map(x => `<div class="row"><div><code>${esc(x.codigo)}</code><div class="bar"><i style="width:${Math.max(0, x.sim)*100}%"></i></div></div><div>${x.sim.toFixed(2)}</div></div>`).join('')}
+      <h2>Acción</h2><div>${esc(j.accion)}${j.codigo ? ' · ' + esc(j.codigo) : ''}</div>`;
+    $('cerrarInfo').onclick = () => info.classList.remove('abierto');
+    return;
+  }
   info.innerHTML = `<button class="cerrar" id="cerrarInfo">Cerrar</button>
     <h2>Intención</h2>${bars(j.top_intenciones)}
     <div class="sub">acción: <b>${esc(j.accion)}</b> · ${esc(j.modelo_llm || 'sin LLM')} · ${j.ms} ms</div>
@@ -172,6 +226,11 @@ function pintarInfo(j) {
 }
 
 $('f').onsubmit = ev => { ev.preventDefault(); const t = $('t'); const v = t.value; t.value = ''; enviar(v); };
+$('clip').onclick = () => $('archivo').click();
+$('archivo').onchange = ev => { const f = ev.target.files[0]; ev.target.value = ''; enviarFoto(f); };
+// arrastrar una foto sobre el chat también la envía
+msgs.addEventListener('dragover', ev => ev.preventDefault());
+msgs.addEventListener('drop', ev => { ev.preventDefault(); const f = ev.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) enviarFoto(f); });
 $('rapidas').onclick = ev => { if (ev.target.tagName === 'BUTTON') enviar(ev.target.textContent); };
 $('nuevo').onclick = () => { if (ocupado) return; hist = []; ultimoRol = ''; msgs.innerHTML = '<div class="dia">HOY</div>'; };
 $('verInfo').onclick = () => info.classList.add('abierto');

@@ -32,11 +32,46 @@ Reglas: si nombró un código, sólo se manda ese; las de la tienda van primero;
 enviadas en los últimos turnos; no se mandan fotos en saludo, despedida, insulto o charla sin ropa.
 El nginx del panel reparte `/media/catalogo/` al agente para que las fotos se vean en Conversaciones.
 
+## Búsqueda por foto y sucursales
+
+`POST /foto {imagen_b64, mensaje, historial}`: la clienta manda la foto de una prenda y el agente la compara
+con las 120 fotos del catálogo (20 de la tienda + 100 del zip) usando embeddings de imagen **locales**
+(`Qdrant/Unicom-ViT-B-32`, ONNX). La foto no sale del servidor; sólo el texto de la respuesta pasa por DeepSeek.
+
+Elegido midiendo las 120 fotos deformadas (recorte, giro, brillo, color, borde, JPEG al 55 %):
+
+| Modelo | top-1 | top-3 | ms/foto |
+|---|---|---|---|
+| clip-ViT-B-32 | 80,0 % | 90,8 % | 140 |
+| jina-clip-v1 | 90,0 % | 95,0 % | 360 |
+| **Unicom-ViT-B-32** | **96,7 %** | **98,3 %** | **128** |
+
+Los umbrales se calibran solos al construir la imagen: «es este» ≥ 0,686 (por encima del 95 % de las
+similitudes con la prenda equivocada más parecida) y «se parece» ≥ 0,529. Con ese umbral prudente, el 56 %
+de las fotos deformadas se reconoce como «es este»; el resto cae en «¿es este?» y se pide confirmación.
+Las deformaciones son sintéticas: con capturas reales de clientas hay que volver a medir.
+
+| Caso | Qué hace |
+|---|---|
+| Es esa prenda y hay stock en la tienda virtual | El bot la ofrece y arranca el pedido (talla, resumen, SI) |
+| Es esa prenda pero sólo hay en sucursal | Dice en qué sucursal, dirección y tallas; ofrece separarla con una asesora |
+| Es esa prenda pero está agotada en todas partes | Lo dice y manda 3 parecidas disponibles |
+| Se parece | Pregunta «¿es este?» y manda 2 alternativas |
+| No la vendemos | Lo dice claro y manda 3 parecidas disponibles |
+
+Todo lo que no termina en pedido queda como **consulta** en el kanban, para que una asesora haga seguimiento.
+
+**Sucursales**: `seed/sucursales.json` trae 3 sucursales con stock por talla para los 120 códigos.
+**Son datos de demostración** (generados con semilla fija): reemplázalos por el inventario real de cada tienda.
+`GET /sucursales` las lista. El stock de sucursal también lo usa el chat de texto («¿hay en talla M?»).
+
 ## Velocidad
 
 Mediana **1,3 s** por mensaje (antes 4–11 s), medida con 10 turnos de tres conversaciones:
 
 - `deepseek-v4-flash` razona por defecto y eso costaba ~8 s. Se apaga con `reasoning: {enabled: false}`.
+- Aun así, con el prompt de las fotos tardaba 6,5 s de mediana; `deepseek-chat-v3.1` lo hace en 1,3 s, así que
+  va primero y v4-flash queda de respaldo. En el chat de texto los dos andan en 1,6–1,8 s.
 - OpenRouter elige el proveedor más rápido (`LLM_PROVIDER_SORT=latency`).
 - Conexión HTTP persistente con OpenRouter y tope de 220 tokens.
 - Saludo o despedida claros, sin historial, se contestan con la frase del dataset sin LLM (~0,1 s).
@@ -85,7 +120,8 @@ Para re-entrenar con datos nuevos, edita los CSV de `data/` y reconstruye la ima
 
 ## Memoria
 
-jina base ocupa **~940 MiB** en reposo, así que el límite del contenedor es 1200m. En el EC2 de 2 GiB
+jina base ocupa **~940 MiB** en reposo y, con el modelo de imagen, el agente llega a **~1,52 GiB**; el límite
+del contenedor es 1800m. Para apagar la búsqueda por foto y ahorrar ~580 MiB: `IMAGE_SEARCH=0`. En el EC2 de 2 GiB
 eso no cabe junto al resto. Para allí, construye con el modelo ligero:
 
 ```bash

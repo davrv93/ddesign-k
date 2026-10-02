@@ -5,6 +5,7 @@ package bot
 import (
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -381,6 +382,9 @@ func (b *Bot) handlePhoto(ctx context.Context, conv *store.Conversation, cc *con
 			log.Printf("bot: consulta: %v", err)
 		}
 		b.Notify("orders")
+	}
+	if img != nil && b.Agent != nil && b.agentPhoto(ctx, conv, cc, msg, img, inquiry) {
+		return
 	}
 	if img == nil || !b.ai.Enabled() {
 		inquiry("Foto recibida (sin análisis automático)", 0)
@@ -760,34 +764,51 @@ func (b *Bot) freeText(ctx context.Context, conv *store.Conversation, cc *convCo
 
 // agentReply delega el texto libre al servicio agente. Devuelve false si no respondió,
 // para que freeText siga con Gemini.
-func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) bool {
+func (b *Bot) agentContext(ctx context.Context) (context.Context, context.CancelFunc) {
 	timeout := time.Duration(b.cfg.AgentTimeoutSec) * time.Second
 	if timeout <= 0 {
 		timeout = 35 * time.Second
 	}
-	actx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-	req := agente.Request{Mensaje: raw, Estado: conv.State, Negocio: b.cfg.BusinessName}
+	return context.WithTimeout(ctx, timeout)
+}
+
+// agentHistory devuelve los últimos turnos de texto previos al mensaje actual, que ya está
+// guardado (si coincide con `current`, se descarta).
+func (b *Bot) agentHistory(ctx context.Context, conv *store.Conversation, current string) []agente.Turn {
+	var out []agente.Turn
+	msgs, err := b.store.ListMessages(ctx, conv.ID, 11)
+	if err != nil {
+		return nil
+	}
+	for _, m := range msgs {
+		// Los pies de foto cuentan: así el agente sabe qué prendas ya ofreció.
+		if (m.Kind != "text" && m.Kind != "image") || strings.TrimSpace(m.Body) == "" {
+			continue
+		}
+		rol := m.Author
+		if m.Direction == "in" {
+			rol = "cliente"
+		}
+		out = append(out, agente.Turn{Rol: rol, Texto: m.Body})
+	}
+	if n := len(out); n > 0 && out[n-1].Rol == "cliente" && out[n-1].Texto == current {
+		out = out[:n-1]
+	}
+	return out
+}
+
+func (b *Bot) customerName(conv *store.Conversation) string {
 	if conv.Customer != nil {
-		req.Cliente = conv.Customer.Name
+		return conv.Customer.Name
 	}
-	// El mensaje actual ya está guardado: se toma el historial previo, sin él.
-	if msgs, err := b.store.ListMessages(ctx, conv.ID, 11); err == nil {
-		for _, m := range msgs {
-			// Los pies de foto cuentan: así el agente sabe qué prendas ya ofreció.
-			if (m.Kind != "text" && m.Kind != "image") || strings.TrimSpace(m.Body) == "" {
-				continue
-			}
-			rol := m.Author
-			if m.Direction == "in" {
-				rol = "cliente"
-			}
-			req.Historial = append(req.Historial, agente.Turn{Rol: rol, Texto: m.Body})
-		}
-		if n := len(req.Historial); n > 0 && req.Historial[n-1].Rol == "cliente" && req.Historial[n-1].Texto == raw {
-			req.Historial = req.Historial[:n-1]
-		}
-	}
+	return ""
+}
+
+func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) bool {
+	actx, cancel := b.agentContext(ctx)
+	defer cancel()
+	req := agente.Request{Mensaje: raw, Estado: conv.State, Negocio: b.cfg.BusinessName,
+		Cliente: b.customerName(conv), Historial: b.agentHistory(ctx, conv, raw)}
 	r, err := b.Agent.Chat(actx, req)
 	if err != nil {
 		log.Printf("bot: agente: %v", err)
@@ -813,16 +834,48 @@ func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *conv
 		if strings.TrimSpace(r.Respuesta) == "" {
 			return false
 		}
-		// Un párrafo por mensaje, como escribe una persona por WhatsApp.
-		for _, parte := range strings.Split(r.Respuesta, "\n\n") {
-			if parte = strings.TrimSpace(parte); parte != "" {
-				b.reply(ctx, conv, parte)
-			}
-		}
-		for _, sg := range r.Sugerencias {
-			b.replySuggestion(ctx, conv, sg)
+		b.sendAgentText(ctx, conv, r)
+	}
+	return true
+}
+
+// sendAgentText manda un párrafo por mensaje, como escribe una persona por WhatsApp, y
+// después las fotos sugeridas.
+func (b *Bot) sendAgentText(ctx context.Context, conv *store.Conversation, r *agente.Reply) {
+	for _, parte := range strings.Split(r.Respuesta, "\n\n") {
+		if parte = strings.TrimSpace(parte); parte != "" {
+			b.reply(ctx, conv, parte)
 		}
 	}
+	for _, sg := range r.Sugerencias {
+		b.replySuggestion(ctx, conv, sg)
+	}
+}
+
+// agentPhoto busca la prenda de la foto con el agente (embeddings de imagen locales).
+// Devuelve false si el agente no respondió, para que handlePhoto siga con Gemini.
+func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *convContext, msg *store.Message, img *ai.Image, inquiry func(string, float64)) bool {
+	actx, cancel := b.agentContext(ctx)
+	defer cancel()
+	req := agente.PhotoRequest{ImagenB64: base64.StdEncoding.EncodeToString(img.Data), Mensaje: msg.Body,
+		Estado: conv.State, Negocio: b.cfg.BusinessName, Cliente: b.customerName(conv),
+		Historial: b.agentHistory(ctx, conv, msg.Body)}
+	r, err := b.Agent.Photo(actx, req)
+	if err != nil || r.Foto == nil {
+		log.Printf("bot: agente foto: %v", err)
+		return false
+	}
+	log.Printf("bot: agente foto=%s %s %s sim=%.3f", msg.Media, r.Foto.Caso, r.Foto.Codigo, r.Foto.Similitud)
+	if r.Accion == "codigo" {
+		if p, err := b.store.GetProductByCode(ctx, r.Codigo); err == nil && p.Active {
+			b.offerProduct(ctx, conv, cc, p, msg.Media, r.Foto.Similitud, nil)
+			return true
+		}
+	}
+	// Todo lo que no termina en pedido queda en el tablero para que una asesora haga seguimiento.
+	inquiry(fmt.Sprintf("Agente (foto): %s · %s · similitud %.2f", r.Foto.Caso, r.Foto.Codigo, r.Foto.Similitud), r.Foto.Similitud)
+	b.setState(ctx, conv, stIdle, convContext{})
+	b.sendAgentText(ctx, conv, r)
 	return true
 }
 
