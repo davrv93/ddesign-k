@@ -65,6 +65,32 @@ Todo lo que no termina en pedido queda como **consulta** en el kanban, para que 
 **Son datos de demostración** (generados con semilla fija): reemplázalos por el inventario real de cada tienda.
 `GET /sucursales` las lista. El stock de sucursal también lo usa el chat de texto («¿hay en talla M?»).
 
+## LLM gratis (por defecto)
+
+El agente habla con cualquier API compatible con OpenAI (`LLM_URL`, `LLM_API_KEY`, `LLM_MODEL`). Por defecto
+usa **Gemini Flash-Lite de Google AI Studio en su capa gratuita**, con la misma `GEMINI_API_KEY` del backend.
+
+Medido el 3-10-2026 con el prompt real (10 turnos de chat + 8 fotos):
+
+| LLM | Costo | Chat (mediana) | Foto (mediana) | Español |
+|---|---|---|---|---|
+| **gemini-3.5-flash-lite** (Google, gratis) | 0 | **0,89 s** | 1,17 s | bueno |
+| deepseek-chat-v3.1 (OpenRouter) | de pago | 1,75 s | 1,27 s | bueno |
+| llama-3.3-70b (OpenRouter) | de pago | 0,87 s | 0,75 s | — |
+| gemma3:4b local (Ollama, M4 Pro) | 0 | 6,68 s | 5,54 s | regular: a veces repite las instrucciones |
+| qwen2.5:3b local (Ollama, M4 Pro) | 0 | 2,67 s | 1,61 s | flojo: filtra instrucciones del prompt |
+| gemma3:1b local | 0 | — | — | no sirve: ignora el contexto |
+
+- La capa gratuita tiene **límite por minuto**: forzando ~36 mensajes por minuto, `gemini-3.5-flash-lite`
+  devolvió 429 y respondió `gemini-3.1-flash-lite`, que tiene cuota propia. Si las dos se agotan, el agente
+  contesta con la frase de referencia del dataset (sin costo, ~0,1 s). Revisa los límites diarios vigentes
+  en Google AI Studio.
+- En la capa gratuita Google puede usar los mensajes para mejorar sus productos: no mandes datos sensibles.
+- `gemini-2.5-flash-lite` devuelve 404 con esta clave. Gemma por la API de Google responde con su
+  razonamiento en inglés y tarda 5–6 s: descartada.
+- **Local** no cabe en el EC2 de 2 GiB (gemma3:4b pesa 3,3 GB). Sirve en una máquina con GPU o Apple Silicon:
+  `LLM_URL=http://host.docker.internal:11434/v1/chat/completions LLM_API_KEY=local LLM_MODEL=gemma3:4b`.
+
 ## Velocidad
 
 Mediana **1,3 s** por mensaje (antes 4–11 s), medida con 10 turnos de tres conversaciones:

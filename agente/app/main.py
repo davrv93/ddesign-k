@@ -31,9 +31,14 @@ from .sucursales import Sucursales
 log = logging.getLogger("agente")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-OPENROUTER_URL = os.environ.get("OPENROUTER_URL", "https://openrouter.ai/api/v1/chat/completions")
-OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "")
-LLM_MODELOS = [m.strip() for m in os.environ.get("OPENROUTER_MODEL", "deepseek/deepseek-chat-v3.1,deepseek/deepseek-v4-flash").split(",") if m.strip()]
+# Cualquier API compatible con OpenAI (/chat/completions). LLM_* manda; OPENROUTER_* queda por compatibilidad.
+#   OpenRouter (de pago):   https://openrouter.ai/api/v1/chat/completions
+#   Google AI Studio (capa gratuita): https://generativelanguage.googleapis.com/v1beta/openai/chat/completions
+#   Ollama local:           http://host.docker.internal:11434/v1/chat/completions
+OPENROUTER_URL = os.environ.get("LLM_URL") or os.environ.get("OPENROUTER_URL", "https://openrouter.ai/api/v1/chat/completions")
+OPENROUTER_KEY = os.environ.get("LLM_API_KEY") or os.environ.get("OPENROUTER_API_KEY", "")
+LLM_MODELOS = [m.strip() for m in (os.environ.get("LLM_MODEL") or os.environ.get("OPENROUTER_MODEL", "deepseek/deepseek-chat-v3.1,deepseek/deepseek-v4-flash")).split(",") if m.strip()]
+ES_OPENROUTER = "openrouter.ai" in OPENROUTER_URL
 # Por modelo: si el primero tarda más que esto, se prueba el siguiente.
 LLM_TIMEOUT = float(os.environ.get("LLM_TIMEOUT_SECONDS", "12"))
 LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", "220"))
@@ -270,14 +275,16 @@ MENSAJE NUEVO DEL CLIENTE:
 
 def llamar_llm(mensajes: list[dict], json_mode: bool = False) -> tuple[str, str]:
     if not OPENROUTER_KEY:
-        raise RuntimeError("OPENROUTER_API_KEY vacío")
+        raise RuntimeError("LLM_API_KEY / OPENROUTER_API_KEY vacío")
     ultimo = None
     for modelo in LLM_MODELOS:
         try:
-            cuerpo = {"model": modelo, "messages": mensajes, "temperature": 0.4, "max_tokens": LLM_MAX_TOKENS,
-                      # deepseek-v4 razona por defecto: 11 s frente a 2-3 s sin razonar, para un chat de 3 frases.
-                      "reasoning": {"enabled": False}}
-            if LLM_PROVIDER_SORT:
+            cuerpo = {"model": modelo, "messages": mensajes, "temperature": 0.4, "max_tokens": LLM_MAX_TOKENS}
+            # «reasoning» y «provider» son de OpenRouter; Google y Ollama devuelven 400 si los ven.
+            if ES_OPENROUTER:
+                # deepseek-v4 razona por defecto: 11 s frente a 2-3 s sin razonar, para un chat de 3 frases.
+                cuerpo["reasoning"] = {"enabled": False}
+            if LLM_PROVIDER_SORT and ES_OPENROUTER:
                 cuerpo["provider"] = {"sort": LLM_PROVIDER_SORT}
             if json_mode:
                 cuerpo |= {"response_format": {"type": "json_object"}, "temperature": 0}

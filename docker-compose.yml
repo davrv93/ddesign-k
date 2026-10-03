@@ -93,8 +93,14 @@ services:
     container_name: kddesign_agente
     restart: unless-stopped
     environment:
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
-      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-deepseek/deepseek-chat-v3.1,deepseek/deepseek-v4-flash}
+      # LLM por defecto: Gemini Flash-Lite de Google AI Studio, capa GRATUITA, con la misma GEMINI_API_KEY del
+      # backend. Si las dos cuotas por minuto se agotan, responde con la frase del dataset (sin costo).
+      # Para usar DeepSeek por OpenRouter (de pago): LLM_URL=https://openrouter.ai/api/v1/chat/completions,
+      # LLM_API_KEY=<clave de OpenRouter>, LLM_MODEL=deepseek/deepseek-chat-v3.1,deepseek/deepseek-v4-flash
+      LLM_URL: ${LLM_URL:-https://generativelanguage.googleapis.com/v1beta/openai/chat/completions}
+      LLM_API_KEY: ${LLM_API_KEY:-${GEMINI_API_KEY:-}}
+      LLM_MODEL: ${LLM_MODEL:-gemini-3.5-flash-lite,gemini-3.1-flash-lite}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-6}
       CATALOG_URL: http://backend:8080/api/public/catalog
       PUBLIC_URL: ${PUBLIC_URL:-https://kddesign.pjgfactsalud.com.pe}
       BUSINESS_NAME: ${BUSINESS_NAME:-Baruka Design}
