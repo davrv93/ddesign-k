@@ -14,7 +14,7 @@ import (
 	"github.com/davrv93/ddesign-k/backend/internal/store"
 )
 
-//go:embed catalog.json images/*.jpg
+//go:embed catalog.json images/*.jpg sucursales.json
 var files embed.FS
 
 type item = Item
@@ -73,4 +73,34 @@ func Run(ctx context.Context, st *store.Store, dataDir string) error {
 	}
 	log.Printf("seed: %d productos cargados", len(items))
 	return nil
+}
+
+// Warehouses carga las sucursales de demostración (sucursales.json) si aún no hay ninguna.
+// Son datos generados, no inventario real: la tienda debe reemplazarlos.
+func Warehouses(ctx context.Context, st *store.Store) error {
+	raw, err := files.ReadFile("sucursales.json")
+	if err != nil {
+		return err
+	}
+	var d struct {
+		Sucursales []struct {
+			ID        string `json:"id"`
+			Nombre    string `json:"nombre"`
+			Direccion string `json:"direccion"`
+			Horario   string `json:"horario"`
+		} `json:"sucursales"`
+		Stock map[string]map[string]map[string]int `json:"stock"`
+	}
+	if err := json.Unmarshal(raw, &d); err != nil {
+		return err
+	}
+	ws := make([]store.Warehouse, 0, len(d.Sucursales))
+	for _, x := range d.Sucursales {
+		ws = append(ws, store.Warehouse{ID: x.ID, Name: x.Nombre, Address: x.Direccion, Hours: x.Horario})
+	}
+	done, err := st.SeedWarehouses(ctx, ws, d.Stock)
+	if done {
+		log.Printf("seed: %d sucursales de demostración cargadas", len(ws))
+	}
+	return err
 }

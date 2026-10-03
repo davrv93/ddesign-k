@@ -13,9 +13,38 @@ mensaje ─► embedding local ─► clasificador de intención ─┬─► ac
 |---|---|
 | Embeddings | `jinaai/jina-embeddings-v2-base-es` (open source, Apache-2.0, español/inglés), servido con fastembed + onnxruntime en CPU. Se hornea en la imagen. |
 | Clasificador | Regresión logística sobre los embeddings: 20 intenciones y 4 categorías de prenda. |
-| RAG | 100 fichas de `caracteristicas_y_tallas.txt` + el catálogo real de la tienda (`/api/public/catalog`, se refresca cada 5 min). |
+| RAG | 100 fichas de `caracteristicas_y_tallas.txt` + el catálogo real de la tienda (`/api/public/catalog`, se refresca cada 5 min). Sólo lo semiestático: diseño, color, precio. **Nunca stock.** |
+| Stock | Herramienta, no conocimiento: `GET /api/public/stock?codes=…` del backend en el momento de responder (`app/stock.py`). Disponible = físico − reservas vigentes, más stock por sucursal. |
 | Few-shot | Los 4 ejemplos más parecidos de los datasets se pasan al LLM como guía de tono. |
 | LLM | `deepseek/deepseek-v4-flash` por OpenRouter, con `deepseek/deepseek-chat-v3.1` de respaldo. Sin clave o sin red, devuelve la respuesta de referencia del ejemplo más parecido. |
+
+## Stock como herramienta (no como conocimiento)
+
+Regla: **el RAG decide qué podría interesar; el stock de ahora decide qué se puede vender.**
+
+- Las fichas que se embeben y que lee el LLM no llevan stock. El embedding de un producto no cambia cuando
+  cambia su inventario; el catálogo vivo sólo se re-indexa si cambió algo semiestático (nombre, precio).
+- Al responder, el agente consulta `STOCK_URL` (`/api/public/stock?codes=V05,VES-003`) para las fichas y
+  sugerencias del turno, y calcula en código: tallas disponibles online, agotadas, y sucursales con stock.
+  El LLM recibe una línea `AHORA: …` ya calculada y la instrucción de no afirmar nada fuera de ella.
+  Los pies de foto, el orden de las sugerencias y los casos de la búsqueda por foto salen del mismo cálculo.
+- Si el backend no responde, usa el seed del catálogo y las sucursales de demostración y lo marca
+  (`stock_fuente: "seed"` en la respuesta y en el panel de análisis de la UI de prueba).
+- `GET /stock?codes=…` del agente muestra lo que ve ahora mismo (depuración).
+
+En el backend Go:
+
+- `GET /api/public/stock/{code}` y `?codes=A,B` (máx. 50): por talla `stock` (físico), `reserved` y
+  `available`; más `branches` con el stock por sucursal.
+- **Reserva con TTL**: cuando la clienta elige talla y el bot manda el resumen, aparta esa cantidad
+  **10 minutos** (`stock_reservations`). Otra clienta que pregunte en ese rato ya no ve esa unidad
+  (catálogo público, oferta del bot y agente usan `available`, no el físico). Al confirmar (*SI*) se
+  descuenta el físico y la reserva desaparece; al cancelar se libera; si no contesta, vence sola y un
+  barrido cada minuto limpia la tabla. Cambiar cantidad o talla vuelve a reservar; si ya no alcanza, el
+  bot dice cuántas quedan.
+- **Sucursales en SQLite** (`warehouses`, `warehouse_stock` por código y talla). Se siembran una vez
+  desde `internal/seed/sucursales.json` (**datos de demostración**, 3 sucursales); reemplázalas por el
+  inventario real. La copia en `agente/seed/` es sólo el respaldo cuando el backend no responde.
 
 ## Sugerencia de compra con fotos
 
@@ -61,9 +90,8 @@ Las deformaciones son sintéticas: con capturas reales de clientas hay que volve
 
 Todo lo que no termina en pedido queda como **consulta** en el kanban, para que una asesora haga seguimiento.
 
-**Sucursales**: `seed/sucursales.json` trae 3 sucursales con stock por talla para los 120 códigos.
-**Son datos de demostración** (generados con semilla fija): reemplázalos por el inventario real de cada tienda.
-`GET /sucursales` las lista. El stock de sucursal también lo usa el chat de texto («¿hay en talla M?»).
+**Sucursales**: viven en el backend (ver «Stock como herramienta»). El chat de texto también las usa
+(«¿hay en talla M?»).
 
 ## LLM gratis (por defecto)
 
@@ -80,6 +108,7 @@ Medido el 3-10-2026 con el prompt real (10 turnos de chat + 8 fotos):
 | gemma3:4b local (Ollama, M4 Pro) | 0 | 6,68 s | 5,54 s | regular: a veces repite las instrucciones |
 | qwen2.5:3b local (Ollama, M4 Pro) | 0 | 2,67 s | 1,61 s | flojo: filtra instrucciones del prompt |
 | gemma3:1b local | 0 | — | — | no sirve: ignora el contexto |
+| llama3.2:1b-instruct-q4_K_M local (Ollama, M4 Pro) | 0 | 2,10 s | 1,29 s | no sirve: devuelve el menú («*1* catálogo…») o la ficha cruda en vez de conversar |
 
 - La capa gratuita tiene **límite por minuto**: forzando ~36 mensajes por minuto, `gemini-3.5-flash-lite`
   devolvió 429 y respondió `gemini-3.1-flash-lite`, que tiene cuota propia. Si las dos se agotan, el agente
@@ -143,6 +172,23 @@ API: `POST /chat {mensaje, historial:[{rol, texto}], cliente, estado}` devuelve 
 accion, codigo, respuesta, fichas, ejemplos}`. `POST /clasificar {texto}` devuelve sólo la clasificación.
 
 Para re-entrenar con datos nuevos, edita los CSV de `data/` y reconstruye la imagen.
+
+## ¿Cambiar jina por algo más ligero? Medido, no
+
+jina base cuesta ~940 MiB. Se midió (3-10-2026, misma validación cruzada agrupada; recuperación sobre las
+100 preguntas de recomendación de la rúbrica):
+
+| Embeddings | Intención | F1 macro | Con faltas | Recuperación recall@1 / @5 |
+|---|---|---|---|---|
+| **jina-embeddings-v2-base-es** (actual) | **97,0 %** | **0,937** | 92,0 % | 0,70 / **0,96** |
+| TF-IDF (char 2-5 + palabras) + regresión logística, ~10 MB | 92,9 % | 0,837 | 85,0 % | 1,00 / 1,00 |
+| paraphrase-multilingual-MiniLM-L12-v2 | 95,7 % | 0,906 | 89,8 % | 0,37 / 0,67 |
+
+TF-IDF se hunde justo en las intenciones que disparan acciones del bot: `foto` F1 0,14, `catalogo` 0,48,
+`asesora` 0,53, `despedida` 0,47 (sólo tienen 15 ejemplos cada una). Su recall perfecto en recuperación
+engaña: las preguntas de la rúbrica citan la ficha casi literal, y con «algo elegante para una boda» lo
+léxico no sirve. MiniLM recupera mal. **Jina se queda.** Lo que sí haría bajar la RAM sin perder: escribir
+más ejemplos reales de esas cuatro intenciones y volver a medir TF-IDF.
 
 ## Memoria
 

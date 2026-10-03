@@ -27,6 +27,9 @@ import (
 	"github.com/davrv93/ddesign-k/backend/internal/store"
 )
 
+// reserveTTL es cuánto se aparta la talla mientras la clienta confirma el resumen.
+const reserveTTL = 10 * time.Minute
+
 // Estados de la conversación.
 const (
 	stIdle       = ""
@@ -310,12 +313,12 @@ func (b *Bot) sendCatalog(ctx context.Context, conv *store.Conversation) {
 	sb.WriteString("👗 *Catálogo " + b.cfg.BusinessName + "*\n\n")
 	n := 0
 	for _, p := range products {
-		if p.TotalStock() == 0 {
+		if p.TotalAvailable() == 0 {
 			continue
 		}
 		sizes := []string{}
 		for _, v := range p.Variants {
-			if v.Stock > 0 {
+			if v.Available() > 0 {
 				sizes = append(sizes, v.Size)
 			}
 		}
@@ -453,7 +456,7 @@ func alternativesOf(res *ai.MatchResult, byCode map[string]*store.Product) []*st
 
 // offerProduct muestra el producto con su stock por talla y pide la talla.
 func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *convContext, p *store.Product, customerImage string, conf float64, alts []*store.Product) {
-	if p.TotalStock() == 0 {
+	if p.TotalAvailable() == 0 {
 		o := &store.Order{CustomerID: conv.CustomerID, Status: "consulta", Source: "whatsapp", CustomerImage: customerImage,
 			MatchConfidence: conf, Notes: "Consultó " + p.Code + " (agotado)"}
 		_ = b.store.CreateOrder(ctx, o)
@@ -461,7 +464,7 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 		text := "😔 El modelo *" + p.Code + " " + p.Name + "* está agotado por ahora."
 		inStock := []string{}
 		for _, a := range alts {
-			if a.TotalStock() > 0 {
+			if a.TotalAvailable() > 0 {
 				inStock = append(inStock, fmt.Sprintf("*%s* %s — %s", a.Code, a.Name, b.money(a.Price)))
 			}
 		}
@@ -496,8 +499,8 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 
 	var sizes []string
 	for _, v := range p.Variants {
-		if v.Stock > 0 {
-			sizes = append(sizes, fmt.Sprintf("%s (%d)", v.Size, v.Stock))
+		if n := v.Available(); n > 0 {
+			sizes = append(sizes, fmt.Sprintf("%s (%d)", v.Size, n))
 		}
 	}
 	intro := "✨ ¡Lo tenemos!"
@@ -586,26 +589,20 @@ func (b *Bot) handleSize(ctx context.Context, conv *store.Conversation, cc *conv
 		}
 		sizes := []string{}
 		for _, x := range p.Variants {
-			if x.Stock > 0 {
+			if x.Available() > 0 {
 				sizes = append(sizes, "*"+x.Size+"*")
 			}
 		}
 		b.reply(ctx, conv, "¿Qué talla deseas? Tenemos: "+strings.Join(sizes, ", ")+"\n(Escribe *menu* para volver al inicio.)")
 		return
 	}
-	if v.Stock <= 0 {
+	if v.Available() <= 0 {
 		b.reply(ctx, conv, "😔 La talla *"+v.Size+"* se agotó. ¿Te interesa otra talla?")
 		return
 	}
 	qty := parseQty(withoutWord(text, strings.ToLower(v.Size)))
 	if qty <= 0 {
 		qty = 1
-	}
-	if qty > v.Stock {
-		b.reply(ctx, conv, fmt.Sprintf("Solo nos quedan *%d* en talla %s. ¿Cuántas deseas?", v.Stock, v.Size))
-		cc.Size = v.Size
-		b.setState(ctx, conv, stSize, *cc)
-		return
 	}
 	cc.Size, cc.Qty = v.Size, qty
 	b.sendSummary(ctx, conv, cc, p, v)
@@ -629,10 +626,24 @@ func (b *Bot) sendSummary(ctx context.Context, conv *store.Conversation, cc *con
 		}
 		cc.OrderID = o.ID
 	}
+	// Se aparta la talla unos minutos: otra clienta que pregunte ahora ya no la ve disponible.
+	if avail, err := b.store.Reserve(ctx, cc.OrderID, v.ID, cc.Qty, reserveTTL); err != nil {
+		if errors.Is(err, store.ErrNoStock) {
+			cc.Size, cc.Qty = "", 0
+			b.setState(ctx, conv, stSize, *cc)
+			if avail <= 0 {
+				b.reply(ctx, conv, "😔 Justo se nos acaba de reservar la talla *"+v.Size+"*. ¿Te interesa otra talla?")
+			} else {
+				b.reply(ctx, conv, fmt.Sprintf("Solo nos quedan *%d* disponibles en talla %s. ¿Cuántas deseas?", avail, v.Size))
+			}
+			return
+		}
+		log.Printf("bot: reservar pedido %d: %v", cc.OrderID, err)
+	}
 	b.Notify("orders")
 	b.setState(ctx, conv, stConfirm, *cc)
-	b.reply(ctx, conv, fmt.Sprintf("🧾 *Resumen de tu pedido #%d*\n\n• %s %s\n• Talla: *%s*\n• Cantidad: *%d*\n• Total: *%s*\n\n¿Confirmas tu pedido? Responde *SI* para confirmar o *NO* para cancelar.\n(Para cambiar la cantidad, escribe el número.)",
-		cc.OrderID, p.Code, p.Name, v.Size, cc.Qty, b.money(p.Price*float64(cc.Qty))))
+	b.reply(ctx, conv, fmt.Sprintf("🧾 *Resumen de tu pedido #%d*\n\n• %s %s\n• Talla: *%s*\n• Cantidad: *%d*\n• Total: *%s*\n\nTe la apartamos por *%d minutos* ⏳\n¿Confirmas tu pedido? Responde *SI* para confirmar o *NO* para cancelar.\n(Para cambiar la cantidad, escribe el número.)",
+		cc.OrderID, p.Code, p.Name, v.Size, cc.Qty, b.money(p.Price*float64(cc.Qty)), int(reserveTTL.Minutes())))
 }
 
 func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *convContext, text string) {
@@ -640,12 +651,9 @@ func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *c
 	no := isAny(text, "no", "n", "cancelar", "cancela", "no gracias")
 	if !yes && !no {
 		p, err := b.store.GetProduct(ctx, cc.ProductID)
+		// Cambiar cantidad o talla vuelve a reservar; sendSummary avisa si ya no alcanza.
 		if n := parseQty(text); n > 0 && err == nil {
 			if v := p.VariantBySize(cc.Size); v != nil {
-				if n > v.Stock {
-					b.reply(ctx, conv, fmt.Sprintf("Solo nos quedan *%d* en talla %s.", v.Stock, v.Size))
-					return
-				}
 				cc.Qty = n
 				b.sendSummary(ctx, conv, cc, p, v)
 				return
@@ -653,10 +661,6 @@ func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *c
 		}
 		if err == nil {
 			if v := parseSize(text, p); v != nil && v.Size != cc.Size {
-				if v.Stock <= 0 {
-					b.reply(ctx, conv, "😔 La talla *"+v.Size+"* se agotó.")
-					return
-				}
 				cc.Size = v.Size
 				b.sendSummary(ctx, conv, cc, p, v)
 				return
@@ -689,6 +693,7 @@ func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *c
 
 func (b *Bot) cancelDraft(ctx context.Context, conv *store.Conversation, cc *convContext) {
 	if cc.OrderID > 0 {
+		_ = b.store.ReleaseReservation(ctx, cc.OrderID)
 		_, _ = b.store.UpdateOrderStatus(ctx, cc.OrderID, "cancelado", nil)
 		_ = b.store.UpdateOrderNotes(ctx, cc.OrderID, "Cancelado por el cliente en el chat")
 		b.Notify("orders")

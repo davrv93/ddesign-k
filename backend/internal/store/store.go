@@ -122,6 +122,34 @@ CREATE TABLE IF NOT EXISTS order_items (
 	qty          INTEGER NOT NULL DEFAULT 1,
 	unit_price   REAL NOT NULL DEFAULT 0
 );
+-- Reserva temporal de stock mientras la clienta confirma: disponible = stock - reservas vigentes.
+CREATE TABLE IF NOT EXISTS stock_reservations (
+	id         INTEGER PRIMARY KEY AUTOINCREMENT,
+	order_id   INTEGER NOT NULL UNIQUE REFERENCES orders(id) ON DELETE CASCADE,
+	variant_id INTEGER NOT NULL REFERENCES product_variants(id) ON DELETE CASCADE,
+	qty        INTEGER NOT NULL,
+	expires_at DATETIME NOT NULL,
+	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_reservations_variant ON stock_reservations(variant_id, expires_at);
+-- Sucursales físicas y su stock. Va por código (no por product_id) porque el catálogo de 100
+-- modelos que maneja el agente no está en products.
+CREATE TABLE IF NOT EXISTS warehouses (
+	id       TEXT PRIMARY KEY,
+	name     TEXT NOT NULL,
+	address  TEXT NOT NULL DEFAULT '',
+	hours    TEXT NOT NULL DEFAULT '',
+	position INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS warehouse_stock (
+	warehouse_id TEXT NOT NULL REFERENCES warehouses(id) ON DELETE CASCADE,
+	product_code TEXT NOT NULL,
+	size         TEXT NOT NULL,
+	qty          INTEGER NOT NULL DEFAULT 0,
+	updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY(warehouse_id, product_code, size)
+);
+CREATE INDEX IF NOT EXISTS idx_wstock_code ON warehouse_stock(product_code);
 CREATE TABLE IF NOT EXISTS settings (
 	key   TEXT PRIMARY KEY,
 	value TEXT NOT NULL

@@ -228,6 +228,12 @@ func reserveStock(ctx context.Context, tx *sql.Tx, orderID int64, sign int) erro
 		lines = append(lines, l)
 	}
 	rows.Close()
+	if sign < 0 {
+		// Al descontar el físico la reserva temporal ya cumplió su función.
+		if _, err := tx.ExecContext(ctx, `DELETE FROM stock_reservations WHERE order_id=?`, orderID); err != nil {
+			return err
+		}
+	}
 	for _, l := range lines {
 		if sign < 0 {
 			res, err := tx.ExecContext(ctx, `UPDATE product_variants SET stock=stock-? WHERE id=? AND stock>=?`, l.qty, l.vid, l.qty)

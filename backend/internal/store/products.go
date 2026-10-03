@@ -12,7 +12,16 @@ type Variant struct {
 	ID        int64  `json:"id"`
 	ProductID int64  `json:"product_id"`
 	Size      string `json:"size"`
-	Stock     int    `json:"stock"`
+	Stock     int    `json:"stock"`    // físico
+	Reserved  int    `json:"reserved"` // reservas vigentes de clientas que están confirmando
+}
+
+// Available es lo que se puede ofrecer ahora mismo: stock físico menos reservas vigentes.
+func (v Variant) Available() int {
+	if n := v.Stock - v.Reserved; n > 0 {
+		return n
+	}
+	return 0
 }
 
 type Product struct {
@@ -31,11 +40,20 @@ type Product struct {
 	Variants    []Variant `json:"variants"`
 }
 
-// TotalStock suma el stock de todas las tallas.
+// TotalStock suma el stock físico de todas las tallas.
 func (p *Product) TotalStock() int {
 	n := 0
 	for _, v := range p.Variants {
 		n += v.Stock
+	}
+	return n
+}
+
+// TotalAvailable suma lo que se puede ofrecer ahora (físico menos reservas vigentes).
+func (p *Product) TotalAvailable() int {
+	n := 0
+	for _, v := range p.Variants {
+		n += v.Available()
 	}
 	return n
 }
@@ -73,14 +91,16 @@ func (s *Store) loadVariants(ctx context.Context, products []*Product) error {
 		p.Variants = []Variant{}
 		byID[p.ID] = p
 	}
-	rows, err := s.DB.QueryContext(ctx, `SELECT id, product_id, size, stock FROM product_variants ORDER BY id`)
+	rows, err := s.DB.QueryContext(ctx, `SELECT v.id, v.product_id, v.size, v.stock,
+		COALESCE((SELECT SUM(r.qty) FROM stock_reservations r WHERE r.variant_id=v.id AND r.expires_at>?), 0)
+		FROM product_variants v ORDER BY v.id`, now())
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var v Variant
-		if err := rows.Scan(&v.ID, &v.ProductID, &v.Size, &v.Stock); err != nil {
+		if err := rows.Scan(&v.ID, &v.ProductID, &v.Size, &v.Stock, &v.Reserved); err != nil {
 			return err
 		}
 		if p, ok := byID[v.ProductID]; ok {

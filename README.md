@@ -71,7 +71,7 @@ de tema, insultos, preguntas de producto). Si el agente no responde, se interpre
 ### Kanban
 
 `Consultas → Por confirmar → Confirmados → En preparación → Enviados → Entregados / Cancelados`.
-El stock se reserva al entrar a *Confirmados* (o posteriores) y se devuelve al pasar a *Cancelados*, *Por confirmar* o al eliminar. Al mover una tarjeta se avisa al cliente por WhatsApp (se puede desactivar).
+El stock se descuenta al entrar a *Confirmados* (o posteriores) y se devuelve al pasar a *Cancelados*, *Por confirmar* o al eliminar. Además, mientras la clienta confirma el resumen en el chat, su talla queda **apartada 10 minutos** (`stock_reservations`): otra clienta no la ve disponible en ese rato. Al mover una tarjeta se avisa al cliente por WhatsApp (se puede desactivar).
 
 ## Catálogo inicial
 
@@ -104,6 +104,6 @@ cd frontend && npm install && npm run dev
 
 ## API (resumen)
 
-Pública: `POST /api/auth/login`, `GET /api/public/catalog`, `GET /media/...`.
+Pública: `POST /api/auth/login`, `GET /api/public/catalog`, `GET /api/public/stock/{code}` (o `?codes=A,B`: físico, reservado y disponible por talla, más sucursales), `GET /media/...`.
 Con token (`Authorization: Bearer`): `/api/whatsapp/{status,connect,qr,pair,logout}`, `/api/products[/{id}[/image]]`, `/api/products/describe`, `/api/orders[/{id}]`, `/api/conversations[/{id}/{messages,send,bot}]`, `/api/settings`, `/api/stats`, `/api/events` (SSE).
 Interna: `POST /webhook/evolution/{WEBHOOK_SECRET}` (evolution-go → backend; el nginx del frontend no la expone).

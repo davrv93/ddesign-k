@@ -26,7 +26,7 @@ import base64
 
 from . import datos
 from .modelo import Embedder, cargar
-from .sucursales import Sucursales
+from . import stock as stk
 
 log = logging.getLogger("agente")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -95,7 +95,8 @@ class Estado:
         self.lock = threading.Lock()
         self._poner_seed(datos.fichas_seed(), f["X"][len(self.fichas100):])
         self.seed_origen = "seed.json"
-        self.suc = Sucursales()
+        self.seed_textos = [x.texto() for x in datos.fichas_seed()]
+        self.stock = stk.Stock(seed_productos=datos.productos_seed())
         self.img = None
         if os.environ.get("IMAGE_SEARCH", "1") == "1":
             from .imagen import Buscador
@@ -111,7 +112,8 @@ class Estado:
             self.por_codigo = {x.codigo: k for k, x in enumerate(self.fichas)}
 
     def refrescar_seed(self):
-        """Trae precios y stock reales del backend (catálogo público) y re-indexa esas fichas."""
+        """Trae el catálogo vivo del backend (nombres, precios, productos nuevos) y re-indexa sólo si
+        cambió algo semiestático. El stock no entra aquí: se consulta por separado al responder."""
         if not CATALOG_URL:
             return
         try:
@@ -120,9 +122,12 @@ class Estado:
             js = r.json()
             productos = js.get("products", js) if isinstance(js, dict) else js
             fichas = datos.fichas_seed(productos)
-            self._poner_seed(fichas, self.emb([x.texto() for x in fichas]) if fichas else np.zeros((0, self.X100.shape[1])))
+            textos = [x.texto() for x in fichas]
+            if textos != self.seed_textos:
+                self._poner_seed(fichas, self.emb(textos) if fichas else np.zeros((0, self.X100.shape[1])))
+                self.seed_textos = textos
+                log.info("catálogo vivo re-indexado: %d productos", len(fichas))
             self.seed_origen = CATALOG_URL
-            log.info("catálogo vivo: %d productos", len(fichas))
         except Exception as e:  # el backend puede no estar arriba todavía
             log.warning("no se pudo leer el catálogo vivo (%s): %s", CATALOG_URL, e)
 
@@ -221,10 +226,12 @@ Reglas que no se rompen:
   medidas ni datos de entrega: si te los piden, dilo con claridad, identifica el modelo y propone el siguiente paso
   concreto sin fingir que ya lo hiciste: que una asesora (escribiendo *4*) pida al proveedor la cotización, la
   disponibilidad, la ficha de marca o la tabla de medidas, o confirme el envío a su ciudad. Sus tallas son sugeridas, no stock.
-- Las fichas de la tienda (códigos V01, V02...) sí tienen precio y stock real por talla: úsalos tal cual, en {moneda}.
-- Cada ficha trae el stock por SUCURSAL. Si algo está agotado en la tienda virtual o no tiene stock, revisa las
-  sucursales: di en cuál hay, su dirección y las tallas, y ofrece separarlo con una asesora (*4*). Si no hay en
-  ninguna, dilo y sugiere un parecido que sí haya.
+- Las fichas de la tienda (códigos V01, V02...) sí tienen precio real: úsalo tal cual, en {moneda}.
+- El stock NO está en las fichas: cada ficha trae una línea «AHORA:» calculada en este instante con las tallas
+  disponibles en la tienda virtual y en cada sucursal. Sólo puedes afirmar las tallas que ahí figuren como
+  disponibles; no inventes cantidades ni tallas. Si está agotado online pero hay en sucursal, di en cuál,
+  su dirección y las tallas, y ofrece separarlo con una asesora (*4*). Si no hay en ninguna, dilo y sugiere un
+  parecido que sí haya.
 - Insultos o pedidos de humillar/agredir a alguien: no los repites ni ayudas; responde con calma, pon un límite
   respetuoso y reconduce a lo que la persona necesita.
 - Estado de ánimo: valida la emoción en una frase y ofrece ayuda concreta, sin sermones.
@@ -250,7 +257,8 @@ def nota_catalogo(cl: dict) -> str:
 
 def _prompt(req: ChatIn, cl: dict, fichas, ejemplos, sugeridas=()) -> list[dict]:
     hist = "\n".join(f"{t.rol}: {t.texto}" for t in req.historial[-8:]) or "(sin mensajes previos)"
-    fich = "\n".join(f"- {f.texto()} | sucursales: {E.suc.texto(f.codigo)}" for f in fichas) or "(ninguna relevante)"
+    st = E.stock.consultar([f.codigo for f in fichas])
+    fich = "\n".join(f"- {f.texto()} | AHORA: {stk.resumen(st.get(f.codigo, {}))}" for f in fichas) or "(ninguna relevante)"
     ejs = "\n".join(f"- [{e.intencion}] cliente: {e.texto}\n  respuesta modelo: {e.respuesta}" for e, _ in ejemplos)
     usuario = f"""CLIENTE: {req.cliente or "(sin nombre)"}   ESTADO DEL BOT: {req.estado or "idle"}
 INTENCIÓN DETECTADA: {cl['intencion']} (confianza {cl['confianza']:.2f}); alternativas: {", ".join(f"{x['etiqueta']} {x['p']:.2f}" for x in cl['top_intenciones'][1:])}
@@ -322,16 +330,15 @@ def _imagen(f) -> str:
     return f"/media/catalogo/{f.codigo}.jpg" if os.path.exists(os.path.join(IMG_DIR, f"{f.codigo}.jpg")) else ""
 
 
-def _en_sucursales(f) -> str:
-    hay = E.suc.de(f.codigo)
-    return "\n".join(f"📍 {s['nombre']}: {', '.join(tallas)}" for s, tallas in hay)
+def _en_sucursales(st: dict) -> str:
+    return "\n".join(f"📍 {b['name']}: {', '.join(b['sizes'])}" for b in st.get("branches", []) if b.get("sizes"))
 
 
-def _pie(f) -> str:
-    """Pie de foto que empuja a la compra sin prometer lo que no está en la ficha."""
-    suc = _en_sucursales(f)
-    if f.fuente == "seed":
-        disp = [t for t, n in f.stock.items() if n is None or n > 0]
+def _pie(f, st: dict) -> str:
+    """Pie de foto que empuja a la compra. Las tallas salen del stock consultado ahora, no de la ficha."""
+    suc = _en_sucursales(st)
+    disp, _ = stk.tallas_online(st)
+    if st.get("product"):
         if not disp:
             if suc:
                 return f"*{f.codigo}* {f.nombre}\nAgotado en la tienda virtual, pero hay en:\n{suc}\n👉 Escribe *4* y te lo separamos"
@@ -344,11 +351,16 @@ def _pie(f) -> str:
             f"👉 Escribe *4* y una asesora te confirma precio y stock para separarlo")
 
 
-def disponible(f) -> str:
+def disponible(f, st: dict) -> str:
     """'online' (se puede pedir ya por el bot), 'sucursal' (sólo en tienda física) o ''."""
-    if f.fuente == "seed" and any(n is None or n > 0 for n in f.stock.values()):
-        return "online"
-    return "sucursal" if E.suc.de(f.codigo) else ""
+    return stk.estado(st)
+
+
+def _sugerencias_json(fichas: list) -> list[dict]:
+    st = E.stock.consultar([f.codigo for f in fichas])
+    return [{"codigo": f.codigo, "nombre": f.nombre, "fuente": f.fuente, "imagen": _imagen(f),
+             "disponible": disponible(f, st.get(f.codigo, {})), "stock_fuente": st.get(f.codigo, {}).get("fuente", ""),
+             "pie": _pie(f, st.get(f.codigo, {}))} for f in fichas]
 
 
 def _ya_mostrados(req: ChatIn) -> set[str]:
@@ -381,9 +393,13 @@ def sugerir(req: ChatIn, cl: dict, fichas: list) -> list:
     if not _habla_de_ropa(req, cl):
         return []  # «estoy triste» sin hablar de ropa: no se mandan fotos al azar
     vistos = _ya_mostrados(req)
-    resto = [f for f in fichas if f.codigo not in vistos]
-    candidatas = sorted(resto, key=lambda f: f.fuente != "seed")  # sort estable: conserva el orden del RAG
-    return [f for f in candidatas if _imagen(f)][:MAX_SUGERENCIAS]
+    resto = [f for f in fichas if f.codigo not in vistos and _imagen(f)]
+    st = E.stock.consultar([f.codigo for f in resto])
+    # RAG propone; el stock de ahora decide: lo que se pide ya primero, luego sucursal, nunca lo que no hay.
+    orden = {"online": 0, "sucursal": 1}
+    con_stock = [f for f in resto if disponible(f, st.get(f.codigo, {}))]
+    con_stock.sort(key=lambda f: orden[disponible(f, st.get(f.codigo, {}))])  # estable: conserva el orden del RAG
+    return con_stock[:MAX_SUGERENCIAS]
 
 
 RE_CATEGORIA = [("jeans", re.compile(r"\bjean|vaquer|pantal", re.I)), ("polo", re.compile(r"\bpolo|camiset|polera", re.I)),
@@ -399,11 +415,15 @@ def vitrina(req: ChatIn, qv: np.ndarray) -> list:
         fichas, Xf = E.fichas, E.Xf
     sims = Xf @ qv
     orden = sorted(range(len(fichas)), key=lambda i: -sims[i])
-    def en_stock(f):
-        return f.fuente == "seed" and any(n is None or n > 0 for n in f.stock.values())
     pool = [fichas[i] for i in orden if fichas[i].codigo not in vistos and _imagen(fichas[i])
-            and (datos.categoria_por_nombre(fichas[i]) == cat if cat else en_stock(fichas[i]))]
-    pool.sort(key=lambda f: not en_stock(f))  # estable: lo que se puede pedir ya, primero
+            and (not cat or datos.categoria_por_nombre(fichas[i]) == cat)]
+    if not cat:  # sin categoría: lo de la tienda virtual, que se puede pedir ya
+        pool = [f for f in pool if f.fuente == "seed"]
+    pool = pool[:24]
+    st = E.stock.consultar([f.codigo for f in pool])
+    rango = {"online": 0, "sucursal": 1}
+    pool = [f for f in pool if disponible(f, st.get(f.codigo, {}))]
+    pool.sort(key=lambda f: rango[disponible(f, st.get(f.codigo, {}))])  # estable: lo que se pide ya, primero
     return pool[:MAX_VITRINA]
 
 
@@ -456,8 +476,8 @@ def conversar(req: ChatIn) -> dict:
         "accion": accion, "respuesta": respuesta, "modelo_llm": modelo,
         "fichas": [{"codigo": f.codigo, "nombre": f.nombre, "fuente": f.fuente} for f in fichas],
         "ejemplos": [{"intencion": e.intencion, "texto": e.texto, "sim": round(s, 3)} for e, s in ejemplos],
-        "sugerencias": [{"codigo": f.codigo, "nombre": f.nombre, "fuente": f.fuente, "imagen": _imagen(f),
-                         "pie": _pie(f)} for f in sugeridas],
+        "sugerencias": _sugerencias_json(sugeridas),
+        "stock_fuente": E.stock.ultima_fuente,
         "ms": int((time.time() - t0) * 1000),
     }
 
@@ -470,6 +490,7 @@ def health():
     return {"ok": E is not None, "embeddings": E.emb.model_name if E else None, "llm": LLM_MODELOS,
             "llm_configurado": bool(OPENROUTER_KEY), "fichas": len(E.fichas) if E else 0,
             "catalogo": E.seed_origen if E else None,
+            "stock": {"url": stk.STOCK_URL or "(seed)", "ultima_fuente": E.stock.ultima_fuente} if E else None,
             "busqueda_foto": E.img.metricas if E and E.img else None}
 
 
@@ -548,15 +569,17 @@ def conversar_foto(req: FotoIn) -> dict:
     f = fichas[por_codigo[codigo]]
     nivel = E.img.nivel(sim)
     otras = [fichas[por_codigo[c]] for c, _ in top[1:]]
+    st = E.stock.consultar([c for c, _ in top])
+    d = lambda x: disponible(x, st.get(x.codigo, {}))
     # parecidas que se pueden conseguir: primero lo que se pide ya por el bot, luego lo de sucursal
-    parecidas = sorted([x for x in otras if disponible(x)], key=lambda x: disponible(x) != "online")
-    estado_f = disponible(f)
+    parecidas = sorted([x for x in otras if d(x)], key=lambda x: d(x) != "online")
+    estado_f = d(f)
 
     accion, codigo_oferta = "responder", ""
     if nivel == "exacto" and estado_f == "online":
         caso, sugeridas, accion, codigo_oferta = "online", [f], "codigo", f.codigo
     elif nivel == "exacto" and estado_f == "sucursal":
-        caso, sugeridas = "sucursal", [f] + [x for x in parecidas if disponible(x) == "online"][:2]
+        caso, sugeridas = "sucursal", [f] + [x for x in parecidas if d(x) == "online"][:2]
     elif nivel == "exacto":
         caso, sugeridas = "agotado", parecidas[:3]
     elif nivel == "parecido":
@@ -566,8 +589,8 @@ def conversar_foto(req: FotoIn) -> dict:
 
     respuesta, modelo = "", ""
     if req.usar_llm:
-        datos_f = f"{f.texto()} | sucursales: {E.suc.texto(f.codigo)}"
-        par = "\n".join(f"- {x.texto()} | sucursales: {E.suc.texto(x.codigo)}" for x in sugeridas if x is not f) or "(ninguna)"
+        datos_f = f"{f.texto()} | AHORA: {stk.resumen(st.get(f.codigo, {}))}"
+        par = "\n".join(f"- {x.texto()} | AHORA: {stk.resumen(st.get(x.codigo, {}))}" for x in sugeridas if x is not f) or "(ninguna)"
         hist = "\n".join(f"{t.rol}: {t.texto}" for t in req.historial[-6:]) or "(sin mensajes previos)"
         usuario = f"""LA CLIENTA ENVIÓ UNA FOTO{f' con el texto: «{req.mensaje}»' if req.mensaje else ''}.
 CLIENTE: {req.cliente or "(sin nombre)"}
@@ -598,8 +621,8 @@ Máximo 3 frases."""
         "foto": {"nivel": nivel, "caso": caso, "codigo": f.codigo, "similitud": round(sim, 3),
                  "umbrales": {"exacto": E.img.metricas["umbral_exacto"], "parecido": E.img.metricas["umbral_parecido"]},
                  "top": [{"codigo": c, "sim": round(x, 3)} for c, x in top[:5]]},
-        "sugerencias": [{"codigo": x.codigo, "nombre": x.nombre, "fuente": x.fuente, "imagen": _imagen(x),
-                         "pie": _pie(x)} for x in sugeridas],
+        "sugerencias": _sugerencias_json(sugeridas),
+        "stock_fuente": E.stock.ultima_fuente,
         "ms": int((time.time() - t0) * 1000),
     }
 
@@ -609,9 +632,10 @@ def ruta_foto(req: FotoIn):
     return conversar_foto(req)
 
 
-@app.get("/sucursales")
-def ruta_sucursales():
-    return {"sucursales": E.suc.lista}
+@app.get("/stock")
+def ruta_stock(codes: str):
+    """Depuración: lo que el agente ve del stock ahora mismo para esos códigos."""
+    return E.stock.consultar([c.strip() for c in codes.split(",")])
 
 
 @app.get("/media/catalogo/{archivo}")

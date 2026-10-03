@@ -35,7 +35,11 @@ func main() {
 		if err := seed.Run(ctx, st, cfg.DataDir); err != nil {
 			log.Printf("seed: %v", err)
 		}
+		if err := seed.Warehouses(ctx, st); err != nil {
+			log.Printf("seed sucursales: %v", err)
+		}
 	}
+	go purgeReservations(ctx, st)
 
 	evo := evolution.New(cfg.EvolutionURL, cfg.EvolutionGlobalKey, cfg.EvolutionInstance, cfg.EvolutionInstanceToken)
 	aic := ai.New(cfg.GeminiAPIKey, cfg.GeminiModel, cfg.GeminiFallbackModel, time.Duration(cfg.GeminiTimeoutSec)*time.Second)
@@ -84,6 +88,22 @@ func resumePausedBots(ctx context.Context, st *store.Store, hub *api.Hub) {
 			if n, err := st.ResumeStalePaused(ctx, hours); err == nil && n > 0 {
 				log.Printf("bot: reactivado en %d conversaciones", n)
 				hub.Publish("conversations")
+			}
+		}
+	}
+}
+
+// purgeReservations limpia las reservas de stock vencidas cada minuto.
+func purgeReservations(ctx context.Context, st *store.Store) {
+	t := time.NewTicker(time.Minute)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			if _, err := st.PurgeExpiredReservations(ctx); err != nil {
+				log.Printf("reservas: %v", err)
 			}
 		}
 	}

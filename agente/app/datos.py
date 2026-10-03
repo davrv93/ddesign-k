@@ -100,23 +100,19 @@ class Ficha:
     tejido: str = ""
 
     def texto(self) -> str:
-        """Lo que se indexa y lo que ve el LLM."""
+        """Lo que se indexa y lo que ve el LLM: sólo lo semiestático (diseño, color, precio)."""
         partes = [f"{self.codigo} · {self.nombre}", f"categoría: {self.categoria}", f"color: {self.color}",
                   f"características: {self.detalle}"]
         if self.tejido:
             partes.append(f"tejido propuesto: {self.tejido}")
+        # Sin stock a propósito: el stock es dato vivo y se consulta aparte (app/stock.py).
+        # Así el embedding no cambia cuando cambia el inventario.
         if self.fuente == "seed":
             partes.append(f"precio: S/ {self.precio:.2f}" if self.precio is not None else "precio: no registrado")
-            disp = {t: n for t, n in self.stock.items() if n is None or n > 0}
-            if not disp:
-                partes.append("stock: AGOTADO")
-            elif all(n is None for n in disp.values()):
-                partes.append("tallas con stock: " + ", ".join(disp))
-            else:
-                partes.append("stock por talla: " + ", ".join(f"{t}={n}" for t, n in disp.items()))
+            partes.append(f"tallas del modelo: {self.tallas}")
         else:
-            partes.append(f"tallas sugeridas (no es stock): {self.tallas}")
-            partes.append("precio, stock, marca, medidas y entrega: NO documentados")
+            partes.append(f"tallas sugeridas: {self.tallas}")
+            partes.append("precio, marca, medidas y entrega: NO documentados")
         if self.imagen:
             partes.append(f"imagen: {self.imagen}")
         return " | ".join(partes)
@@ -150,6 +146,11 @@ def fichas_catalogo100() -> list[Ficha]:
             fuente="catalogo100",
         ))
     return out
+
+
+def productos_seed() -> list[dict]:
+    with open(os.path.join(DATA_DIR, "catalogo_seed.json"), encoding="utf-8") as f:
+        return json.load(f)
 
 
 def fichas_seed(productos: list[dict] | None = None) -> list[Ficha]:

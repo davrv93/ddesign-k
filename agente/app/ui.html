@@ -217,7 +217,7 @@ function pintarInfo(j) {
   }
   info.innerHTML = `<button class="cerrar" id="cerrarInfo">Cerrar</button>
     <h2>Intención</h2>${bars(j.top_intenciones)}
-    <div class="sub">acción: <b>${esc(j.accion)}</b> · ${esc(j.modelo_llm || 'sin LLM')} · ${j.ms} ms</div>
+    <div class="sub">acción: <b>${esc(j.accion)}</b> · ${esc(j.modelo_llm || 'sin LLM')} · ${j.ms} ms · stock: ${esc(j.stock_fuente || '—')}</div>
     <h2>Prenda</h2><div>${esc(j.categoria_prenda)} (${(j.confianza_categoria*100).toFixed(0)}%)</div>
     <h2>Códigos</h2><div>${j.codigos.length ? j.codigos.map(esc).join(', ') : '—'}</div>
     <h2>Fichas (RAG)</h2><ul>${j.fichas.map(f => `<li><code>${esc(f.codigo)}</code> ${esc(f.nombre)} <span class="sub">${esc(f.fuente)}</span></li>`).join('')}</ul>

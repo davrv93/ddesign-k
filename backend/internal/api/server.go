@@ -44,6 +44,9 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("POST /api/auth/login", s.login)
 	mux.HandleFunc("GET /api/public/catalog", s.publicCatalog)
 	mux.HandleFunc("GET /api/public/info", s.publicInfo)
+	// Stock como herramienta: el agente lo consulta en el momento de responder, nunca lo memoriza.
+	mux.HandleFunc("GET /api/public/stock", s.publicStock)
+	mux.HandleFunc("GET /api/public/stock/{code}", s.publicStock)
 	mux.Handle("GET /media/", s.media())
 	mux.HandleFunc("POST /webhook/evolution/{secret}", s.webhook)
 
@@ -168,13 +171,75 @@ func (s *Server) publicCatalog(w http.ResponseWriter, r *http.Request) {
 	for _, p := range products {
 		sizes := []string{}
 		for _, v := range p.Variants {
-			if v.Stock > 0 {
+			if v.Available() > 0 {
 				sizes = append(sizes, v.Size)
 			}
 		}
 		out = append(out, pub{p.Code, p.Name, p.Description, p.Category, p.Color, p.Price, p.Image, sizes})
 	}
 	writeJSON(w, 200, map[string]any{"business": s.cfg.BusinessName, "currency": s.cfg.Currency, "whatsapp": s.cfg.WhatsAppNumber, "products": out})
+}
+
+// publicStock responde la disponibilidad real de uno o varios códigos (?codes=V05,VES-003):
+// stock online (físico, reservado, disponible) por talla y stock por sucursal.
+func (s *Server) publicStock(w http.ResponseWriter, r *http.Request) {
+	var codes []string
+	if c := r.PathValue("code"); c != "" {
+		codes = []string{c}
+	} else {
+		for _, c := range strings.Split(r.URL.Query().Get("codes"), ",") {
+			if c = strings.TrimSpace(c); c != "" {
+				codes = append(codes, c)
+			}
+		}
+	}
+	if len(codes) == 0 || len(codes) > 50 {
+		writeErr(w, 400, "indica entre 1 y 50 códigos")
+		return
+	}
+	for i := range codes {
+		codes[i] = strings.ToUpper(codes[i])
+	}
+	type size struct {
+		Stock     int `json:"stock"`
+		Reserved  int `json:"reserved"`
+		Available int `json:"available"`
+	}
+	type entry struct {
+		Code     string                 `json:"code"`
+		Product  bool                   `json:"product"` // true si se vende en la tienda virtual
+		Online   map[string]size        `json:"online"`
+		Branches []store.WarehouseStock `json:"branches"`
+	}
+	products, err := s.store.ListProducts(r.Context(), true)
+	if err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	byCode := map[string]*store.Product{}
+	for _, p := range products {
+		byCode[strings.ToUpper(p.Code)] = p
+	}
+	branches, err := s.store.WarehouseStockByCode(r.Context(), codes)
+	if err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	out := make([]entry, 0, len(codes))
+	for _, c := range codes {
+		e := entry{Code: c, Online: map[string]size{}, Branches: branches[c]}
+		if e.Branches == nil {
+			e.Branches = []store.WarehouseStock{}
+		}
+		if p, ok := byCode[c]; ok {
+			e.Product = true
+			for _, v := range p.Variants {
+				e.Online[v.Size] = size{v.Stock, v.Reserved, v.Available()}
+			}
+		}
+		out = append(out, e)
+	}
+	writeJSON(w, 200, map[string]any{"stock": out, "at": time.Now().UTC()})
 }
 
 func (s *Server) media() http.Handler {
