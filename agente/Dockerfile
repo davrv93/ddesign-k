@@ -48,9 +48,10 @@ COPY app/imagen.py ./app/
 RUN python -m app.imagen && chmod -R a+rX /models /app/index
 COPY seed ./seed
 COPY app ./app
-# La máquina de etapas (prospección → seguimiento → cierre) se prueba en cada build: si un cambio la
-# rompe, la imagen no se construye.
-RUN python -m app.prueba_etapas
+# La máquina de etapas (prospección → seguimiento → cierre) y la memoria de la conversación (pregunta
+# pendiente, extracción, siguiente pregunta) se prueban en cada build: si un cambio las rompe, la imagen no
+# se construye.
+RUN python -m app.prueba_etapas && python -m app.prueba_memoria
 # El modelo ya está dentro: que nada intente bajarlo de Hugging Face al arrancar.
 ENV HF_HUB_OFFLINE=1
 

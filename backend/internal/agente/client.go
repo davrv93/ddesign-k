@@ -47,6 +47,19 @@ type Request struct {
 	// es el del anuncio. Anuncio es el título del anuncio, si lo trae.
 	DesdeAnuncio bool   `json:"desde_anuncio,omitempty"`
 	Anuncio      string `json:"anuncio,omitempty"`
+	// Memoria es la ficha de la conversación (lo que ya sabemos de la clienta y la pregunta pendiente). La
+	// guarda el bot con la conversación y la devuelve tal cual; el agente la actualiza en cada mensaje.
+	Memoria json.RawMessage `json:"memoria,omitempty"`
+	// Perfil: lo que sabemos de la clienta por sus pedidos anteriores (clienta que vuelve).
+	Perfil *Perfil `json:"perfil,omitempty"`
+}
+
+// Perfil de una clienta que ya compró: el agente prellena la talla y puede mencionarlo con naturalidad.
+type Perfil struct {
+	Nombre    string   `json:"nombre,omitempty"`
+	Tallas    []string `json:"tallas,omitempty"`    // la más reciente primero
+	Productos []string `json:"productos,omitempty"` // códigos, el más reciente primero
+	Pedidos   int      `json:"pedidos"`
 }
 
 type Reply struct {
@@ -63,6 +76,8 @@ type Reply struct {
 	Sugerencias []Sugerencia `json:"sugerencias"`
 	// Etapa comercial en la que queda la conversación; se devuelve tal cual en el siguiente mensaje.
 	Etapa string `json:"etapa"`
+	// Memoria actualizada: se guarda y se manda tal cual en el siguiente mensaje.
+	Memoria json.RawMessage `json:"memoria,omitempty"`
 	// Foto sólo viene en las respuestas de /foto.
 	Foto *PhotoResult `json:"foto"`
 }
@@ -84,8 +99,10 @@ type PhotoRequest struct {
 	Negocio   string `json:"negocio"`
 	Etapa     string `json:"etapa,omitempty"`
 	// Igual que en Request: sin anuncio, el agente no asume prenda.
-	DesdeAnuncio bool   `json:"desde_anuncio,omitempty"`
-	Anuncio      string `json:"anuncio,omitempty"`
+	DesdeAnuncio bool            `json:"desde_anuncio,omitempty"`
+	Anuncio      string          `json:"anuncio,omitempty"`
+	Memoria      json.RawMessage `json:"memoria,omitempty"`
+	Perfil       *Perfil         `json:"perfil,omitempty"`
 }
 
 // PhotoResult dice qué tan seguro está el agente de haber encontrado la prenda.

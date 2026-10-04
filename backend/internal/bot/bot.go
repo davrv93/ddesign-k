@@ -54,6 +54,9 @@ type convContext struct {
 	// Llegó desde un anuncio de clic a WhatsApp (y su título): se recuerda toda la conversación.
 	Anuncio      bool   `json:"anuncio,omitempty"`
 	AnuncioTitle string `json:"anuncio_title,omitempty"`
+	// Memoria de la conversación (ver memoria.go): lo que ya sabemos de la clienta y la pregunta pendiente.
+	// La actualiza el agente; sobrevive a los reinicios del flujo, como Anuncio.
+	Memoria json.RawMessage `json:"memoria,omitempty"`
 }
 
 type Bot struct {
@@ -307,13 +310,24 @@ func (b *Bot) step(ctx context.Context, conv *store.Conversation, in *Incoming, 
 }
 
 func (b *Bot) setState(ctx context.Context, conv *store.Conversation, state string, cc convContext) {
+	var prev convContext
+	_ = json.Unmarshal([]byte(conv.Context), &prev)
 	// Que llegó por un anuncio vale para toda la conversación: los reinicios del flujo (menú, cancelar,
 	// pedido cerrado) no lo borran.
-	if !cc.Anuncio {
-		var prev convContext
-		if json.Unmarshal([]byte(conv.Context), &prev) == nil && prev.Anuncio {
-			cc.Anuncio, cc.AnuncioTitle = true, prev.AnuncioTitle
-		}
+	if !cc.Anuncio && prev.Anuncio {
+		cc.Anuncio, cc.AnuncioTitle = true, prev.AnuncioTitle
+	}
+	// La memoria tampoco: un reinicio (convContext nuevo) conserva lo que sabemos de la clienta, pero suelta la
+	// pregunta pendiente, porque el flujo cambió. Al entrar en un estado del flujo de Go, la pendiente es la
+	// de ese estado (talla, confirmar, envío, dirección).
+	reinicio := len(cc.Memoria) == 0 && len(prev.Memoria) > 0
+	if reinicio {
+		cc.Memoria = prev.Memoria
+	}
+	if p, ok := pendientePorEstado[state]; ok && (state != conv.State || reinicio || len(cc.Memoria) == 0) {
+		cc.Memoria = memConPendiente(cc.Memoria, p)
+	} else if reinicio {
+		cc.Memoria = memConPendiente(cc.Memoria, "")
 	}
 	raw, _ := json.Marshal(cc)
 	conv.State, conv.Context = state, string(raw)
@@ -514,6 +528,7 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 		return
 	}
 	next := b.draftFor(ctx, conv, cc, p, customerImage, conf)
+	next.Memoria = memEditar(memoriaActual(conv, cc), func(m map[string]any) { m["producto"] = p.Code })
 
 	var sizes []string
 	for _, v := range p.Variants {
@@ -667,6 +682,7 @@ func (b *Bot) handleSize(ctx context.Context, conv *store.Conversation, cc *conv
 		if r := b.askAgent(ctx, conv, cc, raw); r != nil && b.closingReply(ctx, conv, cc, r, p, "talla", recordar()) {
 			return
 		}
+		b.fijarPendiente(ctx, conv, cc, "talla")
 		b.reply(ctx, conv, "¿Qué talla deseas? Tenemos: "+strings.Join(sizes, ", ")+"\n(Escribe *menu* para volver al inicio.)")
 		return
 	}
@@ -715,6 +731,7 @@ func (b *Bot) sendSummary(ctx context.Context, conv *store.Conversation, cc *con
 		log.Printf("bot: reservar pedido %d: %v", cc.OrderID, err)
 	}
 	b.Notify("orders")
+	cc.Memoria = memSabemos(memoriaActual(conv, cc), "talla", v.Size) // con el resumen, la pendiente es «confirmar»
 	b.setState(ctx, conv, stConfirm, *cc)
 	b.reply(ctx, conv, fmt.Sprintf("🧾 *Resumen de tu pedido #%d*\n\n• %s %s\n• Talla: *%s*\n• Cantidad: *%d*\n• Total: *%s*\n\nTe la apartamos por *%d minutos* ⏳\n¿Confirmas tu pedido? Responde *SI* para confirmar o *NO* para cancelar.\n(Para cambiar la cantidad, escribe el número.)",
 		cc.OrderID, p.Code, p.Name, v.Size, cc.Qty, b.money(p.Price*float64(cc.Qty)), int(reserveTTL.Minutes())))
@@ -753,6 +770,7 @@ func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *c
 				return
 			}
 		}
+		b.fijarPendiente(ctx, conv, cc, "confirmar")
 		b.reply(ctx, conv, "Responde *SI* para confirmar tu pedido o *NO* para cancelarlo 🙏")
 		return
 	}
@@ -806,6 +824,7 @@ func (b *Bot) closingReply(ctx context.Context, conv *store.Conversation, cc *co
 		if strings.TrimSpace(r.Talla) != "" {
 			b.orderWithSize(ctx, conv, cc, p, r.Talla)
 		} else {
+			b.fijarPendiente(ctx, conv, cc, pendientePorEstado[conv.State])
 			b.reply(ctx, conv, recordatorio)
 		}
 		return true
@@ -844,6 +863,8 @@ func (b *Bot) closingReply(ctx context.Context, conv *store.Conversation, cc *co
 	if !strings.Contains(strings.ToLower(r.Respuesta), clave) {
 		b.reply(ctx, conv, recordatorio)
 	}
+	// Sigue en el cierre: lo que se espera es la talla o el SI, pregunte lo que pregunte el agente.
+	b.fijarPendiente(ctx, conv, cc, pendientePorEstado[conv.State])
 	return true
 }
 
@@ -872,6 +893,7 @@ func (b *Bot) handlePayment(ctx context.Context, conv *store.Conversation, cc *c
 			log.Printf("bot: ubicación pedido %d: %v", cc.OrderID, err)
 		}
 		cc.Address = true
+		cc.Memoria = memConPendiente(memoriaActual(conv, cc), "voucher")
 		b.setState(ctx, conv, stPayment, *cc)
 		b.Notify("orders")
 		b.reply(ctx, conv, "📍 ¡Anotado! Ya tengo la dirección de tu envío.\n\nCuando hagas el pago, envíame la *foto del comprobante* y lo programamos 🙌")
@@ -898,7 +920,7 @@ func (b *Bot) handlePayment(ctx context.Context, conv *store.Conversation, cc *c
 	if r.Etapa != "" && r.Etapa != "venta_confirmada" {
 		// Se arrepintió con el pedido ya confirmado (y el stock descontado): lo decide una persona.
 		b.addOrderNote(ctx, cc.OrderID, "⚠️ La clienta pidió cancelar por el chat después de confirmar. Revisar.")
-		b.setState(ctx, conv, stIdle, convContext{Etapa: r.Etapa})
+		b.setState(ctx, conv, stIdle, convContext{Etapa: r.Etapa, Memoria: cc.Memoria})
 		b.Notify("orders")
 	}
 	b.sendAgentText(ctx, conv, r)
@@ -955,6 +977,7 @@ func (b *Bot) handleLocation(ctx context.Context, conv *store.Conversation, cc *
 		if r := b.askAgent(ctx, conv, cc, in.Text); r != nil && r.Accion == "responder" && strings.TrimSpace(r.Respuesta) != "" {
 			b.sendAgentText(ctx, conv, r)
 			b.reply(ctx, conv, "Y para el envío, compárteme tu *dirección completa* con distrito y referencia, o tu *ubicación* 📍")
+			b.fijarPendiente(ctx, conv, cc, "direccion")
 			return
 		}
 	}
@@ -1076,7 +1099,8 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 	req := agente.Request{Mensaje: raw, Estado: conv.State, Negocio: b.cfg.BusinessName,
 		Cliente: b.customerName(conv), Historial: b.agentHistory(ctx, conv, raw),
 		Etapa: cc.Etapa, Conversacion: strconv.FormatInt(conv.ID, 10), Talla: cc.Size,
-		DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle}
+		DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
+		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc)}
 	if conv.State != stIdle && cc.ProductID > 0 {
 		if p, err := b.store.GetProduct(ctx, cc.ProductID); err == nil {
 			req.Producto = p.Code
@@ -1087,7 +1111,18 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 		log.Printf("bot: agente: %v", err)
 		return nil
 	}
+	b.guardarMemoria(ctx, conv, cc, r)
 	return r
+}
+
+// guardarMemoria guarda la memoria que devolvió el agente, en el mismo estado (sin tocar su pendiente): pase
+// lo que pase después (catálogo, menú, pedido), la siguiente petición la lleva.
+func (b *Bot) guardarMemoria(ctx context.Context, conv *store.Conversation, cc *convContext, r *agente.Reply) {
+	if len(r.Memoria) == 0 || string(r.Memoria) == "null" {
+		return
+	}
+	cc.Memoria = r.Memoria
+	b.setState(ctx, conv, conv.State, *cc)
 }
 
 func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) bool {
@@ -1155,12 +1190,14 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 	defer cancel()
 	req := agente.PhotoRequest{ImagenB64: base64.StdEncoding.EncodeToString(img.Data), Mensaje: msg.Body,
 		Estado: conv.State, Negocio: b.cfg.BusinessName, Cliente: b.customerName(conv),
-		Historial: b.agentHistory(ctx, conv, msg.Body), Etapa: cc.Etapa, DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle}
+		Historial: b.agentHistory(ctx, conv, msg.Body), Etapa: cc.Etapa, DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
+		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc)}
 	r, err := b.Agent.Photo(actx, req)
 	if err != nil || r.Foto == nil {
 		log.Printf("bot: agente foto: %v", err)
 		return false
 	}
+	b.guardarMemoria(ctx, conv, cc, r)
 	log.Printf("bot: agente foto=%s %s %s sim=%.3f", msg.Media, r.Foto.Caso, r.Foto.Codigo, r.Foto.Similitud)
 	if r.Accion == "codigo" {
 		if p, err := b.store.GetProductByCode(ctx, r.Codigo); err == nil && p.Active {
@@ -1170,7 +1207,7 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 	}
 	// Todo lo que no termina en pedido queda en el tablero para que una asesora haga seguimiento.
 	inquiry(fmt.Sprintf("Agente (foto): %s · %s · similitud %.2f", r.Foto.Caso, r.Foto.Codigo, r.Foto.Similitud), r.Foto.Similitud)
-	b.setState(ctx, conv, stIdle, convContext{Etapa: firstNonEmpty(r.Etapa, cc.Etapa)})
+	b.setState(ctx, conv, stIdle, convContext{Etapa: firstNonEmpty(r.Etapa, cc.Etapa), Memoria: cc.Memoria})
 	b.sendAgentText(ctx, conv, r)
 	return true
 }

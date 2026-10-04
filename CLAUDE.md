@@ -53,13 +53,19 @@ En `step()` de `backend/internal/bot/bot.go`:
 - **Después del *SI*** el estado es `esperando_pago` (`handlePayment`): el agente lleva Lima o provincia →
   total → datos de pago; **la foto que llega ahí es el comprobante** (`handleVoucher`, queda anotado en el
   pedido) y luego se pide la dirección. Sin agente sigue el flujo anterior (ubicación y una asesora cobra).
+- **Memoria de la conversación** (`internal/bot/memoria.go`): la ficha que devuelve el agente se guarda en
+  `convContext.Memoria` y viaja en cada `askAgent`/`agentPhoto`, como la etapa. Los reinicios del flujo
+  (`setState(..., convContext{})`) la conservan, como `Anuncio`, pero sueltan la pregunta pendiente. Los estados del
+  pedido fijan la suya (`esperando_talla` → `talla`, `esperando_confirmacion` → `confirmar`, `esperando_pago` →
+  `lima_o_provincia`, `esperando_ubicacion` → `direccion`). Go manda además `perfil` (tallas y prendas de los
+  pedidos confirmados anteriores) para la clienta que vuelve.
 - Si el agente no responde, el backend recurre a Gemini (`internal/ai`).
 
 ### El agente
 
 - **Tres etapas comerciales** (04-10-2026): prospección → seguimiento → cierre → venta confirmada. Las decide
-  `agente/app/etapas.py` con reglas, no el LLM: interés no es compra, el «sí» depende de lo último que
-  preguntó el bot, y con confianza < 0,60 la etapa no cambia. La etapa viaja en cada petición (`etapa`) y el
+  `agente/app/etapas.py` con reglas, no el LLM: interés no es compra, el «sí» depende de la pregunta pendiente
+  (memoria), y con confianza < 0,60 la etapa no cambia. La etapa viaja en cada petición (`etapa`) y el
   bot Go la guarda en el contexto de la conversación. Detalle, umbrales y registro `[CLASSIFIER]` en
   [`agente/README.md`](agente/README.md).
 - **Embeddings:** `Xenova/multilingual-e5-small` cuantizado (antes jina). El agente ocupa ~1,2 GiB.
@@ -71,6 +77,15 @@ En `step()` de `backend/internal/bot/bot.go`:
   (97,0 / 95,6 % frente a 98,5 / 97,1 % del e5 sin ajustar) y en producción va apagado (`KD_SETFIT_PASOS=0`).
   Forzado suma ~300 MB de RAM. Detalle y cifras en [`agente/README.md`](agente/README.md).
 - **El primer mensaje siempre es prospección** (`primer_mensaje` en `etapas.py`), salvo compra explícita.
+- **Memoria y hilo** (`agente/app/memoria.py`, 04-10-2026): una ficha por conversación (`sabemos`: ocasión,
+  día/noche, fecha, talla, estatura, color, presupuesto, envío, ciudad; `pendiente`: la pregunta que el bot dejó
+  abierta; `preguntado`, `mostrados`, `producto`, `objeciones`, `llego_por`). Llega y vuelve en cada petición
+  (`memoria`); si no llega, se reconstruye del historial. El mensaje nuevo se lee **primero** contra la pendiente;
+  los datos se extraen con reglas (y Jev propone en la misma llamada de la cascada); **la siguiente pregunta la
+  elige el código** (`memoria.siguiente`) y el LLM la recibe hecha en `SIGUIENTE PREGUNTA`. Lo ya preguntado o
+  sabido no se repite (`quitar_repetidas` lo borra si el LLM insiste). Reemplazó a `esperando_cual`,
+  `RE_PIDE_CONFIRMAR`, `talla_conocida` por historial y `_ultimos_del_bot` como fuente de verdad. Detalle en
+  [`agente/README.md`](agente/README.md) («Memoria y hilo»).
 - **Vestido del anuncio:** `KD_PRODUCTO_DEMO=V42`, pero **solo para quien llega por un anuncio de clic a
   WhatsApp** (el bot Go lo detecta en `contextInfo.externalAdReply` y lo recuerda en la conversación; si el
   título del anuncio nombra otra prenda, manda esa). Sin anuncio, «¿tienen este vestido?» → el bot pregunta

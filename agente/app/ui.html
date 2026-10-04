@@ -139,6 +139,9 @@ const msgs = $('msgs'), info = $('info'), estado = $('estado');
 let hist = [], ocupado = false, ultimoRol = '';
 // Etapa de la venta: la decide el agente; aquí solo se guarda y se devuelve en cada mensaje.
 let etapa = 'prospeccion', bitacora = [];
+// Memoria de la conversación (lo que ya sabemos de la clienta y la pregunta pendiente): la actualiza el
+// agente; aquí solo se guarda y se devuelve en cada mensaje, igual que la etapa. «Nuevo chat» la borra.
+let memoria = null;
 // Motor elegido: se recuerda en este navegador; si no hay, manda el del servidor.
 let motor = '';
 try { motor = localStorage.getItem('motor') || ''; } catch (e) {}
@@ -181,7 +184,7 @@ async function enviar(texto) {
   let j;
   try {
     const r = await fetch('chat', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, conversacion: 'web', desde_anuncio: desdeAnuncio }) });
+      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, conversacion: 'web', desde_anuncio: desdeAnuncio, memoria }) });
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
@@ -281,7 +284,7 @@ async function enviarFoto(file) {
   let j;
   try {
     const r = await fetch('foto', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ imagen_b64: dataUrl, mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, desde_anuncio: desdeAnuncio }) });
+      body: JSON.stringify({ imagen_b64: dataUrl, mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, desde_anuncio: desdeAnuncio, memoria }) });
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
@@ -296,6 +299,7 @@ const ETAPAS = [['prospeccion', 'Prospección'], ['seguimiento', 'Seguimiento'],
 // Panel de la venta: en qué etapa está, qué entendió el clasificador y por qué decidió así.
 function panelVenta(j) {
   if (j.etapa) etapa = j.etapa;
+  if (j.memoria) memoria = j.memoria;
   const idx = ETAPAS.findIndex(e => e[0] === etapa), c = j.comercial;
   if (c) bitacora.unshift({ de: c.etapa_anterior, a: etapa, intent: c.intent, p: c.confianza, motivo: c.motivo, cambio: c.transicion });
   bitacora = bitacora.slice(0, 6);
@@ -304,7 +308,23 @@ function panelVenta(j) {
     ${c ? `<div class="sub">entendió <b>${esc(c.intent)}</b> · confianza ${(c.confianza * 100).toFixed(0)} % (${esc(c.nivel)})${c.motivo ? '<br>' + esc(c.motivo) : ''}</div>
     <h2>Clasificador comercial</h2>${bars(c.clasificador)}
     ${c.jev ? `<div class="sub">Jev (con contexto${c.fuente === 'jev' ? ', decidió él' : ', el local estaba más seguro'}): <b>${esc(c.jev.intent)}</b> ${(c.jev.confianza * 100).toFixed(0)} % · ${c.jev.ms} ms</div>` : ''}` : ''}
-    ${bitacora.length ? `<h2>Decisiones</h2><ul class="bita">${bitacora.map(b => `<li>${b.cambio ? `<b>${esc(b.de)} → ${esc(b.a)}</b>` : esc(b.a)} · ${esc(b.intent)} ${(b.p * 100).toFixed(0)} %</li>`).join('')}</ul>` : ''}`;
+    ${bitacora.length ? `<h2>Decisiones</h2><ul class="bita">${bitacora.map(b => `<li>${b.cambio ? `<b>${esc(b.de)} → ${esc(b.a)}</b>` : esc(b.a)} · ${esc(b.intent)} ${(b.p * 100).toFixed(0)} %</li>`).join('')}</ul>` : ''}
+    ${panelMemoria(j)}`;
+}
+
+// Memoria: qué sabe el bot de la clienta, qué pregunta dejó abierta y cuál toca después.
+const NOMBRE_DATO = { ocasion: 'ocasión', horario: 'día/noche', fecha: 'para cuándo', talla: 'talla', estatura: 'estatura', color: 'color',
+  presupuesto: 'presupuesto', envio: 'envío', ciudad: 'ciudad', le_gusto: 'le gustó' };
+function panelMemoria(j) {
+  const m = memoria; if (!m) return '';
+  const sab = Object.entries(m.sabemos || {}).filter(([, v]) => v);
+  const l = j.lectura;
+  const leido = l && l.pendiente ? `<div class="sub">esperaba <b>${esc(l.pendiente)}</b>: ${l.respondio ? 'lo respondió' : l.espera ? 'dice que ya lo manda (se espera)' : 'no lo respondió'}</div>` : '';
+  const fuentes = l && Object.keys(l.datos || {}).length ? `<div class="sub">de este mensaje: ${Object.entries(l.datos).map(([k, v]) => `${esc(NOMBRE_DATO[k] || k)} ${esc(v)}${l.fuente && l.fuente[k] === 'jev' ? ' (Jev)' : ''}`).join(' · ')}</div>` : '';
+  return `<h2>Memoria</h2>
+    <div>Esperando: <b>${esc(m.pendiente || '—')}</b> · siguiente: <b>${esc(j.siguiente_pregunta || '—')}</b></div>${leido}${fuentes}
+    <ul>${sab.length ? sab.map(([k, v]) => `<li>${esc(NOMBRE_DATO[k] || k)}: <b>${esc(v)}</b></li>`).join('') : '<li class="sub">todavía nada</li>'}</ul>
+    <div class="sub">ya preguntó: ${esc((m.preguntado || []).join(', ') || '—')}${m.producto ? ` · prenda: ${esc(m.producto)}` : ''}${(m.mostrados || []).length ? ` · mostró: ${esc(m.mostrados.join(', '))}` : ''}${(m.objeciones || []).length ? ` · dudas: ${esc(m.objeciones.join(', '))}` : ''}${m.llego_por ? ` · llegó por: ${esc(m.llego_por)}` : ''}</div>`;
 }
 
 function pintarInfo(j) {
@@ -339,7 +359,7 @@ msgs.addEventListener('drop', ev => { ev.preventDefault(); const f = ev.dataTran
 $('rapidas').onclick = ev => { if (ev.target.tagName === 'BUTTON') enviar(ev.target.textContent); };
 let desdeAnuncio = false;
 $('anuncio').onclick = () => { desdeAnuncio = !desdeAnuncio; $('anuncio').setAttribute('aria-pressed', String(desdeAnuncio)); };
-$('nuevo').onclick = () => { if (ocupado) return; hist = []; ultimoRol = ''; etapa = 'prospeccion'; bitacora = []; msgs.innerHTML = '<div class="dia">HOY</div>'; };
+$('nuevo').onclick = () => { if (ocupado) return; hist = []; ultimoRol = ''; etapa = 'prospeccion'; bitacora = []; memoria = null; msgs.innerHTML = '<div class="dia">HOY</div>'; };
 $('verInfo').onclick = () => info.classList.add('abierto');
 $('cerrarInfo').onclick = () => info.classList.remove('abierto');
 // Botones de talla de las tarjetas: siguen activos mientras la tarjeta esté en pantalla.

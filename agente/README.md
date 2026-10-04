@@ -23,13 +23,15 @@ repitiendo «Responde SI o NO».
 | Máquina de etapas | `app/etapas.py` | Reglas explícitas, sin LLM. Devuelve la etapa nueva y el motivo |
 | Guion por etapa | `app/venta.py` | Prompt de sistema, guía de cada etapa, totales ya calculados, datos de pago |
 | Pruebas | `app/prueba_etapas.py` | 26 casos (los 7 del encargo y el primer contacto incluidos). Se ejecutan al construir la imagen: si falla uno, no hay imagen |
+| Memoria y hilo | `app/memoria.py`, `app/prueba_memoria.py` | Lo que ya sabemos de la clienta, la pregunta pendiente y la siguiente pregunta (sección siguiente). 92 casos, también en el build |
 
 Reglas de `etapas.py`:
 
 - **Interés no es compra.** «Sí, me interesa» o preguntar el precio lleva a seguimiento, nunca a cierre.
 - Solo una intención clara de compra («quiero comprarlo», «resérvamelo», «¿cómo pago?») lleva a cierre.
-- **El «sí» depende de lo último que preguntó el bot**: a «¿Confirmamos tu pedido?» es una confirmación; a
-  cualquier otra pregunta es interés. Una confirmación solo vale en cierre.
+- **El «sí» depende de la pregunta pendiente** (memoria, ver «Memoria y hilo»): con `pendiente: "confirmar"` es una
+  confirmación; con cualquier otra es interés. Una confirmación solo vale en cierre. Sin memoria (pruebas,
+  llamadas viejas) la pendiente se deduce del último mensaje del bot.
 - **Umbrales de confianza:** ≥ 0,80 se usa tal cual; entre 0,60 y 0,80 solo avanza un paso prudente (una
   intención de compra dudosa llega a seguimiento, no a cierre); < 0,60 la etapa no cambia.
 - Una objeción («está caro», «lo voy a pensar») devuelve la conversación a seguimiento, incluso desde el cierre.
@@ -53,7 +55,7 @@ guarda en el contexto de la conversación; la UI web, en memoria. Cada decisión
 nombre el título del anuncio (`anuncio`) y, si no nombra ninguna, la de `PRODUCTO_DEMO`. Sin anuncio, «¿tienen
 este vestido?» recibe «¿me compartes la foto o el nombre del vestido que viste?» (`pide_cual`): una vendedora
 no adivina. En el chat de prueba, el botón **Desde anuncio** simula la llegada por el anuncio. Mientras el bot espera saber cuál es
-(`esperando_cual`), lo que no la identifica («oh sí», «a ver un momento», «ahora te digo el nombre») recibe
+(pendiente `cual_prenda` o `describir_prenda` en la memoria), lo que no la identifica («oh sí», «a ver un momento», «ahora te digo el nombre») recibe
 «aquí te espero» sin fotos (`espera_cual`); «no la tengo / no me acuerdo» recibe «cuéntame cómo era». Solo con
 una descripción (color, largo, mangas, brillos…: `RE_DESCRIBE`) o un nombre se buscan prendas, y el LLM las
 presenta como posibles («¿es alguno de estos?»), nunca como «el que mencionaste». Con anuncio, la
@@ -81,6 +83,75 @@ anotado en el pedido) y luego se pide la dirección.
 | Stock | Herramienta, no conocimiento: `GET /api/public/stock?codes=…` del backend en el momento de responder (`app/stock.py`). Disponible = físico − reservas vigentes, más stock por sucursal. |
 | Few-shot | Los 4 ejemplos más parecidos de los datasets se pasan al LLM como guía de tono. |
 | LLM | `deepseek/deepseek-v4-flash` por OpenRouter, con `deepseek/deepseek-chat-v3.1` de respaldo. Sin clave o sin red, devuelve la respuesta de referencia del ejemplo más parecido. |
+
+## Memoria y hilo (04-10-2026)
+
+Antes el agente no tenía memoria: en cada mensaje releía los últimos 8–14 mensajes y adivinaba. Tras «¿me
+compartes la foto o el nombre del vestido?», un «oh sí» llegaba al LLM, que inventaba un vestido («te paso el que
+mencionaste») y mandaba fotos al azar; volvía a preguntar «¿qué te gustó del modelo?» o la ocasión ya contestada.
+Cada síntoma tenía su parche (`esperando_cual`, `RE_PIDE_CONFIRMAR`, `talla_conocida`, `_ultimos_del_bot`). Ahora
+hay un solo mecanismo: una **ficha de la conversación** que se actualiza en cada mensaje y viaja con la petición,
+igual que la etapa.
+
+```json
+{"etapa":"seguimiento","producto":"V42","mostrados":["V42"],"pendiente":"que_le_gusto",
+ "sabemos":{"ocasion":"matrimonio","horario":"noche","fecha":null,"talla":"M","estatura":null,"color":null,
+            "presupuesto":null,"envio":null,"ciudad":null,"le_gusto":null},
+ "objeciones":["precio"],"llego_por":"anuncio V42","preguntado":["ocasion","horario","talla","fecha","que_le_gusto"]}
+```
+
+1. **La pregunta pendiente (el hilo).** Cada vez que el bot pregunta algo se anota qué espera: `cual_prenda`,
+   `describir_prenda`, `ocasion`, `horario`, `talla`, `estatura`, `color`, `fecha`, `que_le_gusto`, `separar`,
+   `confirmar`, `lima_o_provincia`, `pago`, `voucher`, `direccion`, `otras_opciones`, `foto`. Si la pregunta la
+   hace el código (flujo del pedido, «¿cuál es?») la fija él; si la redacta el LLM, se reconoce en su texto
+   (`memoria.DETECTOR`, solo en las frases con «?»). El mensaje siguiente se lee **primero** como respuesta a esa
+   pendiente (`memoria.leer`): si la responde, se guarda el dato y se limpia; si no («a ver un momento»), sigue
+   pendiente y nadie la inventa. `cual_prenda`, `describir_prenda`, `confirmar`, `voucher`, `direccion` y `foto` no
+   se sueltan solas: hasta que se respondan. Las demás se sueltan si el bot no vuelve a preguntar.
+2. **Extraer, no adivinar.** De cada mensaje de la clienta se sacan con reglas los datos que trae (talla, fecha,
+   estatura, ciudad y Lima/provincia, ocasión, día/noche, color, presupuesto). Una letra suelta solo es talla si se
+   preguntó la talla o el mensaje es corto («mido 1.60 m» no es talla M); «hoy» solo es fecha si se preguntó para
+   cuándo; una ocasión genérica («la fiesta es de noche») no pisa una concreta («matrimonio»).
+   Con Jev en `cascada`, la **misma** llamada de la cascada lleva además preguntas tipadas de memoria (ocasión y
+   talla como `choice`, día/noche, y `noul` «¿el mensaje responde a la pregunta pendiente?»). Se llama a Jev si el
+   clasificador local duda **o** si hay una pendiente de ocasión, talla, día/noche o «¿cuál es?» que las reglas no
+   resolvieron; nunca dos veces por mensaje. Jev propone (umbral 0,80, `JEV_UMBRAL_MEMORIA`); si las reglas
+   encontraron el dato, mandan ellas. En `sombra` lo de Jev solo queda en `[JEV]`. Sin Jev, solo reglas.
+3. **La siguiente pregunta la elige el código** (`memoria.siguiente`): la primera de la etapa que no se sepa ni
+   se haya hecho ya (`memoria.ORDEN`):
+
+   | Etapa | Orden |
+   |---|---|
+   | prospección | ocasión → día/noche → talla → estatura → color |
+   | seguimiento | para cuándo → qué le gustó (una vez) → ¿separarlo? |
+   | cierre | talla → confirmar (lo lleva el flujo del pedido) |
+   | venta confirmada | Lima o provincia → ¿te paso los datos de pago? → comprobante |
+
+   El LLM recibe en el prompt `LO QUE YA SABEMOS`, `ESTÁS ESPERANDO` y `SIGUIENTE PREGUNTA: «…» (hazla tal cual,
+   o no preguntes nada)`; el historial queda como contexto de tono. Si aun así el LLM repite una pregunta ya hecha
+   o ya contestada, `memoria.quitar_repetidas` la quita de su texto (con el porqué que cuelga de ella).
+
+**Dónde vive.** El agente sigue sin estado: `ChatIn.memoria` y `FotoIn.memoria` (opcionales) y la respuesta trae
+`memoria` actualizada, `siguiente_pregunta` y `lectura` (qué pasó con la pendiente). Si no llega memoria (llamadas
+viejas), `memoria.reconstruir` la arma repasando el historial con las mismas reglas.
+
+- **Bot Go** (`backend/internal/bot/memoria.go`): la guarda en `convContext.Memoria` (JSON opaco, para no perder
+  campos que el agente añada), la manda en `askAgent` y `agentPhoto` y guarda la que vuelve. Los reinicios del
+  flujo (`setState(..., convContext{})`) conservan la memoria, como el anuncio, pero sueltan la pendiente. Al entrar
+  en un estado del pedido Go fija su pendiente: `esperando_talla` → `talla`, `esperando_confirmacion` →
+  `confirmar` (y `sabemos.talla`), `esperando_pago` → `lima_o_provincia`, `esperando_ubicacion` → `direccion`. Si
+  en pleno cierre el agente contesta una duda con su propia pregunta, la pendiente vuelve a la del estado.
+- **Clienta que vuelve:** Go manda `perfil` (`nombre`, `tallas` y `productos` de sus pedidos confirmados
+  anteriores, el más reciente primero, y cuántos). El agente prellena `sabemos.talla` si no la dijo hoy y el LLM
+  puede mencionarlo una vez («¡qué gusto que vuelvas!»).
+- **Chat web de prueba:** guarda `memoria` en JS, la manda y la enseña en el panel de análisis (sección
+  «Memoria»: qué espera, qué pregunta toca, lo que sabe y de dónde salió cada dato). «Nuevo chat» la borra.
+
+**Medido el 04-10-2026** (Mac, mismo guion desde anuncio de 11 mensajes, misma imagen salvo este cambio, Jev en
+cascada con verificación): latencia media 2,00 s antes y 1,95 s después (la llamada a Jev de memoria solo ocurre con
+una pendiente sin resolver; el resto es ruido del LLM); RAM 1,178 GiB antes y 1,149 GiB después (sin diferencia
+medible). Sin memoria, en una corrida del mismo guion el bot preguntó dos veces «¿qué es lo que más te gustó del
+modelo?»; con memoria, ninguna pregunta se repite.
 
 ## Decisiones: SetFit (local) y Jev (TypeSafe) (04-10-2026)
 
@@ -311,8 +382,8 @@ curl -s 127.0.0.1:18482/metricas           # métricas del entrenamiento
 docker compose exec agente python -m app.evaluar --n 45   # rúbrica + juez → /data/rubrica_evaluada.csv
 ```
 
-API: `POST /chat {mensaje, historial:[{rol, texto}], cliente, estado}` devuelve `{intencion, confianza,
-accion, codigo, respuesta, fichas, ejemplos}`. `POST /clasificar {texto}` devuelve sólo la clasificación.
+API: `POST /chat {mensaje, historial:[{rol, texto}], cliente, estado, etapa, memoria, perfil}` devuelve `{intencion,
+confianza, accion, codigo, respuesta, fichas, ejemplos, etapa, memoria, siguiente_pregunta}`. `POST /clasificar {texto}` devuelve sólo la clasificación.
 
 Para re-entrenar con datos nuevos, edita los CSV de `data/` y reconstruye la imagen.
 

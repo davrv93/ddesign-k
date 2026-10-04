@@ -88,15 +88,72 @@ def activo() -> bool:
     return MODO in ("sombra", "cascada") and bool(CLAVE)
 
 
-def estado(mensaje: str, historial: list[dict], etapa: str, ultimo_bot: str, producto: str = "") -> dict:
+def estado(mensaje: str, historial: list[dict], etapa: str, ultimo_bot: str, producto: str = "",
+           pendiente: str = "", sabemos: str = "") -> dict:
     """El estado que ve Jev. Sin el nombre de la clienta."""
-    return {
+    st = {
         "etapa_de_venta": etapa or "prospeccion",
         "producto_en_conversacion": producto or "ninguno",
         "historial": historial[-8:],
         "ultimo_mensaje_del_bot": ultimo_bot,
         "mensaje_de_la_clienta": mensaje,
     }
+    if pendiente:
+        st["pregunta_pendiente_del_bot"] = pendiente
+    if sabemos:
+        st["lo_que_ya_sabemos"] = sabemos
+    return st
+
+
+# Memoria de la conversación (app/memoria.py): datos cerrados que las reglas a veces no ven. Van en la MISMA
+# llamada que la intención, nunca en otra. Jev propone; si las reglas encontraron el dato, mandan ellas.
+OCASIONES = {
+    "matrimonio": "Una boda o matrimonio (propio o de alguien).", "graduacion": "Una graduación o promoción.",
+    "quinceanero": "Un quinceañero o fiesta de 15 años.", "cumpleanos": "Un cumpleaños.",
+    "bautizo": "Un bautizo, primera comunión o confirmación.", "cena": "Una cena.", "gala": "Una gala o evento de etiqueta.",
+    "fiesta": "Otra fiesta o celebración.", "trabajo": "El trabajo, la oficina o una entrevista.",
+    "ninguna": "El mensaje no dice para qué ocasión es.",
+}
+TALLAS = {"XS": "Talla XS.", "S": "Talla S o chica.", "M": "Talla M o mediana.", "L": "Talla L o grande.",
+          "XL": "Talla XL.", "ninguna": "El mensaje no dice qué talla usa."}
+HORARIOS = {"dia": "El evento es de día (mañana, tarde, mediodía).", "noche": "El evento es de noche.",
+            "ninguno": "El mensaje no dice si es de día o de noche."}
+UMBRAL_MEMORIA = float(os.environ.get("JEV_UMBRAL_MEMORIA", "0.80"))
+
+
+def preguntas_memoria(pendiente: str) -> dict:
+    q = {
+        "ocasion": {"type": "choice", "instructions": "¿Para qué ocasión dice `mensaje_de_la_clienta` que busca la prenda? "
+                    "Solo lo que diga ese mensaje (o su respuesta a `pregunta_pendiente_del_bot`).", "criteria": OCASIONES},
+        "talla": {"type": "choice", "instructions": "¿Qué talla dice usar la clienta en `mensaje_de_la_clienta`? «ninguna» "
+                  "si no lo dice o solo pregunta por tallas.", "criteria": TALLAS},
+        "horario": {"type": "choice", "instructions": "¿`mensaje_de_la_clienta` dice si su evento es de día o de noche?",
+                    "criteria": HORARIOS},
+    }
+    if pendiente:
+        q["responde"] = {"type": "noul", "instructions": "¿`mensaje_de_la_clienta` responde de verdad a la pregunta "
+                         "`pregunta_pendiente_del_bot` (da el dato que se le pidió)? «oh sí», «un momento» o «ahora te "
+                         "digo» NO la responden: solo anuncian que lo hará."}
+    return q
+
+
+def _memoria_de(ans: dict) -> dict:
+    """Las respuestas de memoria que pasan el umbral: {campo: valor, "responde": bool}."""
+    out, probs = {}, {}
+    for k, nada in (("ocasion", "ninguna"), ("talla", "ninguna"), ("horario", "ninguno")):
+        a = ans.get(k) or {}
+        ch = a.get("choice")
+        p = float((a.get("probabilities") or {}).get(ch, a.get("confidence", 0)) or 0)
+        if ch:
+            probs[k] = (ch, round(p, 3))
+        if ch and ch != nada and p >= UMBRAL_MEMORIA:
+            out[k] = ch
+    if "responde" in ans:
+        p = float(ans["responde"].get("noul", 0))
+        probs["responde"] = round(p, 3)
+        out["responde"] = p >= UMBRAL_MEMORIA
+    out["_probs"] = probs
+    return out
 
 
 def _evaluar(state, preguntas: dict) -> tuple[dict, dict]:
@@ -109,33 +166,40 @@ def _evaluar(state, preguntas: dict) -> tuple[dict, dict]:
     return j.get("answers") or {}, {"ms": int((time.time() - t0) * 1000), "tokens": uso.get("input_tokens"), "costo": uso.get("cost")}
 
 
-def clasificar(st: dict) -> dict | None:
-    """Intención comercial con contexto, más tres señales sí/no. None si Jev no respondió."""
+def clasificar(st: dict, memoria: bool = False) -> dict | None:
+    """Intención comercial con contexto, más tres señales sí/no. None si Jev no respondió.
+    Con `memoria`, en la misma llamada van las preguntas de la ficha (ocasión, talla, día/noche y, si hay
+    pregunta pendiente, si el mensaje la responde): vuelven en «memoria»."""
     if not CLAVE:
         return None
     preguntas = {"intencion": {"type": "choice", "instructions": PREGUNTA_INTENCION, "criteria": INTENCIONES}}
     preguntas |= {k: {"type": "noul", "instructions": v} for k, v in SENALES.items()}
+    if memoria:
+        preguntas |= preguntas_memoria(st.get("pregunta_pendiente_del_bot", ""))
     try:
         ans, meta = _evaluar(st, preguntas)
         it = ans["intencion"]
         probs = it.get("probabilities") or {}
         return {"intent": it["choice"], "confianza": round(float(probs.get(it["choice"], it.get("confidence", 0))), 3),
                 "probabilidades": {k: round(v, 3) for k, v in sorted(probs.items(), key=lambda x: -x[1])[:3]},
-                "senales": {k: round(float(ans[k]["noul"]), 3) for k in SENALES if k in ans}} | meta
+                "senales": {k: round(float(ans[k]["noul"]), 3) for k in SENALES if k in ans},
+                "memoria": _memoria_de(ans) if memoria else None} | meta
     except Exception as e:  # sin Jev el bot sigue con el clasificador local
         log.warning("Jev no respondió: %s", e)
         return None
 
 
-def sombra(st: dict, local: dict, conversacion: str) -> None:
-    """Modo sombra: Jev clasifica en segundo plano y queda en el registro junto a la decisión local."""
+def sombra(st: dict, local: dict, conversacion: str, memoria: dict | None = None) -> None:
+    """Modo sombra: Jev clasifica en segundo plano y queda en el registro junto a la decisión local.
+    `memoria`: lo que sacaron las reglas, para comparar con lo que propone Jev (no cambia nada)."""
     def tarea():
-        j = clasificar(st)
+        j = clasificar(st, memoria=memoria is not None)
         if j:
             log.info("[JEV] %s", json.dumps({
                 "conversation_id": conversacion, "mensaje": st["mensaje_de_la_clienta"][:200],
                 "local": {"intent": local["intent"], "confianza": round(float(local["confianza"]), 3)},
                 "jev": {k: j[k] for k in ("intent", "confianza", "probabilidades", "senales", "ms")},
+                "memoria": {"reglas": memoria, "jev": (j.get("memoria") or {}).get("_probs")} if memoria is not None else None,
                 "coincide": j["intent"] == local["intent"]}, ensure_ascii=False))
     _fondo.submit(tarea)
 

@@ -59,6 +59,15 @@ curl -s -X POST https://proyectopostventa.site/demo-design/chat -H 'Content-Type
   caso en `app/prueba_etapas.py` (`python3 -m app.prueba_etapas`, sin dependencias). Los ejemplos del
   clasificador comercial van en `data/comercial.csv`; `data/prueba_comercial.csv` no entra al entrenamiento.
   En el bot Go, las pruebas del flujo por etapas están en `internal/bot/etapas_test.go`.
+- **Agente, memoria y hilo:** la ficha de la conversación vive en `app/memoria.py` y se prueba con
+  `python3 -m app.prueba_memoria` (sin dependencias; también corre en el build). Una pregunta nueva del bot lleva
+  su clave en `PREGUNTAS` (texto que se le da al LLM) **y** en `DETECTOR` (cómo se reconoce en una respuesta): la
+  prueba comprueba que cada pregunta se reconozca a sí misma; si no, nunca quedaría pendiente y se repetiría. Un
+  dato nuevo va en `CAMPOS`, en `extraer` con su caso y, si se pregunta, en `ORDEN` de su etapa. No vuelvas a
+  decidir nada mirando «lo último que dijo el bot» en el historial: usa `pendiente`. En el bot Go, la memoria es
+  JSON opaco (`internal/bot/memoria.go`): solo se tocan `pendiente`, `sabemos.talla` y `producto`, siempre
+  partiendo de `memoriaActual` (editar un `convContext{}` nuevo la reemplazaría por una vacía); sus pruebas están
+  en `internal/bot/memoria_test.go`.
 - **Agente, Jev:** las 20 intenciones que ve Jev están descritas en `INTENCIONES` de `app/jev.py`; si se añade
   una intención a `comercial.csv`, va también ahí. Se mide con `python -m app.evaluar_jev --local …` dentro
   del contenedor (llamadas de pago, ~US$ 0,004). Jev nunca decide la etapa: solo entrega intención y confianza

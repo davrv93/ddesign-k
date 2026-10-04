@@ -17,6 +17,8 @@ from __future__ import annotations
 import re
 import unicodedata
 
+from . import memoria
+
 ETAPAS = ("prospeccion", "seguimiento", "cierre", "venta_confirmada")
 ORDEN = {e: i for i, e in enumerate(ETAPAS)}
 
@@ -48,20 +50,20 @@ RE_COMPRA = re.compile(
     r"|quisiera (apartar|separar|reservar|comprar)\w*|deseo comprar\w*)")
 # El botón de talla de las tarjetas de la web: elegir talla es querer esa prenda.
 RE_BOTON_TALLA = re.compile(r"^talla\s+\w+\s+del\s+[a-z]{1,3}-?\d+")
-# ¿El último mensaje del bot pedía confirmar la compra?
-RE_PIDE_CONFIRMAR = re.compile(r"¿\s*confirm(amos|as)\b|confirmar tu pedido|para confirmar tu pedido|confirmamos la (talla|compra)")
-
-
 def pide_confirmar(ultimo_bot: str) -> bool:
-    return bool(RE_PIDE_CONFIRMAR.search(_plano(ultimo_bot)))
+    """¿El último mensaje del bot pedía confirmar la compra? Es la pregunta pendiente «confirmar» de la memoria;
+    esto solo se usa cuando quien llama no manda la pendiente (pruebas y llamadas viejas)."""
+    return memoria.pregunta_de(ultimo_bot) == "confirmar"
 
 
-def decidir(etapa: str, intent: str, confianza: float, mensaje: str, ultimo_bot: str = "", primer_mensaje: bool = False) -> dict:
-    """Devuelve la etapa nueva y la intención final, con el motivo de cada decisión (para el registro)."""
+def decidir(etapa: str, intent: str, confianza: float, mensaje: str, ultimo_bot: str = "", primer_mensaje: bool = False,
+            pendiente: str | None = None) -> dict:
+    """Devuelve la etapa nueva y la intención final, con el motivo de cada decisión (para el registro).
+    `pendiente` es la pregunta que el bot dejó abierta (memoria); sin ella se deduce de `ultimo_bot`."""
     etapa = etapa if etapa in ORDEN else "prospeccion"
     texto, motivos = _plano(mensaje), []
     corto = len(texto) <= 24
-    confirma = pide_confirmar(ultimo_bot)
+    confirma = (pendiente == "confirmar") if pendiente is not None else pide_confirmar(ultimo_bot)
 
     # 1. Reglas de contexto: corrigen la intención antes de mirar umbrales.
     if RE_BOTON_TALLA.search(texto):
