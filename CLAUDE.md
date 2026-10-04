@@ -87,6 +87,7 @@ En `step()` de `backend/internal/bot/bot.go`:
 | Dominio | `proyectopostventa.site` (DNS en DonWeb). Certificado Let's Encrypt, renovado por webroot |
 | Panel | `https://proyectopostventa.site/baruka/` (catálogo público en `/baruka/catalogo`) |
 | Chat de prueba | `https://proyectopostventa.site/demo-design/` |
+| Página de demo | `https://proyectopostventa.site/demo/` — un enlace con tres tarjetas: landing, panel con el QR y chat (`demo-hub/`) |
 | Código | `~/kddesign` (copiado con rsync, **sin `.git`**). `docker-compose.override.yml` existe **solo en el servidor** |
 | Borde | `~/landing`: contenedor `landing_web`, que además sirve la landing de consultoría en `/` |
 

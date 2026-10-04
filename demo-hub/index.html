@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Baruka Design — Demo</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Inter:wght@300;400;500&display=swap">
+  <style>
+    /* Mismos tokens que landing-baruka/styles.css: la demo se ve como parte de la marca. */
+    :root {
+      --marfil: #F5F1EA;
+      --tinta: #0B0B0C;
+      --cobalto: #1F3FBF;
+      --hielo: #A9C4F5;
+      --tinta-60: rgba(11, 11, 12, .6);
+      --tinta-15: rgba(11, 11, 12, .15);
+      --marfil-70: rgba(245, 241, 234, .7);
+      --font-display: "Bodoni Moda", "Didot", "Playfair Display", Georgia, serif;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --gutter: clamp(1rem, 5vw, 5rem);
+      --ease-out: cubic-bezier(.16, 1, .3, 1);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; min-height: 100vh; min-height: 100dvh;
+      display: flex; flex-direction: column;
+      background: var(--marfil); color: var(--tinta);
+      font-family: var(--font-sans); font-weight: 300; line-height: 1.5;
+    }
+    a { color: inherit; text-decoration: none; }
+    :focus-visible { outline: 2px solid var(--cobalto); outline-offset: 4px; }
+
+    header { padding: clamp(1.5rem, 4vw, 3rem) var(--gutter) 0; display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .marca { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.6rem, 9vw, 6.5rem); line-height: .9; letter-spacing: -.02em; margin: 0; }
+    .marca em { font-weight: 400; color: var(--cobalto); }
+    .meta { font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--tinta-60); margin: 0; }
+    .intro { padding: 1rem var(--gutter) 0; max-width: 46rem; color: var(--tinta-60); margin: 0; font-size: clamp(.95rem, 1.1vw, 1.1rem); }
+
+    main { flex: 1; padding: clamp(1.5rem, 3vw, 2.5rem) var(--gutter) clamp(1.5rem, 3vw, 2.5rem); }
+    .piezas { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(.75rem, 1.6vw, 1.5rem); grid-template-columns: repeat(3, minmax(0, 1fr)); height: 100%; }
+    @media (max-width: 880px) { .piezas { grid-template-columns: 1fr; } }
+
+    .pieza { position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: clamp(15rem, 52vh, 34rem); padding: clamp(1.1rem, 2vw, 1.75rem); overflow: hidden; isolation: isolate; transition: transform .5s var(--ease-out); }
+    .pieza:hover, .pieza:focus-visible { transform: translateY(-6px); }
+    .pieza__num { position: absolute; top: clamp(1rem, 2vw, 1.5rem); left: clamp(1.1rem, 2vw, 1.75rem); font-family: var(--font-display); font-style: italic; font-size: 1.1rem; }
+    .pieza__estado { position: absolute; top: clamp(1rem, 2vw, 1.5rem); right: clamp(1.1rem, 2vw, 1.75rem); display: flex; align-items: center; gap: .45rem; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; }
+    .pieza__estado i { width: .5rem; height: .5rem; border-radius: 50%; background: currentColor; opacity: .35; }
+    .pieza__estado[data-ok="1"] i { background: #4ade80; opacity: 1; }
+    .pieza__estado[data-ok="0"] i { background: #f87171; opacity: 1; }
+    .pieza__titulo { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.9rem, 3.4vw, 3.2rem); line-height: 1; margin: 0 0 .6rem; letter-spacing: -.01em; }
+    .pieza__texto { margin: 0 0 1.1rem; max-width: 26rem; font-size: .95rem; }
+    .pieza__ir { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: .9rem; border-top: 1px solid currentColor; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; }
+    .pieza__ir svg { width: 1.6rem; height: 1.6rem; transition: transform .5s var(--ease-out); flex: none; }
+    .pieza:hover .pieza__ir svg, .pieza:focus-visible .pieza__ir svg { transform: translateX(6px); }
+    .pieza__figura { position: absolute; z-index: -1; }
+
+    /* 01 Landing: la foto de campaña con un velo para que el texto se lea. */
+    .pieza--landing { color: var(--marfil); background: var(--tinta); }
+    .pieza--landing .pieza__figura { inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; transition: transform 1.2s var(--ease-out); }
+    .pieza--landing:hover .pieza__figura { transform: scale(1.04); }
+    .pieza--landing::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(11,11,12,.35) 0%, rgba(11,11,12,0) 28%, rgba(11,11,12,.55) 58%, rgba(11,11,12,.9) 100%); }
+
+    /* 02 Panel: tinta con un QR dibujado. */
+    .pieza--panel { color: var(--marfil); background: var(--tinta); }
+    .pieza--panel .pieza__figura { right: -8%; top: 12%; width: 62%; opacity: .16; }
+    .pieza--panel .pieza__texto { color: var(--marfil-70); }
+
+    /* 03 Chat: cobalto con burbujas. */
+    .pieza--chat { color: var(--marfil); background: var(--cobalto); }
+    .pieza--chat .pieza__figura { right: 8%; top: 16%; width: 58%; opacity: .9; }
+    .pieza--chat .pieza__texto { color: rgba(245, 241, 234, .82); }
+
+    footer { padding: 0 var(--gutter) clamp(1.25rem, 3vw, 2rem); display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta-60); }
+    footer a { border-bottom: 1px solid var(--tinta-15); }
+    footer a:hover { color: var(--cobalto); border-color: var(--cobalto); }
+    kbd { font: inherit; border: 1px solid var(--tinta-15); border-radius: 4px; padding: 0 .4em; }
+    @media (hover: none) { .teclas { display: none; } }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="marca">Baruka <em>Demo</em></h1>
+    <p class="meta">Tres piezas — un enlace</p>
+  </header>
+  <p class="intro">La marca, el sistema que vincula el WhatsApp de la tienda y la asistente que conversa con las clientas. Cada pieza se abre en una pestaña nueva; esta página queda aquí para volver.</p>
+
+  <main>
+    <ul class="piezas">
+      <li>
+        <a class="pieza pieza--landing" href="/landing-baruka/" target="_blank" rel="noopener" data-tecla="1">
+          <img class="pieza__figura" src="/landing-baruka/img/editorial-1.jpg" alt="" width="900" height="1200">
+          <span class="pieza__num">01</span>
+          <h2 class="pieza__titulo">Landing</h2>
+          <p class="pieza__texto">La página de la marca: campaña, colección y el camino hacia el WhatsApp de la tienda.</p>
+          <span class="pieza__ir">Ver la landing
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg></span>
+        </a>
+      </li>
+      <li>
+        <a class="pieza pieza--panel" href="/baruka/whatsapp" target="_blank" rel="noopener" data-tecla="2">
+          <svg class="pieza__figura" viewBox="0 0 29 29" fill="currentColor" aria-hidden="true" shape-rendering="crispEdges">
+            <path d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM22 0h7v7h-7zM23 1v5h5V1zM24 2h3v3h-3zM0 22h7v7H0zM1 23v5h5v-5zM2 24h3v3H2z" fill-rule="evenodd"/>
+            <path d="M9 0h2v1H9zM12 0h1v3h-1zM14 1h3v1h-3zM18 0h2v2h-2zM9 3h2v2H9zM15 3h1v3h-1zM17 4h3v1h-3zM11 6h3v1h-3zM0 9h2v1H0zM3 9h3v2H3zM8 9h1v3H8zM10 9h4v1h-4zM16 8h2v3h-2zM20 9h3v1h-3zM25 9h4v1h-4zM0 12h1v3H0zM2 13h4v1H2zM10 12h2v2h-2zM13 11h2v4h-2zM18 12h3v2h-3zM23 12h2v1h-2zM27 12h2v3h-2zM4 16h3v1H4zM8 15h3v2H8zM16 15h2v1h-2zM20 16h2v3h-2zM24 15h2v2h-2zM0 18h3v2H0zM9 19h2v1H9zM12 18h3v3h-3zM17 18h1v4h-1zM23 19h4v1h-4zM9 22h2v3H9zM13 23h3v1h-3zM19 22h2v2h-2zM23 22h1v3h-1zM26 22h3v2h-3zM12 26h2v3h-2zM16 25h2v2h-2zM20 26h3v1h-3zM25 26h2v3h-2zM9 27h1v2H9zM18 28h3v1h-3z"/>
+          </svg>
+          <span class="pieza__num">02</span>
+          <span class="pieza__estado" id="estado-panel"><i></i><span>Comprobando</span></span>
+          <h2 class="pieza__titulo">Sistema de escaneo</h2>
+          <p class="pieza__texto">El panel de la tienda: se escanea un QR para vincular el WhatsApp y desde ahí se ven pedidos, conversaciones y stock.</p>
+          <span class="pieza__ir">Abrir el panel
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg></span>
+        </a>
+      </li>
+      <li>
+        <a class="pieza pieza--chat" href="/demo-design/" target="_blank" rel="noopener" data-tecla="3">
+          <svg class="pieza__figura" viewBox="0 0 220 170" aria-hidden="true">
+            <rect x="0" y="0" width="150" height="46" rx="14" fill="#F5F1EA" opacity=".95"/>
+            <rect x="16" y="15" width="92" height="5" rx="2.5" fill="#1F3FBF" opacity=".55"/>
+            <rect x="16" y="27" width="58" height="5" rx="2.5" fill="#1F3FBF" opacity=".3"/>
+            <rect x="86" y="60" width="134" height="46" rx="14" fill="#A9C4F5"/>
+            <rect x="102" y="75" width="98" height="5" rx="2.5" fill="#0B0B0C" opacity=".45"/>
+            <rect x="102" y="87" width="64" height="5" rx="2.5" fill="#0B0B0C" opacity=".25"/>
+            <rect x="0" y="120" width="92" height="40" rx="14" fill="#F5F1EA" opacity=".95"/>
+            <circle cx="28" cy="140" r="5" fill="#1F3FBF" opacity=".5"/><circle cx="46" cy="140" r="5" fill="#1F3FBF" opacity=".35"/><circle cx="64" cy="140" r="5" fill="#1F3FBF" opacity=".2"/>
+          </svg>
+          <span class="pieza__num">03</span>
+          <span class="pieza__estado" id="estado-chat"><i></i><span>Comprobando</span></span>
+          <h2 class="pieza__titulo">Chatbot web</h2>
+          <p class="pieza__texto">La misma asistente que atiende el WhatsApp, en el navegador: conversa, recomienda prendas, reconoce fotos y arma el pedido.</p>
+          <span class="pieza__ir">Conversar
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg></span>
+        </a>
+      </li>
+    </ul>
+  </main>
+
+  <footer>
+    <span class="teclas">Atajos: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></span>
+    <span>También: <a href="/baruka/catalogo" target="_blank" rel="noopener">catálogo público</a></span>
+  </footer>
+
+  <script>
+    // Atajos de teclado para presentar sin buscar el ratón.
+    addEventListener('keydown', function (ev) {
+      if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+      var a = document.querySelector('[data-tecla="' + ev.key + '"]');
+      if (a) window.open(a.href, '_blank', 'noopener');
+    });
+    // Punto verde o rojo: saber antes de hacer clic si la pieza responde.
+    function comprobar(id, url, texto) {
+      var el = document.getElementById(id), etiqueta = el.querySelector('span');
+      var corte = new AbortController(), t = setTimeout(function () { corte.abort(); }, 8000);
+      fetch(url, { cache: 'no-store', signal: corte.signal })
+        .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+        .then(function (j) { el.dataset.ok = '1'; etiqueta.textContent = texto(j); })
+        .catch(function () { el.dataset.ok = '0'; etiqueta.textContent = 'Sin respuesta'; })
+        .finally(function () { clearTimeout(t); });
+    }
+    comprobar('estado-chat', '/demo-design/health', function () { return 'En línea'; });
+    comprobar('estado-panel', '/baruka/api/public/info', function () { return 'En línea'; });
+  </script>
+</body>
+</html>

@@ -120,6 +120,20 @@ Rutas actuales: `/` es la landing estática; `/baruka/` va a `kddesign_frontend`
 `/baruka/api/events` sin buffer porque es SSE; `/demo-design/` va a `kddesign_agente`. Las tres usan
 `resolver 127.0.0.11` y una variable, para que nginx arranque aunque un contenedor esté caído.
 
+## 5.1 Página de demo (`/demo/`)
+
+`demo-hub/index.html` es un único archivo estático: tres tarjetas que abren la landing
+(`/landing-baruka/`), el panel con el QR (`/baruka/whatsapp`) y el chat (`/demo-design/`). Vive en
+`~/landing/site/demo/`, que el borde ya sirve con su `location /`; no toca `nginx.conf`.
+
+```bash
+rsync -az -e "ssh -i $K" $R/demo-hub/index.html "${H}:landing/site/demo/index.html"   # ${H}: zsh se come «$H:l»
+curl -s -o /dev/null -w "%{http_code}\n" https://proyectopostventa.site/demo/         # 200
+```
+
+Los puntos «En línea» consultan `/baruka/api/public/info` y `/demo-design/health`. Las fotos salen de
+`/landing-baruka/img/`: si se quita esa landing, la primera tarjeta se queda sin imagen.
+
 ## 6. WhatsApp
 
 Para vincular o volver a vincular: entra a `https://proyectopostventa.site/baruka/whatsapp`, pulsa
