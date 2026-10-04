@@ -297,7 +297,7 @@ Reglas que no se rompen:
   "ninguna", no prometas fotos. No presiones ni repitas la invitación si la clienta ya dijo que no.
 - No repitas frases de tus mensajes anteriores del HISTORIAL.
 Opciones del bot que puedes sugerir: *1* catálogo, *2* consultar con foto, *3* estado del pedido, *4* asesora.
-Escribe solo el texto del mensaje, sin comillas ni prefijos."""
+Cada foto lleva su propio pie con código, precio y tallas: no escribas listas de códigos, precios ni tallas, ni\nfrases como «Escribe V24 para pedirlo».\nEscribe solo el texto del mensaje, sin comillas ni prefijos."""
 
 
 SISTEMA_PERSONA = """Eres la asesora de ventas de WhatsApp de "{negocio}", una tienda de ropa de mujer en Perú.
@@ -342,7 +342,7 @@ Reglas que no se rompen:
 - No repitas frases de tus mensajes anteriores del HISTORIAL.
 Para comprar: escribe el *código* del modelo y el bot le pide talla y le confirma. Opciones del bot: *1* catálogo,
 *2* consultar con foto, *3* estado del pedido, *4* asesora.
-Escribe solo el texto del mensaje, sin comillas ni prefijos."""
+Cada foto lleva su propio pie con código, precio y tallas: no escribas listas de códigos, precios ni tallas, ni\nfrases como «Escribe V24 para pedirlo».\nEscribe solo el texto del mensaje, sin comillas ni prefijos."""
 
 
 def info_tienda() -> str:
@@ -378,9 +378,32 @@ def _nota_oferta(ofrecer: bool) -> str:
             if ofrecer else "")
 
 
+# Un pie de foto del bot: «*V24* Conjunto… / Tallas: … / 👉 Escribe *V24* para pedirlo».
+RE_PIE = re.compile(r"👉|^\*?[A-Z]{1,3}-?\d{1,3}\*?\s+\S[^\n]*\n(Tallas:|Agotado|Hay en:)")
+RE_PARRAFO_PIE = re.compile(r"👉|Escribe \*?[A-Z]{1,3}-?\d{1,3}\*? para pedirlo", re.I)
+
+
+def _hist_llm(turnos) -> str:
+    """Historial para el LLM. Los pies de foto se resumen en una línea: si los ve enteros los imita y
+    escribe «V24 · Conjunto… Tallas: L, M, S 👉 Escribe V24» como texto, duplicando las fotos."""
+    out = []
+    for t in turnos:
+        if t.rol != "cliente" and RE_PIE.search(t.texto):
+            out.append(f"{t.rol}: [envió la foto de {t.texto.splitlines()[0].replace('*', '')}]")
+        else:
+            out.append(f"{t.rol}: {t.texto}")
+    return "\n".join(out) or "(sin mensajes previos)"
+
+
+def _sin_pies(texto: str) -> str:
+    """Quita de la respuesta del LLM los párrafos que son pies de foto copiados."""
+    partes = [p for p in texto.split("\n\n") if not RE_PARRAFO_PIE.search(p)]
+    return "\n\n".join(partes) or texto
+
+
 def _prompt_persona(req: ChatIn, cl: dict, fichas, sugeridas=(), ofrecer=False) -> list[dict]:
     """Motor deepseek: más historial y los datos de la tienda; sin ejemplos del dataset, que lo vuelven de plantilla."""
-    hist = "\n".join(f"{t.rol}: {t.texto}" for t in req.historial[-12:]) or "(sin mensajes previos)"
+    hist = _hist_llm(req.historial[-12:])
     st = E.stock.consultar([f.codigo for f in fichas])
     fich = "\n".join(f"- {f.texto()} | AHORA: {stk.resumen(st.get(f.codigo, {}))}" for f in fichas) or "(ninguna relevante)"
     ya_hablaron = any(t.rol != "cliente" for t in req.historial)
@@ -406,7 +429,7 @@ MENSAJE NUEVO DEL CLIENTE:
 
 
 def _prompt(req: ChatIn, cl: dict, fichas, ejemplos, sugeridas=(), ofrecer=False) -> list[dict]:
-    hist = "\n".join(f"{t.rol}: {t.texto}" for t in req.historial[-8:]) or "(sin mensajes previos)"
+    hist = _hist_llm(req.historial[-8:])
     st = E.stock.consultar([f.codigo for f in fichas])
     fich = "\n".join(f"- {f.texto()} | AHORA: {stk.resumen(st.get(f.codigo, {}))}" for f in fichas) or "(ninguna relevante)"
     ejs = "\n".join(f"- [{e.intencion}] cliente: {e.texto}\n  respuesta modelo: {e.respuesta}" for e, _ in ejemplos)
@@ -577,10 +600,22 @@ def disponible(f, st: dict) -> str:
     return stk.estado(st)
 
 
+def _tallas_tarjeta(f, st: dict) -> list[dict]:
+    """Botones de talla de una tarjeta (web): solo prendas que se piden por el bot. Las agotadas van desactivadas."""
+    online = st.get("online") or {}
+    if not st.get("product") or not any(n > 0 for n in online.values()):
+        return []
+    tallas = sorted(online, key=lambda t: ORDEN_TALLAS.index(t) if t in ORDEN_TALLAS else 99)
+    return [{"talla": t, "disponible": online[t] > 0, "precio": f.precio, "codigo": f.codigo} for t in tallas]
+
+
 def _sugerencias_json(fichas: list) -> list[dict]:
     st = E.stock.consultar([f.codigo for f in fichas])
     return [{"codigo": f.codigo, "nombre": f.nombre, "fuente": f.fuente, "imagen": _imagen(f),
              "disponible": disponible(f, st.get(f.codigo, {})), "stock_fuente": st.get(f.codigo, {}).get("fuente", ""),
+             # «pie» es el texto de WhatsApp; la web pinta «titulo» y un botón por talla.
+             "titulo": f"*{f.codigo}* {f.nombre}" + (f" — *{MONEDA} {f.precio:.2f}*" if f.precio is not None else ""),
+             "tallas": _tallas_tarjeta(f, st.get(f.codigo, {})),
              "pie": _pie(f, st.get(f.codigo, {}))} for f in fichas]
 
 
@@ -657,10 +692,50 @@ def pregunta_variante(req: ChatIn) -> bool:
     return bool(RE_OTRO_DE_ESA.search(req.mensaje)) and bool(nombrados(req.mensaje) or producto_en_foco(req))
 
 
+RE_CATALOGO = re.compile(r"\bcat[aá]logo|\b(ver|mu[eé]str[ae]me|ens[eé][nñ][ae]me)\s+(los|tus|sus|todos los)\s+modelos\b", re.I)
+RE_OTRAS = re.compile(r"\b(otr[oa]s?|m[aá]s|parecid|alternativ|diferente|distint)", re.I)
+
+
 def pide_mas(req: ChatIn) -> bool:
     if pregunta_variante(req):
         return False
+    # «muéstrame tu catálogo» y «quiero ver los modelos» piden el catálogo, no «otras opciones»:
+    # caían aquí por «muestr» y «ver los» y salían tres prendas al azar.
+    if RE_CATALOGO.search(req.mensaje) and not RE_OTRAS.search(req.mensaje):
+        return False
     return acepta_oferta(req) or bool(RE_MAS_OPCIONES.search(req.mensaje))
+
+
+PLURAL = {"vestido": "vestidos", "conjunto": "conjuntos", "enterizo": "enterizos", "blazer": "blazers", "falda": "faldas",
+          "jeans": "jeans", "pantalon": "pantalones", "polo": "polos", "blusa": "blusas"}
+# En la web no existe el menú numérico del bot de WhatsApp: el número se traduce a lo que significa.
+MENU_WEB = {"1": "catalogo", "2": "foto", "3": "pedido_estado", "4": "asesora"}
+
+
+def catalogo_generico(req: ChatIn, cl: dict) -> bool:
+    """Pide «el catálogo» sin decir qué prenda. Una vendedora pregunta qué busca; no saca prendas al azar."""
+    if categoria_pedida(req.mensaje) or nombrados(req.mensaje):
+        return False
+    return bool(RE_CATALOGO.search(req.mensaje)) or (cl["intencion"] == "catalogo" and cl["confianza"] >= UMBRAL_ACCION)
+
+
+def categorias_con_stock() -> list[dict]:
+    """Tipos de prenda de la tienda que se pueden pedir ahora, de más a menos modelos."""
+    with E.lock:
+        tienda = [f for f in E.fichas if f.fuente == "seed"][:50]   # el backend admite 50 códigos por consulta
+    st = E.stock.consultar([f.codigo for f in tienda])
+    cuenta: dict[str, int] = {}
+    for f in tienda:
+        if disponible(f, st.get(f.codigo, {})):
+            cuenta[categoria_de(f)] = cuenta.get(categoria_de(f), 0) + 1
+    return [{"clave": c, "texto": PLURAL.get(c, c).capitalize()} for c in sorted(cuenta, key=lambda c: -cuenta[c])]
+
+
+def texto_categorias(cats: list[dict]) -> str:
+    nombres = [c["texto"].lower() for c in cats]
+    lista = (", ".join(nombres[:-1]) + " y " + nombres[-1]) if len(nombres) > 1 else "".join(nombres)
+    enlace = f"\n\nSi prefieres verlo todo, el catálogo completo está aquí: {PUBLIC_URL}/catalogo" if PUBLIC_URL else ""
+    return f"¡Claro! 😊 Tenemos {lista}.\n\n¿Qué te gustaría ver?{enlace}"
 
 
 def ofrecida_hace_poco(req: ChatIn) -> bool:
@@ -869,8 +944,22 @@ def conversar(req: ChatIn) -> dict:
     foto_pedida = None if (respuesta or pide) else pide_foto_de(req)
     if foto_pedida:
         cl = dict(cl, intencion="pide_foto")  # no es «te mando una foto»: quiere que se la mandemos
+    categorias = []
+    opcion = MENU_WEB.get(req.mensaje.strip()) if (req.canal == "web" and not respuesta) else None
+    if opcion and opcion != "catalogo":
+        cl = dict(cl, intencion=opcion)
+        accion, respuesta, modelo = opcion, TEXTO_ACCION[opcion], "menu"
+    elif not respuesta and not foto_pedida and not pide and (opcion == "catalogo" or catalogo_generico(req, cl)):
+        categorias = categorias_con_stock()
+        if len(categorias) < 2:
+            categorias = []   # con un solo tipo de prenda no hay nada que elegir: se enseña la vitrina
+        else:
+            cl = dict(cl, intencion="catalogo")
+            respuesta, modelo, fichas = texto_categorias(categorias), "catalogo_categorias", []
+        if opcion == "catalogo" and not categorias:
+            cl = dict(cl, intencion="catalogo", confianza=1.0)   # «1» en la web: la vitrina de siempre
     if respuesta:
-        pass  # contestó el flujo de pedido
+        pass  # contestó el flujo de pedido, el menú o el catálogo por categorías
     elif not pide and not foto_pedida and cl["intencion"] in ACCIONES_BOT and cl["confianza"] >= UMBRAL_ACCION:
         accion, respuesta = cl["intencion"], TEXTO_ACCION[cl["intencion"]]
     elif not pide and len(seed_cods) == 1 and cl["intencion"] in ("producto_descripcion", "consulta_precio", "consulta_stock"):
@@ -910,13 +999,13 @@ def conversar(req: ChatIn) -> dict:
         if req.usar_llm and motor == "deepseek":
             try:
                 respuesta, modelo = llamar_deepseek(_prompt_persona(req, cl, fichas, sugeridas, ofrecer))
-                respuesta = _sin_resaludo(_whatsapp(respuesta), req)
+                respuesta = _sin_pies(_sin_resaludo(_whatsapp(respuesta), req))
             except Exception as e:
                 log.warning("DeepSeek no respondió, sigo con el motor actual: %s", e)
         if req.usar_llm and not respuesta:
             try:
                 respuesta, modelo = llamar_llm(_prompt(req, cl, fichas, ejemplos, sugeridas, ofrecer))
-                respuesta = _sin_resaludo(_whatsapp(respuesta), req)
+                respuesta = _sin_pies(_sin_resaludo(_whatsapp(respuesta), req))
             except Exception as e:
                 log.warning("sin LLM, uso respuesta de referencia: %s", e)
         if not respuesta and cl["intencion"] == "pregunta_general":
@@ -957,6 +1046,7 @@ def conversar(req: ChatIn) -> dict:
         "confirmar_pedido": confirmar,
         "accion": accion, "respuesta": respuesta, "modelo_llm": modelo, "motor": motor,
         "ofrecer_opciones": ofrecer,
+        "categorias": categorias,
         "fichas": [{"codigo": f.codigo, "nombre": f.nombre, "fuente": f.fuente} for f in fichas],
         "ejemplos": [{"intencion": e.intencion, "texto": e.texto, "sim": round(s, 3)} for e, s in ejemplos],
         "sugerencias": _sugerencias_json(sugeridas),
@@ -1076,7 +1166,7 @@ def conversar_foto(req: FotoIn) -> dict:
     if req.usar_llm:
         datos_f = f"{f.texto()} | AHORA: {stk.resumen(st.get(f.codigo, {}))}"
         par = "\n".join(f"- {x.texto()} | AHORA: {stk.resumen(st.get(x.codigo, {}))}" for x in sugeridas if x is not f) or "(ninguna)"
-        hist = "\n".join(f"{t.rol}: {t.texto}" for t in req.historial[-6:]) or "(sin mensajes previos)"
+        hist = _hist_llm(req.historial[-6:])
         usuario = f"""LA CLIENTA ENVIÓ UNA FOTO{f' con el texto: «{req.mensaje}»' if req.mensaje else ''}.
 CLIENTE: {req.cliente or "(sin nombre)"}
 

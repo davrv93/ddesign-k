@@ -62,6 +62,17 @@ En `step()` de `backend/internal/bot/bot.go`:
   pregunta «¿Quieres ver otras opciones?» (`OFERTA`): en WhatsApp con «Responde *SI*», en la web con un
   botón (`canal: "web"`). Con un «sí» (`acepta_oferta`), `otras_opciones` enseña prendas que no vio, con
   stock y primero de la misma categoría.
+- **Catálogo sin prenda** («muéstrame tu catálogo», «quiero ver los modelos», o «1» en la web): no se
+  mandan fotos al azar. El agente dice qué tipos de prenda hay con stock (`categorias_con_stock`) y pregunta
+  cuál quiere ver; en la web salen como botones (`categorias`). Con la prenda dicha («quiero ver
+  conjuntos») sí sale la vitrina con fotos. En la web, `1`–`4` se traducen a su opción (`MENU_WEB`), porque
+  ahí no existe el menú numérico del bot Go.
+- **Tarjetas con botones de talla (web):** cada sugerencia trae `titulo` y `tallas`; la UI pinta un botón
+  por talla (las agotadas, tachadas) y al pulsarlo envía «Talla M del V24», que arma el pedido. `pie` sigue
+  siendo el texto de WhatsApp.
+- **El LLM no ve los pies de foto enteros** (`_hist_llm`): los imitaba y escribía «V24 · … Tallas: L, M, S
+  👉 Escribe V24» como mensajes, duplicando las fotos. En el historial van resumidos y, por si acaso,
+  `_sin_pies` quita de la respuesta los párrafos que parezcan un pie.
 - **Talla y pedido:** con una prenda en foco (`producto_en_foco`), una talla («el Kabanova rojo en L», «L»)
   devuelve `accion: "pedido"` con `codigo` y `talla`. El bot Go (`orderWithSize`) arma el pedido y va
   directo al resumen, sin volver a preguntar la talla. En la web salen botones de talla con su precio

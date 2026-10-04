@@ -47,6 +47,15 @@
   .b.foto img { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; background:#fff; cursor:zoom-in }
   .b.foto .pie { padding:6px 6px 0; display:inline }
   .b.foto .hora { margin-right:6px }
+  /* Botones de talla dentro de la tarjeta de la prenda. */
+  .b.foto .pie b { white-space:nowrap }            /* «S/ 330.00» no se parte en dos líneas */
+  .b.foto .pie.titulo { display:block }
+  .b.foto .tallas { display:flex; flex-wrap:wrap; gap:6px; padding:8px 6px 2px; clear:both }
+  .b.foto .tallas button { border:1px solid var(--acc); background:var(--panel); color:var(--acc); border-radius:16px; padding:6px 14px; min-width:44px; font:inherit; font-size:14px; cursor:pointer }
+  .b.foto .tallas button:hover:not(:disabled) { background:var(--acc); color:#fff }
+  .b.foto .tallas button:disabled { opacity:.4; cursor:not-allowed; text-decoration:line-through }
+  .b.foto .tallas small { flex-basis:100%; color:var(--muted); font-size:12px }
+  .oferta { flex-wrap:wrap; max-width:min(100%, 520px) }
   .oferta { align-self:flex-start; display:flex; gap:6px; margin-top:6px }
   .oferta button { border:1px solid var(--acc); background:var(--panel); color:var(--acc); border-radius:16px; padding:7px 14px; font:inherit; font-size:14px; cursor:pointer }
   .oferta button.si { background:var(--acc); color:#fff }
@@ -96,9 +105,9 @@
     <div class="rapidas" id="rapidas">
       <button>quiero ver los modelos</button>
       <button>busco un vestido para una boda</button>
-      <button>tienen jeans acampanados?</button>
-      <button>cuanto cuesta el V05</button>
-      <button>de que marca es?</button>
+      <button>¿tienen conjuntos?</button>
+      <button>¿cuánto cuesta el vestido Kendall?</button>
+      <button>¿lo tienes en talla M?</button>
       <button>¿dónde quedan sus tiendas?</button>
       <button>¿quién fue el primer presidente del Perú?</button>
       <button>gracias, chau</button>
@@ -179,15 +188,29 @@ async function mostrar(j) {
     if (i > 0) { tecleando(true); await espera(pausa(partes[i])); }
     tecleando(false); burbuja('bot', wa(partes[i])); hist.push({ rol:'bot', texto: partes[i] });
   }
+  const conBotones = new Set();
   for (const s of (j.sugerencias || [])) {
     tecleando(true); await espera(700);
     tecleando(false);
-    burbuja('bot', `<img src="${esc(s.imagen.replace(/^\//, ''))}" alt="${esc(s.codigo)}" loading="lazy"><span class="pie">${wa(s.pie)}</span>`, 'foto');
+    // Prenda que se pide por el bot: título y un botón por talla (las agotadas, tachadas).
+    // Las demás (solo en sucursal, agotadas) conservan su pie de texto.
+    const tallas = s.tallas || [];
+    const cuerpo = tallas.length
+      ? `<span class="pie titulo">${wa(s.titulo)}</span><div class="tallas"><small>Elige tu talla</small>${tallas.map(t =>
+          `<button data-enviar="Talla ${esc(t.talla)} del ${esc(s.codigo)}"${t.disponible ? '' : ' disabled'}>${esc(t.talla)}</button>`).join('')}</div>`
+      : `<span class="pie">${wa(s.pie)}</span>`;
+    burbuja('bot', `<img src="${esc(s.imagen.replace(/^\//, ''))}" alt="${esc(s.codigo)}" loading="lazy">${cuerpo}`, 'foto');
+    if (tallas.length) conBotones.add(s.codigo);
     hist.push({ rol:'bot', texto: s.pie });
   }
   tecleando(false);
+  // Catálogo sin prenda: se pregunta qué quiere ver, con un botón por tipo de prenda.
+  if ((j.categorias || []).length) {
+    botones(j.categorias.map(c => ({ texto: c.texto, enviar: `Quiero ver ${c.texto.toLowerCase()}` })));
+  }
   // Botones de talla con su precio: «L (S/ 330)». Las agotadas salen tachadas.
-  if ((j.tallas || []).length) {
+  // Si la tarjeta de esa prenda ya los trae, no se repiten.
+  if ((j.tallas || []).length && !conBotones.has(j.tallas[0].codigo)) {
     botones(j.tallas.map(t => ({ texto: `${t.talla}${t.precio != null ? ` (S/ ${Math.round(t.precio) === t.precio ? t.precio : t.precio.toFixed(2)})` : ''}`,
       enviar: `Talla ${t.talla} del ${t.codigo}`, off: !t.disponible })));
   }
@@ -290,6 +313,11 @@ $('rapidas').onclick = ev => { if (ev.target.tagName === 'BUTTON') enviar(ev.tar
 $('nuevo').onclick = () => { if (ocupado) return; hist = []; ultimoRol = ''; msgs.innerHTML = '<div class="dia">HOY</div>'; };
 $('verInfo').onclick = () => info.classList.add('abierto');
 $('cerrarInfo').onclick = () => info.classList.remove('abierto');
+// Botones de talla de las tarjetas: siguen activos mientras la tarjeta esté en pantalla.
+msgs.addEventListener('click', ev => {
+  const b = ev.target.closest('.tallas button'); if (!b || b.disabled || ocupado) return;
+  enviar(b.dataset.enviar);
+});
 msgs.onclick = ev => { if (ev.target.tagName === 'IMG') { $('zoom').querySelector('img').src = ev.target.src; $('zoom').classList.add('on'); } };
 $('zoom').onclick = () => $('zoom').classList.remove('on');
 $('t').focus();
