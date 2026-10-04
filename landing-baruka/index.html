@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Baruka Design — Elegancia que se lleva puesta</title>
+  <meta name="description" content="Baruka Design, moda de mujer peruana: vestidos, conjuntos, blazers, pantalones palazzo y blusas. Elegancia que se lleva puesta.">
+  <meta name="theme-color" content="#F5F1EA">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B0B0C'/%3E%3Ctext x='16' y='24' font-family='Georgia,serif' font-size='21' fill='%23F5F1EA' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400;1,6..96,700&family=Inter:wght@300;400;500&display=swap">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#coleccion">Saltar al contenido</a>
+
+  <!-- 1. ENCENDIDO DE PANTALLA -------------------------------------------- -->
+  <div id="intro" class="intro" aria-hidden="true">
+    <div class="intro__scanlines"></div>
+    <div class="intro__beam"></div>
+    <div class="intro__flicker"></div>
+    <div class="intro__logo" data-logo="BARUKA"></div>
+    <p class="intro__hint">Clic o tecla para continuar</p>
+  </div>
+
+  <!-- 4. HOJAS AZULES — capa trasera -------------------------------------- -->
+  <canvas id="leaves-back" class="leaves leaves--back" aria-hidden="true"></canvas>
+
+  <main id="main">
+    <!-- 2. HERO ---------------------------------------------------------- -->
+    <section class="hero" id="hero" aria-labelledby="hero-title">
+      <div class="hero__pin">
+        <div class="hero__media">
+          <img class="hero__img" src="img/hero.jpg" alt="Campaña Baruka Design: vestido de la nueva colección" width="900" height="1200" fetchpriority="high">
+        </div>
+        <h1 class="hero__title" id="hero-title" aria-label="Baruka">
+          <span class="hero__half hero__half--l" aria-hidden="true">BARU</span><span class="hero__half hero__half--r" aria-hidden="true">KA</span>
+        </h1>
+        <p class="hero__sub"><em>Elegancia que se lleva puesta</em></p>
+        <p class="hero__meta">Nº 01 — <em>Colección</em></p>
+      </div>
+    </section>
+
+    <!-- 2.b HISTORIA (texto real: banner «reseña» de baruka.dinersclubmall.pe) ------ -->
+    <section class="story" id="historia" aria-labelledby="story-title">
+      <p class="story__meta">Nº 02 — <em>Nuestra historia</em></p>
+      <h2 class="story__title" id="story-title"><em>Baruka</em> nació como un vínculo de pareja y el amor que sentimos por la moda.</h2>
+      <div class="story__body">
+        <p>Hacemos prendas originales y exclusivas para empoderar a la mujer peruana, ayudándola a encontrar su estilo, porque creemos que la belleza de la mujer está en su interior.</p>
+        <p class="story__sign">By Paola Ortiz</p>
+      </div>
+    </section>
+
+    <!-- 2.c CATEGORÍAS (conteos y precios «desde» del catálogo real, 19 modelos) ------ -->
+    <section class="cats" id="categorias" aria-labelledby="cats-title">
+      <header class="cats__head">
+        <h2 class="cats__title" id="cats-title">Moda <em>femenina</em></h2>
+        <p class="cats__meta">Nº 03 — <em>Categorías</em></p>
+      </header>
+      <ul class="cats__grid">
+        <li class="cat"><a data-catalog href="https://proyectopostventa.site/baruka/catalogo" target="_blank" rel="noopener">
+          <figure class="cat__media"><img src="img/holly.jpg" alt="Vestido Holly" width="900" height="1200" loading="lazy" decoding="async"></figure>
+          <span class="cat__name">Vestidos</span><span class="cat__info">5 modelos · desde S/ 220</span></a></li>
+        <li class="cat"><a data-catalog href="https://proyectopostventa.site/baruka/catalogo" target="_blank" rel="noopener">
+          <figure class="cat__media"><img src="img/kabanova.jpg" alt="Conjunto Kabanova" width="900" height="1200" loading="lazy" decoding="async"></figure>
+          <span class="cat__name">Conjuntos</span><span class="cat__info">3 modelos · desde S/ 290</span></a></li>
+        <li class="cat"><a data-catalog href="https://proyectopostventa.site/baruka/catalogo" target="_blank" rel="noopener">
+          <figure class="cat__media"><img src="img/ankara.jpg" alt="Blusa Ankara" width="900" height="1200" loading="lazy" decoding="async"></figure>
+          <span class="cat__name">Blusas</span><span class="cat__info">5 modelos · desde S/ 140</span></a></li>
+        <li class="cat"><a data-catalog href="https://proyectopostventa.site/baruka/catalogo" target="_blank" rel="noopener">
+          <figure class="cat__media"><img src="img/cristal.jpg" alt="Pantalón Cristal" width="900" height="1200" loading="lazy" decoding="async"></figure>
+          <span class="cat__name">Pantalones y faldas</span><span class="cat__info">4 modelos · desde S/ 210</span></a></li>
+        <li class="cat"><a data-catalog href="https://proyectopostventa.site/baruka/catalogo" target="_blank" rel="noopener">
+          <figure class="cat__media"><img src="img/begonia.jpg" alt="Blazer Begonia" width="900" height="1200" loading="lazy" decoding="async"></figure>
+          <span class="cat__name">Blazers y enterizos</span><span class="cat__info">2 modelos · desde S/ 288</span></a></li>
+      </ul>
+    </section>
+
+    <!-- 2.d CÓMO COMPRAR (política real de la tienda en Diners) ------------------ -->
+    <section class="perks" aria-label="Cómo comprar">
+      <ul class="perks__list">
+        <li class="perk"><span class="perk__big">S · M · L</span><span class="perk__txt">Tallas en cada modelo</span></li>
+        <li class="perk"><span class="perk__big">WhatsApp</span><span class="perk__txt">Escribe el código del modelo y te atendemos</span></li>
+        <li class="perk"><span class="perk__big">7 días</span><span class="perk__txt">Para cambios por falla de fábrica</span></li>
+        <li class="perk"><span class="perk__big">Diners</span><span class="perk__txt">Tienda oficial en Diners Club Mall</span></li>
+      </ul>
+    </section>
+
+    <!-- 3. MORFO DE MODAS ------------------------------------------------- -->
+    <section class="morph" id="morph" aria-label="La colección en movimiento">
+      <div class="morph__pin">
+        <span class="morph__eyebrow">Nº 04 — <em>Morfo</em></span>
+        <div class="morph__stage">
+          <canvas class="morph__gl" aria-hidden="true"></canvas>
+          <div class="morph__fallback" aria-hidden="true">
+            <img class="morph__look is-active" src="img/kendall.jpg" alt="" width="900" height="1200">
+            <img class="morph__look" src="img/begonia.jpg" alt="" width="900" height="1200">
+            <img class="morph__look" src="img/xela.jpg" alt="" width="900" height="1200">
+            <img class="morph__look" src="img/azra.jpg" alt="" width="900" height="1200">
+          </div>
+        </div>
+        <ul class="morph__labels">
+          <li class="morph__label is-active" data-look="0"><span class="morph__name">Vestido&nbsp;Kendall</span><span class="morph__price">S/ 320</span></li>
+          <li class="morph__label" data-look="1"><span class="morph__name">Blazer&nbsp;Begonia</span><span class="morph__price">S/ 288</span></li>
+          <li class="morph__label" data-look="2"><span class="morph__name">Conjunto&nbsp;Xela</span><span class="morph__price">S/ 460</span></li>
+          <li class="morph__label" data-look="3"><span class="morph__name">Vestido&nbsp;Azra</span><span class="morph__price">S/ 520</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5. GALERÍA HORIZONTAL -------------------------------------------- -->
+    <section class="gallery" id="coleccion" aria-labelledby="coleccion-title">
+      <header class="gallery__head">
+        <h2 class="gallery__title" id="coleccion-title">La <em>colección</em></h2>
+        <p class="gallery__note">Nº 05 — <em>Piezas</em></p>
+      </header>
+      <div class="gallery__viewport">
+        <ul class="gallery__track">
+          <li class="card"><figure class="card__media"><img src="img/kendall.jpg" alt="Vestido Kendall" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/kendall_alt.jpg" alt="Vestido Kendall, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Vestido Kendall</span><span class="card__price">S/ 320</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/codman.jpg" alt="Pantalón Codman" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/codman_alt.jpg" alt="Pantalón Codman, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Pantalón Codman</span><span class="card__price">S/ 230</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/anika.jpg" alt="Blusa Anika" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/anika_alt.jpg" alt="Blusa Anika, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Blusa Anika</span><span class="card__price">S/ 180</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/kabanova.jpg" alt="Conjunto Kabanova" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/kabanova_alt.jpg" alt="Conjunto Kabanova, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Conjunto Kabanova</span><span class="card__price">S/ 330</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/cristal.jpg" alt="Pantalón Cristal" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/cristal_alt.jpg" alt="Pantalón Cristal, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Pantalón Cristal</span><span class="card__price">S/ 290</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/ankara.jpg" alt="Blusa Ankara" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/ankara_alt.jpg" alt="Blusa Ankara, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Blusa Ankara</span><span class="card__price">S/ 220</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/azra.jpg" alt="Vestido Azra" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/azra_alt.jpg" alt="Vestido Azra, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Vestido Azra</span><span class="card__price">S/ 520</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/elvi.jpg" alt="Enterizo Elvi" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/elvi_alt.jpg" alt="Enterizo Elvi, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Enterizo Elvi</span><span class="card__price">S/ 330</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/pandora.jpg" alt="Vestido Pandora" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/pandora_alt.jpg" alt="Vestido Pandora, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Vestido Pandora</span><span class="card__price">S/ 330</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/xela.jpg" alt="Conjunto Xela" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/xela_alt.jpg" alt="Conjunto Xela, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Conjunto Xela</span><span class="card__price">S/ 460</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/begonia.jpg" alt="Blazer Begonia" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/begonia_alt.jpg" alt="Blazer Begonia, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Blazer Begonia</span><span class="card__price">S/ 288</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/paola.jpg" alt="Falda Paola" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/paola_alt.jpg" alt="Falda Paola, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Falda Paola</span><span class="card__price">S/ 210</span></div></li>
+          <li class="card"><figure class="card__media"><img src="img/holly.jpg" alt="Vestido Holly" width="900" height="1200" loading="lazy" decoding="async"><img class="card__alt" src="img/holly_alt.jpg" alt="Vestido Holly, segundo ángulo" width="900" height="1200" loading="lazy" decoding="async"></figure><div class="card__foot"><span class="card__name">Vestido Holly</span><span class="card__price">S/ 330</span></div></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6. EDITORIAL "LA MUJER BARUKA" ----------------------------------- -->
+    <section class="editorial" id="editorial" aria-labelledby="editorial-title">
+      <p class="editorial__meta">Nº 06 — <em>Retrato</em></p>
+      <blockquote class="editorial__quote" id="editorial-title">
+        <em>La mujer Baruka</em> no sigue la moda: la lleva con la calma de quien ya sabe quién es.
+      </blockquote>
+      <div class="editorial__grid">
+        <div class="editorial__media editorial__media--a">
+          <img src="img/editorial-1.jpg" alt="Retrato editorial en la colección de temporada" width="900" height="1200" loading="lazy" decoding="async">
+        </div>
+        <div class="editorial__media editorial__media--b">
+          <img src="img/editorial-2.jpg" alt="Detalle de confección de una prenda Baruka" width="900" height="1200" loading="lazy" decoding="async">
+        </div>
+        <div class="editorial__text">
+          <p>Creemos que la belleza de la mujer está en su interior. Por eso cada prenda está hecha para acompañarte a encontrar tu estilo, no para imponértelo.</p>
+          <ul class="editorial__stats">
+            <li><span class="stat__num" data-count="100" data-suffix=" %">0 %</span><span class="stat__label">Prendas originales y exclusivas</span></li>
+            <li><span class="stat__num" data-count="19">0</span><span class="stat__label">Modelos en la colección</span></li>
+            <li><span class="stat__num" data-count="5">0</span><span class="stat__label">Categorías de moda femenina</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CIERRE --------------------------------------------------------- -->
+    <section class="closing" id="contacto" aria-labelledby="closing-title">
+      <h2 class="closing__title" id="closing-title" aria-label="Encuéntranos">Encuéntranos</h2>
+      <div class="closing__actions">
+        <a class="btn btn--primary" data-whatsapp
+           href="https://wa.me/51999999999?text=Hola%20Baruka%20Design%2C%20quiero%20ver%20la%20colecci%C3%B3n"
+           target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
+        <a class="btn btn--ghost" data-catalog href="https://proyectopostventa.site/baruka/catalogo"
+           target="_blank" rel="noopener">Ver catálogo</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <ul class="site-foot__social">
+      <li><a href="https://instagram.com" target="_blank" rel="noopener">Instagram</a></li>
+      <li><a href="https://tiktok.com" target="_blank" rel="noopener">TikTok</a></li>
+      <li><a href="https://wa.me/51999999999" target="_blank" rel="noopener">WhatsApp</a></li>
+    </ul>
+    <p class="site-foot__place">Lima — Perú</p>
+    <p class="site-foot__legal">© <span data-year>2026</span> Baruka Design</p>
+  </footer>
+
+  <!-- 4. HOJAS AZULES — capa delantera ------------------------------------ -->
+  <canvas id="leaves-front" class="leaves leaves--front" aria-hidden="true"></canvas>
+  <div class="noise" aria-hidden="true"></div>
+
+  <!-- Música de fondo: arranca con el primer gesto; el botón la silencia ----- -->
+  <audio id="bg-audio" src="audio/sober.mp3" loop preload="none"></audio>
+  <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="Activar música">
+    <span class="sound-toggle__bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <span class="sound-toggle__label">Sonido</span>
+  </button>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+
+  <script src="js/core.js"></script>
+  <script src="js/intro.js"></script>
+  <script src="js/hero.js"></script>
+  <script src="js/morph.js"></script>
+  <script src="js/leaves.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="js/editorial.js"></script>
+  <script src="js/closing.js"></script>
+  <script src="js/sections.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

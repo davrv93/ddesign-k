@@ -1,0 +1,4 @@
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+17 3 * * * root docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /opt/certbot-webroot:/opt/certbot-webroot certbot/certbot renew --cert-name kddesign.duckdns.org --webroot -w /opt/certbot-webroot --deploy-hook "docker exec app_nginx nginx -s reload" --quiet || logger -t kddesign-certbot "certificate renewal command failed"
