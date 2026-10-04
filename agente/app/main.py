@@ -464,7 +464,7 @@ def bloque_etapa(dec: dict, foco, paso: str = "", pedido: str = "") -> str:
     return txt
 
 
-def _prompt_comercial(req: ChatIn, cl: dict, dec: dict, foco, fichas, sugeridas=(), ofrecer=False, paso="", pedido="", lamina=False) -> list[dict]:
+def _prompt_comercial(req: ChatIn, cl: dict, dec: dict, foco, fichas, sugeridas=(), ofrecer=False, paso="", pedido="", lamina=False, nota="") -> list[dict]:
     """Motor deepseek: el LLM redacta; la etapa, los totales y el producto en foco se los da el código."""
     hist = _hist_llm(req.historial[-14:])
     st = E.stock.consultar([f.codigo for f in fichas])
@@ -488,7 +488,7 @@ HISTORIAL:
 PRODUCTO (fichas; la primera es de la que se habla):
 {fich}
 
-{nota_catalogo(cl)}FOTOS QUE EL BOT ENVIARÁ DESPUÉS DE TU TEXTO: {", ".join(f"{f.codigo} {f.nombre}" for f in sugeridas) or "ninguna"}{"; y la lámina de materiales del vestido (dilo: «te paso la lámina de materiales»)" if lamina else ""}{_nota_oferta(ofrecer)}
+{nota + chr(10) + chr(10) if nota else ""}{nota_catalogo(cl)}FOTOS QUE EL BOT ENVIARÁ DESPUÉS DE TU TEXTO: {", ".join(f"{f.codigo} {f.nombre}" for f in sugeridas) or "ninguna"}{"; y la lámina de materiales del vestido (dilo: «te paso la lámina de materiales»)" if lamina else ""}{_nota_oferta(ofrecer)}
 
 MENSAJE NUEVO DE LA CLIENTA:
 {req.mensaje}"""
@@ -993,6 +993,23 @@ RE_ESTA_PRENDA = re.compile(r"\b(est[ea]|es[ea]|aquel|aquella)\s+(vestido|modelo
                             r"\b(el|la) (del|de la) (anuncio|publicaci[oó]n|foto|historia|publi)\b", re.I)
 
 
+# El bot preguntó cuál prenda vio (foto o nombre) o pidió que la describa: sigue esperando eso.
+RE_PIDE_CUAL = re.compile(r"la foto o el nombre|cu[eé]ntame (c[oó]mo era|el color)", re.I)
+# «no la tengo», «no sé el nombre», «no me acuerdo»: no puede mandar foto ni nombre.
+RE_SIN_DATO = re.compile(r"\bno (la |lo )?(tengo|s[eé]|recuerdo|me acuerdo|encuentro|guard[eé])\b|\bno tengo (foto|captura|el nombre)|"
+                         r"\bse me borr|\bno s[eé] (c[oó]mo se llama|el nombre)", re.I)
+# Lo que describe una prenda: con esto sí se buscan parecidos.
+RE_DESCRIBE = re.compile(r"\b(azul|roj[oa]|rosad[oa]|rosa|palo rosa|negr[oa]|blanc[oa]|beige|nude|verde|celeste|fucsia|morad[oa]|lila|"
+                         r"vino|guinda|dorad[oa]|plateado|amarill[oa]|naranja|marr[oó]n|chocolate|crema|turquesa|"
+                         r"larg[oa]|cort[oa]|midi|manga|mangas|tirantes?|strapless|escote|espalda|brill\w*|pedrer[ií]a|lentejuel\w*|"
+                         r"encaje|sat[eé]n|satinad[oa]|gasa|tul|plisad[oa]|capa|abertura|vuelo|ajustad[oa]|suelto|flores|floread[oa]|"
+                         r"cruzad[oa]|asim[eé]tric[oa]|drapead[oa])\b", re.I)
+
+
+def esperando_cual(req: ChatIn) -> bool:
+    return any(RE_PIDE_CUAL.search(t) for t in _ultimos_del_bot(req))
+
+
 # «vestidos», «otros modelos», «más opciones»: quiere ver varios, no el del anuncio.
 RE_VARIOS = re.compile(r"\b(vestidos|modelos|opciones|cat[aá]logo|otr[oa]s?|diferentes?|variedad)\b", re.I)
 
@@ -1094,6 +1111,15 @@ def conversar(req: ChatIn) -> dict:
         respuesta = hola + (f"¿Me compartes la foto o el nombre del {prenda} que viste? 📸 Así reviso al toque si lo tenemos."
                             if prenda not in ("blusa", "prenda", "falda") else f"¿Me compartes la foto o el nombre de la {prenda} que viste? 📸 Así reviso al toque si la tenemos.")
         modelo = "pide_cual"
+    elif foco is None and esperando_cual(req) and not nombrados(req.mensaje) and not RE_DESCRIBE.search(req.mensaje):
+        # Seguimos esperando saber cuál es. «oh sí», «a ver un momento», «ahora te digo el nombre» no lo dicen:
+        # nada de fotos al azar ni de adivinar («te paso el que mencionaste»). Se espera, o se pide que lo describa.
+        if RE_SIN_DATO.search(req.mensaje):
+            respuesta = ("No te preocupes 😊 Cuéntame cómo era: el color, si era largo o corto, o algún detalle "
+                         "(mangas, brillos, escote…) y lo busco entre nuestros modelos.")
+        else:
+            respuesta = "¡Dale! 😊 Aquí te espero: mándame la foto o el nombre cuando lo tengas."
+        modelo = "espera_cual"
     foto_pedida = None if (respuesta or pide) else pide_foto_de(req)
     if foto_pedida:
         cl = dict(cl, intencion="pide_foto")  # no es «te mando una foto»: quiere que se la mandemos
@@ -1177,7 +1203,10 @@ def conversar(req: ChatIn) -> dict:
             fichas = []
         if req.usar_llm and motor == "deepseek":
             try:
-                respuesta, modelo = llamar_deepseek(_prompt_comercial(req, cl, dec, foco, fichas, sugeridas, ofrecer, paso, pedido_txt, bool(lamina)))
+                nota = ("OJO: la clienta está DESCRIBIENDO un vestido que vio; todavía no sabemos cuál es. Las fotos son "
+                        "posibles coincidencias: pregúntale si es alguno de ellos. No digas que ya sabes cuál es ni que ella lo mencionó."
+                        if foco is None and esperando_cual(req) else "")
+                respuesta, modelo = llamar_deepseek(_prompt_comercial(req, cl, dec, foco, fichas, sugeridas, ofrecer, paso, pedido_txt, bool(lamina), nota))
                 respuesta = _sin_pies(_sin_resaludo(_whatsapp(respuesta), req))
             except Exception as e:
                 log.warning("DeepSeek no respondió, sigo con el motor actual: %s", e)

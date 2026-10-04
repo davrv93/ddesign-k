@@ -52,7 +52,11 @@ guarda en el contexto de la conversación; la UI web, en memoria. Cada decisión
 `contextInfo.externalAdReply` del mensaje y recuerda toda la conversación) se asume la prenda: primero la que
 nombre el título del anuncio (`anuncio`) y, si no nombra ninguna, la de `PRODUCTO_DEMO`. Sin anuncio, «¿tienen
 este vestido?» recibe «¿me compartes la foto o el nombre del vestido que viste?» (`pide_cual`): una vendedora
-no adivina. En el chat de prueba, el botón **Desde anuncio** simula la llegada por el anuncio. Con anuncio, la
+no adivina. En el chat de prueba, el botón **Desde anuncio** simula la llegada por el anuncio. Mientras el bot espera saber cuál es
+(`esperando_cual`), lo que no la identifica («oh sí», «a ver un momento», «ahora te digo el nombre») recibe
+«aquí te espero» sin fotos (`espera_cual`); «no la tengo / no me acuerdo» recibe «cuéntame cómo era». Solo con
+una descripción (color, largo, mangas, brillos…: `RE_DESCRIBE`) o un nombre se buscan prendas, y el LLM las
+presenta como posibles («¿es alguno de estos?»), nunca como «el que mencionaste». Con anuncio, la
 prenda es la prenda en foco, se enseña una sola vez y no se mezclan
 otros modelos salvo que los pida («otros modelos», «vestidos»). Lo que el catálogo no guarda (material,
 ocasiones, lámina de materiales) está en `seed/producto_demo.json`; la lámina se manda cuando pregunta por
