@@ -234,10 +234,12 @@ Medido en el mismo contenedor, con los mismos datos:
 | Embeddings | RAM del modelo | ms por mensaje | Intención (prueba real, 66) | Comercial (68) |
 |---|---|---|---|---|
 | jina-embeddings-v2-base-es (anterior) | 897 MB | 13 | 97,0 % | — |
-| **Xenova/multilingual-e5-small cuantizado** (actual) | **500 MB** | **2,1** | **97,0 %** (64/66) | **97,1 %** (66/68) |
+| **Xenova/multilingual-e5-small cuantizado** (actual) | **500 MB** | **2,1** | **98,5 %** (65/66, en el servidor) | **97,1 %** (66/68) |
 | intfloat/multilingual-e5-small sin cuantizar | 860 MB | 4 | — | — |
 
-El agente entero (texto + búsqueda por foto) pasó de **1,48 GiB a 1,13 GiB**. Dos cosas que e5 exige y jina no:
+El agente entero (texto + búsqueda por foto) pasó de **1,48 GiB a 1,21 GiB** en el servidor (1,13 en el Mac).
+Al ser un modelo cuantizado, ARM y x86 no dan exactamente los mismos números: la cifra que cuenta es la del
+build del servidor (`DEPLOY.md` §3.1). Dos cosas que e5 exige y jina no:
 los prefijos `query: ` / `passage: `, y **estandarizar** los vectores antes de la regresión (sin eso acierta
 70 %: los vectores de e5 vienen muy apretados entre sí). La versión sin cuantizar no ahorra memoria.
 Las 68 frases de la prueba comercial sirvieron para corregir el entrenamiento una vez (de 92,6 % a 97,1 %);

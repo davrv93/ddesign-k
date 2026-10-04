@@ -89,6 +89,11 @@ prueba independiente` en **≥ 0,95** (`data/prueba_comercial.csv`), `top1` de f
 máquina de estados` en **23/23** (si falla un caso, el build se detiene solo). Si baja, no levantes la
 imagen nueva: arregla los datos.
 
+**La cifra que vale es la del build del servidor.** El modelo de embeddings está cuantizado y da números
+algo distintos en ARM (Mac) y en x86 (EC2): el 04-10-2026 los mismos datos dieron 0,97 en el Mac y 0,94 en
+el servidor. Se reforzó `intenciones_tienda.csv` y quedó en 0,985 (65/66). Mientras el build no pase, la
+imagen nueva no se levanta: el contenedor en marcha sigue con la anterior hasta el `up -d`.
+
 ## 4. Verificar (siempre, después de cada deploy)
 
 ```bash

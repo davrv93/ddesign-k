@@ -404,3 +404,33 @@ estado_animo,errores_ortograficos,estoi agotada ke dia
 estado_animo,correcta,Qué mal día he tenido.
 estado_animo,informal,que mal dia tuve
 estado_animo,errores_ortograficos,ke mal dia tube
+consulta_precio,correcta,¿A cómo está ese modelo?
+consulta_precio,informal,a como sale ese
+consulta_precio,errores_ortograficos,a kuanto sale ese modelo
+consulta_precio,correcta,¿A cuánto me sale el conjunto?
+consulta_precio,informal,a cuanto lo dejas
+consulta_precio,errores_ortograficos,a como esta el bestido
+consulta_precio,correcta,¿En cuánto está la blusa?
+consulta_precio,informal,en cuanto esta ese
+consulta_precio,errores_ortograficos,en kuanto sta
+producto_recomendacion,correcta,Busco ropa cómoda para usar a diario.
+producto_recomendacion,informal,quiero algo comodo pa diario
+producto_recomendacion,errores_ortograficos,busko algo comodo para todos los dias
+producto_recomendacion,correcta,Necesito algo práctico para el trabajo y el día a día.
+producto_recomendacion,informal,algo comodito para salir normal
+producto_recomendacion,errores_ortograficos,nesesito ropa comoda para el diario
+producto_recomendacion,correcta,Tengo la graduación de mi hija y no sé qué ponerme.
+producto_recomendacion,informal,voy a una graduacion q me recomiendas
+producto_recomendacion,errores_ortograficos,boy a una graduasion ke uso
+producto_recomendacion,correcta,Tengo un bautizo el domingo, ¿qué me pongo?
+producto_recomendacion,informal,tengo un quinceañero q me pongo
+producto_recomendacion,errores_ortograficos,tengo una reunion ke me pongo
+producto_descripcion,correcta,¿El vestido es de manga larga o corta?
+producto_descripcion,informal,es con mangas o sin mangas
+producto_descripcion,errores_ortograficos,biene con manga larga
+producto_descripcion,correcta,¿La blusa es manga cero?
+producto_descripcion,informal,tiene manga o es strapless
+producto_descripcion,errores_ortograficos,tiene mangitas
+producto_descripcion,correcta,¿El vestido tiene tirantes?
+producto_descripcion,informal,el vestido tiene forro?
+producto_descripcion,errores_ortograficos,el bestido tiene sierre
