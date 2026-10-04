@@ -76,6 +76,21 @@ def main():
     clf_i = entrenar_clasificador(Xi, yi)
     prueba = prueba_chat(emb, clf_i)
 
+    # --- intención comercial (alimenta la máquina de etapas) ----------------
+    ec_ = datos.ejemplos_comercial()
+    Xk = emb([t for t, _ in ec_])
+    clf_k = entrenar_clasificador(Xk, [i for _, i in ec_])
+    pk = datos.prueba_comercial()
+    Pk = clf_k.predict_proba(emb([t for t, _ in pk]))
+    fallos_k = [f"{t} → {clf_k.classes_[int(np.argmax(p))]} {p.max():.2f} (esperado {i})"
+                for (t, i), p in zip(pk, Pk) if str(clf_k.classes_[int(np.argmax(p))]) != i]
+    comercial = {"exactitud": round(1 - len(fallos_k) / len(pk), 4), "n": len(pk), "n_entrenamiento": len(ec_),
+                 "confianza_media": round(float(np.mean(Pk.max(axis=1))), 3), "fallos": fallos_k}
+    print(f"comercial  prueba independiente: {comercial['exactitud']} ({len(pk) - len(fallos_k)}/{len(pk)}), "
+          f"{len(ec_)} ejemplos de entrenamiento, confianza media {comercial['confianza_media']}")
+    for x in fallos_k:
+        print("   ✗", x)
+
     # --- categoría de prenda ----------------------------------------------
     ec = datos.ejemplos_categoria()
     fichas100 = datos.fichas_catalogo100()
@@ -93,10 +108,11 @@ def main():
 
     # --- índice RAG --------------------------------------------------------
     fichas = fichas100 + datos.fichas_seed()
-    Xf = emb([f.texto() for f in fichas])
+    Xf = emb.pasajes([f.texto() for f in fichas])
 
     guardar("intencion.pkl", clf_i)
     guardar("categoria.pkl", clf_c)
+    guardar("comercial.pkl", clf_k)
     guardar("ejemplos.pkl", {"ejemplos": ej, "X": Xi})
     guardar("fichas.pkl", {"fichas": fichas, "X": Xf})
     metricas = {
@@ -104,6 +120,7 @@ def main():
         "n_ejemplos_intencion": len(ej),
         "intencion": {k: v for k, v in cv_i.items() if k != "pred"} | {"por_variante": por_variante, "prueba_chat": prueba},
         "categoria": {k: v for k, v in cv_c.items() if k != "pred"} | {"por_tipo_prueba": por_prueba},
+        "comercial": comercial,
         "n_fichas": len(fichas),
         "segundos": round(time.time() - t0, 1),
     }

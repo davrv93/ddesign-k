@@ -34,7 +34,7 @@ Navegador ─► landing_web (nginx del borde, HTTPS) ─┬─ /baruka/      �
 |---|---|---|
 | `backend/` | `kddesign_backend` | API REST, webhook de evolution, flujo del bot (`internal/bot/bot.go`), SQLite en el volumen `kddesign_backend_data` |
 | `frontend/` | `kddesign_frontend` | Panel Qwik estático. Se compila con `BASE_PATH` (hoy `/baruka/`) |
-| `agente/` | `kddesign_agente` | Clasificador de intención, RAG, búsqueda por foto y redacción con el LLM. La imagen pesa 2,5 GB y en RAM ocupa unos 1,3 GiB |
+| `agente/` | `kddesign_agente` | Clasificadores (intención y comercial), máquina de etapas, RAG, búsqueda por foto y redacción con el LLM. En RAM ocupa unos 1,13 GiB |
 | — | `kddesign_evolution` + `kddesign_evolution_db` | Mensajería de WhatsApp (whatsmeow). La sesión vive en el volumen `kddesign_evolution_db` |
 
 ### Cómo reparte el bot Go los mensajes
@@ -45,10 +45,28 @@ En `step()` de `backend/internal/bot/bot.go`:
   (talla/confirmación/ubicación) van a los **flujos fijos de Go**.
 - **Todo lo demás va al agente**, incluidos el saludo y frases como «cómo hago mi pedido». Esto solo
   aplica cuando hay agente (`AGENT_URL`). Sin agente, las palabras sueltas vuelven a los flujos fijos.
+- **El código dentro de una frase es una pregunta**, no un pedido: «¿de qué tela es el V42?» va al agente.
+  Solo el código suelto («V42», «el V42») arranca el pedido.
+- **En talla y confirmación el bot ya no se atasca.** Lo que no es una talla ni un sí/no va al agente con la
+  etapa y el pedido en curso (`askAgent` → `closingReply`). Si la clienta sigue en el cierre se le recuerda el
+  paso; si dudó o pidió otros modelos, `pauseDraft` libera la reserva y devuelve el pedido a consulta.
+- **Después del *SI*** el estado es `esperando_pago` (`handlePayment`): el agente lleva Lima o provincia →
+  total → datos de pago; **la foto que llega ahí es el comprobante** (`handleVoucher`, queda anotado en el
+  pedido) y luego se pide la dirección. Sin agente sigue el flujo anterior (ubicación y una asesora cobra).
 - Si el agente no responde, el backend recurre a Gemini (`internal/ai`).
 
 ### El agente
 
+- **Tres etapas comerciales** (04-10-2026): prospección → seguimiento → cierre → venta confirmada. Las decide
+  `agente/app/etapas.py` con reglas, no el LLM: interés no es compra, el «sí» depende de lo último que
+  preguntó el bot, y con confianza < 0,60 la etapa no cambia. La etapa viaja en cada petición (`etapa`) y el
+  bot Go la guarda en el contexto de la conversación. Detalle, umbrales y registro `[CLASSIFIER]` en
+  [`agente/README.md`](agente/README.md).
+- **Embeddings:** `Xenova/multilingual-e5-small` cuantizado (antes jina). El agente ocupa ~1,13 GiB.
+- **Vestido del anuncio:** `KD_PRODUCTO_DEMO=V42`. Con eso «este vestido» es el V42 y no se mezclan otros
+  modelos salvo que los pida. Material y lámina en `agente/seed/producto_demo.json`.
+- **Pago y envíos:** costos en `agente/seed/venta.json` (el total lo suma el código). Yape y titular en
+  `agente/seed/pago.md`, **fuera de git a propósito** (el repo es público); solo se dan con pedido confirmado.
 - **Motor** (`MOTOR`): `actual` usa `LLM_*` (Gemini Flash-Lite, capa gratuita) y responde los saludos con
   frases del dataset. `deepseek` usa DeepSeek por OpenRouter (`OPENROUTER_API_KEY`, **de pago**), con más
   historial, los datos de la tienda y un tono más humano. El bot de WhatsApp usa el motor por defecto. La UI
@@ -73,7 +91,8 @@ En `step()` de `backend/internal/bot/bot.go`:
 - **El LLM no ve los pies de foto enteros** (`_hist_llm`): los imitaba y escribía «V24 · … Tallas: L, M, S
   👉 Escribe V24» como mensajes, duplicando las fotos. En el historial van resumidos y, por si acaso,
   `_sin_pies` quita de la respuesta los párrafos que parezcan un pie.
-- **Talla y pedido:** con una prenda en foco (`producto_en_foco`), una talla («el Kabanova rojo en L», «L»)
+- **Talla y pedido:** decir la talla ya no arma el pedido. Solo **en cierre** (dijo que quiere comprarlo, o
+  pulsó el botón de talla de la tarjeta web), con una prenda en foco (`producto_en_foco`), la talla
   devuelve `accion: "pedido"` con `codigo` y `talla`. El bot Go (`orderWithSize`) arma el pedido y va
   directo al resumen, sin volver a preguntar la talla. En la web salen botones de talla con su precio
   («L (S/ 330)») y luego «Sí, confirmar / Cambiar talla».
@@ -81,8 +100,8 @@ En `step()` de `backend/internal/bot/bot.go`:
   es la intención `foto` del clasificador, que significa que la clienta va a mandar una foto.
 - El agente lee el catálogo vivo **antes** de empezar a atender; antes, durante unos 11 s tras cada
   reinicio, no conocía las prendas por nombre.
-- **Datos de la tienda** que el LLM puede contar: `agente/seed/tienda.md` y `agente/seed/sucursales.json`.
-  Lo que no figura ahí, como formas de pago o costo de envío, lo deriva a una asesora (*4*).
+- **Datos de la tienda** que el LLM puede contar: `agente/seed/tienda.md`, `venta.json` y `pago.md`.
+  Lo que no figura ahí lo deriva a una asesora (*4*).
 - **Clasificador:** `agente/data/intenciones_tienda.csv` (frases en tríos: correcta, informal y con
   errores) más los datasets de BOT.zip. Se mide con `agente/data/prueba_chat.csv`, que **no** entra al
   entrenamiento. El 03-10-2026 la prueba con mensajes reales pasó de 38 % a 97 %, y un set totalmente
@@ -117,7 +136,9 @@ responde. **No los arranques**: serían dos bots con el mismo número de WhatsAp
 | Productos **V21–V41** | **Reales.** Precio, tallas S/M/L, stock, descripción y fotos copiados de `baruka.dinersclubmall.pe` el 03-10-2026 (19 productos; Kabanova y Azra, que traen dos colores, se separan en uno por color). Scripts en `deploy/catalogo-diners/` |
 | Política de cambios y devoluciones | **Real** (de la ficha de Diners), en `tienda.md` |
 | Productos V01–V20 | Ejemplo, **inactivos**. No se borran porque los pedidos de prueba #4, #5 y #7 los referencian |
-| Sucursales (Centro de Lima, Miraflores, Gamarra) | **Demostración, con direcciones inventadas.** El bot las menciona. Pendiente: datos reales o quitarlas |
+| Sucursales (Centro de Lima, Miraflores, Gamarra) | **Demostración, con direcciones inventadas.** Apagadas con `KD_SUCURSALES=0`: el bot ya no las menciona |
+| Showroom, horario, envíos | **Reales** (los dio la tienda el 04-10-2026): Juan Ayllón 459, Santa Anita; L–D 9–19 h, solo con cita; Lima S/ 15, provincia S/ 20. En `tienda.md` y `venta.json` |
+| Vestido **V42** «Vestido Gala Capa Azul» | Foto y lámina de materiales **reales** (las mandó la tienda). **Nombre, precio (S/ 260) y stock provisionales**: falta que Baruka los confirme |
 | Precios de `agente/seed/precios_catalogo100.json` | Inventados. Con `CATALOGO100=0` no se usan |
 | Vestido Irla (V35) | Diners lo registra en «palo rosa», pero en su foto es negro. Se copió tal cual |
 | 9 pedidos y 14 conversaciones | Del 30-09 y 01-10, migrados del servidor anterior |
@@ -127,7 +148,7 @@ responde. **No los arranques**: serían dos bots con el mismo número de WhatsAp
 - **`sed -i` sobre `~/landing/nginx.conf` no llega al contenedor.** Es un bind mount de un solo archivo:
   `sed -i` crea un inodo nuevo y `landing_web` sigue leyendo el viejo. Edita en sitio o reinicia el
   contenedor (ver `DEPLOY.md` §5).
-- **Un solo agente.** Dos copias (2 × 1,3 GiB) no caben. `/demo-design` y WhatsApp comparten `kddesign_agente`.
+- **Un solo agente.** Dos copias (2 × 1,1 GiB) no caben. `/demo-design` y WhatsApp comparten `kddesign_agente`.
 - **Docker no llega a `127.0.0.1` del host.** Los puertos `127.0.0.1:1848x` sirven para diagnosticar por
   SSH. El borde llega a los contenedores **por nombre** en la red `landing_default`.
 - **Qwik con ruta base** deja el sitio en `dist/baruka/`. El `Dockerfile` lo sube a la raíz porque el

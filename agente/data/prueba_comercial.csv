@@ -1,0 +1,69 @@
+intent,mensaje
+saludo,holaaa buenas tardes
+saludo,"buenas, alguien me atiende?"
+consulta_producto,hola me podrias dar informacion de ese vestido que publicaron
+consulta_producto,quisiera detalles del vestido del anuncio
+consulta_producto,estoy buscando un vestido para la boda de mi hermana
+consulta_material,de que tela esta hecho el vestido
+consulta_material,"el material como es, es suave?"
+consulta_material,que tipo de tela usan
+consulta_precio,¿Cuánto cuesta?
+consulta_precio,cuanto esta ese modelo
+consulta_precio,y a cuanto lo dejan
+consulta_precio,me dices cuanto vale porfa
+consulta_talla,tendras la talla M?
+consulta_talla,"yo soy talla L, tendran?"
+consulta_talla,que talla me recomiendas si mido 1.55
+consulta_talla,vienen en talla S?
+consulta_color,y en color negro lo tienen?
+consulta_color,lo tendran en color vino
+consulta_color,que otros colores manejan
+consulta_disponibilidad,"Hola, quisiera saber si todavía tienen este vestido"
+consulta_disponibilidad,aun tienen stock de este modelo?
+consulta_disponibilidad,sigue disponible el vestido azul?
+consulta_ubicacion,donde quedan?
+consulta_ubicacion,puedo ir hoy?
+consulta_ubicacion,quiero verlo
+consulta_ubicacion,me das la direccion de su local
+consulta_horario,hasta que hora atienden hoy
+consulta_horario,atienden los domingos?
+consulta_delivery,hacen envios a provincia?
+consulta_delivery,cuanto me cobran el envio a Huancayo
+consulta_delivery,me lo pueden mandar a mi casa
+consulta_pago,aceptan yape?
+consulta_pago,como seria el pago
+consulta_pago,puedo pagar con tarjeta de credito
+interesado,"Sí, estoy interesado."
+interesado,claro que me interesa
+interesado,sii me gusta bastante
+interesado,el vestido me tiene interesada
+interesado,ay me encanto ese modelo
+interesado,"esta bello, me gusta mucho"
+objecion_precio,Está muy caro.
+objecion_precio,uy esta carisimo
+objecion_precio,no tendras un descuentito
+objecion_precio,se sale de mi presupuesto
+objecion,"Bueno, lo voy a pensar."
+objecion,primero lo converso con mi mama
+objecion,nomas estaba averiguando
+objecion,te confirmo mas tarde
+objecion,no se si me va a quedar
+comparacion,que otros modelos tienes parecidos
+comparacion,cual de los dos me recomiendas
+comparacion,Envíame Nuevo modelos
+intencion_compra,"Sí, quiero comprarlo."
+intencion_compra,Quiero reservarlo.
+intencion_compra,"ya, me quedo con ese"
+intencion_compra,que tengo que hacer para comprarlo
+intencion_compra,quisiera apartarlo
+intencion_compra,guardamelo que lo voy a comprar
+intencion_compra,quiero hacer mi pedido
+intencion_compra,a que numero te yapeo
+confirmacion_compra,"si, confirmo el pedido"
+confirmacion_compra,"confirmado, procede"
+cancelacion,mejor ya no lo quiero
+cancelacion,cancela mi pedido porfa
+despedida,"ya muchas gracias, hasta luego"
+despedida,gracias por la informacion
+otro,eres una persona o un bot?
+otro,jaja ok

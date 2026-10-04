@@ -24,7 +24,9 @@ from pydantic import BaseModel, Field
 
 import base64
 
-from . import datos
+import json
+
+from . import datos, etapas, venta
 from .modelo import Embedder, cargar
 from . import stock as stk
 
@@ -110,6 +112,7 @@ class Estado:
         self.emb = Embedder()
         self.clf_i = cargar("intencion.pkl")
         self.clf_c = cargar("categoria.pkl")
+        self.clf_k = cargar("comercial.pkl")   # intención comercial: alimenta la máquina de etapas
         e = cargar("ejemplos.pkl")
         self.ejemplos, self.Xe = e["ejemplos"], e["X"]
         f = cargar("fichas.pkl")
@@ -162,7 +165,7 @@ class Estado:
             fichas = datos.fichas_seed(productos)
             textos = [x.texto() for x in fichas]
             if textos != self.seed_textos:
-                self._poner_seed(fichas, self.emb(textos) if fichas else np.zeros((0, self.dim)))
+                self._poner_seed(fichas, self.emb.pasajes(textos) if fichas else np.zeros((0, self.dim)))
                 self.seed_textos = textos
                 log.info("catálogo vivo re-indexado: %d productos", len(fichas))
             self.seed_origen = CATALOG_URL
@@ -210,6 +213,10 @@ class ChatIn(BaseModel):
     usar_llm: bool = True
     motor: str = ""  # "actual" | "deepseek"; vacío = MOTOR
     canal: str = ""  # "web" = UI de prueba (pinta un botón); vacío = WhatsApp (se responde con texto)
+    etapa: str = ""  # prospeccion | seguimiento | cierre | venta_confirmada: la guarda quien llama y la devuelve
+    conversacion: str = ""  # identificador para el registro de decisiones
+    producto: str = ""  # código del pedido en curso (lo manda el bot de WhatsApp en talla, confirmación y pago)
+    talla: str = ""     # talla de ese pedido
 
 
 def _motor(pedido: str) -> str:
@@ -230,6 +237,18 @@ def clasificar(texto: str) -> dict:
     intencion = top_i[0]["etiqueta"] if top_i[0]["p"] >= UMBRAL_INTENCION else "otro"
     return {"vector": v[0], "intencion": intencion, "confianza": top_i[0]["p"], "top_intenciones": top_i,
             "categoria": top_c[0]["etiqueta"], "confianza_categoria": top_c[0]["p"]}
+
+
+def clasificar_comercial(vector: np.ndarray) -> dict:
+    """Qué quiere la clienta en términos de venta (precio, talla, interés, compra…), con su confianza."""
+    p = E.clf_k.predict_proba(vector.reshape(1, -1))[0]
+    top = _top(p, E.clf_k.classes_)
+    return {"intent": top[0]["etiqueta"], "confianza": top[0]["p"], "top": top}
+
+
+def ficha_txt(f) -> str:
+    """La ficha tal como la lee el LLM: datos del catálogo más material y ocasiones si la tienda los dio."""
+    return f.texto() + venta.extras_texto(f.codigo)
 
 
 def recuperar(qv: np.ndarray, codigos: list[str], categoria: str | None, k: int = 5) -> list:
@@ -354,7 +373,8 @@ def info_tienda() -> str:
     except OSError:
         pass
     try:
-        import json
+        if not stk.USAR_SUCURSALES:
+            raise OSError("sucursales desactivadas")
         with open(SUCURSALES_JSON, encoding="utf-8") as fh:
             sucs = json.load(fh).get("sucursales", [])
         if sucs:
@@ -397,7 +417,8 @@ def _hist_llm(turnos) -> str:
 
 def _sin_pies(texto: str) -> str:
     """Quita de la respuesta del LLM los párrafos que son pies de foto copiados."""
-    partes = [p for p in texto.split("\n\n") if not RE_PARRAFO_PIE.search(p)]
+    # Tampoco rutas de imagen: «/media/products/v04.jpg V04 Vestido Arena - S/ 89.00» es la foto escrita a mano.
+    partes = [p for p in texto.split("\n\n") if not RE_PARRAFO_PIE.search(p) and "/media/" not in p]
     return "\n\n".join(partes) or texto
 
 
@@ -405,7 +426,7 @@ def _prompt_persona(req: ChatIn, cl: dict, fichas, sugeridas=(), ofrecer=False) 
     """Motor deepseek: más historial y los datos de la tienda; sin ejemplos del dataset, que lo vuelven de plantilla."""
     hist = _hist_llm(req.historial[-12:])
     st = E.stock.consultar([f.codigo for f in fichas])
-    fich = "\n".join(f"- {f.texto()} | AHORA: {stk.resumen(st.get(f.codigo, {}))}" for f in fichas) or "(ninguna relevante)"
+    fich = "\n".join(f"- {ficha_txt(f)} | AHORA: {stk.resumen(st.get(f.codigo, {}))}" for f in fichas) or "(ninguna relevante)"
     ya_hablaron = any(t.rol != "cliente" for t in req.historial)
     usuario = f"""CLIENTE: {req.cliente or "(sin nombre)"}
 {"YA ESTÁN CONVERSANDO: no saludes ni digas su nombre al empezar; responde directo." if ya_hablaron else "PRIMER MENSAJE: puedes saludar."}
@@ -428,10 +449,50 @@ MENSAJE NUEVO DEL CLIENTE:
     return [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}]
 
 
+def bloque_etapa(dec: dict, foco, paso: str = "", pedido: str = "") -> str:
+    """ETAPA ACTUAL para el LLM: en qué punto de la venta está y qué le toca hacer."""
+    e = dec["etapa"]
+    txt = f"ETAPA ACTUAL: {venta.NOMBRE_ETAPA[e]}\n{venta.guia(e, paso, pedido)}"
+    if e == "venta_confirmada" and foco is not None:
+        txt += "\n\n" + venta.totales(foco.precio, MONEDA) + "\n\n" + venta.info_pago()
+    return txt
+
+
+def _prompt_comercial(req: ChatIn, cl: dict, dec: dict, foco, fichas, sugeridas=(), ofrecer=False, paso="", pedido="", lamina=False) -> list[dict]:
+    """Motor deepseek: el LLM redacta; la etapa, los totales y el producto en foco se los da el código."""
+    hist = _hist_llm(req.historial[-14:])
+    st = E.stock.consultar([f.codigo for f in fichas])
+    fich = "\n".join(f"- {ficha_txt(f)} | AHORA: {stk.resumen(st.get(f.codigo, {}))}" for f in fichas) or "(ninguna relevante)"
+    ya_hablaron = any(t.rol != "cliente" for t in req.historial)
+    foco_txt = f"{foco.codigo} {foco.nombre}" if foco is not None else "ninguno todavía"
+    usuario = f"""CLIENTE: {req.cliente or "(sin nombre)"}
+{"YA ESTÁN CONVERSANDO: no saludes ni digas su nombre al empezar; responde directo." if ya_hablaron else "PRIMER MENSAJE: saluda y preséntate en una frase."}
+
+{bloque_etapa(dec, foco, paso, pedido)}
+
+LO QUE ACABA DE HACER LA CLIENTA: {dec['intent']} (confianza {dec['confianza']:.2f}){' — ' + dec['motivo'] if dec['motivo'] else ''}
+PRODUCTO DEL QUE SE HABLA: {foco_txt}
+
+TIENDA:
+{info_tienda()}
+
+HISTORIAL:
+{hist}
+
+PRODUCTO (fichas; la primera es de la que se habla):
+{fich}
+
+{nota_catalogo(cl)}FOTOS QUE EL BOT ENVIARÁ DESPUÉS DE TU TEXTO: {", ".join(f"{f.codigo} {f.nombre}" for f in sugeridas) or "ninguna"}{"; y la lámina de materiales del vestido (dilo: «te paso la lámina de materiales»)" if lamina else ""}{_nota_oferta(ofrecer)}
+
+MENSAJE NUEVO DE LA CLIENTA:
+{req.mensaje}"""
+    return [{"role": "system", "content": venta.sistema(req.negocio or NEGOCIO)}, {"role": "user", "content": usuario}]
+
+
 def _prompt(req: ChatIn, cl: dict, fichas, ejemplos, sugeridas=(), ofrecer=False) -> list[dict]:
     hist = _hist_llm(req.historial[-8:])
     st = E.stock.consultar([f.codigo for f in fichas])
-    fich = "\n".join(f"- {f.texto()} | AHORA: {stk.resumen(st.get(f.codigo, {}))}" for f in fichas) or "(ninguna relevante)"
+    fich = "\n".join(f"- {ficha_txt(f)} | AHORA: {stk.resumen(st.get(f.codigo, {}))}" for f in fichas) or "(ninguna relevante)"
     ejs = "\n".join(f"- [{e.intencion}] cliente: {e.texto}\n  respuesta modelo: {e.respuesta}" for e, _ in ejemplos)
     usuario = f"""CLIENTE: {req.cliente or "(sin nombre)"}   ESTADO DEL BOT: {req.estado or "idle"}
 INTENCIÓN DETECTADA: {cl['intencion']} (confianza {cl['confianza']:.2f}); alternativas: {", ".join(f"{x['etiqueta']} {x['p']:.2f}" for x in cl['top_intenciones'][1:])}
@@ -500,7 +561,8 @@ def _llm(mensajes: list[dict], url: str, clave: str, modelos: list[str], tempera
 # Palabras de un nombre de producto que no lo identifican: «Conjunto Xela» se reconoce por «xela».
 _GENERICAS = {"vestido", "conjunto", "blusa", "pantalon", "falda", "blazer", "enterizo", "polo", "jean", "jeans",
               "azul", "rojo", "roja", "rosa", "palo", "rosado", "turquesa", "negro", "negra", "blanco", "blanca",
-              "beige", "verde", "celeste", "naranja", "para", "mujer", "baruka", "largo", "corto", "midi"}
+              "beige", "verde", "celeste", "naranja", "para", "mujer", "baruka", "largo", "corto", "midi",
+              "noche", "fiesta", "boda", "elegante", "casual"}   # «es de noche» no nombra al «Vestido Azul Noche»
 
 
 def _sin_tildes(t: str) -> str:
@@ -772,10 +834,28 @@ def talla_en(texto: str) -> str:
 
 def producto_en_foco(req: ChatIn):
     """La prenda de la que se está hablando: la nombrada ahora o, si no, la última que mencionó el bot."""
-    for c in _codigos_contexto(req):
+    cods = _codigos_contexto(req)
+    # El pedido en curso manda sobre el historial (pero no sobre lo que nombra ahora): con el pedido
+    # confirmado, el código ya quedó muchos mensajes atrás.
+    en_curso = (getattr(req, "producto", "") or "").upper()
+    if en_curso:
+        ahora = nombrados(req.mensaje)
+        cods = ahora + [en_curso] + [c for c in cods if c not in ahora]
+    for c in cods:
         if c in E.por_codigo and E.fichas[E.por_codigo[c]].fuente == "seed":
             return E.fichas[E.por_codigo[c]]
+    # La clienta llega desde el anuncio de un vestido: «este vestido» es ese, aunque no lo nombre.
+    if venta.PRODUCTO_DEMO in E.por_codigo:
+        return E.fichas[E.por_codigo[venta.PRODUCTO_DEMO]]
     return None
+
+
+def talla_conocida(req: ChatIn) -> str:
+    """La última talla que dijo la clienta en la conversación («soy talla M»)."""
+    for t in [req.mensaje] + [x.texto for x in reversed(req.historial) if x.rol == "cliente"][:8]:
+        if len(t) <= 80 and (m := talla_en(t)):
+            return m
+    return (getattr(req, "talla", "") or "").upper()
 
 
 def tallas_de(f) -> list[dict]:
@@ -890,6 +970,10 @@ def vitrina(req: ChatIn, qv: np.ndarray) -> list:
     return pool[:MAX_VITRINA]
 
 
+# «vestidos», «otros modelos», «más opciones»: quiere ver varios, no el del anuncio.
+RE_VARIOS = re.compile(r"\b(vestidos|modelos|opciones|cat[aá]logo|otr[oa]s?|diferentes?|variedad)\b", re.I)
+
+
 def conversar(req: ChatIn) -> dict:
     t0 = time.time()
     if not req.mensaje.strip():
@@ -907,20 +991,35 @@ def conversar(req: ChatIn) -> dict:
     fichas = recuperar(qv, codigos, filtro)
     ejemplos = ejemplos_parecidos(cl["vector"])
 
+    # Qué quiere en términos de venta y en qué etapa queda la conversación. Lo decide la máquina de
+    # estados (etapas.py) con la intención, su confianza y lo último que preguntó el bot; no el LLM.
+    com = clasificar_comercial(cl["vector"])
+    dec = etapas.decidir(req.etapa, com["intent"], com["confianza"], req.mensaje, " ".join(_ultimos_del_bot(req)))
+    etapa = dec["etapa"]
+
     motor = _motor(req.motor)
     accion, respuesta, modelo = "responder", "", ""
     sugeridas = []
+    botones, lamina, paso, pedido_txt = [], "", "", ""
     # sólo los códigos escritos en ESTE mensaje pueden disparar la oferta del bot
     seed_cods = [c for c in datos.codigos_en(req.mensaje) if c in E.por_codigo and E.fichas[E.por_codigo[c]].fuente == "seed"]
     pide = pide_mas(req)   # «sí» a «¿Quieres ver otras opciones?» o «muéstrame otras»
     ofrecer = False
+    if (not pide and dec["intent"] == "comparacion" and dec["nivel"] == "alta" and not pregunta_variante(req)
+            and re.search(r"modelo|opci[oó]n|vestido|otro|parecid", req.mensaje, re.I)):
+        pide = True   # «envíame nuevos modelos»: pide ver otras prendas
     if pide:
         cl = dict(cl, intencion="otras_opciones")  # un «sí» suelto no es saludo ni acción del bot
     tallas_boton, confirmar, talla_pedida, codigo_pedido = [], False, "", ""
     foco = producto_en_foco(req)
-    # Pedido en el chat: «el Kabanova rojo en L», «L» o el botón «L (S/ 330)» con una prenda en foco.
-    # Una pregunta («¿tienen en L?») no es pedir: la contesta el LLM y salen los botones de talla.
-    talla = talla_en(req.mensaje) if (foco and not pide and "?" not in req.mensaje and len(req.mensaje) <= 60) else ""
+    # Decir la talla no es comprar. Solo en CIERRE (cuando ya dijo que quiere comprarlo, o eligió la
+    # talla en el botón de la tarjeta) una talla arma el pedido; antes, la contesta el LLM y sigue la charla.
+    talla = ""
+    if foco and not pide and etapa == "cierre":
+        if "?" not in req.mensaje and len(req.mensaje) <= 60:
+            talla = talla_en(req.mensaje)
+        if not talla and dec["intent"] == "intencion_compra":
+            talla = talla_conocida(req)        # ya la había dicho: «soy talla M» … «quiero comprarlo»
     if talla:
         tallas_f = tallas_de(foco)
         hay = next((x for x in tallas_f if x["talla"] == talla), None)
@@ -933,12 +1032,18 @@ def conversar(req: ChatIn) -> dict:
             respuesta = (f"La talla *{talla}* del *{foco.codigo}* {foco.nombre} " + ("se nos agotó 😔" if hay else "no la tenemos 😔")
                          + (f"\n\nTenemos en {', '.join(libres)}. ¿Te sirve alguna?" if libres else ""))
             modelo, tallas_boton = "flujo_pedido", tallas_f
-    elif foco and req.canal == "web" and esperando_confirmacion(req) and RE_CONFIRMA.search(req.mensaje):
-        # Sólo en la web: en WhatsApp la confirmación la maneja el flujo del bot Go (estado confirm).
-        talla_prev = next((talla_en(t) for t in _ultimos_del_bot(req) if "Talla" in t), "")
+    elif foco and not pide and etapa == "cierre" and dec["intent"] == "intencion_compra":
+        # Quiere comprarlo y aún no dijo la talla: es el paso pendiente del cierre.
+        respuesta = f"¡Perfecto! 😊 Para separar tu *{foco.codigo}* {foco.nombre} necesito tu talla.\n\n¿Cuál usas?"
+        modelo, tallas_boton = "flujo_cierre", tallas_de(foco)
+    elif foco and etapa == "venta_confirmada" and dec["transicion"]:
+        # Dijo «sí» a «¿Confirmamos tu pedido?». En WhatsApp ese SI lo recibe el bot Go (estado de
+        # confirmación) y no llega aquí; este camino es el de la web.
+        talla_prev = next((talla_en(t) for t in _ultimos_del_bot(req) if "talla" in t.lower()), "") or talla_conocida(req)
+        codigo_pedido, talla_pedida = foco.codigo, talla_prev   # el bot Go los usa si aún no había armado el pedido
         respuesta = (f"¡Listo! 🎉 Tu pedido del *{foco.codigo}* {foco.nombre}" + (f" talla *{talla_prev}*" if talla_prev else "")
-                     + " quedó separado.\n\nPara coordinar la entrega, mándanos tu *ubicación* 📍 o tu dirección completa.")
-        modelo = "flujo_pedido"
+                     + " quedó separado.\n\n¿El envío sería para *Lima* o para *provincia*?")
+        modelo, botones = "flujo_pedido", ["Lima", "Provincia"]
     elif foco and re.search(r"cambiar talla", req.mensaje, re.I):
         respuesta, modelo, tallas_boton = f"Claro 😊 ¿Qué talla prefieres para el *{foco.codigo}* {foco.nombre}?", "flujo_pedido", tallas_de(foco)
     foto_pedida = None if (respuesta or pide) else pide_foto_de(req)
@@ -962,7 +1067,7 @@ def conversar(req: ChatIn) -> dict:
         pass  # contestó el flujo de pedido, el menú o el catálogo por categorías
     elif not pide and not foto_pedida and cl["intencion"] in ACCIONES_BOT and cl["confianza"] >= UMBRAL_ACCION:
         accion, respuesta = cl["intencion"], TEXTO_ACCION[cl["intencion"]]
-    elif not pide and len(seed_cods) == 1 and cl["intencion"] in ("producto_descripcion", "consulta_precio", "consulta_stock"):
+    elif not pide and etapa == "cierre" and len(seed_cods) == 1 and cl["intencion"] in ("producto_descripcion", "consulta_precio", "consulta_stock"):
         accion, respuesta = "codigo", TEXTO_ACCION["codigo"]  # el bot Go muestra foto, precio y tallas y arranca el pedido
         sugeridas = [E.fichas[E.por_codigo[seed_cods[0]]]]
     elif (not pide and motor == "actual" and cl["intencion"] in RESPUESTA_DIRECTA and cl["confianza"] >= UMBRAL_DIRECTA and not req.historial
@@ -971,7 +1076,11 @@ def conversar(req: ChatIn) -> dict:
     else:
         # «¿y conjuntos?» sale catálogo con poca confianza: si nombra una prenda, basta con que sea la primera.
         # «¿y el vestido Holly?» nombra una prenda: no es pedir el catálogo de vestidos.
-        es_catalogo = (not pide and not nombrados(req.mensaje) and cl["intencion"] == "catalogo"
+        # Llegó por el anuncio de un vestido y sigue hablando de él («¿todavía tienen este vestido?»): no se
+        # abre el catálogo ni se cambia de prenda. Solo si pide ver varios («otros modelos», «vestidos»).
+        solo_demo = bool(foco and foco.codigo == venta.PRODUCTO_DEMO and not nombrados(req.mensaje)
+                         and categoria_pedida(req.mensaje) in (None, categoria_de(foco)) and not RE_VARIOS.search(req.mensaje))
+        es_catalogo = (not pide and not solo_demo and not nombrados(req.mensaje) and cl["intencion"] == "catalogo"
                        and (cl["confianza"] >= UMBRAL_ACCION or bool(categoria_pedida(req.mensaje))))
         if foto_pedida:
             sugeridas = [foto_pedida]   # la pidió: se manda aunque ya la haya visto
@@ -979,8 +1088,29 @@ def conversar(req: ChatIn) -> dict:
             sugeridas = otras_opciones(req, qv)
         elif es_catalogo:
             sugeridas = vitrina(req, qv)
+        elif solo_demo:
+            # Llegó por el anuncio de este vestido: se le enseña ese (una vez), no otros al azar.
+            sugeridas = [foco] if (foco.codigo not in _ya_mostrados(req) and dec["intent"] not in ("despedida", "cancelacion")
+                                    and etapa != "venta_confirmada" and not req.estado.startswith("esperando_")
+                                    and cl["intencion"] != "censura" and _imagen(foco)) else []
         else:
             sugeridas = sugerir(req, cl, fichas)
+        if foco and not pide and not es_catalogo and not nombrados(req.mensaje):
+            fichas = [foco] + [f for f in fichas if f is not foco]     # la primera ficha es de la que se habla
+        # Con confianza baja la intención no cuenta («es de noche» salía como material con 0.38).
+        if foco and venta.pregunta_material(req.mensaje, dec["intent"] if dec["nivel"] != "baja" else ""):
+            lamina = venta.imagen_material(foco.codigo)
+        if etapa == "cierre":
+            t_c = talla_conocida(req)
+            if req.estado == "esperando_confirmacion":   # WhatsApp: ya tiene el resumen del pedido delante
+                paso = "que responda *SI* para confirmar el pedido del resumen. No repitas el resumen."
+            elif req.estado == "esperando_talla":
+                paso = "preguntarle qué talla quiere. No le pidas confirmar nada todavía: el resumen del pedido sale cuando elija la talla."
+            else:
+                paso = (f"confirmar el pedido en talla {t_c}: " + ("que pulse «Sí, confirmar»." if req.canal == "web" else "que responda *SI* para confirmarlo.")) if t_c else "preguntarle su talla."
+        elif etapa == "venta_confirmada" and foco:
+            t_c = talla_conocida(req)
+            pedido_txt = f": *{foco.codigo}* {foco.nombre}" + (f", talla {t_c}" if t_c else "")
         if es_catalogo or pide:
             fichas = sugeridas + [f for f in fichas if f not in sugeridas]
         # Vendedora, no catálogo automático: si nombró una prenda y no hay nada nuevo que enseñarle
@@ -994,11 +1124,12 @@ def conversar(req: ChatIn) -> dict:
             ofrecer = True   # «¿lo tienes en otros colores?»: se contesta por esa prenda y se PREGUNTA por otras
         # Sólo si el mensaje no trae prenda alguna: «hola, ¿tienen el V21?» conserva sus fichas.
         if (cl["intencion"] in SIN_FICHAS and cl["confianza"] >= UMBRAL_SIN_FICHAS and not sugeridas and not ofrecer
-                and not noms and not datos.codigos_en(req.mensaje) and not RE_ROPA.search(req.mensaje)):
+                and not noms and not datos.codigos_en(req.mensaje) and not RE_ROPA.search(req.mensaje)
+                and not (foco and foco.codigo == venta.PRODUCTO_DEMO)):
             fichas = []
         if req.usar_llm and motor == "deepseek":
             try:
-                respuesta, modelo = llamar_deepseek(_prompt_persona(req, cl, fichas, sugeridas, ofrecer))
+                respuesta, modelo = llamar_deepseek(_prompt_comercial(req, cl, dec, foco, fichas, sugeridas, ofrecer, paso, pedido_txt, bool(lamina)))
                 respuesta = _sin_pies(_sin_resaludo(_whatsapp(respuesta), req))
             except Exception as e:
                 log.warning("DeepSeek no respondió, sigo con el motor actual: %s", e)
@@ -1037,6 +1168,17 @@ def conversar(req: ChatIn) -> dict:
             ofrecer = False
             respuesta = "\n\n".join(p for p in respuesta.split("\n\n") if "otras opciones" not in p.lower())
 
+    tarjetas = _sugerencias_json(sugeridas)
+    if lamina and accion == "responder":
+        # La lámina de materiales de la tienda, con su texto: responde «¿cómo es el material?» mejor que un párrafo.
+        tarjetas.append({"codigo": foco.codigo, "nombre": foco.nombre, "fuente": "seed", "imagen": lamina, "disponible": "",
+                         "stock_fuente": "", "titulo": "", "tallas": [], "pie": "✨ *Material:* " + venta.extras(foco.codigo).get("material", "")})
+    # Registro de la decisión: por qué el bot está en esta etapa.
+    log.info("[CLASSIFIER] %s", json.dumps({
+        "conversation_id": req.conversacion, "mensaje": req.mensaje[:200], "stage_anterior": dec["etapa_anterior"],
+        "intent": dec["intent"], "confidence": dec["confianza"], "nivel": dec["nivel"], "stage_nuevo": etapa,
+        "motivo": dec["motivo"], "accion": accion, "modelo": modelo, "respuesta": respuesta[:160],
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S%z")}, ensure_ascii=False))
     return {
         "intencion": cl["intencion"], "confianza": cl["confianza"], "top_intenciones": cl["top_intenciones"],
         "categoria_prenda": cl["categoria"], "confianza_categoria": cl["confianza_categoria"],
@@ -1049,7 +1191,11 @@ def conversar(req: ChatIn) -> dict:
         "categorias": categorias,
         "fichas": [{"codigo": f.codigo, "nombre": f.nombre, "fuente": f.fuente} for f in fichas],
         "ejemplos": [{"intencion": e.intencion, "texto": e.texto, "sim": round(s, 3)} for e, s in ejemplos],
-        "sugerencias": _sugerencias_json(sugeridas),
+        "sugerencias": tarjetas,
+        "etapa": etapa,
+        "comercial": {"intent": dec["intent"], "confianza": dec["confianza"], "nivel": dec["nivel"], "etapa_anterior": dec["etapa_anterior"],
+                      "transicion": dec["transicion"], "motivo": dec["motivo"], "clasificador": com["top"]},
+        "botones": botones,
         "stock_fuente": E.stock.ultima_fuente,
         "ms": int((time.time() - t0) * 1000),
     }
@@ -1064,6 +1210,8 @@ def health():
             "llm_configurado": bool(OPENROUTER_KEY), "motor": MOTOR_DEFECTO,
             "deepseek": {"modelos": DEEPSEEK_MODELOS, "configurado": bool(DEEPSEEK_KEY)}, "fichas": len(E.fichas) if E else 0,
             "catalogo": E.seed_origen if E else None,
+            "producto_demo": venta.PRODUCTO_DEMO or None,
+            "comercial": (E.metricas.get("comercial") or {}).get("exactitud") if E else None,
             "stock": {"url": stk.STOCK_URL or "(seed)", "ultima_fuente": E.stock.ultima_fuente} if E else None,
             "busqueda_foto": E.img.metricas if E and E.img else None}
 
@@ -1102,10 +1250,11 @@ class FotoIn(BaseModel):
     negocio: str = ""
     usar_llm: bool = True
     motor: str = ""
+    etapa: str = ""
 
 
 PLANTILLA_FOTO = {
-    "online": "¡Sí lo tenemos! 😍 Es el *{codigo}* {nombre}.",
+    "online": "¡Sí lo tenemos! 😍 Es el *{codigo}* {nombre}.\n\nCuéntame, ¿para qué ocasión lo estás buscando?",
     "sucursal": "¡Lo encontré! Es el *{codigo}* {nombre}. En la tienda virtual no lo tengo, pero sí en sucursal 👇",
     "agotado": "Es el *{codigo}* {nombre}, pero se nos agotó en todas las tiendas 😔\n\nMira estos parecidos que sí tenemos 👇",
     "parecido": "Creo que es el *{codigo}* {nombre} 🤔 ¿Es este?\n\nSi no, te dejo otros parecidos 👇",
@@ -1113,7 +1262,7 @@ PLANTILLA_FOTO = {
 }
 
 GUIA_FOTO = {
-    "online": "Es exactamente esa prenda y hay stock en la tienda virtual: celebra que la tiene y dile que le pasas los detalles para pedirla.",
+    "online": "Es exactamente esa prenda y hay stock: dile con alegría que sí la tienen y pregúntale para qué ocasión la busca. No pidas talla ni hables de pedido todavía.",
     "sucursal": "Es esa prenda pero sólo hay en sucursal: dile en qué sucursal, dirección y tallas, y ofrece separarla con una asesora (*4*).",
     "agotado": "Es esa prenda pero no hay en ningún lado: dilo con empatía y presenta las PARECIDAS como alternativa.",
     "parecido": "No es seguro que sea esa: pregúntale si es la de la foto que le enviarás y ofrece las PARECIDAS por si no.",
@@ -1152,7 +1301,7 @@ def conversar_foto(req: FotoIn) -> dict:
 
     accion, codigo_oferta = "responder", ""
     if nivel == "exacto" and estado_f == "online":
-        caso, sugeridas, accion, codigo_oferta = "online", [f], "codigo", f.codigo
+        caso, sugeridas = "online", [f]   # la reconoció y hay stock: se conversa; no se arranca el pedido
     elif nivel == "exacto" and estado_f == "sucursal":
         caso, sugeridas = "sucursal", [f] + [x for x in parecidas if d(x) == "online"][:2]
     elif nivel == "exacto":
@@ -1184,7 +1333,7 @@ Máximo 3 frases."""
         motor = _motor(req.motor)
         if motor == "deepseek":
             try:
-                respuesta, modelo = llamar_deepseek([{"role": "system", "content": SISTEMA_PERSONA.format(negocio=req.negocio or NEGOCIO, moneda=MONEDA)},
+                respuesta, modelo = llamar_deepseek([{"role": "system", "content": venta.sistema(req.negocio or NEGOCIO)},
                                                      {"role": "user", "content": usuario}])
                 respuesta = _whatsapp(respuesta)
             except Exception as e:
@@ -1206,6 +1355,8 @@ Máximo 3 frases."""
                  "umbrales": {"exacto": E.img.metricas["umbral_exacto"], "parecido": E.img.metricas["umbral_parecido"]},
                  "top": [{"codigo": c, "sim": round(x, 3)} for c, x in top[:5]]},
         "sugerencias": _sugerencias_json(sugeridas),
+        # Mandar la foto de una prenda que sí hay es mostrar interés: de prospección pasa a seguimiento.
+        "etapa": ("seguimiento" if (caso == "online" and etapas.ORDEN.get(req.etapa, 0) < etapas.ORDEN["seguimiento"]) else (req.etapa or "prospeccion")),
         "stock_fuente": E.stock.ultima_fuente,
         "ms": int((time.time() - t0) * 1000),
     }
@@ -1224,9 +1375,11 @@ def ruta_stock(codes: str):
 
 @app.get("/media/catalogo/{archivo}")
 def imagen_catalogo(archivo: str):
-    if not re.fullmatch(r"(VES|POL|BLU|JEA)-\d{3}\.jpg", archivo):
+    if not re.fullmatch(r"(VES|POL|BLU|JEA)-\d{3}\.jpg|[a-z0-9_]{1,40}\.jpg", archivo):
         raise HTTPException(404)
     ruta = os.path.join(IMG_DIR, archivo)
+    if not os.path.exists(ruta):
+        ruta = os.path.join(IMG_DIR, "extra", archivo)   # láminas de la tienda (materiales), fuera del índice de fotos
     if not os.path.exists(ruta):
         raise HTTPException(404)
     return FileResponse(ruta, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=86400"})

@@ -28,6 +28,8 @@ STOCK_URL = os.environ.get("STOCK_URL", "")  # http://backend:8080/api/public/st
 STOCK_TIMEOUT = float(os.environ.get("STOCK_TIMEOUT_SECONDS", "2"))
 # Caché cortísima: evita repetir la misma consulta dentro de un turno (vitrina + pies de foto).
 STOCK_CACHE_SECONDS = float(os.environ.get("STOCK_CACHE_SECONDS", "3"))
+# 0 = la tienda no tiene sucursales con stock propio (Baruka: un showroom con cita). No se mencionan.
+USAR_SUCURSALES = os.environ.get("SUCURSALES", "1") != "0"
 
 
 class Stock:
@@ -78,7 +80,7 @@ class Stock:
                 out[e["code"].upper()] = {
                     "product": bool(e.get("product")),
                     "online": {t: int(v.get("available", 0)) for t, v in (e.get("online") or {}).items()},
-                    "branches": e.get("branches") or [],
+                    "branches": (e.get("branches") or []) if USAR_SUCURSALES else [],
                     "fuente": "backend",
                 }
             self.ultima_fuente = "backend"
@@ -93,6 +95,8 @@ class Stock:
         for c in codigos:
             branches = [{"id": s["id"], "name": s["nombre"], "address": s["direccion"], "hours": s.get("horario", ""), "sizes": tallas}
                         for s, tallas in self._seed_suc.de(c)]
+            if not USAR_SUCURSALES:
+                branches = []
             out[c] = {"product": c in self._seed_online, "online": dict(self._seed_online.get(c, {})),
                       "branches": branches, "fuente": "seed"}
         return out
@@ -124,5 +128,6 @@ def resumen(st: dict) -> str:
     else:
         partes.append("no se vende en la tienda virtual")
     suc = [f"{b['name']} ({b['address']}): {', '.join(f'{t}={n}' for t, n in b['sizes'].items())}" for b in st.get("branches", []) if b.get("sizes")]
-    partes.append("sucursales: " + ("; ".join(suc) if suc else "sin stock"))
+    if USAR_SUCURSALES:
+        partes.append("sucursales: " + ("; ".join(suc) if suc else "sin stock"))
     return " | ".join(partes)

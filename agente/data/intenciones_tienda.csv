@@ -344,3 +344,63 @@ foto,errores_ortograficos,te mando una foto
 foto,correcta,"Vi un modelo en Instagram, ¿lo tienen?"
 foto,informal,lo vi en tiktok lo tienen?
 foto,errores_ortograficos,lo vi en el insta
+saludo,correcta,"Hola, ¿cómo están?"
+saludo,informal,hola q tal como estan
+saludo,errores_ortograficos,ola komo estan
+saludo,correcta,"Buenas, ¿cómo les va?"
+saludo,informal,buenas como va todo
+saludo,errores_ortograficos,buenaas komo les ba
+saludo,correcta,"Hola, ¿qué tal todo por ahí?"
+saludo,informal,holaa que tal todo
+saludo,errores_ortograficos,ola ke tal todo
+saludo,correcta,"Buen día, ¿cómo se encuentran?"
+saludo,informal,buen dia como andan
+saludo,errores_ortograficos,buen dia komo andan
+producto_recomendacion,correcta,Tengo una fiesta y no sé qué ponerme.
+producto_recomendacion,informal,tengo una fiesta q me pongo
+producto_recomendacion,errores_ortograficos,tngo una fiesta ke me pongo
+producto_recomendacion,correcta,"Tengo un matrimonio, ¿qué me recomiendas usar?"
+producto_recomendacion,informal,tengo un matri q me recomiendas
+producto_recomendacion,errores_ortograficos,tengo un matrimonio ke me rekomiendas
+producto_recomendacion,correcta,"Me invitaron a una cena elegante, ¿qué puedo llevar?"
+producto_recomendacion,informal,tengo una cena elegante q llevo
+producto_recomendacion,errores_ortograficos,tengo una sena elegante ke yevo
+producto_recomendacion,correcta,Tengo mi promoción y no sé qué vestir.
+producto_recomendacion,informal,tengo mi promo q me pongo
+producto_recomendacion,errores_ortograficos,tengo mi promosion ke visto
+pedido_estado,correcta,¿Cómo va el pedido que hice?
+pedido_estado,informal,mi pedido como va
+pedido_estado,errores_ortograficos,mi pedio komo ba
+pedido_estado,correcta,¿Ya enviaron lo que compré?
+pedido_estado,informal,ya enviaron lo q compre
+pedido_estado,errores_ortograficos,ya embiaron lo ke kompre
+pedido_estado,correcta,Quisiera saber en qué va mi compra.
+pedido_estado,informal,en q va mi compra
+pedido_estado,errores_ortograficos,en ke ba mi kompra
+pedido_estado,correcta,¿Mi pedido ya está en camino?
+pedido_estado,informal,mi pedido ya esta en camino?
+pedido_estado,errores_ortograficos,mi pedio ya sta en kamino
+pregunta_general,correcta,¿Cuánto es 12 por 8?
+pregunta_general,informal,cuanto es 12 x 8
+pregunta_general,errores_ortograficos,kuanto es 12 por 8
+pregunta_general,correcta,¿Cuánto da 150 entre 3?
+pregunta_general,informal,cuanto da 150 entre 3
+pregunta_general,errores_ortograficos,kuanto da 150 entre 3
+pregunta_general,correcta,Resuélveme esta suma: 45 más 37.
+pregunta_general,informal,cuanto es 45 mas 37
+pregunta_general,errores_ortograficos,kuanto es 45 mas 37
+pregunta_general,correcta,¿Cuál es la raíz cuadrada de 81?
+pregunta_general,informal,raiz cuadrada de 81?
+pregunta_general,errores_ortograficos,rais kuadrada de 81
+estado_animo,correcta,Tuve un día muy pesado hoy.
+estado_animo,informal,uf q dia tan pesado
+estado_animo,errores_ortograficos,tube un dia re pesado
+estado_animo,correcta,Hoy fue un día terrible para mí.
+estado_animo,informal,hoy fue un dia terrible
+estado_animo,errores_ortograficos,oy fue un dia terrivle
+estado_animo,correcta,"Estoy agotada, qué día tan largo."
+estado_animo,informal,q dia tan largo estoy muerta
+estado_animo,errores_ortograficos,estoi agotada ke dia
+estado_animo,correcta,Qué mal día he tenido.
+estado_animo,informal,que mal dia tuve
+estado_animo,errores_ortograficos,ke mal dia tube

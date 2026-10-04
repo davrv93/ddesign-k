@@ -10,3 +10,5 @@ frontend/tmp/
 __pycache__/
 *.pyc
 .DS_Store
+# Datos de pago de la tienda (Yape, titular): solo en la máquina de despliegue y en el servidor.
+agente/seed/pago.md

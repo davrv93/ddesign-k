@@ -5,14 +5,68 @@ todo el **texto libre** (lo que no es un número del menú, un código ni una ta
 agente no responde, el bot vuelve a Gemini como antes.
 
 ```
-mensaje ─► embedding local ─► clasificador de intención ─┬─► acción del bot (catálogo, foto, pedido, asesora, código)
-           (jina v2 es, ONNX)  clasificador de prenda     └─► RAG (fichas + ejemplos) ─► DeepSeek (OpenRouter) ─► respuesta
+mensaje ─► embedding local ─┬─► clasificador de intención ─► acción del bot (catálogo, foto, pedido, asesora)
+           (e5-small, ONNX)  ├─► clasificador de prenda
+                             └─► clasificador comercial ─► máquina de etapas ─► RAG + guía de la etapa ─► LLM ─► respuesta
 ```
+
+## Agente comercial: tres etapas (04-10-2026)
+
+La tienda vende en tres etapas y el bot no puede saltárselas: **prospección** (conocer a la clienta) →
+**seguimiento** (resolver dudas y validar el interés) → **cierre** (concretar) → **venta confirmada** (envío,
+total, pago y comprobante). Antes, decir la talla ya disparaba «¿Confirmamos tu pedido?» y el bot se quedaba
+repitiendo «Responde SI o NO».
+
+| Pieza | Archivo | Qué hace |
+|---|---|---|
+| Clasificador comercial | `data/comercial.csv` (496 frases, 20 intenciones), `app/entrenar.py` | Qué quiere la clienta en términos de venta: `interesado`, `intencion_compra`, `confirmacion_compra`, `objecion`, `objecion_precio`, `consulta_precio`, `consulta_material`… Se mide con `data/prueba_comercial.csv` (68 frases que no entran al entrenamiento): **97,1 %** |
+| Máquina de etapas | `app/etapas.py` | Reglas explícitas, sin LLM. Devuelve la etapa nueva y el motivo |
+| Guion por etapa | `app/venta.py` | Prompt de sistema, guía de cada etapa, totales ya calculados, datos de pago |
+| Pruebas | `app/prueba_etapas.py` | 23 casos (los 7 del encargo incluidos). Se ejecutan al construir la imagen: si falla uno, no hay imagen |
+
+Reglas de `etapas.py`:
+
+- **Interés no es compra.** «Sí, me interesa» o preguntar el precio lleva a seguimiento, nunca a cierre.
+- Solo una intención clara de compra («quiero comprarlo», «resérvamelo», «¿cómo pago?») lleva a cierre.
+- **El «sí» depende de lo último que preguntó el bot**: a «¿Confirmamos tu pedido?» es una confirmación; a
+  cualquier otra pregunta es interés. Una confirmación solo vale en cierre.
+- **Umbrales de confianza:** ≥ 0,80 se usa tal cual; entre 0,60 y 0,80 solo avanza un paso prudente (una
+  intención de compra dudosa llega a seguimiento, no a cierre); < 0,60 la etapa no cambia.
+- Una objeción («está caro», «lo voy a pensar») devuelve la conversación a seguimiento, incluso desde el cierre.
+- Decir la talla no arma el pedido; solo lo arma en cierre.
+
+La etapa **no se guarda en el agente**: quien llama la manda en `etapa` y la recibe de vuelta. El bot Go la
+guarda en el contexto de la conversación; la UI web, en memoria. Cada decisión queda en el log:
+
+```
+[CLASSIFIER] {"conversation_id": "12", "mensaje": "ya, resérvamelo", "stage_anterior": "seguimiento",
+ "intent": "intencion_compra", "confidence": 0.9, "nivel": "alta", "stage_nuevo": "cierre",
+ "motivo": "señal fuerte de compra", "accion": "pedido", ...}
+```
+
+`docker logs kddesign_agente 2>&1 | grep CLASSIFIER` muestra por qué el bot está en cada etapa.
+
+**Vestido del anuncio** (`PRODUCTO_DEMO=V42`): la clienta llega desde un anuncio y dice «este vestido» sin
+nombrarlo. Con la variable puesta, ese vestido es la prenda en foco, se enseña una sola vez y no se mezclan
+otros modelos salvo que los pida («otros modelos», «vestidos»). Lo que el catálogo no guarda (material,
+ocasiones, lámina de materiales) está en `seed/producto_demo.json`; la lámina se manda cuando pregunta por
+el material.
+
+**Datos de venta:** costos de envío en `seed/venta.json` (el total lo calcula el código, no el LLM). Los
+datos de pago (Yape, titular) van en `seed/pago.md`, que **no está en el repositorio** (`.gitignore`): se
+copia al servidor con el rsync del deploy. Sin ese archivo, el bot deriva el pago a una asesora. Plantilla:
+`seed/pago.md.ejemplo`. Solo se entregan con el pedido confirmado.
+
+**WhatsApp** (`backend/internal/bot/bot.go`): en los estados de talla y confirmación, lo que no es una talla
+ni un sí/no va al agente con `etapa`, `producto` y `talla`; si sigue en cierre se recuerda el paso, y si dudó
+o pidió ver otros modelos se suelta el pedido (se libera la reserva). Tras el *SI* el estado es
+`esperando_pago`: el agente lleva Lima/provincia → total → pago, la foto que llegue es el comprobante (queda
+anotado en el pedido) y luego se pide la dirección.
 
 | Pieza | Qué es |
 |---|---|
-| Embeddings | `jinaai/jina-embeddings-v2-base-es` (open source, Apache-2.0, español/inglés), servido con fastembed + onnxruntime en CPU. Se hornea en la imagen. |
-| Clasificador | Regresión logística sobre los embeddings: 20 intenciones y 4 categorías de prenda. |
+| Embeddings | `Xenova/multilingual-e5-small` cuantizado (MIT, multilingüe, 384 dimensiones), servido con fastembed + onnxruntime en CPU. Se hornea en la imagen. Los mensajes llevan el prefijo `query: ` y las fichas `passage: `. |
+| Clasificador | Estandarización + regresión logística sobre los embeddings: intenciones del bot, categorías de prenda e intenciones comerciales (tres cabezas, un solo embedding por mensaje). |
 | RAG | 100 fichas de `caracteristicas_y_tallas.txt` + el catálogo real de la tienda (`/api/public/catalog`, se refresca cada 5 min). Sólo lo semiestático: diseño, color, precio. **Nunca stock.** |
 | Stock | Herramienta, no conocimiento: `GET /api/public/stock?codes=…` del backend en el momento de responder (`app/stock.py`). Disponible = físico − reservas vigentes, más stock por sucursal. |
 | Few-shot | Los 4 ejemplos más parecidos de los datasets se pasan al LLM como guía de tono. |
@@ -173,7 +227,23 @@ accion, codigo, respuesta, fichas, ejemplos}`. `POST /clasificar {texto}` devuel
 
 Para re-entrenar con datos nuevos, edita los CSV de `data/` y reconstruye la imagen.
 
-## ¿Cambiar jina por algo más ligero? Medido, no
+## Cambio de modelo: de jina a multilingual-e5-small (04-10-2026)
+
+Medido en el mismo contenedor, con los mismos datos:
+
+| Embeddings | RAM del modelo | ms por mensaje | Intención (prueba real, 66) | Comercial (68) |
+|---|---|---|---|---|
+| jina-embeddings-v2-base-es (anterior) | 897 MB | 13 | 97,0 % | — |
+| **Xenova/multilingual-e5-small cuantizado** (actual) | **500 MB** | **2,1** | **97,0 %** (64/66) | **97,1 %** (66/68) |
+| intfloat/multilingual-e5-small sin cuantizar | 860 MB | 4 | — | — |
+
+El agente entero (texto + búsqueda por foto) pasó de **1,48 GiB a 1,13 GiB**. Dos cosas que e5 exige y jina no:
+los prefijos `query: ` / `passage: `, y **estandarizar** los vectores antes de la regresión (sin eso acierta
+70 %: los vectores de e5 vienen muy apretados entre sí). La versión sin cuantizar no ahorra memoria.
+Las 68 frases de la prueba comercial sirvieron para corregir el entrenamiento una vez (de 92,6 % a 97,1 %);
+desde entonces ya no son una medida del todo independiente. Para volver a jina: `EMBED_MODEL=jinaai/jina-embeddings-v2-base-es`.
+
+## Antes: ¿cambiar jina por algo más ligero? (03-10-2026, superado por la tabla de arriba)
 
 jina base cuesta ~940 MiB. Se midió (3-10-2026, misma validación cruzada agrupada; recuperación sobre las
 100 preguntas de recomendación de la rúbrica):
@@ -192,8 +262,8 @@ más ejemplos reales de esas cuatro intenciones y volver a medir TF-IDF.
 
 ## Memoria
 
-jina base ocupa **~940 MiB** en reposo y, con el modelo de imagen, el agente llega a **~1,52 GiB**; el límite
-del contenedor es 1800m. Para apagar la búsqueda por foto y ahorrar ~580 MiB: `IMAGE_SEARCH=0`. En el EC2 de 2 GiB
+Con e5-small cuantizado el agente ocupa **~1,13 GiB** en reposo, modelo de imagen incluido (con jina eran
+~1,5 GiB); el límite del contenedor es 1800m. Para apagar la búsqueda por foto y ahorrar ~580 MiB: `IMAGE_SEARCH=0`. En el EC2 de 2 GiB
 eso no cabe junto al resto. Para allí, construye con el modelo ligero:
 
 ```bash

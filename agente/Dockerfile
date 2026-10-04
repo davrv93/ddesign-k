@@ -5,7 +5,7 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     EMBED_CACHE_DIR=/models AGENTE_INDEX_DIR=/app/index AGENTE_DATA_DIR=/app/data
-ARG EMBED_MODEL=jinaai/jina-embeddings-v2-base-es
+ARG EMBED_MODEL=Xenova/multilingual-e5-small
 ENV EMBED_MODEL=${EMBED_MODEL}
 
 WORKDIR /app
@@ -29,6 +29,9 @@ COPY app/imagen.py ./app/
 RUN python -m app.imagen && chmod -R a+rX /models /app/index
 COPY seed ./seed
 COPY app ./app
+# La máquina de etapas (prospección → seguimiento → cierre) se prueba en cada build: si un cambio la
+# rompe, la imagen no se construye.
+RUN python -m app.prueba_etapas
 # El modelo ya está dentro: que nada intente bajarlo de Hugging Face al arrancar.
 ENV HF_HUB_OFFLINE=1
 

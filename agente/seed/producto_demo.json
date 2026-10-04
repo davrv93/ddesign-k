@@ -1,0 +1,13 @@
+{
+  "_nota": "Vestido de la demo comercial. El nombre, el precio y el stock son provisionales (precio tomado del ejemplo del guion de venta: S/ 260); la descripción sale de la foto y el material, de la lámina de materiales que envió la tienda. Confirmar con Baruka antes de usarlo con clientas reales.",
+  "codigo": "V42",
+  "nombre": "Vestido Gala Capa Azul",
+  "categoria": "vestido largo",
+  "color": "azul",
+  "precio": 260,
+  "tallas": {"S": 2, "M": 2, "L": 2},
+  "descripcion": "Vestido largo de gala con escote en V, corpiño bordado con pedrería, cintura marcada, falda con caída y mangas tipo capa.",
+  "material": "Confeccionado con una base de tela podesuá, de estructura rígida, que aporta firmeza y mantiene la forma de la prenda. Su acabado en gasa brinda ligereza, suavidad y una excelente caída, creando un movimiento fluido y elegante.",
+  "ocasion": ["matrimonio", "boda", "fiesta de noche", "graduación", "gala"],
+  "imagenes": {"principal": "v42.jpg", "material": "v42_material.jpg"}
+}

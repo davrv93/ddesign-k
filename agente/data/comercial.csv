@@ -1,0 +1,497 @@
+intent,mensaje
+saludo,hola
+saludo,ola
+saludo,holaa
+saludo,buenas
+saludo,buenas tardes
+saludo,buenos dias
+saludo,buenas noches
+saludo,hola buen dia
+saludo,hola que tal
+saludo,holi
+saludo,buenas tardes señorita
+saludo,hola buenas
+saludo,buen día
+saludo,ola buenas tardes
+saludo,hola como estas
+saludo,"buenas, una consulta"
+saludo,hola disculpa
+saludo,hola amiga
+saludo,hola una consulta
+saludo,buenas noches disculpe la hora
+saludo,ola q tal
+saludo,hola hola
+saludo,saludos
+saludo,hola buenas noches
+consulta_producto,hola vi este vestido y quisiera mas informacion
+consulta_producto,me das info del vestido
+consulta_producto,informacion del vestido porfa
+consulta_producto,quiero saber mas de este modelo
+consulta_producto,como es el vestido
+consulta_producto,me puedes contar mas del vestido
+consulta_producto,info porfa
+consulta_producto,mas detalles del modelo
+consulta_producto,quisiera informacion de este vestido
+consulta_producto,hola estoy interesada en este vestido me das informacion
+consulta_producto,el vestido del anuncio como es
+consulta_producto,"vi su publicidad del vestido azul, me cuentas"
+consulta_producto,que tal es el vestido
+consulta_producto,me pasas mas fotos del vestido
+consulta_producto,tienes mas fotos
+consulta_producto,como es por atras
+consulta_producto,tiene forro?
+consulta_producto,es largo o corto
+consulta_producto,el vestido tiene mangas?
+consulta_producto,es con escote?
+consulta_producto,que largo tiene
+consulta_producto,me das detalles
+consulta_producto,detalles del vestido porfa
+consulta_producto,"vi el anuncio y me gusto, info"
+consulta_producto,estoy viendo vestidos para un matrimonio
+consulta_producto,busco un vestido para una boda
+consulta_producto,necesito un vestido para una fiesta
+consulta_producto,quiero un vestido para mi graduacion
+consulta_material,como es el material
+consulta_material,de que tela es
+consulta_material,que tela es
+consulta_material,de que material esta hecho
+consulta_material,la tela es gruesa?
+consulta_material,es de gasa?
+consulta_material,que tipo de tela tiene
+consulta_material,el material es bueno?
+consulta_material,de que es el vestido
+consulta_material,la tela se arruga?
+consulta_material,es tela fresca?
+consulta_material,material porfa
+consulta_material,como es la tela
+consulta_material,la tela es transparente?
+consulta_material,que material usan
+consulta_material,es de seda?
+consulta_material,la tela pica?
+consulta_material,tela?
+consulta_material,es pesado el vestido?
+consulta_material,el material es de calidad
+consulta_precio,cuanto cuesta
+consulta_precio,cuanto esta
+consulta_precio,precio?
+consulta_precio,precio porfa
+consulta_precio,cual es el precio
+consulta_precio,a cuanto lo tienes
+consulta_precio,cuanto vale
+consulta_precio,q precio tiene
+consulta_precio,cuanto sale
+consulta_precio,"me gusta mucho, cuanto cuesta"
+consulta_precio,costo?
+consulta_precio,a como esta
+consulta_precio,cuanto es
+consulta_precio,cual es el costo del vestido
+consulta_precio,kuanto cuesta
+consulta_precio,precio del vestido azul
+consulta_precio,en cuanto me lo dejas
+consulta_precio,cuanto seria
+consulta_precio,y el precio?
+consulta_precio,que precio tiene el modelo del anuncio
+consulta_precio,cuanto esta el vestido
+consulta_precio,me dices el precio
+consulta_precio,precio xfa
+consulta_precio,valor?
+consulta_talla,tienes en M?
+consulta_talla,hay talla L
+consulta_talla,que tallas tienen
+consulta_talla,soy talla M
+consulta_talla,soy talla L
+consulta_talla,uso talla S
+consulta_talla,tienen talla XL?
+consulta_talla,en que tallas viene
+consulta_talla,hay en talla grande
+consulta_talla,talla M hay?
+consulta_talla,soy talla 32 que talla seria
+consulta_talla,que talla me recomiendas
+consulta_talla,mido 1.60 que talla me queda
+consulta_talla,las tallas son grandes o chicas
+consulta_talla,tienen tallas completas?
+consulta_talla,soy M
+consulta_talla,uso L
+consulta_talla,tendran en S
+consulta_talla,como son las medidas
+consulta_talla,me queda si soy talla 30?
+consulta_talla,que talla seria para mi
+consulta_talla,tallas porfa
+consulta_talla,soy gordita tendran mi talla
+consulta_talla,tienen para talla XL
+consulta_talla,peso 65 kilos que talla soy
+consulta_talla,mido 1.50 me quedara largo?
+consulta_color,hay en negro?
+consulta_color,que colores tienen
+consulta_color,lo tienes en rojo
+consulta_color,tienen en otro color
+consulta_color,en que colores viene
+consulta_color,hay en azul?
+consulta_color,colores disponibles
+consulta_color,tendras en vino
+consulta_color,lo hay en verde
+consulta_color,solo en ese color?
+consulta_color,que otros colores hay
+consulta_color,tienes en color nude
+consulta_color,colores porfa
+consulta_color,hay en dorado
+consulta_color,en azul marino tienen?
+consulta_color,me gusta pero en otro color
+consulta_color,tienen el mismo en negro
+consulta_color,viene en blanco?
+consulta_color,que tonos manejan
+consulta_color,hay en fucsia
+consulta_disponibilidad,todavia tienen este vestido
+consulta_disponibilidad,aun lo tienen?
+consulta_disponibilidad,esta disponible
+consulta_disponibilidad,tienen stock
+consulta_disponibilidad,hay stock?
+consulta_disponibilidad,sigue disponible
+consulta_disponibilidad,todavia hay
+consulta_disponibilidad,lo tienen en tienda
+consulta_disponibilidad,quisiera saber si todavia tienen este vestido
+consulta_disponibilidad,aun queda?
+consulta_disponibilidad,tienen disponible el modelo del anuncio
+consulta_disponibilidad,sigue en stock
+consulta_disponibilidad,hay disponibilidad
+consulta_disponibilidad,esta agotado?
+consulta_disponibilidad,todavia les queda
+consulta_disponibilidad,lo siguen vendiendo?
+consulta_disponibilidad,tienen este modelo
+consulta_disponibilidad,disponible?
+consulta_disponibilidad,aun hay de este
+consulta_disponibilidad,queda alguno
+consulta_ubicacion,donde estan ubicados
+consulta_ubicacion,donde queda su tienda
+consulta_ubicacion,direccion?
+consulta_ubicacion,cual es su direccion
+consulta_ubicacion,donde los encuentro
+consulta_ubicacion,tienen tienda fisica
+consulta_ubicacion,donde es
+consulta_ubicacion,ubicacion porfa
+consulta_ubicacion,en que distrito estan
+consulta_ubicacion,donde puedo ir a verlo
+consulta_ubicacion,tienen local
+consulta_ubicacion,por donde quedan
+consulta_ubicacion,me pasas la direccion
+consulta_ubicacion,son de lima?
+consulta_ubicacion,donde atienden
+consulta_ubicacion,estan en gamarra?
+consulta_ubicacion,como llego
+consulta_ubicacion,donde queda el showroom
+consulta_ubicacion,puedo ir a probarme
+consulta_ubicacion,puedo ir hoy a verlo
+consulta_ubicacion,quiero ir a verlo en persona
+consulta_ubicacion,se puede probar
+consulta_horario,que horario tienen
+consulta_horario,hasta que hora atienden
+consulta_horario,atienden domingos?
+consulta_horario,a que hora abren
+consulta_horario,horario porfa
+consulta_horario,atienden sabado
+consulta_horario,hasta que hora estan
+consulta_horario,cual es su horario de atencion
+consulta_horario,abren feriados?
+consulta_horario,a que hora cierran
+consulta_horario,que dias atienden
+consulta_horario,puedo ir a las 6
+consulta_horario,atienden en la mañana
+consulta_horario,horarios?
+consulta_horario,estan abiertos ahora
+consulta_horario,atienden de noche
+consulta_horario,puedo ir mañana temprano
+consulta_horario,hoy atienden?
+consulta_delivery,hacen envios
+consulta_delivery,envian a provincia
+consulta_delivery,cuanto cuesta el envio
+consulta_delivery,hacen delivery
+consulta_delivery,envian a arequipa?
+consulta_delivery,llega a cusco
+consulta_delivery,cuanto demora el envio
+consulta_delivery,envios a todo el peru?
+consulta_delivery,el envio es gratis?
+consulta_delivery,mandan por olva
+consulta_delivery,por shalom envian
+consulta_delivery,costo de envio a trujillo
+consulta_delivery,hacen envios a domicilio
+consulta_delivery,cuanto sale el delivery
+consulta_delivery,soy de provincia hacen envios
+consulta_delivery,me lo pueden enviar
+consulta_delivery,en cuanto tiempo llega
+consulta_delivery,envio a lima cuanto es
+consulta_delivery,mandan a piura
+consulta_delivery,entregan en casa?
+consulta_delivery,puedo recogerlo
+consulta_delivery,el envio es contra entrega?
+consulta_pago,como puedo pagar
+consulta_pago,aceptan yape
+consulta_pago,tienen plin
+consulta_pago,que medios de pago tienen
+consulta_pago,puedo pagar con tarjeta
+consulta_pago,aceptan transferencia
+consulta_pago,se puede pagar contra entrega
+consulta_pago,pago contraentrega?
+consulta_pago,tienen cuenta bcp
+consulta_pago,formas de pago
+consulta_pago,aceptan visa
+consulta_pago,puedo pagar en partes
+consulta_pago,se puede separar con un adelanto
+consulta_pago,cuanto es el adelanto
+consulta_pago,pago con yape?
+consulta_pago,a que cuenta deposito normalmente
+consulta_pago,metodos de pago porfa
+consulta_pago,aceptan efectivo
+consulta_pago,puedo dar una parte y luego el resto
+consulta_pago,tienen interbank
+interesado,si me interesa
+interesado,si me gusta
+interesado,me interesa el vestido
+interesado,esta lindo
+interesado,me encanta
+interesado,me gusto mucho
+interesado,si sigo interesada
+interesado,aun me interesa
+interesado,esta hermoso
+interesado,me gusta el modelo
+interesado,"si, estoy interesado"
+interesado,esta bonito me gusta
+interesado,ay que lindo
+interesado,me fascina
+interesado,si me interesa todavia
+interesado,se ve precioso
+interesado,me gusta como se ve
+interesado,lo veo lindo
+interesado,si claro me interesa
+interesado,justo lo que buscaba
+interesado,esta precioso
+interesado,me llama la atencion
+interesado,si sigo interesada en el vestido
+interesado,me gusta bastante
+interesado,sii me encanto
+interesado,que bello
+interesado,esta divino
+objecion_precio,esta muy caro
+objecion_precio,muy caro
+objecion_precio,esta caro
+objecion_precio,no me alcanza
+objecion_precio,se me va del presupuesto
+objecion_precio,un poco caro no?
+objecion_precio,hay descuento?
+objecion_precio,me haces una rebaja
+objecion_precio,no hay rebajita
+objecion_precio,es mucho
+objecion_precio,mas barato no tienes?
+objecion_precio,ufff carito
+objecion_precio,cuanto es lo menos
+objecion_precio,me puedes hacer un descuentito
+objecion_precio,tienes algo mas economico
+objecion_precio,esta elevado el precio
+objecion_precio,no pense que costaba tanto
+objecion_precio,en otro lado esta mas barato
+objecion_precio,precio final?
+objecion_precio,si llevo dos me haces descuento
+objecion_precio,caro pe
+objecion_precio,no tengo tanto
+objecion,lo voy a pensar
+objecion,dejame pensarlo
+objecion,dejame consultarlo
+objecion,bueno lo voy a pensar
+objecion,te aviso
+objecion,voy a ver
+objecion,tengo que consultarlo con mi esposo
+objecion,mas tarde te confirmo
+objecion,no estoy segura
+objecion,dejame ver
+objecion,despues te escribo
+objecion,lo consulto y te aviso
+objecion,todavia no me decido
+objecion,no se si me quede bien
+objecion,tengo miedo que no me quede
+objecion,y si no me queda?
+objecion,no estoy muy convencida
+objecion,solo estaba preguntando
+objecion,solo queria saber
+objecion,por ahora solo consulto
+objecion,mañana te confirmo
+objecion,luego te aviso
+objecion,estoy viendo opciones
+objecion,lo pienso y te digo
+objecion,no se aun
+comparacion,cual me recomiendas
+comparacion,que diferencia hay con el otro
+comparacion,cual es mejor
+comparacion,este o el rojo
+comparacion,estoy entre este y otro modelo
+comparacion,cual me quedaria mejor
+comparacion,que otro modelo se parece
+comparacion,tienes otros modelos
+comparacion,muestrame otros
+comparacion,enviame nuevos modelos
+comparacion,que mas tienes
+comparacion,hay otros parecidos
+comparacion,cual es mas elegante
+comparacion,tienes algo parecido
+comparacion,otro modelo similar?
+comparacion,quiero ver mas opciones
+comparacion,cual se vende mas
+comparacion,que otros vestidos tienes
+comparacion,tienes otro mas sencillo
+comparacion,prefiero ver otros
+comparacion,mandame mas modelos
+comparacion,otras opciones porfa
+intencion_compra,quiero comprarlo
+intencion_compra,me lo llevo
+intencion_compra,lo quiero
+intencion_compra,quiero ese
+intencion_compra,como hago para comprar
+intencion_compra,como hago para pagar
+intencion_compra,quiero reservarlo
+intencion_compra,donde deposito
+intencion_compra,quiero hacer el pedido
+intencion_compra,quiero separar el vestido
+intencion_compra,envialo
+intencion_compra,enviamelo
+intencion_compra,quiero confirmar la compra
+intencion_compra,si quiero comprarlo
+intencion_compra,lo compro
+intencion_compra,reservamelo
+intencion_compra,quiero separar
+intencion_compra,separamelo porfa
+intencion_compra,quiero pedirlo
+intencion_compra,como lo compro
+intencion_compra,ya lo quiero
+intencion_compra,"me animo, lo quiero"
+intencion_compra,quiero llevarlo
+intencion_compra,como hago el pedido
+intencion_compra,pasame el yape para pagar
+intencion_compra,a donde te yapeo
+intencion_compra,quiero adquirirlo
+intencion_compra,deseo comprarlo
+intencion_compra,si lo quiero comprar
+intencion_compra,listo me lo llevo
+intencion_compra,"ya, lo compro"
+intencion_compra,quiero ordenarlo
+intencion_compra,como te pago
+confirmacion_compra,si confirmo
+confirmacion_compra,confirmo el pedido
+confirmacion_compra,"si, confirmado"
+confirmacion_compra,confirmado
+confirmacion_compra,si confirmo la compra
+confirmacion_compra,dale confirmo
+confirmacion_compra,confirmo
+confirmacion_compra,"si, confirmo la talla"
+confirmacion_compra,"correcto, confirmo"
+confirmacion_compra,"asi es, confirmo"
+confirmacion_compra,si procede con el pedido
+confirmacion_compra,"si, hazlo"
+confirmacion_compra,confirmo mi pedido
+confirmacion_compra,todo correcto confirmo
+confirmacion_compra,"si esta bien, confirmo"
+confirmacion_compra,ok confirmo
+confirmacion_compra,confirmo la compra
+confirmacion_compra,"si, es correcto"
+confirmacion_compra,"esta bien asi, confirmo"
+confirmacion_compra,"ya te confirmo el pedido, procede"
+cancelacion,ya no lo quiero
+cancelacion,cancela
+cancelacion,cancelar
+cancelacion,mejor no
+cancelacion,ya no
+cancelacion,cancela el pedido
+cancelacion,no gracias ya no
+cancelacion,olvidalo
+cancelacion,ya no me interesa
+cancelacion,no lo voy a llevar
+cancelacion,anula el pedido
+cancelacion,mejor lo dejamos
+cancelacion,no quiero nada
+cancelacion,dejalo ahi
+cancelacion,ya compre en otro lado
+cancelacion,no voy a comprar
+cancelacion,cancelalo porfa
+cancelacion,me arrepenti
+cancelacion,ya no gracias
+cancelacion,no deseo continuar
+despedida,gracias
+despedida,muchas gracias
+despedida,ok gracias
+despedida,ya gracias
+despedida,chau
+despedida,hasta luego
+despedida,nos vemos
+despedida,gracias bye
+despedida,listo gracias
+despedida,gracias por la info
+despedida,"gracias, eso es todo"
+despedida,bendiciones
+despedida,que tengas buen dia
+despedida,gracias amiga
+despedida,ok hasta luego
+despedida,ya vale gracias
+despedida,grax
+despedida,gracias linda
+despedida,buenas noches gracias
+despedida,okis gracias
+otro,jajaja
+otro,ok
+otro,ya
+otro,mmm
+otro,ah ya
+otro,que hora es
+otro,quien eres
+otro,eres un bot?
+otro,hablo con una persona?
+otro,como te llamas
+otro,😂
+otro,👍
+otro,a ver
+otro,aja
+otro,entiendo
+otro,vale
+otro,ah ok
+otro,q?
+otro,como?
+otro,no entendi
+otro,que dijiste
+otro,me repites
+otro,eres real?
+otro,quien me atiende
+consulta_pago,como es el pago
+consulta_pago,como se paga
+consulta_pago,el pago como es
+consulta_pago,que formas de pago manejan
+consulta_pago,se paga antes o al recibir
+consulta_pago,como son los pagos
+consulta_pago,con que puedo pagar
+consulta_pago,pago al recibir?
+consulta_pago,hay que pagar todo de frente?
+consulta_pago,me explicas como se paga
+intencion_compra,me quedo con este
+intencion_compra,"ya me decidi, lo quiero"
+intencion_compra,"listo, quiero el vestido"
+intencion_compra,si lo voy a llevar
+intencion_compra,"quiero el azul, como hacemos"
+intencion_compra,decidido me lo quedo
+intencion_compra,"va, lo compro"
+intencion_compra,apartamelo
+consulta_ubicacion,puedo pasar por su local
+consulta_ubicacion,se puede ir a ver los vestidos
+consulta_ubicacion,quiero ir a verlos
+consulta_ubicacion,puedo ir a probarmelo
+consulta_ubicacion,se puede visitar el taller
+consulta_ubicacion,donde puedo verlo en persona
+consulta_ubicacion,puedo acercarme hoy
+consulta_ubicacion,quiero ir a su showroom
+saludo,hola hay alguien
+saludo,buenas me pueden atender
+saludo,hola me atienden?
+saludo,alo buenas
+saludo,hola estan atendiendo
+consulta_horario,a que hora puedo ir
+consulta_horario,que dias abren
+consulta_horario,atienden hoy hasta que hora
+consulta_horario,en que horario puedo pasar
+objecion,voy a pensarlo mejor
+objecion,no estoy decidida aun
+objecion,dame un tiempo para pensarlo
+objecion,aun lo estoy evaluando

@@ -76,6 +76,11 @@
   form .clip { background:none; color:var(--muted); font-size:22px; width:40px }
 
   aside { background:var(--panel); padding:14px 16px; font-size:13px; overflow-y:auto; overflow-x:hidden; height:100%; min-width:0; overflow-wrap:anywhere }
+  .etapas { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; margin:4px 0 8px }
+  .etapas span { text-align:center; font-size:11px; padding:6px 2px; border-radius:8px; background:var(--line); color:var(--muted) }
+  .etapas span.hecha { background:color-mix(in srgb, var(--acc) 22%, transparent); color:var(--ink) }
+  .etapas span.actual { background:var(--acc); color:#fff; font-weight:600 }
+  .bita { font-size:12px } .bita li { margin:2px 0 }
   aside h2 { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:16px 0 6px }
   aside h2:first-of-type { margin-top:4px }
   aside .cerrar { display:none }
@@ -103,14 +108,15 @@
     </header>
     <div class="msgs" id="msgs"><div class="dia">HOY</div></div>
     <div class="rapidas" id="rapidas">
-      <button>quiero ver los modelos</button>
-      <button>busco un vestido para una boda</button>
-      <button>¿tienen conjuntos?</button>
-      <button>¿cuánto cuesta el vestido Kendall?</button>
-      <button>¿lo tienes en talla M?</button>
-      <button>¿dónde quedan sus tiendas?</button>
-      <button>¿quién fue el primer presidente del Perú?</button>
-      <button>gracias, chau</button>
+      <button>Hola, quisiera saber si todavía tienen este vestido</button>
+      <button>Es para un matrimonio</button>
+      <button>¿Cuánto cuesta?</button>
+      <button>¿Cómo es el material?</button>
+      <button>Soy talla M</button>
+      <button>Sí, me interesa</button>
+      <button>Lo voy a pensar</button>
+      <button>Quiero comprarlo</button>
+      <button>¿Dónde quedan?</button>
     </div>
     <form id="f">
       <button type="button" class="clip" id="clip" aria-label="Adjuntar foto" title="Adjuntar foto">📎</button>
@@ -129,6 +135,8 @@
 const $ = id => document.getElementById(id);
 const msgs = $('msgs'), info = $('info'), estado = $('estado');
 let hist = [], ocupado = false, ultimoRol = '';
+// Etapa de la venta: la decide el agente; aquí solo se guarda y se devuelve en cada mensaje.
+let etapa = 'prospeccion', bitacora = [];
 // Motor elegido: se recuerda en este navegador; si no hay, manda el del servidor.
 let motor = '';
 try { motor = localStorage.getItem('motor') || ''; } catch (e) {}
@@ -171,7 +179,7 @@ async function enviar(texto) {
   let j;
   try {
     const r = await fetch('chat', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web' }) });
+      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, conversacion: 'web' }) });
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
@@ -214,6 +222,7 @@ async function mostrar(j) {
     botones(j.tallas.map(t => ({ texto: `${t.talla}${t.precio != null ? ` (S/ ${Math.round(t.precio) === t.precio ? t.precio : t.precio.toFixed(2)})` : ''}`,
       enviar: `Talla ${t.talla} del ${t.codigo}`, off: !t.disponible })));
   }
+  if ((j.botones || []).length) botones(j.botones.map(t => ({ texto: t, enviar: t })));
   if (j.confirmar_pedido) {
     botones([{ texto: 'Sí, confirmar', enviar: 'Sí, confirmo', si: true }, { texto: 'Cambiar talla', enviar: 'Cambiar talla' }]);
   }
@@ -270,7 +279,7 @@ async function enviarFoto(file) {
   let j;
   try {
     const r = await fetch('foto', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ imagen_b64: dataUrl, mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web' }) });
+      body: JSON.stringify({ imagen_b64: dataUrl, mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa }) });
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
@@ -281,6 +290,20 @@ async function enviarFoto(file) {
 }
 
 function bars(list) { return list.map(x => `<div class="row"><div>${esc(x.etiqueta)}<div class="bar"><i style="width:${x.p*100}%"></i></div></div><div>${(x.p*100).toFixed(0)}%</div></div>`).join(''); }
+const ETAPAS = [['prospeccion', 'Prospección'], ['seguimiento', 'Seguimiento'], ['cierre', 'Cierre'], ['venta_confirmada', 'Venta']];
+// Panel de la venta: en qué etapa está, qué entendió el clasificador y por qué decidió así.
+function panelVenta(j) {
+  if (j.etapa) etapa = j.etapa;
+  const idx = ETAPAS.findIndex(e => e[0] === etapa), c = j.comercial;
+  if (c) bitacora.unshift({ de: c.etapa_anterior, a: etapa, intent: c.intent, p: c.confianza, motivo: c.motivo, cambio: c.transicion });
+  bitacora = bitacora.slice(0, 6);
+  return `<h2>Etapa de la venta</h2>
+    <div class="etapas">${ETAPAS.map((e, i) => `<span class="${i < idx ? 'hecha' : i === idx ? 'actual' : ''}">${e[1]}</span>`).join('')}</div>
+    ${c ? `<div class="sub">entendió <b>${esc(c.intent)}</b> · confianza ${(c.confianza * 100).toFixed(0)} % (${esc(c.nivel)})${c.motivo ? '<br>' + esc(c.motivo) : ''}</div>
+    <h2>Clasificador comercial</h2>${bars(c.clasificador)}` : ''}
+    ${bitacora.length ? `<h2>Decisiones</h2><ul class="bita">${bitacora.map(b => `<li>${b.cambio ? `<b>${esc(b.de)} → ${esc(b.a)}</b>` : esc(b.a)} · ${esc(b.intent)} ${(b.p * 100).toFixed(0)} %</li>`).join('')}</ul>` : ''}`;
+}
+
 function pintarInfo(j) {
   if (j.foto) {
     const f = j.foto;
@@ -289,12 +312,13 @@ function pintarInfo(j) {
       <div>Resultado: <b>${esc(f.caso)}</b> · nivel ${esc(f.nivel)}</div>
       <div class="sub">umbral «es este» ≥ ${f.umbrales.exacto.toFixed(3)} · «se parece» ≥ ${f.umbrales.parecido.toFixed(3)} · ${j.ms} ms · ${esc(j.motor || '')} · ${esc(j.modelo_llm)}</div>
       <h2>Más parecidas</h2>${f.top.map(x => `<div class="row"><div><code>${esc(x.codigo)}</code><div class="bar"><i style="width:${Math.max(0, x.sim)*100}%"></i></div></div><div>${x.sim.toFixed(2)}</div></div>`).join('')}
-      <h2>Acción</h2><div>${esc(j.accion)}${j.codigo ? ' · ' + esc(j.codigo) : ''}</div>`;
+      <h2>Acción</h2><div>${esc(j.accion)}${j.codigo ? ' · ' + esc(j.codigo) : ''}</div>${panelVenta(j)}`;
     $('cerrarInfo').onclick = () => info.classList.remove('abierto');
     return;
   }
   info.innerHTML = `<button class="cerrar" id="cerrarInfo">Cerrar</button>
-    <h2>Intención</h2>${bars(j.top_intenciones)}
+    ${panelVenta(j)}
+    <h2>Intención general</h2>${bars(j.top_intenciones)}
     <div class="sub">motor: <b>${esc(j.motor || '—')}</b> · acción: <b>${esc(j.accion)}</b> · ${esc(j.modelo_llm || 'sin LLM')} · ${j.ms} ms · stock: ${esc(j.stock_fuente || '—')}</div>
     <h2>Prenda</h2><div>${esc(j.categoria_prenda)} (${(j.confianza_categoria*100).toFixed(0)}%)</div>
     <h2>Códigos</h2><div>${j.codigos.length ? j.codigos.map(esc).join(', ') : '—'}</div>
@@ -310,7 +334,7 @@ $('archivo').onchange = ev => { const f = ev.target.files[0]; ev.target.value = 
 msgs.addEventListener('dragover', ev => ev.preventDefault());
 msgs.addEventListener('drop', ev => { ev.preventDefault(); const f = ev.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) enviarFoto(f); });
 $('rapidas').onclick = ev => { if (ev.target.tagName === 'BUTTON') enviar(ev.target.textContent); };
-$('nuevo').onclick = () => { if (ocupado) return; hist = []; ultimoRol = ''; msgs.innerHTML = '<div class="dia">HOY</div>'; };
+$('nuevo').onclick = () => { if (ocupado) return; hist = []; ultimoRol = ''; etapa = 'prospeccion'; bitacora = []; msgs.innerHTML = '<div class="dia">HOY</div>'; };
 $('verInfo').onclick = () => info.classList.add('abierto');
 $('cerrarInfo').onclick = () => info.classList.remove('abierto');
 // Botones de talla de las tarjetas: siguen activos mientras la tarjeta esté en pantalla.

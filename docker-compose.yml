@@ -83,12 +83,12 @@ services:
     networks: [kddesign]
 
   agente:
-    # Embeddings locales (jina-embeddings-v2-base-es, ONNX) + clasificador + RAG + DeepSeek por OpenRouter.
+    # Embeddings locales (multilingual-e5-small cuantizado, ONNX) + clasificadores + máquina de etapas + RAG + LLM.
     # El bot le delega el texto libre; si no responde, el bot vuelve a Gemini.
     build:
       context: ./agente
       args:
-        EMBED_MODEL: ${EMBED_MODEL:-jinaai/jina-embeddings-v2-base-es}
+        EMBED_MODEL: ${EMBED_MODEL:-Xenova/multilingual-e5-small}
         # 0 = la tienda usa solo su catálogo; el de 100 modelos ficticios (BOT.zip) queda fuera.
         CATALOGO100: ${KD_CATALOGO100:-1}
     image: kddesign/agente:local
@@ -111,6 +111,10 @@ services:
       CATALOG_URL: http://backend:8080/api/public/catalog
       # Stock como herramienta: disponibilidad real (físico - reservas) y sucursales, consultada al responder.
       STOCK_URL: http://backend:8080/api/public/stock
+      # Vestido del anuncio: «este vestido» es ese aunque la clienta no lo nombre. Vacío = sin producto por defecto.
+      PRODUCTO_DEMO: ${KD_PRODUCTO_DEMO:-}
+      # 0 = la tienda no tiene sucursales con stock propio (un showroom con cita): no se mencionan.
+      SUCURSALES: ${KD_SUCURSALES:-0}
       PUBLIC_URL: ${PUBLIC_URL:-https://kddesign.pjgfactsalud.com.pe}
       BUSINESS_NAME: ${BUSINESS_NAME:-Baruka Design}
       CURRENCY: ${CURRENCY:-S/}
@@ -121,7 +125,7 @@ services:
       - agente_data:/data
     ports:
       - "127.0.0.1:${KD_AGENT_PORT:-18482}:8000"
-    mem_limit: 1800m  # texto (jina) + imagen (Unicom) en ONNX: ~1,52 GiB medidos en reposo
+    mem_limit: 1800m  # texto (e5-small) + imagen (Unicom) en ONNX: ~1,13 GiB medidos el 04-10-2026 (con jina eran 1,48)
     networks: [kddesign]
 
   frontend:

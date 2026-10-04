@@ -79,6 +79,16 @@ def ejemplos_intencion() -> list[Ejemplo]:
     return out
 
 
+def ejemplos_comercial() -> list[tuple[str, str]]:
+    """(mensaje, intención comercial) para el clasificador que alimenta la máquina de etapas."""
+    return [(r["mensaje"].strip(), r["intent"].strip()) for r in _csv("comercial.csv")]
+
+
+def prueba_comercial() -> list[tuple[str, str]]:
+    """Mensajes que NO entran al entrenamiento: miden el clasificador comercial."""
+    return [(r["mensaje"].strip(), r["intent"].strip()) for r in _csv("prueba_comercial.csv")]
+
+
 def ejemplos_categoria() -> list[tuple[str, str, str]]:
     """(texto, categoria_prenda, tipo_prueba) del dataset del juez."""
     return [(r["pregunta"].strip(), r["categoria_esperada"].strip(), r["tipo_prueba"].strip())

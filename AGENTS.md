@@ -55,6 +55,10 @@ curl -s -X POST https://proyectopostventa.site/demo-design/chat -H 'Content-Type
   (correcta, informal, con errores). Las frases con coma van entre comillas. No copies frases de
   `prueba_chat.csv`, porque esa prueba mide lo que el modelo no vio. Un cambio aquí re-entrena la imagen
   (~4 min). Revisa la cifra en el log del build (`DEPLOY.md` §3.1).
+- **Agente, etapas comerciales:** las transiciones se cambian en `app/etapas.py` y cada regla nueva lleva su
+  caso en `app/prueba_etapas.py` (`python3 -m app.prueba_etapas`, sin dependencias). Los ejemplos del
+  clasificador comercial van en `data/comercial.csv`; `data/prueba_comercial.csv` no entra al entrenamiento.
+  En el bot Go, las pruebas del flujo por etapas están en `internal/bot/etapas_test.go`.
 - **Agente, prompts:** ningún dato de la tienda se inventa en el prompt. Lo que el bot puede afirmar
   está en `seed/tienda.md`, las fichas (precio y tallas) y la línea `AHORA:` (stock).
 - **Agente, categorías:** las prendas que se filtran por nombre están en `RE_CATEGORIA` de `main.py`

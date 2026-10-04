@@ -37,6 +37,12 @@ type Request struct {
 	Cliente   string `json:"cliente"`
 	Estado    string `json:"estado"`
 	Negocio   string `json:"negocio"`
+	// Etapa comercial en la que venía la conversación: prospeccion | seguimiento | cierre | venta_confirmada.
+	Etapa        string `json:"etapa,omitempty"`
+	Conversacion string `json:"conversacion,omitempty"` // id para el registro de decisiones del agente
+	// Producto y Talla del pedido en curso (estados de talla, confirmación, pago y dirección).
+	Producto string `json:"producto,omitempty"`
+	Talla    string `json:"talla,omitempty"`
 }
 
 type Reply struct {
@@ -51,6 +57,8 @@ type Reply struct {
 	ModeloLLM string `json:"modelo_llm"`
 	// Sugerencias son prendas para ofrecer con foto después del texto.
 	Sugerencias []Sugerencia `json:"sugerencias"`
+	// Etapa comercial en la que queda la conversación; se devuelve tal cual en el siguiente mensaje.
+	Etapa string `json:"etapa"`
 	// Foto sólo viene en las respuestas de /foto.
 	Foto *PhotoResult `json:"foto"`
 }
@@ -70,6 +78,7 @@ type PhotoRequest struct {
 	Cliente   string `json:"cliente"`
 	Estado    string `json:"estado"`
 	Negocio   string `json:"negocio"`
+	Etapa     string `json:"etapa,omitempty"`
 }
 
 // PhotoResult dice qué tan seguro está el agente de haber encontrado la prenda.

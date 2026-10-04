@@ -28,7 +28,13 @@ KD_BASE_PATH=/baruka/
 AGENT_URL=http://agente:8000
 MOTOR=deepseek
 KD_CATALOGO100=0
+KD_PRODUCTO_DEMO=V42     # vestido del anuncio: «este vestido» es ese (vacío = sin producto por defecto)
+KD_SUCURSALES=0          # Baruka no tiene sucursales con stock: un showroom con cita
 ```
+
+Además, `agente/seed/pago.md` (Yape y titular) **no está en git**: viaja con el rsync del §2 desde la copia
+local. Si falta en el servidor, el bot deriva el pago a una asesora. Compruébalo sin mostrarlo:
+`ssh -i $K $H 'test -s ~/kddesign/agente/seed/pago.md && echo pago.md OK'`.
 
 Para comprobar si existen sin mostrar sus valores:
 
@@ -41,7 +47,7 @@ ssh -i $K $H 'cd ~/kddesign && awk -F= "{print \$1, (length(\$2)>0?\"set\":\"EMP
 ```bash
 cd $R/backend  && go vet ./... && go test ./...                 # bot, reservas, agente simulado
 cd $R/frontend && BASE_PATH=/baruka/ npm run build && rm -rf dist # tsc + build con la ruta base real
-cd $R/agente   && python3 -m py_compile app/*.py                # el agente no corre en local sin sus modelos
+cd $R/agente   && python3 -m py_compile app/*.py && python3 -m app.prueba_etapas   # sintaxis + máquina de etapas (23/23)
 ```
 
 ## 2. Subir el código
@@ -75,11 +81,13 @@ ssh -i $K $H 'cd ~/kddesign && docker compose build <servicio> && docker compose
 
 ```bash
 ssh -i $K $H 'cd ~/kddesign && docker compose build --progress plain agente 2>&1 \
-  | grep -E "intención  prueba|✗|top1"'
+  | grep -E "intención  prueba|comercial  prueba|etapas|✗|top1"'
 ```
 
-`intención  prueba con mensajes reales` debe quedar en **≥ 0,95** (`data/prueba_chat.csv`) y `top1` de
-fotos en **≥ 0,95**. Si baja, no levantes la imagen nueva: arregla los datos.
+`intención  prueba con mensajes reales` debe quedar en **≥ 0,95** (`data/prueba_chat.csv`), `comercial
+prueba independiente` en **≥ 0,95** (`data/prueba_comercial.csv`), `top1` de fotos en **≥ 0,95** y `etapas
+máquina de estados` en **23/23** (si falla un caso, el build se detiene solo). Si baja, no levantes la
+imagen nueva: arregla los datos.
 
 ## 4. Verificar (siempre, después de cada deploy)
 
@@ -100,7 +108,17 @@ curl -s -X POST $B/demo-design/chat -H 'Content-Type: application/json' \
   -d '{"mensaje":"cuánto cuesta el vestido Kendall?","cliente":"Ana"}' | python3 -m json.tool | head -20
 ```
 
-Esperado: `motor: deepseek` y precio **S/ 320**. Para probar WhatsApp de verdad, pide permiso antes
+Esperado: `motor: deepseek` y precio **S/ 320**.
+
+Etapas comerciales (la etapa la guarda quien llama; aquí se manda a mano):
+
+```bash
+c() { curl -s -X POST $B/demo-design/chat -H 'Content-Type: application/json' -d "$1" \
+  | python3 -c "import json,sys; j=json.load(sys.stdin); print(j['comercial']['etapa_anterior'],'→',j['etapa'],'|',j['comercial']['intent'],'|',j['accion'])"; }
+c '{"mensaje":"Sí, me interesa","etapa":"prospeccion"}'     # prospeccion → seguimiento | interesado | responder
+c '{"mensaje":"soy talla M","etapa":"seguimiento"}'         # seguimiento → seguimiento | consulta_talla | responder (NO pedido)
+c '{"mensaje":"quiero comprarlo","etapa":"seguimiento"}'    # seguimiento → cierre | intencion_compra
+``` Para probar WhatsApp de verdad, pide permiso antes
 (no se mandan mensajes de prueba a números reales sin consultar).
 
 ## 5. nginx del borde (`~/landing/nginx.conf`)
@@ -206,6 +224,19 @@ ssh -i $K $H 'cd ~/diners-carga && python3 -u cargar_diners.py'   # 3. respaldo 
 Después, copia las fotos al índice del agente: `fotos/vNN*.jpg` reducidas a 720 px van a
 `agente/imagenes/tienda/` (`v21.jpg`, `v21_2.jpg`…). Vuelve a compilar el agente (§3) y comprueba `top1`.
 Si cambia el número de productos, revisa el rango de códigos en `cargar_diners.py`.
+
+## 8.1 Vestido de la demo comercial (`deploy/producto-demo/`)
+
+El vestido del anuncio (**V42**) se crea o actualiza con un guion idempotente que usa la API del panel y
+lee `agente/seed/producto_demo.json` (nombre, precio, tallas, descripción) y `agente/imagenes/tienda/v42.jpg`:
+
+```bash
+ssh -i $K $H 'cd ~/kddesign && API=http://127.0.0.1:18480 ENV=.env AGENTE_DIR=agente python3 deploy/producto-demo/cargar_demo.py'
+```
+
+Va **después** de levantar el backend y **antes** de reiniciar el agente (o espera 5 min: el agente relee el
+catálogo solo). El nombre, el precio (S/ 260) y el stock son provisionales: los confirma la tienda. Para
+cambiar de vestido: edita `producto_demo.json`, vuelve a correr el guion y pon su código en `KD_PRODUCTO_DEMO`.
 
 ## 9. Certificado
 

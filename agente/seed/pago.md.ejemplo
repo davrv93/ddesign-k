@@ -1,0 +1,4 @@
+PAGO:
+- Yape: <número>, a nombre de <titular>.
+- Transferencia <banco>: <cuenta>.
+- Después de pagar, la clienta comparte el comprobante (voucher) por este chat para programar el envío.

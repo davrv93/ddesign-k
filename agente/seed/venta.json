@@ -1,0 +1,8 @@
+{
+  "_nota": "Costos de envío para que el código calcule los totales (el LLM no suma). Fuente: guion de venta de la tienda (spech.docx, 04-10-2026).",
+  "asesora": "Rosmary",
+  "envio": {
+    "lima": {"costo": 15, "detalle": "Olva Courier, entrega en tu dirección"},
+    "provincia": {"costo": 20, "detalle": "Olva Courier o Shalom, hasta la agencia de tu ciudad"}
+  }
+}

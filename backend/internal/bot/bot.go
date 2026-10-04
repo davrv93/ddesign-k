@@ -32,11 +32,13 @@ const reserveTTL = 10 * time.Minute
 
 // Estados de la conversación.
 const (
-	stIdle       = ""
-	stPhoto      = "esperando_foto"
-	stSize       = "esperando_talla"
-	stConfirm    = "esperando_confirmacion"
-	stLocation   = "esperando_ubicacion"
+	stIdle     = ""
+	stPhoto    = "esperando_foto"
+	stSize     = "esperando_talla"
+	stConfirm  = "esperando_confirmacion"
+	stLocation = "esperando_ubicacion"
+	// stPayment: pedido confirmado; falta acordar el envío, pagar y mandar el comprobante. Solo con agente.
+	stPayment    = "esperando_pago"
 	stHumanAsked = "asesora"
 )
 
@@ -45,6 +47,10 @@ type convContext struct {
 	Size      string `json:"size,omitempty"`
 	Qty       int    `json:"qty,omitempty"`
 	OrderID   int64  `json:"order_id,omitempty"`
+	// Etapa comercial que decidió el agente: prospeccion | seguimiento | cierre | venta_confirmada.
+	Etapa   string `json:"etapa,omitempty"`
+	Voucher bool   `json:"voucher,omitempty"` // ya mandó el comprobante de pago
+	Address bool   `json:"address,omitempty"` // ya dio la dirección de envío
 }
 
 type Bot struct {
@@ -229,18 +235,26 @@ func (b *Bot) step(ctx context.Context, conv *store.Conversation, in *Incoming, 
 		return
 	}
 
-	// Una foto siempre inicia una consulta de modelo.
+	// Con el pedido confirmado, la foto que llega es el comprobante de pago. Cualquier otra foto inicia
+	// una consulta de modelo.
 	if in.HasImage {
+		if conv.State == stPayment {
+			b.handleVoucher(ctx, conv, &cc)
+			return
+		}
 		b.handlePhoto(ctx, conv, &cc, msg, img)
 		return
 	}
 
 	switch conv.State {
 	case stSize:
-		b.handleSize(ctx, conv, &cc, text)
+		b.handleSize(ctx, conv, &cc, text, in.Text)
 		return
 	case stConfirm:
-		b.handleConfirm(ctx, conv, &cc, text)
+		b.handleConfirm(ctx, conv, &cc, text, in.Text)
+		return
+	case stPayment:
+		b.handlePayment(ctx, conv, &cc, in, text)
 		return
 	case stLocation:
 		b.handleLocation(ctx, conv, &cc, in, text)
@@ -274,7 +288,9 @@ func (b *Bot) step(ctx context.Context, conv *store.Conversation, in *Incoming, 
 		b.handoff(ctx, conv)
 		return
 	}
-	if m := reCode.FindStringSubmatch(in.Text); m != nil {
+	// El código solo («V42», «el V42») es pedirlo: va al flujo del pedido. Dentro de una frase («¿de qué
+	// tela es el V42?») es una pregunta, y preguntar no es comprar: la contesta el agente.
+	if m := reCode.FindStringSubmatch(in.Text); m != nil && (sinAgente || len(strings.Fields(text)) <= 2) {
 		if p, err := b.store.GetProductByCode(ctx, strings.ReplaceAll(m[1], "-", "")); err == nil && p.Active {
 			b.offerProduct(ctx, conv, &cc, p, "", 0, nil)
 			return
@@ -507,7 +523,7 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 // draftFor deja la consulta del pedido con el producto p (reutiliza la abierta de la conversación si la
 // hay) y devuelve el contexto con el que sigue el flujo de talla.
 func (b *Bot) draftFor(ctx context.Context, conv *store.Conversation, cc *convContext, p *store.Product, customerImage string, conf float64) convContext {
-	next := convContext{ProductID: p.ID, Qty: 1}
+	next := convContext{ProductID: p.ID, Qty: 1, Etapa: "cierre"} // armar el pedido ya es cerrar
 	if cc.OrderID > 0 {
 		if o, err := b.store.GetOrder(ctx, cc.OrderID); err == nil && (o.Status == "consulta" || o.Status == "pendiente") && !o.StockReserved {
 			next.OrderID = o.ID
@@ -537,7 +553,7 @@ func (b *Bot) orderWithSize(ctx context.Context, conv *store.Conversation, cc *c
 	}
 	next := b.draftFor(ctx, conv, cc, p, "", 0)
 	b.setState(ctx, conv, stSize, next)
-	b.handleSize(ctx, conv, &next, normalize(size))
+	b.handleSize(ctx, conv, &next, normalize(size), "") // sin texto libre: si la talla no sirve, se pregunta
 }
 
 var sizeAliases = map[string]string{
@@ -589,7 +605,9 @@ func withoutWord(text, word string) string {
 	return strings.Join(out, " ")
 }
 
-func (b *Bot) handleSize(ctx context.Context, conv *store.Conversation, cc *convContext, text string) {
+// handleSize espera la talla. `raw` es el mensaje tal como llegó: si no es una talla sino una pregunta o
+// un comentario, lo contesta el agente y se recuerda el paso pendiente, en vez de repetir «¿Qué talla?».
+func (b *Bot) handleSize(ctx context.Context, conv *store.Conversation, cc *convContext, text, raw string) {
 	p, err := b.store.GetProduct(ctx, cc.ProductID)
 	if err != nil {
 		b.sendMenu(ctx, conv)
@@ -598,6 +616,21 @@ func (b *Bot) handleSize(ctx context.Context, conv *store.Conversation, cc *conv
 	if isAny(text, "no", "cancelar", "ninguno") {
 		b.cancelDraft(ctx, conv, cc)
 		return
+	}
+	recordar := func() string {
+		sizes := []string{}
+		for _, x := range p.Variants {
+			if x.Available() > 0 {
+				sizes = append(sizes, "*"+x.Size+"*")
+			}
+		}
+		return "Cuando quieras, dime tu talla y te lo separo 😊 Tenemos: " + strings.Join(sizes, ", ")
+	}
+	// «¿la M me quedará si mido 1.60?» nombra una talla pero es una duda, no una elección.
+	if esPregunta(text, raw) {
+		if r := b.askAgent(ctx, conv, cc, raw); r != nil && b.closingReply(ctx, conv, cc, r, p, "talla", recordar()) {
+			return
+		}
 	}
 	v := parseSize(text, p)
 	if v == nil && len(p.Variants) == 1 && (isAny(text, "si", "ok", "dale") || parseQty(text) > 0) {
@@ -615,6 +648,9 @@ func (b *Bot) handleSize(ctx context.Context, conv *store.Conversation, cc *conv
 			if x.Available() > 0 {
 				sizes = append(sizes, "*"+x.Size+"*")
 			}
+		}
+		if r := b.askAgent(ctx, conv, cc, raw); r != nil && b.closingReply(ctx, conv, cc, r, p, "talla", recordar()) {
+			return
 		}
 		b.reply(ctx, conv, "¿Qué talla deseas? Tenemos: "+strings.Join(sizes, ", ")+"\n(Escribe *menu* para volver al inicio.)")
 		return
@@ -669,23 +705,36 @@ func (b *Bot) sendSummary(ctx context.Context, conv *store.Conversation, cc *con
 		cc.OrderID, p.Code, p.Name, v.Size, cc.Qty, b.money(p.Price*float64(cc.Qty)), int(reserveTTL.Minutes())))
 }
 
-func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *convContext, text string) {
+func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *convContext, text, raw string) {
 	yes := isAny(text, "si", "sí", "s", "ok", "dale", "confirmo", "confirmar", "si confirmo", "yes", "claro", "de acuerdo", "listo") || strings.HasPrefix(text, "si ")
 	no := isAny(text, "no", "n", "cancelar", "cancela", "no gracias")
 	if !yes && !no {
 		p, err := b.store.GetProduct(ctx, cc.ProductID)
-		// Cambiar cantidad o talla vuelve a reservar; sendSummary avisa si ya no alcanza.
-		if n := parseQty(text); n > 0 && err == nil {
+		// Cambiar cantidad o talla vuelve a reservar; sendSummary avisa si ya no alcanza. Solo en mensajes
+		// cortos: «¿el envío cuesta 15 soles?» trae un número y no es una cantidad.
+		corto := len(strings.Fields(text)) <= 4 && !esPregunta(text, raw)
+		if n := parseQty(text); n > 0 && err == nil && corto {
 			if v := p.VariantBySize(cc.Size); v != nil {
 				cc.Qty = n
 				b.sendSummary(ctx, conv, cc, p, v)
 				return
 			}
 		}
-		if err == nil {
+		if err == nil && corto {
 			if v := parseSize(text, p); v != nil && v.Size != cc.Size {
 				cc.Size = v.Size
 				b.sendSummary(ctx, conv, cc, p, v)
+				return
+			}
+		}
+		// No es sí ni no: una duda («¿hacen envíos a Cusco?»), una objeción o un «sí» dicho de otra forma.
+		// Lo resuelve el agente; el bot ya no se queda repitiendo «Responde SI o NO».
+		if r := b.askAgent(ctx, conv, cc, raw); r != nil && err == nil {
+			if r.Etapa == "venta_confirmada" {
+				b.confirmOrder(ctx, conv, cc)
+				return
+			}
+			if b.closingReply(ctx, conv, cc, r, p, "confirm", "Cuando estés lista, responde *SI* y confirmo tu pedido 😊") {
 				return
 			}
 		}
@@ -696,6 +745,12 @@ func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *c
 		b.cancelDraft(ctx, conv, cc)
 		return
 	}
+	b.confirmOrder(ctx, conv, cc)
+}
+
+// confirmOrder pasa el pedido a confirmado (descuenta el stock). Con agente sigue la venta: envío, total,
+// pago y comprobante. Sin agente pide la ubicación y deja el pago a una asesora.
+func (b *Bot) confirmOrder(ctx context.Context, conv *store.Conversation, cc *convContext) {
 	_, err := b.store.UpdateOrderStatus(ctx, cc.OrderID, "confirmado", nil)
 	if errors.Is(err, store.ErrNoStock) {
 		b.setState(ctx, conv, stIdle, convContext{})
@@ -710,8 +765,157 @@ func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *c
 	}
 	b.Notify("orders")
 	b.Notify("products")
+	if b.Agent != nil {
+		cc.Etapa = "venta_confirmada"
+		b.setState(ctx, conv, stPayment, *cc)
+		b.reply(ctx, conv, fmt.Sprintf("✅ ¡Pedido *#%d* confirmado! 🎉 Ya quedó separado para ti.", cc.OrderID))
+		b.reply(ctx, conv, "¿El envío sería para *Lima* o para *provincia*? 🚚")
+		return
+	}
 	b.setState(ctx, conv, stLocation, *cc)
 	b.reply(ctx, conv, fmt.Sprintf("✅ ¡Pedido *#%d* confirmado! 🎉\n\nPara coordinar la entrega, compártenos tu *ubicación* 📍\n(toca el clip 📎 → *Ubicación* → Enviar tu ubicación actual)\no escríbenos tu *dirección completa* con referencia.", cc.OrderID))
+}
+
+// esPregunta: el mensaje es una duda o un comentario largo, no una respuesta corta al paso del pedido.
+func esPregunta(text, raw string) bool {
+	return strings.ContainsAny(raw, "?¿") || len(strings.Fields(text)) > 6
+}
+
+// closingReply entrega la respuesta del agente a un mensaje libre recibido en pleno cierre (esperando
+// talla o confirmación). Si la clienta sigue en el cierre, se le recuerda el paso pendiente; si dudó o
+// pidió ver otra prenda, se sale del pedido sin presionar. Devuelve false si no hubo nada que enviar.
+func (b *Bot) closingReply(ctx context.Context, conv *store.Conversation, cc *convContext, r *agente.Reply, p *store.Product, clave, recordatorio string) bool {
+	if r.Etapa == "venta_confirmada" {
+		// Dijo «sí» a una pregunta del agente cuando aún no hay resumen que confirmar (esperando talla).
+		// No se da por vendida: con la talla se arma el resumen; sin ella, se pide.
+		if strings.TrimSpace(r.Talla) != "" {
+			b.orderWithSize(ctx, conv, cc, p, r.Talla)
+		} else {
+			b.reply(ctx, conv, recordatorio)
+		}
+		return true
+	}
+	switch r.Accion {
+	case "asesora":
+		b.handoff(ctx, conv)
+		return true
+	case "pedido", "codigo":
+		other, err := b.store.GetProductByCode(ctx, r.Codigo)
+		if err != nil || !other.Active {
+			return false
+		}
+		if r.Accion == "pedido" && strings.TrimSpace(r.Talla) != "" {
+			b.orderWithSize(ctx, conv, cc, other, r.Talla)
+		} else {
+			b.offerProduct(ctx, conv, cc, other, "", 0, nil)
+		}
+		return true
+	}
+	if strings.TrimSpace(r.Respuesta) == "" {
+		return false
+	}
+	otraPrenda := false
+	for _, sg := range r.Sugerencias {
+		if sg.Codigo != "" && !strings.EqualFold(sg.Codigo, p.Code) {
+			otraPrenda = true
+		}
+	}
+	if otraPrenda || (r.Etapa != "" && r.Etapa != "cierre" && r.Etapa != "venta_confirmada") {
+		b.pauseDraft(ctx, conv, cc, r.Etapa)
+		b.sendAgentText(ctx, conv, r)
+		return true
+	}
+	b.sendAgentText(ctx, conv, r)
+	if !strings.Contains(strings.ToLower(r.Respuesta), clave) {
+		b.reply(ctx, conv, recordatorio)
+	}
+	return true
+}
+
+// pauseDraft saca la conversación del cierre sin cancelar nada: la clienta dudó («lo voy a pensar») o
+// pidió ver otros modelos. Se libera la talla apartada y el pedido vuelve a consulta; si regresa, se retoma.
+func (b *Bot) pauseDraft(ctx context.Context, conv *store.Conversation, cc *convContext, etapa string) {
+	if cc.OrderID > 0 {
+		_ = b.store.ReleaseReservation(ctx, cc.OrderID)
+		if o, err := b.store.GetOrder(ctx, cc.OrderID); err == nil && o.Status == "pendiente" {
+			_, _ = b.store.UpdateOrderStatus(ctx, cc.OrderID, "consulta", nil)
+		}
+		b.Notify("orders")
+	}
+	if etapa == "" || etapa == "cierre" || etapa == "venta_confirmada" {
+		etapa = "seguimiento"
+	}
+	cc.Etapa = etapa
+	b.setState(ctx, conv, stIdle, *cc)
+}
+
+// handlePayment: pedido confirmado. El agente lleva los pasos (Lima o provincia → total → datos de pago →
+// comprobante) y contesta lo que pregunte en el camino.
+func (b *Bot) handlePayment(ctx context.Context, conv *store.Conversation, cc *convContext, in *Incoming, text string) {
+	if in.HasLocation {
+		if err := b.store.SetOrderLocation(ctx, cc.OrderID, &in.Lat, &in.Lng, in.LocationTxt); err != nil {
+			log.Printf("bot: ubicación pedido %d: %v", cc.OrderID, err)
+		}
+		cc.Address = true
+		b.setState(ctx, conv, stPayment, *cc)
+		b.Notify("orders")
+		b.reply(ctx, conv, "📍 ¡Anotado! Ya tengo la dirección de tu envío.\n\nCuando hagas el pago, envíame la *foto del comprobante* y lo programamos 🙌")
+		return
+	}
+	switch {
+	case isAny(text, "3"):
+		b.sendOrderStatus(ctx, conv)
+		return
+	case isAny(text, "4", "asesora", "asesor", "humano", "persona"):
+		b.handoff(ctx, conv)
+		return
+	}
+	cc.Etapa = "venta_confirmada"
+	r := b.askAgent(ctx, conv, cc, in.Text)
+	if r == nil || (r.Accion == "responder" && strings.TrimSpace(r.Respuesta) == "") {
+		b.reply(ctx, conv, fmt.Sprintf("Una asesora te escribirá enseguida para coordinar el pago y el envío de tu pedido *#%d* 💖", cc.OrderID))
+		return
+	}
+	if r.Accion != "responder" && r.Accion != "" {
+		b.dispatchAgent(ctx, conv, cc, r)
+		return
+	}
+	if r.Etapa != "" && r.Etapa != "venta_confirmada" {
+		// Se arrepintió con el pedido ya confirmado (y el stock descontado): lo decide una persona.
+		b.addOrderNote(ctx, cc.OrderID, "⚠️ La clienta pidió cancelar por el chat después de confirmar. Revisar.")
+		b.setState(ctx, conv, stIdle, convContext{Etapa: r.Etapa})
+		b.Notify("orders")
+	}
+	b.sendAgentText(ctx, conv, r)
+}
+
+// handleVoucher: la foto que llega con el pedido confirmado es el comprobante de pago. Queda anotado en
+// el pedido para que una asesora lo valide, y se pide la dirección si aún falta.
+func (b *Bot) handleVoucher(ctx context.Context, conv *store.Conversation, cc *convContext) {
+	b.addOrderNote(ctx, cc.OrderID, "💳 Comprobante de pago recibido por WhatsApp (la foto está en la conversación). Falta validarlo.")
+	b.Notify("orders")
+	if cc.Address {
+		orderID := cc.OrderID
+		b.setState(ctx, conv, stIdle, convContext{})
+		b.reply(ctx, conv, fmt.Sprintf("🙌 ¡Gracias! Recibimos tu comprobante del pedido *#%d*.\nApenas lo validemos programamos tu envío y te avisamos por aquí 💖", orderID))
+		return
+	}
+	cc.Voucher = true
+	b.setState(ctx, conv, stLocation, *cc)
+	b.reply(ctx, conv, "🙌 ¡Gracias! Recibimos tu comprobante. Una asesora lo valida y te confirma por aquí.")
+	b.reply(ctx, conv, "Para programar tu envío 🚚 compárteme tu *dirección completa* con distrito y referencia, o tu *ubicación* 📍 (clip 📎 → Ubicación).")
+}
+
+func (b *Bot) addOrderNote(ctx context.Context, orderID int64, note string) {
+	if orderID <= 0 {
+		return
+	}
+	if o, err := b.store.GetOrder(ctx, orderID); err == nil && strings.TrimSpace(o.Notes) != "" {
+		note = o.Notes + "\n" + note
+	}
+	if err := b.store.UpdateOrderNotes(ctx, orderID, note); err != nil {
+		log.Printf("bot: nota del pedido %d: %v", orderID, err)
+	}
 }
 
 func (b *Bot) cancelDraft(ctx context.Context, conv *store.Conversation, cc *convContext) {
@@ -728,6 +932,17 @@ func (b *Bot) cancelDraft(ctx context.Context, conv *store.Conversation, cc *con
 func (b *Bot) handleLocation(ctx context.Context, conv *store.Conversation, cc *convContext, in *Incoming, text string) {
 	var lat, lng *float64
 	address := strings.TrimSpace(in.Text)
+	// Una pregunta no es una dirección: «¿cuándo llega?» la contesta el agente y se vuelve a pedir.
+	if !in.HasLocation && b.Agent != nil && strings.ContainsAny(in.Text, "?¿") {
+		if cc.Etapa == "" {
+			cc.Etapa = "venta_confirmada"
+		}
+		if r := b.askAgent(ctx, conv, cc, in.Text); r != nil && r.Accion == "responder" && strings.TrimSpace(r.Respuesta) != "" {
+			b.sendAgentText(ctx, conv, r)
+			b.reply(ctx, conv, "Y para el envío, compárteme tu *dirección completa* con distrito y referencia, o tu *ubicación* 📍")
+			return
+		}
+	}
 	switch {
 	case in.HasLocation:
 		lat, lng = &in.Lat, &in.Lng
@@ -742,8 +957,12 @@ func (b *Bot) handleLocation(ctx context.Context, conv *store.Conversation, cc *
 		log.Printf("bot: ubicación pedido %d: %v", cc.OrderID, err)
 	}
 	b.Notify("orders")
-	orderID := cc.OrderID
+	orderID, pagado := cc.OrderID, cc.Voucher
 	b.setState(ctx, conv, stIdle, convContext{})
+	if pagado {
+		b.reply(ctx, conv, fmt.Sprintf("🙌 ¡Gracias! Registramos la dirección de tu pedido *#%d*.\nApenas validemos tu pago programamos el envío y te avisamos por aquí 💖\n\nEscribe *3* cuando quieras revisar el estado de tu pedido.", orderID))
+		return
+	}
 	b.reply(ctx, conv, fmt.Sprintf("🙌 ¡Gracias! Registramos la dirección de tu pedido *#%d*.\nUna asesora te escribirá para coordinar el pago y la entrega. 💖\n\nEscribe *3* cuando quieras revisar el estado de tu pedido.", orderID))
 }
 
@@ -832,15 +1051,41 @@ func (b *Bot) customerName(conv *store.Conversation) string {
 	return ""
 }
 
-func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) bool {
+// askAgent consulta al agente con la etapa comercial y el pedido en curso. nil si no hay agente o no respondió.
+func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) *agente.Reply {
+	if b.Agent == nil || strings.TrimSpace(raw) == "" {
+		return nil
+	}
 	actx, cancel := b.agentContext(ctx)
 	defer cancel()
 	req := agente.Request{Mensaje: raw, Estado: conv.State, Negocio: b.cfg.BusinessName,
-		Cliente: b.customerName(conv), Historial: b.agentHistory(ctx, conv, raw)}
+		Cliente: b.customerName(conv), Historial: b.agentHistory(ctx, conv, raw),
+		Etapa: cc.Etapa, Conversacion: strconv.FormatInt(conv.ID, 10), Talla: cc.Size}
+	if conv.State != stIdle && cc.ProductID > 0 {
+		if p, err := b.store.GetProduct(ctx, cc.ProductID); err == nil {
+			req.Producto = p.Code
+		}
+	}
 	r, err := b.Agent.Chat(actx, req)
 	if err != nil {
 		log.Printf("bot: agente: %v", err)
+		return nil
+	}
+	return r
+}
+
+func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) bool {
+	r := b.askAgent(ctx, conv, cc, raw)
+	if r == nil {
 		return false
+	}
+	return b.dispatchAgent(ctx, conv, cc, r)
+}
+
+// dispatchAgent ejecuta lo que decidió el agente y guarda la etapa comercial en la que queda la conversación.
+func (b *Bot) dispatchAgent(ctx context.Context, conv *store.Conversation, cc *convContext, r *agente.Reply) bool {
+	if r.Etapa != "" {
+		cc.Etapa = r.Etapa
 	}
 	switch r.Accion {
 	case "catalogo":
@@ -868,6 +1113,7 @@ func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *conv
 		if strings.TrimSpace(r.Respuesta) == "" {
 			return false
 		}
+		b.setState(ctx, conv, conv.State, *cc) // la etapa viaja con la conversación
 		b.sendAgentText(ctx, conv, r)
 	}
 	return true
@@ -893,7 +1139,7 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 	defer cancel()
 	req := agente.PhotoRequest{ImagenB64: base64.StdEncoding.EncodeToString(img.Data), Mensaje: msg.Body,
 		Estado: conv.State, Negocio: b.cfg.BusinessName, Cliente: b.customerName(conv),
-		Historial: b.agentHistory(ctx, conv, msg.Body)}
+		Historial: b.agentHistory(ctx, conv, msg.Body), Etapa: cc.Etapa}
 	r, err := b.Agent.Photo(actx, req)
 	if err != nil || r.Foto == nil {
 		log.Printf("bot: agente foto: %v", err)
@@ -908,7 +1154,7 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 	}
 	// Todo lo que no termina en pedido queda en el tablero para que una asesora haga seguimiento.
 	inquiry(fmt.Sprintf("Agente (foto): %s · %s · similitud %.2f", r.Foto.Caso, r.Foto.Codigo, r.Foto.Similitud), r.Foto.Similitud)
-	b.setState(ctx, conv, stIdle, convContext{})
+	b.setState(ctx, conv, stIdle, convContext{Etapa: firstNonEmpty(r.Etapa, cc.Etapa)})
 	b.sendAgentText(ctx, conv, r)
 	return true
 }
