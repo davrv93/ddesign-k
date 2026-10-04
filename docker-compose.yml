@@ -89,6 +89,8 @@ services:
       context: ./agente
       args:
         EMBED_MODEL: ${EMBED_MODEL:-jinaai/jina-embeddings-v2-base-es}
+        # 0 = la tienda usa solo su catálogo; el de 100 modelos ficticios (BOT.zip) queda fuera.
+        CATALOGO100: ${KD_CATALOGO100:-1}
     image: kddesign/agente:local
     container_name: kddesign_agente
     restart: unless-stopped
@@ -101,6 +103,11 @@ services:
       LLM_API_KEY: ${LLM_API_KEY:-${GEMINI_API_KEY:-}}
       LLM_MODEL: ${LLM_MODEL:-gemini-3.5-flash-lite,gemini-3.1-flash-lite}
       LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-6}
+      # Motor por defecto: "actual" (lo de arriba) o "deepseek" (DeepSeek por OpenRouter, tono más humano).
+      # La UI de prueba lo cambia por mensaje; el bot usa este.
+      MOTOR: ${MOTOR:-actual}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-${OPENROUTER_API_KEY:-}}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek/deepseek-chat-v3.1,deepseek/deepseek-v4-flash}
       CATALOG_URL: http://backend:8080/api/public/catalog
       # Stock como herramienta: disponibilidad real (físico - reservas) y sucursales, consultada al responder.
       STOCK_URL: http://backend:8080/api/public/stock
@@ -108,6 +115,7 @@ services:
       BUSINESS_NAME: ${BUSINESS_NAME:-Baruka Design}
       CURRENCY: ${CURRENCY:-S/}
       EMBED_THREADS: "2"
+      CATALOGO100: ${KD_CATALOGO100:-1}
       TZ: America/Lima
     volumes:
       - agente_data:/data
@@ -121,6 +129,8 @@ services:
       context: ./frontend
       args:
         PUBLIC_URL: ${PUBLIC_URL:-https://kddesign.pjgfactsalud.com.pe}
+        # "/" con dominio propio; "/baruka/" si el panel va detrás de un alias del nginx de otro sitio.
+        BASE_PATH: ${KD_BASE_PATH:-/}
     image: kddesign/frontend:local
     container_name: kddesign_frontend
     restart: unless-stopped

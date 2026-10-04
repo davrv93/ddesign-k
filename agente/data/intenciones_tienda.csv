@@ -62,3 +62,285 @@ despedida,errores_ortograficos,ok lueguito te escrivo
 despedida,correcta,"Está bien, eso sería todo por hoy."
 despedida,informal,ya fue eso es todo
 despedida,errores_ortograficos,ya fue eso es tdo
+ayuda,correcta,Tengo algunas dudas antes de comprar.
+ayuda,informal,oye tengo una duda
+ayuda,errores_ortograficos,tengo una dudita porfa
+ayuda,correcta,¿Me podrías ayudar con algo?
+ayuda,informal,ayudame porfa
+ayuda,errores_ortograficos,me ayudas xfa
+ayuda,correcta,Quisiera consultarte algo.
+ayuda,informal,una consultita
+ayuda,errores_ortograficos,una consulta rapida porfavor
+ayuda,correcta,Tengo varias preguntas.
+ayuda,informal,te puedo preguntar algo?
+ayuda,errores_ortograficos,puedo aser una pregunta
+ayuda,correcta,"No sé por dónde empezar, ¿me orientas?"
+ayuda,informal,no entiendo bien como funciona esto
+ayuda,errores_ortograficos,no se como funsiona esto
+ayuda,correcta,"Necesito información, por favor."
+ayuda,informal,info porfa
+ayuda,errores_ortograficos,quiero informasion
+como_comprar,correcta,¿Cómo puedo comprar por aquí?
+como_comprar,informal,como le hago pa comprar
+como_comprar,errores_ortograficos,komo compro un bestido
+como_comprar,correcta,¿Cuáles son los pasos para hacer un pedido?
+como_comprar,informal,q tengo q hacer para pedir
+como_comprar,errores_ortograficos,como ago para pedir
+como_comprar,correcta,"Quiero hacer un pedido, ¿cómo funciona?"
+como_comprar,informal,quiero pedir algo como es
+como_comprar,errores_ortograficos,kiero aser un pedido
+como_comprar,correcta,¿Se puede comprar por WhatsApp?
+como_comprar,informal,se compra por aca nomas?
+como_comprar,errores_ortograficos,se puede conprar por wasap
+como_comprar,correcta,¿Cómo separo un modelo?
+como_comprar,informal,como lo separo
+como_comprar,errores_ortograficos,como lo separo porfa ayudame
+como_comprar,correcta,"Me gustó uno, ¿qué hago para llevármelo?"
+como_comprar,informal,me lo llevo como hago
+como_comprar,errores_ortograficos,lo kiero comprar q ago
+tienda_info,correcta,¿Dónde se encuentra su local?
+tienda_info,informal,donde estan?
+tienda_info,errores_ortograficos,donde kedan
+tienda_info,correcta,¿Cuál es la dirección de la tienda?
+tienda_info,informal,pasame la direccion
+tienda_info,errores_ortograficos,cual es la direcsion
+tienda_info,correcta,¿Tienen local para ir a ver la ropa?
+tienda_info,informal,puedo ir a la tienda a ver?
+tienda_info,errores_ortograficos,tienen tienda para ir
+tienda_info,correcta,¿Cuál es su horario de atención?
+tienda_info,informal,hasta q hora atienden
+tienda_info,errores_ortograficos,a ke ora cierran
+tienda_info,correcta,¿Abren los feriados?
+tienda_info,informal,abren hoy?
+tienda_info,errores_ortograficos,abren el sabado
+tienda_info,correcta,¿Qué medios de pago aceptan?
+tienda_info,informal,como se paga
+tienda_info,errores_ortograficos,como se paga yape o plin
+tienda_info,correcta,¿Puedo pagar en efectivo?
+tienda_info,informal,se puede pagar con plin?
+tienda_info,errores_ortograficos,aseptan tarjeta
+tienda_info,correcta,¿Puedo pagar por transferencia bancaria?
+tienda_info,informal,les yapeo?
+tienda_info,errores_ortograficos,les puedo yapear
+tienda_info,correcta,¿Hacen cambios si la talla no me queda?
+tienda_info,informal,si no me queda lo cambio?
+tienda_info,errores_ortograficos,ay cambios
+tienda_info,correcta,¿Aceptan devoluciones?
+tienda_info,informal,me devuelven la plata si no me gusta?
+tienda_info,errores_ortograficos,ase devolusiones
+tienda_info,correcta,¿Tienen sucursal en Miraflores?
+tienda_info,informal,tienen local en gamarra?
+tienda_info,errores_ortograficos,tienen local en el sentro
+tienda_info,correcta,¿Me puedo probar la ropa en la tienda?
+tienda_info,informal,me lo puedo probar alla?
+tienda_info,errores_ortograficos,tienen provador
+consulta_entrega,correcta,¿Hacen envíos a todo el Perú?
+consulta_entrega,informal,envian a arequipa?
+consulta_entrega,errores_ortograficos,ensvian a provinsia
+consulta_entrega,correcta,¿Cuánto cuesta el envío?
+consulta_entrega,informal,cuanto es el delivery
+consulta_entrega,errores_ortograficos,cuanto cobran de delibery
+consulta_entrega,correcta,¿En cuántos días me llega?
+consulta_entrega,informal,cuando me llegaria
+consulta_entrega,errores_ortograficos,en cuantos dias yega
+consulta_entrega,correcta,¿Hacen delivery a domicilio?
+consulta_entrega,informal,me lo traen a mi casa?
+consulta_entrega,errores_ortograficos,yeban a domisilio
+consulta_entrega,correcta,¿Envían por Shalom u Olva?
+consulta_entrega,informal,mandan por shalom?
+consulta_entrega,errores_ortograficos,mandan x olba
+consulta_precio,correcta,¿Cuál es el precio?
+consulta_precio,informal,cuanto?
+consulta_precio,errores_ortograficos,cuanto questa
+consulta_precio,correcta,¿Cuánto cuesta este modelo?
+consulta_precio,informal,a cuanto lo dejas
+consulta_precio,errores_ortograficos,a cuanto esta el bestido
+consulta_precio,correcta,¿Qué precio tiene el V07?
+consulta_precio,informal,precio del VES-003
+consulta_precio,errores_ortograficos,presio del jea 5
+consulta_precio,correcta,¿Cuánto vale la blusa?
+consulta_precio,informal,y la blusa cuanto
+consulta_precio,errores_ortograficos,cuanto bale la blusa
+consulta_precio,correcta,¿Tienen algo económico?
+consulta_precio,informal,algo baratito?
+consulta_precio,errores_ortograficos,algo varato
+consulta_precio,correcta,¿Me pasas los precios?
+consulta_precio,informal,precios porfa
+consulta_precio,errores_ortograficos,presios xfa
+consulta_precio,correcta,¿Cuánto salen los jeans?
+consulta_precio,informal,cuanto los polos
+consulta_precio,errores_ortograficos,cuanto cuestan los polos
+consulta_stock,correcta,¿Lo tienen en talla L?
+consulta_stock,informal,hay en L?
+consulta_stock,errores_ortograficos,ay en talla ele
+consulta_stock,correcta,¿Todavía hay de ese vestido?
+consulta_stock,informal,aun queda?
+consulta_stock,errores_ortograficos,todabia ay
+consulta_stock,correcta,¿Está disponible en XS?
+consulta_stock,informal,lo tienes en xs
+consulta_stock,errores_ortograficos,esta disponivle en xs
+consulta_stock,correcta,¿Lo tienen en otro color?
+consulta_stock,informal,hay en rojo?
+consulta_stock,errores_ortograficos,lo ay en asul
+consulta_stock,correcta,¿Les queda stock del V05?
+consulta_stock,informal,hay stock del V12?
+consulta_stock,errores_ortograficos,tienen estok
+consulta_stock,correcta,¿Se agotó ese modelo?
+consulta_stock,informal,ya se acabo?
+consulta_stock,errores_ortograficos,se agoto
+consulta_stock,correcta,"Soy talla M, ¿hay para mí?"
+consulta_stock,informal,soy talla s hay?
+consulta_stock,errores_ortograficos,soi talla m ay
+producto_recomendacion,correcta,¿Qué me pongo para una cena elegante?
+producto_recomendacion,informal,q me pongo pa una cena
+producto_recomendacion,errores_ortograficos,ke me pongo para una sena
+producto_recomendacion,correcta,Busco algo para ir a la oficina.
+producto_recomendacion,informal,algo pa la chamba
+producto_recomendacion,errores_ortograficos,algo para la ofisina
+producto_recomendacion,correcta,"Tengo un matrimonio el sábado, ¿qué me recomiendas?"
+producto_recomendacion,informal,tengo matri el sabado ayuda
+producto_recomendacion,errores_ortograficos,tengo un matrimonio q me recomiendas
+producto_recomendacion,correcta,Necesito un outfit para una fiesta.
+producto_recomendacion,informal,algo para una fiesta?
+producto_recomendacion,errores_ortograficos,algo para una fiezta
+producto_recomendacion,correcta,¿Qué me queda bien si soy bajita?
+producto_recomendacion,informal,soy bajita q me queda
+producto_recomendacion,errores_ortograficos,soi vajita q me keda
+producto_recomendacion,correcta,Busco algo fresco para el verano.
+producto_recomendacion,informal,algo fresquito pal verano
+producto_recomendacion,errores_ortograficos,algo fresco para el berano
+producto_recomendacion,correcta,"Quiero regalarle algo a mi mamá, ¿qué me sugieres?"
+producto_recomendacion,informal,un regalo pa mi mama
+producto_recomendacion,errores_ortograficos,un regalo para mi mama q sujieres
+producto_recomendacion,correcta,¿Qué combina con un jean azul?
+producto_recomendacion,informal,q combina con mi jean
+producto_recomendacion,errores_ortograficos,ke conbina con jean
+producto_recomendacion,correcta,"Tengo una entrevista, ¿qué me recomiendas?"
+producto_recomendacion,informal,algo formal pa una entrevista
+producto_recomendacion,errores_ortograficos,algo para una entrebista
+producto_descripcion,correcta,¿Me describes el V08?
+producto_descripcion,informal,como es ese
+producto_descripcion,errores_ortograficos,como es el bes 4
+producto_descripcion,correcta,Cuéntame más de ese vestido.
+producto_descripcion,informal,mas detalles porfa
+producto_descripcion,errores_ortograficos,mas detayes
+producto_descripcion,correcta,¿El vestido es largo o corto?
+producto_descripcion,informal,es largo?
+producto_descripcion,errores_ortograficos,es largito o cortito
+producto_descripcion,correcta,¿Tiene escote?
+producto_descripcion,informal,tiene tirantes?
+producto_descripcion,errores_ortograficos,tiene volados
+producto_descripcion,correcta,¿Tiene bolsillos?
+producto_descripcion,informal,trae cinturon?
+producto_descripcion,errores_ortograficos,tiene bolsiyos
+producto_tallas_material,correcta,¿De qué material está hecho?
+producto_tallas_material,informal,q tela es
+producto_tallas_material,errores_ortograficos,de ke tela es
+producto_tallas_material,correcta,¿La tela es gruesa o delgada?
+producto_tallas_material,informal,es de tela gruesa?
+producto_tallas_material,errores_ortograficos,la tela es grueza
+producto_tallas_material,correcta,¿Es de algodón?
+producto_tallas_material,informal,es algodon?
+producto_tallas_material,errores_ortograficos,es de algodon o poliester
+producto_tallas_material,correcta,¿En qué tallas viene?
+producto_tallas_material,informal,q tallas hay de ese
+producto_tallas_material,errores_ortograficos,ke tayas tiene
+producto_tallas_material,correcta,¿La tela estira?
+producto_tallas_material,informal,es elastizado?
+producto_tallas_material,errores_ortograficos,es elastisado
+consulta_marca,correcta,¿Qué marca es?
+consulta_marca,informal,es de marca?
+consulta_marca,errores_ortograficos,de q marka es
+consulta_marca,correcta,¿Es ropa original o réplica?
+consulta_marca,informal,es original?
+consulta_marca,errores_ortograficos,es orijinal
+consulta_medidas,correcta,¿Cuáles son las medidas del vestido?
+consulta_medidas,informal,cuanto mide?
+consulta_medidas,errores_ortograficos,cuanto mide de cintura
+consulta_medidas,correcta,¿Tienen tabla de medidas?
+consulta_medidas,informal,pasame la tabla de tallas
+consulta_medidas,errores_ortograficos,tabla de medidas porfa
+catalogo,correcta,¿Qué jeans tienen?
+catalogo,informal,tienen polos?
+catalogo,errores_ortograficos,tienen blusas
+catalogo,correcta,Quiero ver los vestidos.
+catalogo,informal,a ver los vestidos
+catalogo,errores_ortograficos,kiero ver los vestidos
+catalogo,correcta,¿Qué tienen de nuevo?
+catalogo,informal,q hay de nuevo
+catalogo,errores_ortograficos,ke ay de nuebo
+catalogo,correcta,¿Me enseñas sus modelos?
+catalogo,informal,enseñame los modelos
+catalogo,errores_ortograficos,enseñame tus modelos
+pedido_estado,correcta,¿En qué estado está mi pedido?
+pedido_estado,informal,y mi pedido?
+pedido_estado,errores_ortograficos,y mi pedio
+pedido_estado,correcta,"Ya pagué, ¿cuándo me envían mi pedido?"
+pedido_estado,informal,ya pague cuando me llega lo mio
+pedido_estado,errores_ortograficos,ya pague y no me yega
+pedido_estado,correcta,Mi pedido no ha llegado todavía.
+pedido_estado,informal,mi paquete no llega
+pedido_estado,errores_ortograficos,mi paquete no yega
+pedido_estado,correcta,¿Ya despacharon lo que compré?
+pedido_estado,informal,ya salio mi compra?
+pedido_estado,errores_ortograficos,ya salio mi conpra
+asesora,correcta,Prefiero hablar con una persona real.
+asesora,informal,quiero hablar con un humano
+asesora,errores_ortograficos,kiero ablar con alguien
+asesora,correcta,¿Me puede atender una asesora?
+asesora,informal,pasame con la vendedora
+asesora,errores_ortograficos,pasame con la asesora
+asesora,correcta,¿Me pueden llamar?
+asesora,informal,llamame porfa
+asesora,errores_ortograficos,yamenme
+despedida,correcta,"Muchas gracias, eso es todo."
+despedida,informal,gracias!!
+despedida,errores_ortograficos,grasias
+despedida,correcta,"Listo, luego les escribo."
+despedida,informal,"ya te aviso, bye"
+despedida,errores_ortograficos,despues te escrivo
+despedida,correcta,"Perfecto, hasta luego."
+despedida,informal,okis chau
+despedida,errores_ortograficos,chau grasias
+despedida,correcta,"Lo voy a pensar, gracias."
+despedida,informal,lo pienso y te digo
+despedida,errores_ortograficos,lo pienso i te aviso
+pregunta_general,correcta,¿Quién descubrió América?
+pregunta_general,informal,quien gano el mundial
+pregunta_general,errores_ortograficos,quien fue el primer presidente
+pregunta_general,correcta,¿Cuánto es 15 más 30?
+pregunta_general,informal,cuanto es 8 x 7
+pregunta_general,errores_ortograficos,cuanto es la raiz de 9
+pregunta_general,correcta,¿Cuál es la capital de Japón?
+pregunta_general,informal,capital de chile?
+pregunta_general,errores_ortograficos,cual es la capitl de italia
+pregunta_general,correcta,¿Me ayudas con mi tarea de historia?
+pregunta_general,informal,hazme la tarea
+pregunta_general,errores_ortograficos,ayudame con mi tarea de mate
+pregunta_general,correcta,¿Qué opinas del presidente?
+pregunta_general,informal,q piensas de la politica
+pregunta_general,errores_ortograficos,por kien votas
+pregunta_general,correcta,¿Cómo está el clima mañana?
+pregunta_general,informal,va a llover?
+pregunta_general,errores_ortograficos,como esta el clima
+pregunta_general,correcta,Dame una receta de lomo saltado.
+pregunta_general,informal,como se hace el ceviche
+pregunta_general,errores_ortograficos,resepta de pollo
+pregunta_general,correcta,¿Quién ganó el partido de Alianza?
+pregunta_general,informal,como quedo la U
+pregunta_general,errores_ortograficos,quien gano el partido
+pregunta_general,correcta,Escríbeme un código en Python.
+pregunta_general,informal,hazme un programa
+pregunta_general,errores_ortograficos,como programo en jaba
+estado_animo,correcta,Hoy tuve un día muy pesado.
+estado_animo,informal,estoy cansadisima
+estado_animo,errores_ortograficos,estoi muy estresada
+estado_animo,correcta,Me siento insegura con mi cuerpo.
+estado_animo,informal,nada me queda bien
+estado_animo,errores_ortograficos,nada me keda vien
+foto,correcta,¿Les puedo mandar la foto de lo que busco?
+foto,informal,te paso una captura
+foto,errores_ortograficos,te mando una foto
+foto,correcta,"Vi un modelo en Instagram, ¿lo tienen?"
+foto,informal,lo vi en tiktok lo tienen?
+foto,errores_ortograficos,lo vi en el insta

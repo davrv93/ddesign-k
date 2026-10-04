@@ -1,0 +1,590 @@
+[
+ {
+  "code": "V21",
+  "name": "Vestido Kendall",
+  "category": "vestido",
+  "color": "palo rosa",
+  "price": 320.0,
+  "description": "Dise&ntilde;o surrealista, con tiras strech que ayuda a sujetar el busto. Tipo corset y rayas negras formando el estilo de corte pera. Una pieza nude con un vigoroso encaje negro en la parte de la basta. La parte trasera tiene los mismos cortes para resaltar tu figura. Detalles: Cinta sin crustadas, Copas, Cierre invisible, Encaje.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v21.jpg",
+   "fotos/v21_2.jpg",
+   "fotos/v21_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/vestido-kendall-240945361010004221091711202209053184294"
+ },
+ {
+  "code": "V22",
+  "name": "Pantalón Codman",
+  "category": "pantalón",
+  "color": "azul",
+  "price": 230.0,
+  "description": "Nuestro pantal&oacute;n de Prada color azul noche, estilo formal con basta semi pegada. La parte delantera tiene sobrepuestos encima de la pretina que se unen con el corte de la l&iacute;nea de planchado con botones nacarados encima, del mismo modo en los costados de las bastas van sobrepuestos con abertura al costado y un corte en la l&iacute;nea de planchado. La espala tiene pinzas y cierre invisible. Detalles: Tela Prada strech Pantalón, Botones de metal Pantalón, Cierre invisible Pantalón.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v22.jpg",
+   "fotos/v22_2.jpg",
+   "fotos/v22_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/pantalon-codman-240945362010018212051711202204574441512"
+ },
+ {
+  "code": "V23",
+  "name": "Blusa Anika",
+  "category": "blusa",
+  "color": "floreado",
+  "price": 180.0,
+  "description": "La blusa Anika fue dise&ntilde;ado para las mujeres m&aacute;s rom&aacute;nticas que sue&ntilde;an con un modelo jovial. Detalles: Blusa de seda con tirante en abdomen, Short con cinturón corbata y broches.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 2
+   }
+  ],
+  "fotos": [
+   "fotos/v23.jpg",
+   "fotos/v23_2.jpg",
+   "fotos/v23_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/blusa-anika-240945361010023204011711202208133960623"
+ },
+ {
+  "code": "V24",
+  "name": "Conjunto Kabanova Azul",
+  "category": "conjunto",
+  "color": "azul",
+  "price": 330.0,
+  "description": "Set kabanova con una silueta princesa que le confiere un volumen sin igual, una pretina ancha que ayuda a formar el talle.La falda es lisa y sencilla, elaborada en un tejido suave al tacto, combinado con un top sexy que levanta y forma el busto. Detalles: Falda lineal, pretina gruesa, Cierre Invisible, Top Manga Jamon.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v24.jpg",
+   "fotos/v24_2.jpg",
+   "fotos/v24_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/conjunto-kabanova-240945361010018255031711202201145841886"
+ },
+ {
+  "code": "V25",
+  "name": "Conjunto Kabanova Rojo",
+  "category": "conjunto",
+  "color": "rojo",
+  "price": 330.0,
+  "description": "Set kabanova con una silueta princesa que le confiere un volumen sin igual, una pretina ancha que ayuda a formar el talle.La falda es lisa y sencilla, elaborada en un tejido suave al tacto, combinado con un top sexy que levanta y forma el busto. Detalles: Falda lineal, pretina gruesa, Cierre Invisible, Top Manga Jamon.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v25.jpg",
+   "fotos/v25_2.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/conjunto-kabanova-240945361010018255031711202201145841886"
+ },
+ {
+  "code": "V26",
+  "name": "Pantalón Cristal",
+  "category": "pantalón",
+  "color": "beige",
+  "price": 290.0,
+  "description": "Nuestro&nbsp;pantal&oacute;n&nbsp;tipo overol de Prada color beige, estilo Palazo con bastas anchas. La parte delantera tiene una pretina ancha tipo cors&eacute; con cortes princesa y tiras regulables, el pantal&oacute;n lleva pinza con pliegues, bolsillos laterales y dobles en las bastas. La espalda tiene una pretina tipo cors&eacute; con cortes princesa y tiras que se unen a la parte delantera, el pantal&oacute;n lleva pinza con pliegues y cierre invisible. Detalles: Tela Prada, Trabillas, Regulador, Gancho de soporte, Cierre invisible, Pantalon.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v26.jpg",
+   "fotos/v26_2.jpg",
+   "fotos/v26_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/pantalon-cristal-240945362010010209051711202208133937184"
+ },
+ {
+  "code": "V27",
+  "name": "Blusa Ankara",
+  "category": "blusa",
+  "color": "negra",
+  "price": 220.0,
+  "description": "Nuestra blusa Ankara cumplen los sue&ntilde;os de la mujer empoderada. Esta prenda hace destacar el torso con un cuello de lazo elegante que exalta la belleza de los hombros.\nSu manga en organza francesa la convierte en una elecci&oacute;n ideal para una reuni&oacute;n formal en oto&ntilde;o y su espalda cerrada y transparente promete ser el centro de todas las miradas. Detalles: Botones forrados Blusa, Organza francesa.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v27.jpg",
+   "fotos/v27_2.jpg",
+   "fotos/v27_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/blusa-ankara-240945361030002205011711202208133882299"
+ },
+ {
+  "code": "V28",
+  "name": "Vestido Azra Turquesa",
+  "category": "vestido",
+  "color": "turquesa",
+  "price": 520.0,
+  "description": "Siente el movimiento del vestido Hayen a cada paso que des, presenta detalles exclusivos y una ligereza de la que le dota el tejido de lino prada en el que est&aacute; confeccionado.El escote halter le otorga un punto de modernidad y da protagonismo a los hombros, desliz&aacute;ndose hacia la espalda y mostr&aacute;ndola completamente. Detalles: Vestido tres tiempos, Cuello halter, Trenza de bajodebusto, Cierre invisible cintura drapeada.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v28.jpg",
+   "fotos/v28_2.jpg",
+   "fotos/v28_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/vestido-azra-240945361010013207091711202204574508698"
+ },
+ {
+  "code": "V29",
+  "name": "Vestido Azra Palo Rosa",
+  "category": "vestido",
+  "color": "palo rosa",
+  "price": 520.0,
+  "description": "Siente el movimiento del vestido Hayen a cada paso que des, presenta detalles exclusivos y una ligereza de la que le dota el tejido de lino prada en el que est&aacute; confeccionado.El escote halter le otorga un punto de modernidad y da protagonismo a los hombros, desliz&aacute;ndose hacia la espalda y mostr&aacute;ndola completamente. Detalles: Vestido tres tiempos, Cuello halter, Trenza de bajodebusto, Cierre invisible cintura drapeada.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v29.jpg",
+   "fotos/v29_2.jpg",
+   "fotos/v29_3.jpg",
+   "fotos/v29_4.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/vestido-azra-240945361010013207091711202204574508698"
+ },
+ {
+  "code": "V30",
+  "name": "Enterizo Elvi",
+  "category": "enterizo",
+  "color": "rosado",
+  "price": 330.0,
+  "description": "Esta pieza es estupenda, un cintur&oacute;n de cuero se ajusta y acent&uacute;a la silueta muy bien, le da una apariencia incre&iacute;ble.Esta pieza es realmente extraordinaria, deja un hombro al descubierto y un detalle bastante llamativo destaca en el pantal&oacute;n formando un caracol, bastante chic y elegante que destaca la silueta y oculta esas zonas que suelen generar incomodidad. Detalles: Volado en pierna, Asimétrico en el hombro, Pinzas para levantar el busto, Correa tejida, Cierre invisible.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v30.jpg",
+   "fotos/v30_2.jpg",
+   "fotos/v30_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/enterizo-elvi-240945361010012211081711202201145978172"
+ },
+ {
+  "code": "V31",
+  "name": "Vestido Pandora",
+  "category": "vestido",
+  "color": "negro",
+  "price": 330.0,
+  "description": "VESTIDO PANDORA es un CL&Aacute;SICO ATEMPORAL, con un estilo de los ochenta, con un escote coraz&oacute;n y, a la vez, asim&eacute;trico, con solapa y cremallera.Tiene un corte ingl&eacute;s con un hombro, con corte y cintur&oacute;n en el talle y una hebilla inoxidable. Decorado en la parte de los bolsillos con cremalleras y un corte asim&eacute;trico tambi&eacute;n en la falda. Detalles: Cremallera Gruesa, Cinturón con hebilla de metal.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 2
+   }
+  ],
+  "fotos": [
+   "fotos/v31.jpg",
+   "fotos/v31_2.jpg",
+   "fotos/v31_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/vestido-pandora-240945361010002231091711202209053173355"
+ },
+ {
+  "code": "V32",
+  "name": "Conjunto Xela",
+  "category": "conjunto",
+  "color": "celeste",
+  "price": 460.0,
+  "description": "Saco de tela Prada de color celeste bebe. La parte delantera lleva cuello y solapa abierto, corte princesa, 4 botones cerca a la basta. La manga lleva un corte desde el codo hasta la basta. La falda también hecha de Prada tipo mini. La parte delantera tiene un sobrepuesto en forma diagonal con 4 botones forrados sin pretina y la espalda lleva un cierre invisible. Detalles: Tela Prada rígida│Seda Satín forro, Botones forrados, Cierre invisible.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v32.jpg",
+   "fotos/v32_2.jpg",
+   "fotos/v32_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/conjunto-xela-240945361010007225031711202201145737330"
+ },
+ {
+  "code": "V33",
+  "name": "Blusa Celestine",
+  "category": "blusa",
+  "color": "azul",
+  "price": 180.0,
+  "description": "Nuestra Blusa hecha de DENIM delgado. La parte delantera lleva un cuello con tiras ajustables, el escote es en V y tiene cortes a los lados con pespunte, tiene pinzas a la altura del busto, las mangas son tipo princesa con basta ancha. La espalda es simple con mangas tipo princesa y basta ancha. Detalles: Tela Denim, Botones de broche.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v33.jpg",
+   "fotos/v33_2.jpg",
+   "fotos/v33_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/blusa-celestine-240945362010018211011711202208133896369"
+ },
+ {
+  "code": "V34",
+  "name": "Pantalón Ivy",
+  "category": "pantalón",
+  "color": "naranja",
+  "price": 250.0,
+  "description": "Nuestro pantal&oacute;n de Prada color naranja, estilo palazo con basta amplia. La parte delantera tiene un embolsado con abertura en la basta hasta la altura de la rodilla, en la pretina lleva un sobrepuesto con terminaciones en punta sujetado por botones niquelados con un broche desmontable. La espalda lleva pinzas y cierre invisible. Detalles: Tela Prada Pantalón, Hebilla desmontable Pantalón, Cierre invisible Pantalón, Broches en pretina Pantalón.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v34.jpg",
+   "fotos/v34_2.jpg",
+   "fotos/v34_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/pantalon-ivy-240945362010029224051711202204574452444"
+ },
+ {
+  "code": "V35",
+  "name": "Vestido Irla",
+  "category": "vestido",
+  "color": "palo rosa",
+  "price": 220.0,
+  "description": "El vestido Irla es simplemente espectacular. Con su busto en forma de coraz&oacute;n sexy y su dise&ntilde;o de hombros descubiertos, Irla crea la silueta perfecta. La espalda recta es s&uacute;per sexy y el largo estilo l&aacute;piz a la altura de la rodilla crean curvas hermosas. Hecho de nuestra incre&iacute;ble tela roma que favorece la figura. Detalles: Vestido off shoulders, Tipo de tela Roma, Escote corazón, Cremallera Cierre invisible.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v35.jpg",
+   "fotos/v35_2.jpg",
+   "fotos/v35_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/vestido-irla-240945361030004218091711202204574532138"
+ },
+ {
+  "code": "V36",
+  "name": "Blusa Emet",
+  "category": "blusa",
+  "color": "rojo",
+  "price": 180.0,
+  "description": "La blusa Emet est&aacute; hecha de seda de rayas. La parte delantera tiene un escote en V con corte princesa hasta la cintura. Tiene un corte en la cintura y la parte baja es estilo peplum. Las mangas son tradicionales con Yugo. La espalda tiene pinzas desde la altura de la sisa hasta el corte de la cintura. Detalles: Seda estampada.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v36.jpg",
+   "fotos/v36_2.jpg",
+   "fotos/v36_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/blusa-emet-240945362010001214011711202208133921562"
+ },
+ {
+  "code": "V37",
+  "name": "Conjunto Kaylee",
+  "category": "conjunto",
+  "color": "palo rosa",
+  "price": 290.0,
+  "description": "El modelo kaylee es un conjunto de estilo casual, fresco y cautivador. elaborado de Catania color palo rosa. detalle: top con corte ingl&eacute;s, escote redondo, cintur&oacute;n forrado, cierre invisible, pantal&oacute;n Palazzo. cuidado: lavar siempre a mano, no usar agua caliente ya que podr&iacute;a encoger la prenda, planchado a vapor. Detalles: Top con corte ingles, Escote redondo, Cinturón forrado, Cierre invisible, Pantalón palazzo.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v37.jpg",
+   "fotos/v37_2.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/conjunto-kaylee-240945361000004220031711202201145926751"
+ },
+ {
+  "code": "V38",
+  "name": "Blazer Begonia",
+  "category": "blazer",
+  "color": "rosado",
+  "price": 288.0,
+  "description": "De tela Prada color rosado bebe. La parte delantera lleva cuello y solapa. Tiene corte ingl&eacute;s hacia el cuello y tiras que cruzan hacia la espalda y mangas tradicionales. Detalles: Tela Prada, rígida, Seda, Satín forro, Botones forrados, Cierre invisible.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 2
+   }
+  ],
+  "fotos": [
+   "fotos/v38.jpg",
+   "fotos/v38_2.jpg",
+   "fotos/v38_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/blazer-begonia-240945362010012220071711202208133865110"
+ },
+ {
+  "code": "V39",
+  "name": "Blusa Bernadette",
+  "category": "blusa",
+  "color": "verde",
+  "price": 140.0,
+  "description": "La blusa hecha de GASA color verde oscuro. La parte delantera lleva un cuello de tiras ajustables, tiene escote en V, con un corte en el centro pliegues en los hombros, lleva elástico en la basta, las mangas son amplias y antes de llegar a la basta llevan corrugado con elástico de bobina, así mismo llevan bobos largos al final de toda la manga. La espalda lleva elástico grueso en la basta y las mangas son igual al delantero. Detalles: Gasa, elástico.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 3
+   }
+  ],
+  "fotos": [
+   "fotos/v39.jpg",
+   "fotos/v39_2.jpg",
+   "fotos/v39_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/blusa-bernadette-240945362010015204011711202201145669996"
+ },
+ {
+  "code": "V40",
+  "name": "Falda Paola",
+  "category": "falda",
+  "color": "beige",
+  "price": 210.0,
+  "description": "Nuestra falda Paola es de tela Jackard pesado, es completamente forrada y tiene pretina interior con cierre invisible. Detalles: Tela Jackard, Cierre invisible.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 2
+   }
+  ],
+  "fotos": [
+   "fotos/v40.jpg",
+   "fotos/v40_2.jpg",
+   "fotos/v40_3.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/falda-paola-240945362010010218041711202201150049716"
+ },
+ {
+  "code": "V41",
+  "name": "Vestido Holly",
+  "category": "vestido",
+  "color": "palo rosa",
+  "price": 330.0,
+  "description": "Nuestro vestido Holly es una pieza monocrom&aacute;tica con escote en V que aporta y da volumen al busto. Con ligero recogido debajo del mismo y una pretina drapeada para afinar la cintura con un corte en la falda y, para disimular y aumentar caderas, un bobo forrado en la parte izquierda de la falda. Para darle ese toque chic sus mangas abullonadas y pu&ntilde;os anchos con botones forrados que estilizan y hacen que te veas perfecta. Estando lista para cualquier ocasi&oacute;n. Detalles: Vestido con volante, Tipo de tela vestido roma, Pretina drapeada.",
+  "variants": [
+   {
+    "size": "S",
+    "stock": 3
+   },
+   {
+    "size": "M",
+    "stock": 3
+   },
+   {
+    "size": "L",
+    "stock": 2
+   }
+  ],
+  "fotos": [
+   "fotos/v41.jpg",
+   "fotos/v41_2.jpg",
+   "fotos/v41_3.jpg",
+   "fotos/v41_4.jpg"
+  ],
+  "origen": "https://baruka.dinersclubmall.pe/p/vestido-holly-240945361030004216091711202204574496197"
+ }
+]

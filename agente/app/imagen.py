@@ -45,9 +45,12 @@ def abrir(datos: bytes):
 
 
 def fotos_catalogo() -> list[tuple[str, str]]:
-    """(código, ruta) de cada foto: las de la tienda (tienda/v01.jpg -> V01) y las del catálogo de 100."""
-    out = [(os.path.basename(p)[:-4].upper(), p) for p in sorted(glob.glob(os.path.join(IMG_DIR, "*.jpg")))]
-    out += [(os.path.basename(p)[:-4].upper(), p) for p in sorted(glob.glob(os.path.join(IMG_DIR, "tienda", "*.jpg")))]
+    """(código, ruta) de cada foto: las de la tienda (tienda/v01.jpg -> V01; las vistas extra tienda/v21_2.jpg
+    -> V21) y las del catálogo de 100."""
+    out = []
+    if os.environ.get("CATALOGO100", "1") != "0":  # sin él, solo se reconocen las prendas de la tienda
+        out += [(os.path.basename(p)[:-4].upper(), p) for p in sorted(glob.glob(os.path.join(IMG_DIR, "*.jpg")))]
+    out += [(os.path.basename(p)[:-4].split("_")[0].upper(), p) for p in sorted(glob.glob(os.path.join(IMG_DIR, "tienda", "*.jpg")))]
     return out
 
 
@@ -81,18 +84,21 @@ def indexar():
     Q = emb([_deformar(p, rnd) for _, p in fotos])
     S = Q @ X.T
     idx = np.arange(len(fotos))
-    correcta = S[idx, idx]
-    otra = np.array([np.max(np.delete(S[k], k)) for k in idx])
-    top1 = float(np.mean(S.argmax(1) == idx))
+    cod = np.array(codigos)
+    # Con varias vistas por prenda, acierta si la más parecida es CUALQUIER foto de la misma prenda,
+    # y «mejor otra» solo cuenta prendas distintas.
+    correcta = np.array([S[k][cod == cod[k]].max() for k in idx])
+    otra = np.array([S[k][cod != cod[k]].max() for k in idx])
+    top1 = float(np.mean(cod[S.argmax(1)] == cod))
     # «Es este»: por encima del 95 % de las «mejor otra» (≤5 % de falsos positivos en la calibración).
     t_alto = float(np.percentile(otra, 95))
     # «Se parece»: por encima de la mediana de «mejor otra».
     t_bajo = float(np.median(otra))
     metricas = {
         "modelo": emb.model_name, "fotos": len(fotos), "top1": round(top1, 4),
-        "top3": round(float(np.mean([k in np.argsort(-S[k])[:3] for k in idx])), 4),
+        "top3": round(float(np.mean([cod[k] in cod[np.argsort(-S[k])[:3]] for k in idx])), 4),
         "umbral_exacto": round(t_alto, 4), "umbral_parecido": round(t_bajo, 4),
-        "recall_exacto": round(float(np.mean((S.argmax(1) == idx) & (correcta >= t_alto))), 4),
+        "recall_exacto": round(float(np.mean((cod[S.argmax(1)] == cod) & (correcta >= t_alto))), 4),
     }
     guardar("imagenes.pkl", {"codigos": codigos, "X": X, "metricas": metricas})
     print(metricas)
@@ -108,7 +114,14 @@ class Buscador:
     def buscar(self, datos: bytes, k: int = 6) -> list[tuple[str, float]]:
         v = self.emb([abrir(datos)])[0]
         s = self.X @ v
-        return [(self.codigos[i], float(s[i])) for i in np.argsort(-s)[:k]]
+        out, vistos = [], set()
+        for i in np.argsort(-s):  # una entrada por prenda: la vista más parecida
+            if self.codigos[i] not in vistos:
+                vistos.add(self.codigos[i])
+                out.append((self.codigos[i], float(s[i])))
+                if len(out) >= k:
+                    break
+        return out
 
     def nivel(self, sim: float) -> str:
         if sim >= self.metricas["umbral_exacto"]:

@@ -1,6 +1,7 @@
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { money } from "~/lib/format";
+import { u } from "~/lib/base";
 
 interface PubProduct {
   code: string;
@@ -27,7 +28,7 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    const res = await fetch("/api/public/catalog");
+    const res = await fetch(u("/api/public/catalog"));
     data.value = await res.json();
   });
 
@@ -54,7 +55,7 @@ export default component$(() => {
         {list.map((p) => (
           <article key={p.code} class={["cat-card", p.sizes.length === 0 && "out"]}>
             <div class="cat-img">
-              {p.image && <img src={p.image} alt={p.name} width={300} height={400} loading="lazy" />}
+              {p.image && <img src={u(p.image)} alt={p.name} width={300} height={400} loading="lazy" />}
               {p.sizes.length === 0 && <span class="sold-out">Agotado</span>}
             </div>
             <div class="cat-body">

@@ -31,8 +31,14 @@ func fakeAgente(t *testing.T, last *agente.Request) *agente.Client {
 		case "quiero ver su catalogo":
 			rep = agente.Reply{Intencion: "catalogo", Accion: "responder", Respuesta: "¡Claro! Mira estos 😍\n\n¿Para qué ocasión buscas?",
 				Sugerencias: []agente.Sugerencia{{Codigo: "V01", Fuente: "seed", Imagen: "/media/products/v01.jpg", Pie: "*V01* Vestido Esmeralda"}}}
+		case "hola":
+			rep = agente.Reply{Intencion: "saludo", Accion: "responder", Respuesta: "¡Hola Ana! Bienvenida 😊\n\n¿Qué estás buscando hoy?"}
+		case "como hago mi pedido":
+			rep = agente.Reply{Intencion: "como_comprar", Accion: "responder", Respuesta: "Escríbeme el código del modelo y te pido la talla 😊"}
 		case "kiero ablar con una persona":
 			rep = agente.Reply{Intencion: "asesora", Accion: "asesora"}
+		case "el vestido esmeralda en M":
+			rep = agente.Reply{Intencion: "consulta_stock", Accion: "pedido", Codigo: "V01", Talla: "M"}
 		case "cuanto cuesta el vestido esmeralda":
 			rep = agente.Reply{Intencion: "consulta_precio", Accion: "codigo", Codigo: "V01"}
 		default:
@@ -148,5 +154,48 @@ func TestAgenteFotoSucursalDejaConsulta(t *testing.T) {
 	orders, _ := st.ListOrders(context.Background(), conv.CustomerID)
 	if len(orders) != 1 || orders[0].Status != "consulta" || !strings.Contains(orders[0].Notes, "sucursal") {
 		t.Fatalf("debía quedar una consulta en el tablero: %+v", orders)
+	}
+}
+
+// Con agente, el saludo y las frases que nombran el menú las contesta el agente, no el menú fijo:
+// «cómo hago mi pedido» no es «estado de mi pedido». Los números y «menu» siguen yendo al flujo del bot.
+func TestAgenteContestaSaludoYFrases(t *testing.T) {
+	b, _, fe := setup(t, `{"intent":"otro","reply":"respuesta de gemini"}`, false)
+	var last agente.Request
+	b.Agent = fakeAgente(t, &last)
+
+	handle(b, text("hola"))
+	mustContain(t, fe.lastText(), "¿Qué estás buscando hoy?")
+	if strings.Contains(fe.sent[0]["text"].(string), "1️⃣") {
+		t.Fatal("con agente, el saludo no debe mandar el menú numerado")
+	}
+	handle(b, text("como hago mi pedido"))
+	mustContain(t, fe.lastText(), "te pido la talla")
+	if last.Mensaje != "como hago mi pedido" {
+		t.Fatalf("la frase debía llegar al agente: %+v", last)
+	}
+	handle(b, text("menu"))
+	mustContain(t, fe.lastText(), "1️⃣")
+}
+
+// «el vestido esmeralda en M»: el agente ya trae modelo y talla, así que el bot no vuelve a preguntar la
+// talla y va directo al resumen del pedido (estado de confirmación).
+func TestAgentePedidoConTalla(t *testing.T) {
+	b, st, fe := setup(t, `{}`, false)
+	var last agente.Request
+	b.Agent = fakeAgente(t, &last)
+	handle(b, text("el vestido esmeralda en M"))
+	mustContain(t, fe.lastText(), "Vestido Esmeralda", "M")
+	convs, err := st.ListConversations(context.Background(), 10)
+	if err != nil || len(convs) == 0 {
+		t.Fatalf("sin conversación: %v", err)
+	}
+	if convs[0].State != stConfirm {
+		t.Fatalf("debía quedar esperando la confirmación, quedó en %q", convs[0].State)
+	}
+	for _, m := range fe.sent {
+		if s, _ := m["text"].(string); strings.Contains(s, "¿Qué talla deseas?") {
+			t.Fatal("no debía volver a preguntar la talla")
+		}
 	}
 }

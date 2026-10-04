@@ -7,6 +7,8 @@ import tsconfigPaths from "vite-tsconfig-paths";
 const backend = process.env.BACKEND_URL ?? "http://localhost:8080";
 
 export default defineConfig(() => ({
+  // "/" o "/baruka/" si el panel va detrás de un alias de nginx (Dockerfile: ARG BASE_PATH).
+  base: process.env.BASE_PATH || "/",
   plugins: [qwikCity({ trailingSlash: false }), qwikVite(), tsconfigPaths()],
   server: {
     proxy: {

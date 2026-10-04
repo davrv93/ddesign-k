@@ -28,6 +28,10 @@
   header b { display:block; font-weight:600 }
   header small { color:var(--muted); font-size:13px }
   header small.tecleando { color:#25a35a }
+  .motor { display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; flex:none }
+  .motor button { border:0 !important; border-radius:0 !important; padding:6px 10px }
+  .motor button[aria-pressed="true"] { background:var(--acc); color:#fff }
+  @media (max-width: 520px) { header { flex-wrap:wrap } .motor { order:5; width:100% } .motor button { flex:1 } }
   header button { background:none; border:1px solid var(--line); color:var(--muted); border-radius:8px; padding:6px 10px; font:inherit; font-size:13px; cursor:pointer }
 
   .msgs { flex:1; overflow-y:auto; padding:16px 5%; display:flex; flex-direction:column; gap:2px }
@@ -43,6 +47,10 @@
   .b.foto img { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; background:#fff; cursor:zoom-in }
   .b.foto .pie { padding:6px 6px 0; display:inline }
   .b.foto .hora { margin-right:6px }
+  .oferta { align-self:flex-start; display:flex; gap:6px; margin-top:6px }
+  .oferta button { border:1px solid var(--acc); background:var(--panel); color:var(--acc); border-radius:16px; padding:7px 14px; font:inherit; font-size:14px; cursor:pointer }
+  .oferta button.si { background:var(--acc); color:#fff }
+  .oferta button:disabled { opacity:.4; cursor:not-allowed; text-decoration:line-through }
   .escribiendo { align-self:flex-start; background:var(--bot); border-radius:8px; padding:10px 14px; margin-top:6px; display:flex; gap:4px; box-shadow:0 1px .5px rgba(11,20,26,.13) }
   .escribiendo i { width:7px; height:7px; border-radius:50%; background:var(--dot); animation:salta 1.2s infinite }
   .escribiendo i:nth-child(2) { animation-delay:.15s } .escribiendo i:nth-child(3) { animation-delay:.3s }
@@ -77,6 +85,10 @@
     <header>
       <div class="avatar">BD</div>
       <div class="quien"><b>Baruka Design</b><small id="estado">en línea</small></div>
+      <div class="motor" role="group" aria-label="Motor de conversación">
+        <button type="button" data-motor="actual" title="Clasificador + Gemini, el flujo de siempre">Actual</button>
+        <button type="button" data-motor="deepseek" title="DeepSeek: conversación más humana">DeepSeek</button>
+      </div>
       <button id="nuevo" title="Empezar otra conversación">Nuevo chat</button>
       <button id="verInfo" title="Ver cómo entendió el mensaje">Análisis</button>
     </header>
@@ -87,6 +99,8 @@
       <button>tienen jeans acampanados?</button>
       <button>cuanto cuesta el V05</button>
       <button>de que marca es?</button>
+      <button>¿dónde quedan sus tiendas?</button>
+      <button>¿quién fue el primer presidente del Perú?</button>
       <button>gracias, chau</button>
     </div>
     <form id="f">
@@ -106,6 +120,17 @@
 const $ = id => document.getElementById(id);
 const msgs = $('msgs'), info = $('info'), estado = $('estado');
 let hist = [], ocupado = false, ultimoRol = '';
+// Motor elegido: se recuerda en este navegador; si no hay, manda el del servidor.
+let motor = '';
+try { motor = localStorage.getItem('motor') || ''; } catch (e) {}
+function pintarMotor() { document.querySelectorAll('.motor button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.motor === motor))); }
+document.querySelector('.motor').onclick = ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  motor = b.dataset.motor; pintarMotor();
+  try { localStorage.setItem('motor', motor); } catch (e) {}
+};
+fetch('health').then(r => r.json()).then(h => { if (!motor) { motor = h.motor || 'actual'; pintarMotor(); } }).catch(() => {});
+pintarMotor();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 // *negrita* y _cursiva_ de WhatsApp
 const wa = s => esc(s).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(^|\s)_([^_\n]+)_/g, '$1<i>$2</i>');
@@ -137,7 +162,7 @@ async function enviar(texto) {
   let j;
   try {
     const r = await fetch('chat', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana' }) });
+      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web' }) });
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
@@ -161,9 +186,39 @@ async function mostrar(j) {
     hist.push({ rol:'bot', texto: s.pie });
   }
   tecleando(false);
-  hist = hist.slice(-14);
+  // Botones de talla con su precio: «L (S/ 330)». Las agotadas salen tachadas.
+  if ((j.tallas || []).length) {
+    botones(j.tallas.map(t => ({ texto: `${t.talla}${t.precio != null ? ` (S/ ${Math.round(t.precio) === t.precio ? t.precio : t.precio.toFixed(2)})` : ''}`,
+      enviar: `Talla ${t.talla} del ${t.codigo}`, off: !t.disponible })));
+  }
+  if (j.confirmar_pedido) {
+    botones([{ texto: 'Sí, confirmar', enviar: 'Sí, confirmo', si: true }, { texto: 'Cambiar talla', enviar: 'Cambiar talla' }]);
+  }
+  // «¿Quieres ver otras opciones?»: botones en vez de mandar prendas que no pidió.
+  if (j.ofrecer_opciones) {
+    const d = document.createElement('div'); d.className = 'oferta';
+    d.innerHTML = '<button class="si">Sí, muéstrame</button><button>No, gracias</button>';
+    d.onclick = ev => {
+      const b = ev.target.closest('button'); if (!b || ocupado) return;
+      d.remove(); enviar(b.classList.contains('si') ? 'Sí, quiero ver otras opciones' : 'No, gracias');
+    };
+    msgs.appendChild(d); bajar();
+  }
+  hist = hist.slice(-20);
   pintarInfo(j);
   ocupado = false; $('enviar').disabled = false; $('t').focus();
+}
+
+// Fila de botones de respuesta rápida bajo el último mensaje del bot; desaparece al usarla.
+function botones(lista) {
+  const d = document.createElement('div'); d.className = 'oferta';
+  lista.forEach(b => {
+    const el = document.createElement('button'); el.textContent = b.texto; el.disabled = !!b.off;
+    if (b.si) el.className = 'si';
+    el.onclick = () => { if (ocupado) return; d.remove(); enviar(b.enviar); };
+    d.appendChild(el);
+  });
+  msgs.appendChild(d); bajar();
 }
 
 // Reduce la foto a 1024 px en el navegador: viaja rápido y al modelo no le hace falta más.
@@ -192,7 +247,7 @@ async function enviarFoto(file) {
   let j;
   try {
     const r = await fetch('foto', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ imagen_b64: dataUrl, mensaje: texto, historial: hist, cliente: 'Ana' }) });
+      body: JSON.stringify({ imagen_b64: dataUrl, mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web' }) });
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
@@ -209,7 +264,7 @@ function pintarInfo(j) {
     info.innerHTML = `<button class="cerrar" id="cerrarInfo">Cerrar</button>
       <h2>Búsqueda por foto</h2>
       <div>Resultado: <b>${esc(f.caso)}</b> · nivel ${esc(f.nivel)}</div>
-      <div class="sub">umbral «es este» ≥ ${f.umbrales.exacto.toFixed(3)} · «se parece» ≥ ${f.umbrales.parecido.toFixed(3)} · ${j.ms} ms · ${esc(j.modelo_llm)}</div>
+      <div class="sub">umbral «es este» ≥ ${f.umbrales.exacto.toFixed(3)} · «se parece» ≥ ${f.umbrales.parecido.toFixed(3)} · ${j.ms} ms · ${esc(j.motor || '')} · ${esc(j.modelo_llm)}</div>
       <h2>Más parecidas</h2>${f.top.map(x => `<div class="row"><div><code>${esc(x.codigo)}</code><div class="bar"><i style="width:${Math.max(0, x.sim)*100}%"></i></div></div><div>${x.sim.toFixed(2)}</div></div>`).join('')}
       <h2>Acción</h2><div>${esc(j.accion)}${j.codigo ? ' · ' + esc(j.codigo) : ''}</div>`;
     $('cerrarInfo').onclick = () => info.classList.remove('abierto');
@@ -217,7 +272,7 @@ function pintarInfo(j) {
   }
   info.innerHTML = `<button class="cerrar" id="cerrarInfo">Cerrar</button>
     <h2>Intención</h2>${bars(j.top_intenciones)}
-    <div class="sub">acción: <b>${esc(j.accion)}</b> · ${esc(j.modelo_llm || 'sin LLM')} · ${j.ms} ms · stock: ${esc(j.stock_fuente || '—')}</div>
+    <div class="sub">motor: <b>${esc(j.motor || '—')}</b> · acción: <b>${esc(j.accion)}</b> · ${esc(j.modelo_llm || 'sin LLM')} · ${j.ms} ms · stock: ${esc(j.stock_fuente || '—')}</div>
     <h2>Prenda</h2><div>${esc(j.categoria_prenda)} (${(j.confianza_categoria*100).toFixed(0)}%)</div>
     <h2>Códigos</h2><div>${j.codigos.length ? j.codigos.map(esc).join(', ') : '—'}</div>
     <h2>Fichas (RAG)</h2><ul>${j.fichas.map(f => `<li><code>${esc(f.codigo)}</code> ${esc(f.nombre)} <span class="sub">${esc(f.fuente)}</span></li>`).join('')}</ul>

@@ -2,6 +2,7 @@ import { $, component$, sync$, useOnWindow, useSignal, useVisibleTask$ } from "@
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { api, type Conversation, type Message, type Order } from "~/lib/api";
 import { customerName, money, phoneLabel, STATUS, timeAgo, timeLabel, waText } from "~/lib/format";
+import { u } from "~/lib/base";
 
 interface Thread {
   conversation: Conversation;
@@ -158,7 +159,7 @@ export default component$(() => {
                   .filter((o) => o.status !== "cancelado")
                   .slice(0, 4)
                   .map((o) => (
-                    <a key={o.id} href={`/?pedido=${o.id}`} class="pill" style={{ "--col": STATUS[o.status]?.color }}>
+                    <a key={o.id} href={u(`/?pedido=${o.id}`)} class="pill" style={{ "--col": STATUS[o.status]?.color }}>
                       #{o.id} {STATUS[o.status]?.label}
                       {o.total > 0 && ` · ${money(o.total)}`}
                     </a>
@@ -170,8 +171,8 @@ export default component$(() => {
               {thread.value!.messages.map((m) => (
                 <div key={m.id} class={["msg", m.direction, m.author]}>
                   {m.kind === "image" && m.media && (
-                    <a href={m.media} target="_blank" rel="noreferrer">
-                      <img src={m.media} alt="Imagen" width={220} height={280} loading="lazy" />
+                    <a href={u(m.media)} target="_blank" rel="noreferrer">
+                      <img src={u(m.media)} alt="Imagen" width={220} height={280} loading="lazy" />
                     </a>
                   )}
                   {m.kind === "location" ? (

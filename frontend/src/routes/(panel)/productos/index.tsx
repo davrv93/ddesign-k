@@ -2,6 +2,7 @@ import { $, component$, noSerialize, useOnWindow, useSignal, useStore, useVisibl
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { api, getToken, type Product } from "~/lib/api";
 import { money } from "~/lib/format";
+import { u } from "~/lib/base";
 
 const emptyProduct = (): Product => ({
   id: 0,
@@ -24,7 +25,7 @@ const emptyProduct = (): Product => ({
 async function upload(path: string, file: File) {
   const fd = new FormData();
   fd.append("image", file);
-  const res = await fetch(path, { method: "POST", body: fd, headers: { Authorization: `Bearer ${getToken()}` } });
+  const res = await fetch(u(path), { method: "POST", body: fd, headers: { Authorization: `Bearer ${getToken()}` } });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error ?? `Error ${res.status}`);
   return data;
@@ -83,7 +84,7 @@ export default component$(() => {
           return (
             <article key={p.id} class={["product", !p.active && "inactive"]} onClick$={() => (editing.value = structuredClone(p))}>
               <div class="product-img">
-                {p.image ? <img src={p.image} alt={p.name} width={240} height={320} loading="lazy" /> : <span class="muted">Sin foto</span>}
+                {p.image ? <img src={u(p.image)} alt={p.name} width={240} height={320} loading="lazy" /> : <span class="muted">Sin foto</span>}
                 {total === 0 && <span class="sold-out">Agotado</span>}
                 {!p.active && <span class="sold-out off">Oculto</span>}
               </div>
@@ -132,7 +133,7 @@ interface FormProps {
 const ProductForm = component$<FormProps>(({ product, onClose$, onSaved$ }) => {
   const p = useStore<Product>(structuredClone(product), { deep: true });
   const file = useSignal<NoSerialize<File>>();
-  const preview = useSignal(product.image);
+  const preview = useSignal(u(product.image));
   const busy = useSignal("");
   const error = useSignal("");
 

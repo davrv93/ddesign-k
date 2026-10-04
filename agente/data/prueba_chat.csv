@@ -1,0 +1,67 @@
+intencion,mensaje
+saludo,hola
+saludo,buenas tardes!
+saludo,holaaa como estan
+ayuda,tengo dudas
+ayuda,tengo una consulta
+ayuda,me puedes ayudar?
+ayuda,quisiera hacer unas preguntas
+como_comprar,como compro?
+como_comprar,como hago un pedido
+como_comprar,cual es el proceso para comprar
+como_comprar,quiero comprar como hago
+tienda_info,donde queda la tienda?
+tienda_info,tienen tienda fisica?
+tienda_info,a que hora abren?
+tienda_info,atienden los domingos?
+tienda_info,aceptan yape?
+tienda_info,puedo pagar con tarjeta?
+tienda_info,se puede cambiar si no me queda?
+tienda_info,dónde están ubicados
+consulta_entrega,hacen envios a provincia?
+consulta_entrega,cuanto demora en llegar el pedido?
+consulta_entrega,tienen delivery?
+consulta_precio,cuanto cuesta?
+consulta_precio,a cuanto esta ese vestido
+consulta_precio,precio del POL-012?
+consulta_precio,y cuanto sale el jean?
+consulta_precio,que precio tiene
+consulta_stock,tienen en talla M?
+consulta_stock,hay en S?
+consulta_stock,todavia tienen ese modelo?
+consulta_stock,queda en negro?
+producto_recomendacion,necesito algo para una entrevista de trabajo
+producto_recomendacion,que me recomiendas para una boda de noche
+producto_recomendacion,busco algo comodo para el dia a dia
+producto_recomendacion,tengo una graduacion que me pongo
+producto_descripcion,como es el VES-010?
+producto_descripcion,cuentame mas de ese modelo
+producto_descripcion,el vestido tiene mangas?
+producto_tallas_material,de que tela es?
+producto_tallas_material,el polo es de algodon?
+producto_tallas_material,que tallas tiene?
+consulta_marca,de que marca es?
+consulta_medidas,cuanto mide de largo?
+catalogo,quiero ver los modelos
+catalogo,muestrame lo que tienen
+catalogo,tienen jeans?
+catalogo,que blusas tienen
+foto,te mando una foto del vestido que vi
+foto,puedo enviarte una imagen?
+pedido_estado,ya enviaron mi pedido?
+pedido_estado,como va mi pedido
+pedido_estado,hice una compra ayer y no me llega
+asesora,quiero hablar con una persona
+asesora,me comunicas con una asesora
+asesora,pasame con alguien de la tienda
+despedida,"gracias, chau"
+despedida,"ok gracias, eso era todo"
+despedida,listo nos vemos
+pregunta_general,quien fue el primer presidente del peru?
+pregunta_general,cuanto es 25 por 4
+pregunta_general,quien gano el partido de ayer
+pregunta_general,ayudame con mi tarea de matematicas
+pregunta_general,cual es la capital de francia
+estado_animo,estoy un poco triste hoy
+estado_animo,uff tuve un dia horrible
+censura,eres una inutil

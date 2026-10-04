@@ -2,6 +2,7 @@ import { $, component$, sync$, useComputed$, useOnWindow, useSignal, useStore, u
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { api, type Order, type Product, type Stats } from "~/lib/api";
 import { customerName, mapsLink, money, phoneLabel, STATUS, timeAgo } from "~/lib/format";
+import { u } from "~/lib/base";
 
 interface Board {
   statuses: string[];
@@ -182,7 +183,7 @@ export default component$(() => {
                       {o.items.length > 0 ? (
                         o.items.map((it) => (
                           <div class="card-item" key={it.id}>
-                            {it.image && <img src={it.image} alt="" width={40} height={52} loading="lazy" />}
+                            {it.image && <img src={u(it.image)} alt="" width={40} height={52} loading="lazy" />}
                             <div>
                               <div>
                                 <b>{it.product_code}</b> {it.product_name}
@@ -195,7 +196,7 @@ export default component$(() => {
                         ))
                       ) : o.customer_image ? (
                         <div class="card-item">
-                          <img src={o.customer_image} alt="Foto del cliente" width={40} height={52} loading="lazy" />
+                          <img src={u(o.customer_image)} alt="Foto del cliente" width={40} height={52} loading="lazy" />
                           <div class="muted small">{o.notes || "Foto enviada por el cliente"}</div>
                         </div>
                       ) : (
@@ -298,7 +299,7 @@ const OrderDrawer = component$<DrawerProps>(({ order, onClose$, onMove$, onSaved
             )}
           </p>
           {order.conversation_id > 0 && (
-            <a class="btn btn-sm" href={`/conversaciones?c=${order.conversation_id}`}>
+            <a class="btn btn-sm" href={u(`/conversaciones?c=${order.conversation_id}`)}>
               Ver conversación
             </a>
           )}
@@ -307,8 +308,8 @@ const OrderDrawer = component$<DrawerProps>(({ order, onClose$, onMove$, onSaved
         {order.customer_image && (
           <section class="drawer-sec">
             <h3>Foto enviada por el cliente</h3>
-            <a href={order.customer_image} target="_blank" rel="noreferrer">
-              <img class="drawer-photo" src={order.customer_image} alt="Foto del cliente" width={320} height={400} />
+            <a href={u(order.customer_image)} target="_blank" rel="noreferrer">
+              <img class="drawer-photo" src={u(order.customer_image)} alt="Foto del cliente" width={320} height={400} />
             </a>
             {order.match_confidence > 0 && <p class="muted small">Coincidencia IA: {Math.round(order.match_confidence * 100)}%</p>}
           </section>
@@ -319,7 +320,7 @@ const OrderDrawer = component$<DrawerProps>(({ order, onClose$, onMove$, onSaved
           {order.items.length === 0 && <p class="muted">Sin productos (consulta).</p>}
           {order.items.map((it) => (
             <div class="line" key={it.id}>
-              {it.image && <img src={it.image} alt="" width={48} height={64} />}
+              {it.image && <img src={u(it.image)} alt="" width={48} height={64} />}
               <div class="grow">
                 <b>{it.product_code}</b> {it.product_name}
                 <div class="muted small">

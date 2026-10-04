@@ -1,5 +1,7 @@
 // Cliente de la API del backend Go. Sólo se usa en el navegador (el sitio es estático).
 
+import { u } from "./base";
+
 const TOKEN_KEY = "kd_token";
 
 export const getToken = (): string | null => {
@@ -37,11 +39,11 @@ export async function api<T = unknown>(path: string, opts: RequestInit & { json?
     headers.set("Content-Type", "application/json");
     body = JSON.stringify(opts.json);
   }
-  const res = await fetch(path, { ...opts, headers, body });
+  const res = await fetch(u(path), { ...opts, headers, body });
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && !path.startsWith("/api/auth")) {
     setToken(null);
-    location.href = "/login";
+    location.href = u("/login");
   }
   if (!res.ok) throw new ApiError((data as { error?: string }).error ?? `Error ${res.status}`, res.status);
   return data as T;

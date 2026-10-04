@@ -1,6 +1,7 @@
 import { $, component$, Slot, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { Link, useLocation } from "@builder.io/qwik-city";
 import { api, getToken, setToken, type Conversation } from "~/lib/api";
+import { BASE, u } from "~/lib/base";
 
 const NAV = [
   { href: "/", label: "Pedidos", icon: "▦" },
@@ -21,13 +22,13 @@ export default component$(() => {
   useVisibleTask$(({ cleanup }) => {
     const token = getToken();
     if (!token) {
-      location.href = "/login";
+      location.href = u("/login");
       return;
     }
     ready.value = true;
 
     // Avisos en vivo del backend: cada página escucha "kd-change" y recarga lo suyo.
-    const es = new EventSource(`/api/events?token=${encodeURIComponent(token)}`);
+    const es = new EventSource(u(`/api/events?token=${encodeURIComponent(token)}`));
     es.addEventListener("change", (ev) =>
       window.dispatchEvent(new CustomEvent("kd-change", { detail: (ev as MessageEvent).data })),
     );
@@ -61,10 +62,10 @@ export default component$(() => {
 
   const logout = $(() => {
     setToken(null);
-    location.href = "/login";
+    location.href = u("/login");
   });
 
-  const path = loc.url.pathname;
+  const path = loc.url.pathname.slice(BASE.length) || "/";
   const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href.replace(/\/$/, "")));
 
   return (
@@ -79,18 +80,18 @@ export default component$(() => {
         </div>
         <nav>
           {NAV.map((n) => (
-            <Link key={n.href} href={n.href} class={["nav-item", active(n.href) && "active"]} onClick$={() => (navOpen.value = false)}>
+            <Link key={n.href} href={u(n.href)} class={["nav-item", active(n.href) && "active"]} onClick$={() => (navOpen.value = false)}>
               <span class="nav-icon">{n.icon}</span>
               {n.label}
               {n.href.startsWith("/conversaciones") && unread.value > 0 && <span class="badge">{unread.value}</span>}
             </Link>
           ))}
-          <a class="nav-item" href="/catalogo" target="_blank">
+          <a class="nav-item" href={u("/catalogo")} target="_blank">
             <span class="nav-icon">↗</span>Catálogo público
           </a>
         </nav>
         <div class="sidebar-foot">
-          <Link href="/whatsapp" class={["wa-pill", wa.value?.logged_in ? "ok" : "off"]}>
+          <Link href={u("/whatsapp")} class={["wa-pill", wa.value?.logged_in ? "ok" : "off"]}>
             <span class="dot" />
             {wa.value == null
               ? "Revisando WhatsApp…"

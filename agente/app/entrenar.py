@@ -33,6 +33,28 @@ def validacion_cruzada(X, y, grupos, pliegues=5) -> dict:
             "pred": list(pred)}
 
 
+def prueba_chat(emb, clf, umbral: float = 0.35) -> dict:
+    """Mensajes de chat reales (data/prueba_chat.csv) que NO entran al entrenamiento. La validación cruzada
+    mide sobre frases de plantilla y daba 97 %; con mensajes como «tengo dudas» o «aceptan yape?» era 38 %."""
+    import csv, os
+    ruta = os.path.join(datos.DATA_DIR, "prueba_chat.csv")
+    if not os.path.exists(ruta):
+        return {}
+    filas = list(csv.DictReader(open(ruta, encoding="utf-8")))
+    P = clf.predict_proba(emb([r["mensaje"] for r in filas]))
+    fallos = []
+    for r, p in zip(filas, P):
+        k = int(np.argmax(p))
+        pred = str(clf.classes_[k]) if p[k] >= umbral else "otro"
+        if pred != r["intencion"]:
+            fallos.append(f"{r['mensaje']} → {pred} (esperado {r['intencion']})")
+    res = {"exactitud": round(1 - len(fallos) / len(filas), 4), "n": len(filas), "fallos": fallos}
+    print(f"intención  prueba con mensajes reales: {res['exactitud']} ({len(filas) - len(fallos)}/{len(filas)})")
+    for x in fallos:
+        print("   ✗", x)
+    return res
+
+
 def main():
     t0 = time.time()
     emb = Embedder()
@@ -52,6 +74,7 @@ def main():
             por_variante[v] = round(sum(cv_i["pred"][k] == yi[k] for k in idx) / len(idx), 4)
     print(f"intención  CV exactitud={cv_i['exactitud']} f1_macro={cv_i['f1_macro']} por variante={por_variante}")
     clf_i = entrenar_clasificador(Xi, yi)
+    prueba = prueba_chat(emb, clf_i)
 
     # --- categoría de prenda ----------------------------------------------
     ec = datos.ejemplos_categoria()
@@ -79,7 +102,7 @@ def main():
     metricas = {
         "modelo_embeddings": emb.model_name,
         "n_ejemplos_intencion": len(ej),
-        "intencion": {k: v for k, v in cv_i.items() if k != "pred"} | {"por_variante": por_variante},
+        "intencion": {k: v for k, v in cv_i.items() if k != "pred"} | {"por_variante": por_variante, "prueba_chat": prueba},
         "categoria": {k: v for k, v in cv_c.items() if k != "pred"} | {"por_tipo_prueba": por_prueba},
         "n_fichas": len(fichas),
         "segundos": round(time.time() - t0, 1),

@@ -42,9 +42,11 @@ type Request struct {
 type Reply struct {
 	Intencion string  `json:"intencion"`
 	Confianza float64 `json:"confianza"`
-	// Accion: responder | catalogo | foto | pedido_estado | asesora | codigo
-	Accion    string `json:"accion"`
-	Codigo    string `json:"codigo"`
+	// Accion: responder | catalogo | foto | pedido_estado | asesora | codigo | pedido
+	Accion string `json:"accion"`
+	Codigo string `json:"codigo"`
+	// Talla viene con accion «pedido»: la clienta ya eligió modelo y talla («el Kabanova rojo en L»).
+	Talla     string `json:"talla"`
 	Respuesta string `json:"respuesta"`
 	ModeloLLM string `json:"modelo_llm"`
 	// Sugerencias son prendas para ofrecer con foto después del texto.

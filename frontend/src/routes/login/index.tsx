@@ -1,6 +1,7 @@
 import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { api, getToken, setToken } from "~/lib/api";
+import { u } from "~/lib/base";
 
 export default component$(() => {
   const user = useSignal("admin");
@@ -10,7 +11,7 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
-    if (getToken()) location.href = "/";
+    if (getToken()) location.href = u("/");
   });
 
   const submit = $(async () => {
@@ -19,7 +20,7 @@ export default component$(() => {
     try {
       const r = await api<{ token: string }>("/api/auth/login", { method: "POST", json: { user: user.value, password: pass.value } });
       setToken(r.token);
-      location.href = "/";
+      location.href = u("/");
     } catch (e) {
       error.value = (e as Error).message;
     } finally {

@@ -221,8 +221,10 @@ func (b *Bot) step(ctx context.Context, conv *store.Conversation, in *Incoming, 
 	_ = json.Unmarshal([]byte(conv.Context), &cc)
 	text := normalize(in.Text)
 
-	// Comandos globales.
-	if isAny(text, "menu", "inicio", "0", "volver", "hola", "buenas", "buenos dias", "buenas tardes", "buenas noches", "hi") && !in.HasImage {
+	// Comandos globales. Con agente, el saludo lo contesta él como una persona; el menú sigue a mano
+	// con «menu» o «0».
+	saludo := isAny(text, "hola", "buenas", "buenos dias", "buenas tardes", "buenas noches", "hi")
+	if (isAny(text, "menu", "inicio", "0", "volver") || (saludo && b.Agent == nil)) && !in.HasImage {
 		b.sendMenu(ctx, conv)
 		return
 	}
@@ -250,19 +252,22 @@ func (b *Bot) step(ctx context.Context, conv *store.Conversation, in *Incoming, 
 		return
 	}
 
+	// Con agente, sólo los números del menú van directo a su flujo; las frases las clasifica el agente.
+	// Las palabras sueltas se equivocaban: «cómo hago mi pedido» caía en el estado del pedido.
+	sinAgente := b.Agent == nil
 	switch {
-	case isAny(text, "1", "catalogo", "ver catalogo", "precios", "modelos"):
+	case isAny(text, "1") || (sinAgente && isAny(text, "catalogo", "ver catalogo", "precios", "modelos")):
 		b.sendCatalog(ctx, conv)
 		return
 	// «quiero ver su catálogo» en una frase: con agente lo presenta él, con fotos; sin agente, la lista.
-	case hasAny(text, "catalogo") && b.Agent == nil:
+	case hasAny(text, "catalogo") && sinAgente:
 		b.sendCatalog(ctx, conv)
 		return
-	case isAny(text, "2") || hasAny(text, "foto", "consultar modelo"):
+	case isAny(text, "2") || (sinAgente && hasAny(text, "foto", "consultar modelo")):
 		b.setState(ctx, conv, stPhoto, cc)
 		b.reply(ctx, conv, "📸 ¡Perfecto! Envíanos la *foto* del modelo que te gustó y verificamos si lo tenemos en stock.")
 		return
-	case isAny(text, "3") || hasAny(text, "mi pedido", "estado"):
+	case isAny(text, "3") || (sinAgente && hasAny(text, "mi pedido", "estado")):
 		b.sendOrderStatus(ctx, conv)
 		return
 	case isAny(text, "4", "asesora", "asesor", "humano", "persona"):
@@ -477,25 +482,7 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 		b.reply(ctx, conv, text)
 		return
 	}
-	// Reutiliza la consulta abierta de esta conversación si la hay.
-	next := convContext{ProductID: p.ID, Qty: 1}
-	if cc.OrderID > 0 {
-		if o, err := b.store.GetOrder(ctx, cc.OrderID); err == nil && (o.Status == "consulta" || o.Status == "pendiente") && !o.StockReserved {
-			next.OrderID = o.ID
-		}
-	}
-	item := store.OrderItem{ProductID: &p.ID, ProductCode: p.Code, ProductName: p.Name, Image: p.Image, Qty: 1, UnitPrice: p.Price}
-	if next.OrderID > 0 {
-		_ = b.store.ReplaceOrderItems(ctx, next.OrderID, []store.OrderItem{item})
-		_, _ = b.store.UpdateOrderStatus(ctx, next.OrderID, "consulta", nil)
-	} else {
-		o := &store.Order{CustomerID: conv.CustomerID, Status: "consulta", Source: "whatsapp", CustomerImage: customerImage,
-			MatchConfidence: conf, Items: []store.OrderItem{item}}
-		if err := b.store.CreateOrder(ctx, o); err == nil {
-			next.OrderID = o.ID
-		}
-	}
-	b.Notify("orders")
+	next := b.draftFor(ctx, conv, cc, p, customerImage, conf)
 
 	var sizes []string
 	for _, v := range p.Variants {
@@ -515,6 +502,42 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 		return
 	}
 	b.reply(ctx, conv, caption)
+}
+
+// draftFor deja la consulta del pedido con el producto p (reutiliza la abierta de la conversación si la
+// hay) y devuelve el contexto con el que sigue el flujo de talla.
+func (b *Bot) draftFor(ctx context.Context, conv *store.Conversation, cc *convContext, p *store.Product, customerImage string, conf float64) convContext {
+	next := convContext{ProductID: p.ID, Qty: 1}
+	if cc.OrderID > 0 {
+		if o, err := b.store.GetOrder(ctx, cc.OrderID); err == nil && (o.Status == "consulta" || o.Status == "pendiente") && !o.StockReserved {
+			next.OrderID = o.ID
+		}
+	}
+	item := store.OrderItem{ProductID: &p.ID, ProductCode: p.Code, ProductName: p.Name, Image: p.Image, Qty: 1, UnitPrice: p.Price}
+	if next.OrderID > 0 {
+		_ = b.store.ReplaceOrderItems(ctx, next.OrderID, []store.OrderItem{item})
+		_, _ = b.store.UpdateOrderStatus(ctx, next.OrderID, "consulta", nil)
+	} else {
+		o := &store.Order{CustomerID: conv.CustomerID, Status: "consulta", Source: "whatsapp", CustomerImage: customerImage,
+			MatchConfidence: conf, Items: []store.OrderItem{item}}
+		if err := b.store.CreateOrder(ctx, o); err == nil {
+			next.OrderID = o.ID
+		}
+	}
+	b.Notify("orders")
+	return next
+}
+
+// orderWithSize: la clienta ya dijo modelo y talla («el Kabanova rojo en L»): se arma el pedido y se va
+// directo al resumen, sin volver a preguntar la talla. Si la talla no sirve, handleSize vuelve a pedirla.
+func (b *Bot) orderWithSize(ctx context.Context, conv *store.Conversation, cc *convContext, p *store.Product, size string) {
+	if p.TotalAvailable() == 0 {
+		b.offerProduct(ctx, conv, cc, p, "", 0, nil)
+		return
+	}
+	next := b.draftFor(ctx, conv, cc, p, "", 0)
+	b.setState(ctx, conv, stSize, next)
+	b.handleSize(ctx, conv, &next, normalize(size))
 }
 
 var sizeAliases = map[string]string{
@@ -835,6 +858,12 @@ func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *conv
 			return false
 		}
 		b.offerProduct(ctx, conv, cc, p, "", 0, nil)
+	case "pedido":
+		p, err := b.store.GetProductByCode(ctx, r.Codigo)
+		if err != nil || !p.Active || strings.TrimSpace(r.Talla) == "" {
+			return false
+		}
+		b.orderWithSize(ctx, conv, cc, p, r.Talla)
 	default:
 		if strings.TrimSpace(r.Respuesta) == "" {
 			return false

@@ -22,6 +22,9 @@ COPY imagenes ./imagenes
 # Búsqueda por foto: indexa las fotos con el modelo de imagen y calibra los umbrales.
 ARG IMAGE_MODEL=Qdrant/Unicom-ViT-B-32
 ENV IMAGE_MODEL=${IMAGE_MODEL}
+# 0 = indexar solo las fotos de la tienda (imagenes/tienda), sin el catálogo de 100 modelos.
+ARG CATALOGO100=1
+ENV CATALOGO100=${CATALOGO100}
 COPY app/imagen.py ./app/
 RUN python -m app.imagen && chmod -R a+rX /models /app/index
 COPY seed ./seed

@@ -29,6 +29,9 @@ RUBRICA_A_INTENCION = {
 # categoria del dataset conversacional -> intención (la "pregunta" genérica no es de la tienda)
 CONVERSACIONAL_A_INTENCION = {"pregunta": "pregunta_general"}
 
+# Intenciones de intenciones_tienda.csv que no vienen de BOT.zip: ayuda («tengo dudas»), como_comprar,
+# tienda_info (dirección, horario, pago, cambios). Las contesta el LLM con los datos de TIENDA.
+
 # Intenciones que el bot Go resuelve con su propio flujo determinista.
 ACCIONES = {"catalogo", "foto", "pedido_estado", "asesora"}
 
@@ -112,7 +115,11 @@ class Ficha:
             partes.append(f"tallas del modelo: {self.tallas}")
         else:
             partes.append(f"tallas sugeridas: {self.tallas}")
-            partes.append("precio, marca, medidas y entrega: NO documentados")
+            if self.precio is not None:  # precio de seed/precios_catalogo100.json, puesto al arrancar
+                partes.append(f"precio: S/ {self.precio:.2f}")
+                partes.append("marca, medidas y entrega: NO documentados")
+            else:
+                partes.append("precio, marca, medidas y entrega: NO documentados")
         if self.imagen:
             partes.append(f"imagen: {self.imagen}")
         return " | ".join(partes)
