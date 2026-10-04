@@ -74,6 +74,10 @@ IMG_DIR = os.environ.get("AGENTE_IMG_DIR", os.path.join(os.path.dirname(__file__
 MAX_SUGERENCIAS = int(os.environ.get("MAX_SUGERENCIAS", "3"))
 # Intenciones en las que no se ofrecen prendas: no se vende a quien insulta ni a quien se despide.
 SIN_SUGERENCIAS = {"censura", "despedida", "saludo", "pregunta_general"}
+# Intenciones en las que tampoco se pasan fichas al LLM ni se consulta su stock: para un «hola» el RAG
+# recupera prendas al azar, que son ruido en el prompt y una llamada de más al backend.
+SIN_FICHAS = {"saludo", "despedida", "censura"}
+UMBRAL_SIN_FICHAS = float(os.environ.get("NO_RAG_THRESHOLD", "0.6"))
 
 app = FastAPI(title="kddesign agente")
 
@@ -459,6 +463,10 @@ def conversar(req: ChatIn) -> dict:
         sugeridas = vitrina(req, qv) if es_catalogo else sugerir(req, cl, fichas)
         if es_catalogo:
             fichas = sugeridas + [f for f in fichas if f not in sugeridas]
+        # Sólo si el mensaje no trae prenda alguna: «hola, ¿tienen el V21?» conserva sus fichas.
+        if (cl["intencion"] in SIN_FICHAS and cl["confianza"] >= UMBRAL_SIN_FICHAS and not sugeridas
+                and not datos.codigos_en(req.mensaje) and not RE_ROPA.search(req.mensaje)):
+            fichas = []
         if req.usar_llm:
             try:
                 respuesta, modelo = llamar_llm(_prompt(req, cl, fichas, ejemplos, sugeridas))
