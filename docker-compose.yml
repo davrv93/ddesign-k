@@ -91,6 +91,10 @@ services:
         EMBED_MODEL: ${EMBED_MODEL:-Xenova/multilingual-e5-small}
         # 0 = la tienda usa solo su catálogo; el de 100 modelos ficticios (BOT.zip) queda fuera.
         CATALOGO100: ${KD_CATALOGO100:-1}
+        # auto = SetFit si en el build gana al e5 sin ajustar; base | setfit lo fuerzan.
+        CLASIFICADOR: ${KD_CLASIFICADOR:-auto}
+        # Pasos del ajuste SetFit (~7 min en un Mac, más en el EC2). 0 = no entrenarlo.
+        SETFIT_PASOS: ${KD_SETFIT_PASOS:-300}
     image: kddesign/agente:local
     container_name: kddesign_agente
     restart: unless-stopped
@@ -115,6 +119,13 @@ services:
       PRODUCTO_DEMO: ${KD_PRODUCTO_DEMO:-}
       # 0 = la tienda no tiene sucursales con stock propio (un showroom con cita): no se mencionan.
       SUCURSALES: ${KD_SUCURSALES:-0}
+      # Jev (TypeSafe, por OpenRouter con la misma clave): off | sombra | cascada. En cascada, si el
+      # clasificador local duda (< 0,80), Jev decide la intención con toda la conversación. JEV_VERIFICAR=1
+      # quita de la respuesta del LLM lo que afirme de la prenda sin estar en la ficha. Ver agente/README.md.
+      JEV_MODO: ${KD_JEV_MODO:-off}
+      JEV_VERIFICAR: ${KD_JEV_VERIFICAR:-0}
+      JEV_API_KEY: ${JEV_API_KEY:-}
+      JEV_URL: ${JEV_URL:-https://openrouter.ai/api/v1/systemone}
       PUBLIC_URL: ${PUBLIC_URL:-https://kddesign.pjgfactsalud.com.pe}
       BUSINESS_NAME: ${BUSINESS_NAME:-Baruka Design}
       CURRENCY: ${CURRENCY:-S/}

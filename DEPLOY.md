@@ -30,7 +30,13 @@ MOTOR=deepseek
 KD_CATALOGO100=0
 KD_PRODUCTO_DEMO=V42     # vestido del anuncio: «este vestido» es ese (vacío = sin producto por defecto)
 KD_SUCURSALES=0          # Baruka no tiene sucursales con stock: un showroom con cita
+KD_JEV_MODO=cascada      # Jev decide la intención cuando el clasificador local duda (off | sombra | cascada)
+KD_JEV_VERIFICAR=1       # Jev quita de la respuesta del LLM lo que invente de la prenda
+KD_SETFIT_PASOS=0        # SetFit no ganó al e5 sin ajustar (agente/README.md): no gastar 20 min de build en él
 ```
+
+Jev usa la misma `OPENROUTER_API_KEY`. Comprobación: `curl -s $B/demo-design/health` → `"jev": {"modo":
+"cascada", "verificar": true, "configurado": true}`.
 
 Además, `agente/seed/pago.md` (Yape y titular) **no está en git**: viaja con el rsync del §2 desde la copia
 local. Si falta en el servidor, el bot deriva el pago a una asesora. Compruébalo sin mostrarlo:
@@ -47,7 +53,7 @@ ssh -i $K $H 'cd ~/kddesign && awk -F= "{print \$1, (length(\$2)>0?\"set\":\"EMP
 ```bash
 cd $R/backend  && go vet ./... && go test ./...                 # bot, reservas, agente simulado
 cd $R/frontend && BASE_PATH=/baruka/ npm run build && rm -rf dist # tsc + build con la ruta base real
-cd $R/agente   && python3 -m py_compile app/*.py && python3 -m app.prueba_etapas   # sintaxis + máquina de etapas (23/23)
+cd $R/agente   && python3 -m py_compile app/*.py && python3 -m app.prueba_etapas   # sintaxis + máquina de etapas (26/26)
 ```
 
 ## 2. Subir el código
@@ -81,18 +87,23 @@ ssh -i $K $H 'cd ~/kddesign && docker compose build <servicio> && docker compose
 
 ```bash
 ssh -i $K $H 'cd ~/kddesign && docker compose build --progress plain agente 2>&1 \
-  | grep -E "intención  prueba|comercial  prueba|etapas|✗|top1"'
+  | grep -E "comparación|elegido|intención  prueba|comercial  prueba|etapas|✗|top1|setfit:"'
 ```
 
 `intención  prueba con mensajes reales` debe quedar en **≥ 0,95** (`data/prueba_chat.csv`), `comercial
 prueba independiente` en **≥ 0,95** (`data/prueba_comercial.csv`), `top1` de fotos en **≥ 0,95** y `etapas
-máquina de estados` en **23/23** (si falla un caso, el build se detiene solo). Si baja, no levantes la
+máquina de estados` en **26/26** (si falla un caso, el build se detiene solo). `clasificador elegido` dice
+si quedó `base` o `setfit` (con `KD_SETFIT_PASOS=0` solo hay `base`). Si baja, no levantes la
 imagen nueva: arregla los datos.
 
 **La cifra que vale es la del build del servidor.** El modelo de embeddings está cuantizado y da números
 algo distintos en ARM (Mac) y en x86 (EC2): el 04-10-2026 los mismos datos dieron 0,97 en el Mac y 0,94 en
 el servidor. Se reforzó `intenciones_tienda.csv` y quedó en 0,985 (65/66). Mientras el build no pase, la
 imagen nueva no se levanta: el contenedor en marcha sigue con la anterior hasta el `up -d`.
+
+**SetFit en el EC2:** la primera vez instala PyTorch (~200 MB) en la etapa `setfit`, que queda en caché. Con
+`KD_SETFIT_PASOS` > 0 el ajuste corre en cada cambio de `data/` y tarda 15–25 min con 2 vCPU y ~1,5 GB de
+RAM. No lo lances en horario de venta.
 
 ## 4. Verificar (siempre, después de cada deploy)
 

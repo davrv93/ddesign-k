@@ -3,6 +3,9 @@
 El clasificador dice qué quiere la clienta (intención y confianza). Este módulo decide, con reglas
 explícitas, en qué etapa queda la conversación. El LLM no decide etapas: solo redacta.
 
+Primer contacto: el primer mensaje de una conversación siempre queda en prospección («hola, ¿todavía
+tienen este vestido?» es empezar a conocerla, no seguimiento). Solo una intención clara de compra lo saca.
+
 Regla central: mostrar interés NO es comprar. «Sí, me interesa» deja la conversación en seguimiento;
 solo una intención clara de compra («quiero comprarlo», «resérvamelo») la lleva a cierre, y solo una
 confirmación explícita a una pregunta de confirmación la convierte en venta.
@@ -53,7 +56,7 @@ def pide_confirmar(ultimo_bot: str) -> bool:
     return bool(RE_PIDE_CONFIRMAR.search(_plano(ultimo_bot)))
 
 
-def decidir(etapa: str, intent: str, confianza: float, mensaje: str, ultimo_bot: str = "") -> dict:
+def decidir(etapa: str, intent: str, confianza: float, mensaje: str, ultimo_bot: str = "", primer_mensaje: bool = False) -> dict:
     """Devuelve la etapa nueva y la intención final, con el motivo de cada decisión (para el registro)."""
     etapa = etapa if etapa in ORDEN else "prospeccion"
     texto, motivos = _plano(mensaje), []
@@ -110,11 +113,14 @@ def decidir(etapa: str, intent: str, confianza: float, mensaje: str, ultimo_bot:
             nueva, cancelada = "seguimiento", True
             motivos.append("canceló en el cierre: vuelve a seguimiento")
     elif intent in ("objecion", "objecion_precio"):
-        nueva = "seguimiento"
+        nueva = "prospeccion" if (primer_mensaje and etapa == "prospeccion") else "seguimiento"
         if etapa == "cierre":
             motivos.append("objeción en el cierre: vuelve a seguimiento")
     elif intent in INTERES and etapa == "prospeccion":
-        nueva = "seguimiento"
+        if primer_mensaje:
+            motivos.append("primer mensaje: se queda en prospección")
+        else:
+            nueva = "seguimiento"
 
     return {"etapa_anterior": etapa, "etapa": nueva, "intent": intent, "confianza": round(float(confianza), 3),
             "nivel": nivel, "cancelada": cancelada, "transicion": nueva != etapa, "motivo": "; ".join(motivos)}

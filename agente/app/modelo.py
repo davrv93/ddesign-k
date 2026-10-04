@@ -8,6 +8,10 @@
   catálogo como «passage: ». Sin eso recupera peor.
 - Clasificadores: estandarización + regresión logística (scikit-learn). Los vectores de e5 vienen muy
   apretados entre sí; sin estandarizar, la misma regresión acierta 70 % en vez de 94 %.
+- SetFit (setfit.py): un segundo e5-small, ajustado con aprendizaje contrastivo para separar las
+  intenciones, exportado a ONNX int8. Solo clasifica (intención del bot y comercial); la búsqueda RAG y la
+  categoría de prenda siguen con el e5 sin ajustar. Se usa si en el build gana al e5 sin ajustar
+  (metricas.pkl → "clasificador").
 """
 from __future__ import annotations
 
@@ -23,6 +27,7 @@ MODELOS_PROPIOS = {
     "intfloat/multilingual-e5-small": {"dim": 384, "model_file": "onnx/model.onnx"},
 }
 CACHE_DIR = os.environ.get("EMBED_CACHE_DIR", "/models")
+SETFIT_DIR = os.environ.get("SETFIT_DIR", os.path.join(CACHE_DIR, "setfit"))
 INDEX_DIR = os.environ.get("AGENTE_INDEX_DIR", os.path.join(os.path.dirname(__file__), "..", "index"))
 
 
@@ -54,6 +59,41 @@ class Embedder:
     def pasajes(self, textos: list[str], batch: int = 32) -> np.ndarray:
         """Fichas del catálogo: lo que se busca."""
         return self._vec(textos, "passage: " if self.e5 else "", batch)
+
+
+class EmbedderOnnx:
+    """El e5-small ajustado con SetFit (setfit.py), servido con onnxruntime. Mismo promedio por token y
+    misma normalización que en el entrenamiento; los mensajes llevan el prefijo «query: »."""
+
+    def __init__(self, carpeta: str = SETFIT_DIR):
+        import onnxruntime as ort
+        from tokenizers import Tokenizer
+
+        with open(os.path.join(carpeta, "base.txt")) as fh:
+            self.model_name = "setfit:" + fh.read().strip()
+        self.tok = Tokenizer.from_file(os.path.join(carpeta, "tokenizer.json"))
+        self.tok.enable_truncation(128)
+        self.tok.enable_padding(pad_id=self.tok.token_to_id("<pad>") or 0, pad_token="<pad>")
+        op = ort.SessionOptions()
+        op.intra_op_num_threads = int(os.environ.get("EMBED_THREADS", "2"))
+        op.inter_op_num_threads = 1
+        self._s = ort.InferenceSession(os.path.join(carpeta, "model.onnx"), op, providers=["CPUExecutionProvider"])
+
+    def __call__(self, textos: list[str], batch: int = 32) -> np.ndarray:
+        out = []
+        for k in range(0, len(textos), batch):
+            enc = self.tok.encode_batch(["query: " + t for t in textos[k:k + batch]])
+            ids = np.array([e.ids for e in enc], dtype=np.int64)
+            m = np.array([e.attention_mask for e in enc], dtype=np.int64)
+            h = self._s.run(None, {"input_ids": ids, "attention_mask": m})[0]
+            out.append((h * m[..., None]).sum(1) / np.maximum(m.sum(1, keepdims=True), 1))
+        v = np.vstack(out).astype(np.float32)
+        v /= np.linalg.norm(v, axis=1, keepdims=True) + 1e-9
+        return v
+
+
+def hay_setfit() -> bool:
+    return os.path.exists(os.path.join(SETFIT_DIR, "model.onnx"))
 
 
 def entrenar_clasificador(X: np.ndarray, y: list[str]):

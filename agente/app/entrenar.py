@@ -9,13 +9,14 @@ el clasificador no se evalúe con la versión "mal escrita" de algo que ya vio b
 from __future__ import annotations
 
 import json
+import os
 import time
 from collections import Counter
 
 import numpy as np
 
 from . import datos
-from .modelo import Embedder, entrenar_clasificador, guardar
+from .modelo import Embedder, EmbedderOnnx, entrenar_clasificador, guardar, hay_setfit
 
 
 def validacion_cruzada(X, y, grupos, pliegues=5) -> dict:
@@ -33,7 +34,7 @@ def validacion_cruzada(X, y, grupos, pliegues=5) -> dict:
             "pred": list(pred)}
 
 
-def prueba_chat(emb, clf, umbral: float = 0.35) -> dict:
+def prueba_chat(emb, clf, umbral: float = 0.35, imprimir: bool = True) -> dict:
     """Mensajes de chat reales (data/prueba_chat.csv) que NO entran al entrenamiento. La validación cruzada
     mide sobre frases de plantilla y daba 97 %; con mensajes como «tengo dudas» o «aceptan yape?» era 38 %."""
     import csv, os
@@ -49,10 +50,29 @@ def prueba_chat(emb, clf, umbral: float = 0.35) -> dict:
         if pred != r["intencion"]:
             fallos.append(f"{r['mensaje']} → {pred} (esperado {r['intencion']})")
     res = {"exactitud": round(1 - len(fallos) / len(filas), 4), "n": len(filas), "fallos": fallos}
-    print(f"intención  prueba con mensajes reales: {res['exactitud']} ({len(filas) - len(fallos)}/{len(filas)})")
-    for x in fallos:
-        print("   ✗", x)
+    if imprimir:
+        print(f"intención  prueba con mensajes reales: {res['exactitud']} ({len(filas) - len(fallos)}/{len(filas)})")
+        for x in fallos:
+            print("   ✗", x)
     return res
+
+
+def prueba_comercial(emb, clf) -> dict:
+    """data/prueba_comercial.csv: 68 mensajes que no entran al entrenamiento."""
+    pk = datos.prueba_comercial()
+    P = clf.predict_proba(emb([t for t, _ in pk]))
+    fallos = [f"{t} → {clf.classes_[int(np.argmax(p))]} {p.max():.2f} (esperado {i})"
+              for (t, i), p in zip(pk, P) if str(clf.classes_[int(np.argmax(p))]) != i]
+    return {"exactitud": round(1 - len(fallos) / len(pk), 4), "n": len(pk),
+            "confianza_media": round(float(np.mean(P.max(axis=1))), 3), "fallos": fallos}
+
+
+def cabezas(emb, ej, ec_) -> dict:
+    """Intención del bot y comercial sobre un embedder: los dos clasificadores y sus pruebas."""
+    clf_i = entrenar_clasificador(emb([e.texto for e in ej]), [e.intencion for e in ej])
+    clf_k = entrenar_clasificador(emb([t for t, _ in ec_]), [i for _, i in ec_])
+    return {"clf_i": clf_i, "clf_k": clf_k, "prueba": prueba_chat(emb, clf_i, imprimir=False),
+            "comercial": prueba_comercial(emb, clf_k) | {"n_entrenamiento": len(ec_)}}
 
 
 def main():
@@ -73,22 +93,29 @@ def main():
         if idx:
             por_variante[v] = round(sum(cv_i["pred"][k] == yi[k] for k in idx) / len(idx), 4)
     print(f"intención  CV exactitud={cv_i['exactitud']} f1_macro={cv_i['f1_macro']} por variante={por_variante}")
-    clf_i = entrenar_clasificador(Xi, yi)
-    prueba = prueba_chat(emb, clf_i)
-
-    # --- intención comercial (alimenta la máquina de etapas) ----------------
+    # --- intención del bot y comercial: e5 sin ajustar frente a e5 ajustado con SetFit ----------------
     ec_ = datos.ejemplos_comercial()
-    Xk = emb([t for t, _ in ec_])
-    clf_k = entrenar_clasificador(Xk, [i for _, i in ec_])
-    pk = datos.prueba_comercial()
-    Pk = clf_k.predict_proba(emb([t for t, _ in pk]))
-    fallos_k = [f"{t} → {clf_k.classes_[int(np.argmax(p))]} {p.max():.2f} (esperado {i})"
-                for (t, i), p in zip(pk, Pk) if str(clf_k.classes_[int(np.argmax(p))]) != i]
-    comercial = {"exactitud": round(1 - len(fallos_k) / len(pk), 4), "n": len(pk), "n_entrenamiento": len(ec_),
-                 "confianza_media": round(float(np.mean(Pk.max(axis=1))), 3), "fallos": fallos_k}
-    print(f"comercial  prueba independiente: {comercial['exactitud']} ({len(pk) - len(fallos_k)}/{len(pk)}), "
+    candidatos = {"base": cabezas(emb, ej, ec_)}
+    if hay_setfit():
+        candidatos["setfit"] = cabezas(EmbedderOnnx(), ej, ec_)
+    for nombre, c in candidatos.items():
+        print(f"comparación {nombre:6s}: intención {c['prueba']['exactitud']} ({c['prueba']['n'] - len(c['prueba']['fallos'])}/{c['prueba']['n']}), "
+              f"comercial {c['comercial']['exactitud']} ({c['comercial']['n'] - len(c['comercial']['fallos'])}/{c['comercial']['n']}), "
+              f"confianza media comercial {c['comercial']['confianza_media']}")
+    # CLASIFICADOR=auto (por defecto): SetFit solo si no empeora ninguna de las dos pruebas. Ojo: elegir
+    # mirando las pruebas las hace un poco menos independientes; por eso se publican las dos cifras.
+    pedido = os.environ.get("CLASIFICADOR", "auto")
+    gana = "setfit" in candidatos and all(candidatos["setfit"][k]["exactitud"] >= candidatos["base"][k]["exactitud"] for k in ("prueba", "comercial"))
+    elegido = pedido if pedido in candidatos else ("setfit" if gana else "base")
+    c = candidatos[elegido]
+    clf_i, clf_k, prueba, comercial = c["clf_i"], c["clf_k"], c["prueba"], c["comercial"]
+    print(f"clasificador elegido: {elegido} (CLASIFICADOR={pedido})")
+    print(f"intención  prueba con mensajes reales: {prueba['exactitud']} ({prueba['n'] - len(prueba['fallos'])}/{prueba['n']})")
+    for x in prueba["fallos"]:
+        print("   ✗", x)
+    print(f"comercial  prueba independiente: {comercial['exactitud']} ({comercial['n'] - len(comercial['fallos'])}/{comercial['n']}), "
           f"{len(ec_)} ejemplos de entrenamiento, confianza media {comercial['confianza_media']}")
-    for x in fallos_k:
+    for x in comercial["fallos"]:
         print("   ✗", x)
 
     # --- categoría de prenda ----------------------------------------------
@@ -121,6 +148,8 @@ def main():
         "intencion": {k: v for k, v in cv_i.items() if k != "pred"} | {"por_variante": por_variante, "prueba_chat": prueba},
         "categoria": {k: v for k, v in cv_c.items() if k != "pred"} | {"por_tipo_prueba": por_prueba},
         "comercial": comercial,
+        "clasificador": elegido,
+        "comparacion": {k: {"intencion": v["prueba"]["exactitud"], "comercial": v["comercial"]["exactitud"]} for k, v in candidatos.items()},
         "n_fichas": len(fichas),
         "segundos": round(time.time() - t0, 1),
     }

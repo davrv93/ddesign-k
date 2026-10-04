@@ -39,13 +39,18 @@ CASOS = [
     ("en el cierre una pregunta no retrocede", "cierre", "consulta_delivery", 0.90, "¿hacen envíos a Cusco?", "", "cierre", "consulta_delivery"),
     ("venta confirmada se mantiene", "venta_confirmada", "consulta_pago", 0.90, "¿a qué número yapeo?", "", "venta_confirmada", "consulta_pago"),
     ("saludo no cambia la etapa", "seguimiento", "saludo", 0.99, "hola", "", "seguimiento", "saludo"),
+    # Primer contacto
+    ("primer mensaje: preguntar no saca de prospección", "prospeccion", "consulta_disponibilidad", 0.99,
+     "Hola, quisiera saber si todavía tienen este vestido", "", "prospeccion", "consulta_disponibilidad"),
+    ("primer mensaje: el precio tampoco", "prospeccion", "consulta_precio", 0.99, "hola cuánto cuesta?", "", "prospeccion", "consulta_precio"),
+    ("primer mensaje: comprar sí lo saca", "prospeccion", "intencion_compra", 0.95, "hola, quiero comprar este vestido", "", "cierre", "intencion_compra"),
 ]
 
 
 def main() -> int:
     fallos = 0
     for nombre, etapa, intent, conf, msg, bot, e_esp, i_esp in CASOS:
-        d = decidir(etapa, intent, conf, msg, bot)
+        d = decidir(etapa, intent, conf, msg, bot, primer_mensaje=nombre.startswith("primer mensaje"))
         ok = d["etapa"] == e_esp and d["intent"] == i_esp
         fallos += not ok
         if not ok:

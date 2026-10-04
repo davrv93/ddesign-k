@@ -59,6 +59,10 @@ curl -s -X POST https://proyectopostventa.site/demo-design/chat -H 'Content-Type
   caso en `app/prueba_etapas.py` (`python3 -m app.prueba_etapas`, sin dependencias). Los ejemplos del
   clasificador comercial van en `data/comercial.csv`; `data/prueba_comercial.csv` no entra al entrenamiento.
   En el bot Go, las pruebas del flujo por etapas están en `internal/bot/etapas_test.go`.
+- **Agente, Jev:** las 20 intenciones que ve Jev están descritas en `INTENCIONES` de `app/jev.py`; si se añade
+  una intención a `comercial.csv`, va también ahí. Se mide con `python -m app.evaluar_jev --local …` dentro
+  del contenedor (llamadas de pago, ~US$ 0,004). Jev nunca decide la etapa: solo entrega intención y confianza
+  a `etapas.decidir`.
 - **Agente, prompts:** ningún dato de la tienda se inventa en el prompt. Lo que el bot puede afirmar
   está en `seed/tienda.md`, las fichas (precio y tallas) y la línea `AHORA:` (stock).
 - **Agente, categorías:** las prendas que se filtran por nombre están en `RE_CATEGORIA` de `main.py`

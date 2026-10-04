@@ -300,7 +300,8 @@ function panelVenta(j) {
   return `<h2>Etapa de la venta</h2>
     <div class="etapas">${ETAPAS.map((e, i) => `<span class="${i < idx ? 'hecha' : i === idx ? 'actual' : ''}">${e[1]}</span>`).join('')}</div>
     ${c ? `<div class="sub">entendió <b>${esc(c.intent)}</b> · confianza ${(c.confianza * 100).toFixed(0)} % (${esc(c.nivel)})${c.motivo ? '<br>' + esc(c.motivo) : ''}</div>
-    <h2>Clasificador comercial</h2>${bars(c.clasificador)}` : ''}
+    <h2>Clasificador comercial</h2>${bars(c.clasificador)}
+    ${c.jev ? `<div class="sub">Jev (con contexto${c.fuente === 'jev' ? ', decidió él' : ', el local estaba más seguro'}): <b>${esc(c.jev.intent)}</b> ${(c.jev.confianza * 100).toFixed(0)} % · ${c.jev.ms} ms</div>` : ''}` : ''}
     ${bitacora.length ? `<h2>Decisiones</h2><ul class="bita">${bitacora.map(b => `<li>${b.cambio ? `<b>${esc(b.de)} → ${esc(b.a)}</b>` : esc(b.a)} · ${esc(b.intent)} ${(b.p * 100).toFixed(0)} %</li>`).join('')}</ul>` : ''}`;
 }
 

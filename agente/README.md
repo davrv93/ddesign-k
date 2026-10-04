@@ -22,7 +22,7 @@ repitiendo «Responde SI o NO».
 | Clasificador comercial | `data/comercial.csv` (496 frases, 20 intenciones), `app/entrenar.py` | Qué quiere la clienta en términos de venta: `interesado`, `intencion_compra`, `confirmacion_compra`, `objecion`, `objecion_precio`, `consulta_precio`, `consulta_material`… Se mide con `data/prueba_comercial.csv` (68 frases que no entran al entrenamiento): **97,1 %** |
 | Máquina de etapas | `app/etapas.py` | Reglas explícitas, sin LLM. Devuelve la etapa nueva y el motivo |
 | Guion por etapa | `app/venta.py` | Prompt de sistema, guía de cada etapa, totales ya calculados, datos de pago |
-| Pruebas | `app/prueba_etapas.py` | 23 casos (los 7 del encargo incluidos). Se ejecutan al construir la imagen: si falla uno, no hay imagen |
+| Pruebas | `app/prueba_etapas.py` | 26 casos (los 7 del encargo y el primer contacto incluidos). Se ejecutan al construir la imagen: si falla uno, no hay imagen |
 
 Reglas de `etapas.py`:
 
@@ -33,6 +33,7 @@ Reglas de `etapas.py`:
 - **Umbrales de confianza:** ≥ 0,80 se usa tal cual; entre 0,60 y 0,80 solo avanza un paso prudente (una
   intención de compra dudosa llega a seguimiento, no a cierre); < 0,60 la etapa no cambia.
 - Una objeción («está caro», «lo voy a pensar») devuelve la conversación a seguimiento, incluso desde el cierre.
+- **El primer mensaje se queda en prospección** («hola, ¿todavía tienen este vestido?»), salvo una compra explícita.
 - Decir la talla no arma el pedido; solo lo arma en cierre.
 
 La etapa **no se guarda en el agente**: quien llama la manda en `etapa` y la recibe de vuelta. El bot Go la
@@ -71,6 +72,85 @@ anotado en el pedido) y luego se pide la dirección.
 | Stock | Herramienta, no conocimiento: `GET /api/public/stock?codes=…` del backend en el momento de responder (`app/stock.py`). Disponible = físico − reservas vigentes, más stock por sucursal. |
 | Few-shot | Los 4 ejemplos más parecidos de los datasets se pasan al LLM como guía de tono. |
 | LLM | `deepseek/deepseek-v4-flash` por OpenRouter, con `deepseek/deepseek-chat-v3.1` de respaldo. Sin clave o sin red, devuelve la respuesta de referencia del ejemplo más parecido. |
+
+## Decisiones: SetFit (local) y Jev (TypeSafe) (04-10-2026)
+
+```
+mensaje ─► e5 + regresión (local, 2 ms) ──┬─ confianza ≥ 0,80 ───────────────┐
+                                          └─ < 0,80 ─► Jev con la conversación ┤ (cascada)
+                                                                               ▼
+                                         etapas.py (reglas: deciden la etapa) ─► LLM ─► Jev verifica ─► respuesta
+```
+
+**Jev** (`app/jev.py`) es el modelo «System One» de TypeSafe AI: recibe un estado y preguntas tipadas y
+devuelve respuestas con probabilidad, sin texto. Se llama por OpenRouter (`POST /api/v1/systemone`, modelo
+`typesafe/jev-1.13`) con la misma `OPENROUTER_API_KEY` de DeepSeek. Hace dos trabajos:
+
+1. **Intención con contexto** (`JEV_MODO`). El clasificador local ve un mensaje suelto; Jev ve la etapa, el
+   producto, los últimos 8 turnos y lo último que preguntó el bot, y contesta la misma lista de 20
+   intenciones más tres señales sí/no (`quiere_comprar`, `quiere_visitar`, `pide_otros_modelos`).
+   - `off`: no se llama.
+   - `sombra`: se llama en segundo plano y queda en el log `[JEV]` junto a la decisión local. No cambia nada.
+   - `cascada`: si el local duda (< `JEV_UMBRAL`, 0,80), decide Jev cuando está más seguro que el local.
+     Los mensajes claros no salen del servidor.
+2. **Verificación** (`JEV_VERIFICAR=1`). Antes de enviar lo que redactó el LLM, pregunta párrafo por párrafo
+   si afirma algo de la prenda que su ficha no dice. Lo que marca con ≥ 0,80 se quita (log `[JEV-VERIFICA]`).
+   Se compara contra la prenda en foco y las que van en foto, no contra todas las fichas: «satinado» estaba en
+   la ficha de otro vestido y así pasaba.
+
+**Jev propone; no decide.** La etapa la sigue decidiendo `etapas.py`. Si Jev no responde, sigue el local.
+
+**SetFit** (`app/setfit.py`) ajusta el propio e5-small con aprendizaje contrastivo (acerca frases de la misma
+intención, aleja las de otras) antes de la regresión. Se entrena en una etapa aparte del Dockerfile con
+PyTorch, que no pasa a la imagen final: de ahí sale un `model.onnx` int8 de 113 MB. `entrenar.py` entrena las
+cabezas sobre los dos modelos e imprime `comparación base` y `comparación setfit`; con `CLASIFICADOR=auto` se
+queda con SetFit solo si no empeora ninguna prueba. La búsqueda RAG y la categoría de prenda siguen con el e5
+sin ajustar.
+
+### Medido el 04-10-2026 (Mac; en el servidor se vuelve a medir en el build)
+
+| | Intención bot (66) | Comercial (68) | Comercial con contexto (26 casos) |
+|---|---|---|---|
+| e5 + regresión (build, en lote) | **98,5 %** | **97,1 %** | — |
+| e5 + regresión (mensaje a mensaje, `/clasificar`) | — | 95,6 % | — |
+| e5 + SetFit + regresión (build) | 97,0 % | 95,6 % | — |
+| Jev solo, sin contexto | — | 97,1–98,5 % (dos corridas) | — |
+| **Cascada** (local; Jev si < 0,80) | — | **98,5 %**, Jev en 7 de 68 | — |
+| Jev + `etapas.py` | — | — | **24/26** |
+
+- **SetFit no ganó**: pierde un mensaje en cada prueba (ruido, con 66 y 68 frases). Lo que queda mal son
+  etiquetas ambiguas, y ajustar el espacio no añade información que el mensaje no tiene. Con `auto` no se
+  carga; forzado (`KD_CLASIFICADOR=setfit`) suma **~300 MB** de RAM (1,51 GiB frente a 1,21) por el segundo
+  modelo de texto, y no cabe en el límite de 1400m del Mac. Su ajuste tarda ~7,5 min en el Mac y 2–3 veces más
+  en el EC2 cada vez que cambian los datos: `KD_SETFIT_PASOS=0` lo apaga.
+- **Jev está bien calibrado** (ECE 0,03: cuando dice 0,99 acierta 98 %), así que los umbrales de `etapas.py`
+  significan lo que dicen.
+- **Verificación: 9 de 9 párrafos** bien juzgados (5 fieles y 4 que inventan: lentejuelas, seda, color rojo
+  y talla XL, abertura lateral).
+- **Costo**: ~US$ 0,00005 por clasificación; la verificación añade otra llamada por respuesta del LLM.
+  **Latencia**: de 1,45 s a 1,75 s de media por mensaje (p90 de 1,57 a 2,19 s), con cascada y verificación.
+- El build mide la prueba comercial **en lote** y `/clasificar` mensaje a mensaje: 97,1 % frente a 95,6 %
+  con el mismo modelo. Lo más probable es la cuantización dinámica, que fija la escala con todo el lote.
+  La cifra de producción es la de mensaje a mensaje.
+- Los fallos de «Jev + etapas.py» con contexto son los dos casos que prueban los **umbrales** simulando un
+  clasificador dudoso («mmm a ver», «creo que me animo»): ahí Jev contesta `otro` / `interesado`, que es
+  razonable, y el caso esperaba la intención simulada.
+
+### Privacidad
+
+A Jev no se le manda el nombre de la clienta. Sí van sus mensajes, igual que ya iban a DeepSeek por
+OpenRouter; los procesa TypeSafe. Con `cascada`, solo los mensajes en que el local duda.
+
+### Medir
+
+```bash
+docker exec kddesign_agente python -m app.evaluar_jev --local http://127.0.0.1:8000   # ~US$ 0,004
+docker logs kddesign_agente 2>&1 | grep -E "\[JEV\]|\[JEV-VERIFICA\]"
+docker logs kddesign_agente 2>&1 | grep CLASSIFIER | grep '"fuente": "jev"'
+```
+
+Antes de pasar a `cascada` en otra tienda, deja una semana en `sombra` y compara `[JEV]` con lo que pasó en
+el chat.
 
 ## Stock como herramienta (no como conocimiento)
 

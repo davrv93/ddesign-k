@@ -1,6 +1,21 @@
 # Agente conversacional: embeddings locales (ONNX) + clasificador + RAG + DeepSeek (OpenRouter).
 # El modelo de embeddings y el índice entrenado quedan horneados en la imagen:
 # arrancar no descarga nada ni re-entrena.
+
+# --- Etapa 1: ajuste SetFit de e5-small (app/setfit.py). Necesita PyTorch, que NO pasa a la imagen final:
+# de aquí solo sale model.onnx (int8) y tokenizer.json. Se rehace solo si cambian los datos o estos módulos.
+FROM python:3.12-slim AS setfit
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 AGENTE_DATA_DIR=/app/data HF_HOME=/tmp/hf SETFIT_OUT=/out/setfit
+WORKDIR /app
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.6.0 \
+ && pip install --no-cache-dir "transformers==4.51.*" "onnx==1.17.*" "onnxruntime==1.22.*"
+ARG SETFIT_PASOS=300
+ENV SETFIT_PASOS=${SETFIT_PASOS}
+COPY data ./data
+COPY app/__init__.py app/datos.py app/setfit.py ./app/
+RUN python -m app.setfit
+
+# --- Etapa 2: la imagen que corre.
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
@@ -13,9 +28,13 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY data ./data
+COPY --from=setfit /out/setfit /models/setfit
 COPY app/__init__.py app/datos.py app/modelo.py app/entrenar.py ./app/
-# Descarga el modelo, entrena los clasificadores, imprime las métricas y guarda el índice.
-# Sólo depende de los datos y de estos tres módulos: tocar main.py no obliga a re-entrenar.
+# Descarga el modelo, entrena los clasificadores (sobre e5 y sobre e5+SetFit, y se queda con el que gana
+# en las pruebas; CLASIFICADOR=base|setfit lo fuerza), imprime las métricas y guarda el índice.
+# Sólo depende de los datos y de estos módulos: tocar main.py no obliga a re-entrenar.
+ARG CLASIFICADOR=auto
+ENV CLASIFICADOR=${CLASIFICADOR}
 RUN python -m app.entrenar && chmod -R a+rX /models /app/index
 # Fotos del catálogo de 100 modelos (JPG 720 px, servidas en /media/catalogo/) y copia de las de la tienda.
 COPY imagenes ./imagenes

@@ -62,7 +62,15 @@ En `step()` de `backend/internal/bot/bot.go`:
   preguntó el bot, y con confianza < 0,60 la etapa no cambia. La etapa viaja en cada petición (`etapa`) y el
   bot Go la guarda en el contexto de la conversación. Detalle, umbrales y registro `[CLASSIFIER]` en
   [`agente/README.md`](agente/README.md).
-- **Embeddings:** `Xenova/multilingual-e5-small` cuantizado (antes jina). El agente ocupa ~1,13 GiB.
+- **Embeddings:** `Xenova/multilingual-e5-small` cuantizado (antes jina). El agente ocupa ~1,2 GiB.
+- **Jev** (TypeSafe, por OpenRouter con la misma clave): en `cascada`, cuando el clasificador local duda
+  (< 0,80), decide la intención con toda la conversación; con `JEV_VERIFICAR=1` quita de la respuesta del LLM
+  lo que afirme de la prenda sin estar en su ficha. **Propone; la etapa la siguen decidiendo las reglas.**
+  Cuesta ~0,3 s más por mensaje. Medido: cascada 98,5 % en la prueba comercial; verificación 9/9.
+- **SetFit** (`agente/app/setfit.py`): ajuste contrastivo de e5 en una etapa del build con PyTorch. **No ganó**
+  (97,0 / 95,6 % frente a 98,5 / 97,1 % del e5 sin ajustar) y en producción va apagado (`KD_SETFIT_PASOS=0`).
+  Forzado suma ~300 MB de RAM. Detalle y cifras en [`agente/README.md`](agente/README.md).
+- **El primer mensaje siempre es prospección** (`primer_mensaje` en `etapas.py`), salvo compra explícita.
 - **Vestido del anuncio:** `KD_PRODUCTO_DEMO=V42`. Con eso «este vestido» es el V42 y no se mezclan otros
   modelos salvo que los pida. Material y lámina en `agente/seed/producto_demo.json`.
 - **Pago y envíos:** costos en `agente/seed/venta.json` (el total lo suma el código). Yape y titular en

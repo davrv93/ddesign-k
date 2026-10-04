@@ -26,8 +26,8 @@ import base64
 
 import json
 
-from . import datos, etapas, venta
-from .modelo import Embedder, cargar
+from . import datos, etapas, jev, venta
+from .modelo import Embedder, EmbedderOnnx, cargar, hay_setfit
 from . import stock as stk
 
 log = logging.getLogger("agente")
@@ -131,6 +131,8 @@ class Estado:
         self.X100 = f["X"][: len(self.fichas100)]
         self.dim = f["X"].shape[1]
         self.metricas = cargar("metricas.pkl")
+        # Las cabezas de intención y comercial se entrenaron sobre el embedder que ganó en el build.
+        self.emb_clf = EmbedderOnnx() if self.metricas.get("clasificador") == "setfit" and hay_setfit() else self.emb
         self.lock = threading.Lock()
         self._poner_seed(datos.fichas_seed(), f["X"][n100:])
         self.seed_origen = "seed.json"
@@ -182,6 +184,7 @@ def _arranque():
     t = time.time()
     E = Estado()
     E.emb(["hola"])  # la primera inferencia de ONNX es la lenta: que la pague el arranque
+    E.emb_clf(["hola"])
     log.info("agente listo en %.1fs (modelo %s, %d fichas, %d ejemplos)", time.time() - t, E.emb.model_name, len(E.fichas), len(E.ejemplos))
 
     # El catálogo vivo se lee ANTES de atender: si no, los primeros segundos tras un reinicio el agente
@@ -230,12 +233,13 @@ def _top(probs, clases, n=3):
 
 def clasificar(texto: str) -> dict:
     v = E.emb([texto])
-    pi = E.clf_i.predict_proba(v)[0]
+    vc = v if E.emb_clf is E.emb else E.emb_clf([texto])   # SetFit: el modelo ajustado solo clasifica
+    pi = E.clf_i.predict_proba(vc)[0]
     pc = E.clf_c.predict_proba(v)[0]
     top_i = _top(pi, E.clf_i.classes_)
     top_c = _top(pc, E.clf_c.classes_, 2)
     intencion = top_i[0]["etiqueta"] if top_i[0]["p"] >= UMBRAL_INTENCION else "otro"
-    return {"vector": v[0], "intencion": intencion, "confianza": top_i[0]["p"], "top_intenciones": top_i,
+    return {"vector": v[0], "vector_clf": vc[0], "intencion": intencion, "confianza": top_i[0]["p"], "top_intenciones": top_i,
             "categoria": top_c[0]["etiqueta"], "confianza_categoria": top_c[0]["p"]}
 
 
@@ -993,8 +997,24 @@ def conversar(req: ChatIn) -> dict:
 
     # Qué quiere en términos de venta y en qué etapa queda la conversación. Lo decide la máquina de
     # estados (etapas.py) con la intención, su confianza y lo último que preguntó el bot; no el LLM.
-    com = clasificar_comercial(cl["vector"])
-    dec = etapas.decidir(req.etapa, com["intent"], com["confianza"], req.mensaje, " ".join(_ultimos_del_bot(req)))
+    com = clasificar_comercial(cl["vector_clf"])
+    com["fuente"] = "local"
+    ultimo_bot = " ".join(_ultimos_del_bot(req))
+    foco = producto_en_foco(req)
+    com_jev = None
+    if jev.activo():
+        # Jev ve la conversación entera; el clasificador local, solo este mensaje. En cascada se le pregunta
+        # cuando el local duda; en sombra, siempre, pero solo queda en el registro.
+        st_jev = jev.estado(req.mensaje, [{"rol": t.rol, "texto": t.texto[:300]} for t in req.historial[-8:]],
+                            req.etapa, ultimo_bot, f"{foco.codigo} {foco.nombre}" if foco is not None else "")
+        if jev.MODO == "cascada" and com["confianza"] < jev.UMBRAL:
+            com_jev = jev.clasificar(st_jev)
+            if com_jev and com_jev["confianza"] >= com["confianza"]:
+                com = dict(com, intent=com_jev["intent"], confianza=com_jev["confianza"], fuente="jev")
+        elif jev.MODO == "sombra":
+            jev.sombra(st_jev, com, req.conversacion)
+    dec = etapas.decidir(req.etapa, com["intent"], com["confianza"], req.mensaje, ultimo_bot,
+                         primer_mensaje=not any(t.rol != "cliente" for t in req.historial))
     etapa = dec["etapa"]
 
     motor = _motor(req.motor)
@@ -1011,7 +1031,6 @@ def conversar(req: ChatIn) -> dict:
     if pide:
         cl = dict(cl, intencion="otras_opciones")  # un «sí» suelto no es saludo ni acción del bot
     tallas_boton, confirmar, talla_pedida, codigo_pedido = [], False, "", ""
-    foco = producto_en_foco(req)
     # Decir la talla no es comprar. Solo en CIERRE (cuando ya dijo que quiere comprarlo, o eligió la
     # talla en el botón de la tarjeta) una talla arma el pedido; antes, la contesta el LLM y sigue la charla.
     talla = ""
@@ -1139,6 +1158,13 @@ def conversar(req: ChatIn) -> dict:
                 respuesta = _sin_pies(_sin_resaludo(_whatsapp(respuesta), req))
             except Exception as e:
                 log.warning("sin LLM, uso respuesta de referencia: %s", e)
+        if respuesta and jev.VERIFICAR and fichas:
+            # Lo que el LLM redactó se contrasta con las prendas de las que habla: la del foco y las que van en
+            # foto. Fuera lo que afirme de ellas y su ficha no diga («detalles brillantes»). Contra todas las
+            # fichas no servía: «satinado» estaba en la ficha de OTRO vestido y pasaba. Las respuestas de flujo
+            # y del dataset no pasan por aquí.
+            habladas = {f.codigo: f for f in ([foco] if foco is not None else []) + list(sugeridas)}
+            respuesta = jev.filtrar(respuesta, "\n".join(ficha_txt(f) for f in (list(habladas.values()) or fichas[:4])), req.conversacion)
         if not respuesta and cl["intencion"] == "pregunta_general":
             respuesta, modelo = FUERA_DE_GIRO, "fuera_de_giro"
         if not respuesta:
@@ -1177,6 +1203,7 @@ def conversar(req: ChatIn) -> dict:
     log.info("[CLASSIFIER] %s", json.dumps({
         "conversation_id": req.conversacion, "mensaje": req.mensaje[:200], "stage_anterior": dec["etapa_anterior"],
         "intent": dec["intent"], "confidence": dec["confianza"], "nivel": dec["nivel"], "stage_nuevo": etapa,
+        "fuente": com["fuente"], "jev": {k: com_jev[k] for k in ("intent", "confianza", "ms")} if com_jev else None,
         "motivo": dec["motivo"], "accion": accion, "modelo": modelo, "respuesta": respuesta[:160],
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S%z")}, ensure_ascii=False))
     return {
@@ -1194,7 +1221,8 @@ def conversar(req: ChatIn) -> dict:
         "sugerencias": tarjetas,
         "etapa": etapa,
         "comercial": {"intent": dec["intent"], "confianza": dec["confianza"], "nivel": dec["nivel"], "etapa_anterior": dec["etapa_anterior"],
-                      "transicion": dec["transicion"], "motivo": dec["motivo"], "clasificador": com["top"]},
+                      "transicion": dec["transicion"], "motivo": dec["motivo"], "clasificador": com["top"],
+                      "fuente": com["fuente"], "jev": com_jev},
         "botones": botones,
         "stock_fuente": E.stock.ultima_fuente,
         "ms": int((time.time() - t0) * 1000),
@@ -1212,6 +1240,8 @@ def health():
             "catalogo": E.seed_origen if E else None,
             "producto_demo": venta.PRODUCTO_DEMO or None,
             "comercial": (E.metricas.get("comercial") or {}).get("exactitud") if E else None,
+            "clasificador": {"embeddings": E.emb_clf.model_name, "comparacion": E.metricas.get("comparacion")} if E else None,
+            "jev": {"modo": jev.MODO, "verificar": jev.VERIFICAR, "modelo": jev.MODELO, "configurado": bool(jev.CLAVE)},
             "stock": {"url": stk.STOCK_URL or "(seed)", "ultima_fuente": E.stock.ultima_fuente} if E else None,
             "busqueda_foto": E.img.metricas if E and E.img else None}
 
@@ -1228,7 +1258,9 @@ class TextoIn(BaseModel):
 @app.post("/clasificar")
 def ruta_clasificar(req: TextoIn):
     cl = clasificar(req.texto)
+    cl["comercial"] = clasificar_comercial(cl["vector_clf"])
     cl.pop("vector")
+    cl.pop("vector_clf")
     cl["codigos"] = datos.codigos_en(req.texto)
     return cl
 
