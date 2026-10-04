@@ -220,6 +220,8 @@ class ChatIn(BaseModel):
     conversacion: str = ""  # identificador para el registro de decisiones
     producto: str = ""  # código del pedido en curso (lo manda el bot de WhatsApp en talla, confirmación y pago)
     talla: str = ""     # talla de ese pedido
+    desde_anuncio: bool = False  # llegó desde un anuncio de clic a WhatsApp: «este vestido» es el del anuncio
+    anuncio: str = ""            # título del anuncio, si WhatsApp lo trae (suele nombrar la prenda)
 
 
 def _motor(pedido: str) -> str:
@@ -848,10 +850,22 @@ def producto_en_foco(req: ChatIn):
     for c in cods:
         if c in E.por_codigo and E.fichas[E.por_codigo[c]].fuente == "seed":
             return E.fichas[E.por_codigo[c]]
-    # La clienta llega desde el anuncio de un vestido: «este vestido» es ese, aunque no lo nombre.
-    if venta.PRODUCTO_DEMO in E.por_codigo:
-        return E.fichas[E.por_codigo[venta.PRODUCTO_DEMO]]
+    # Llegó desde un anuncio: «este vestido» es el del anuncio. Primero el que nombre su título; si no nombra
+    # ninguno, el vestido de la campaña (PRODUCTO_DEMO). Sin anuncio no se asume nada: el bot pregunta cuál.
+    if getattr(req, "desde_anuncio", False) or getattr(req, "anuncio", ""):
+        for c in nombrados(getattr(req, "anuncio", "") or ""):
+            if c in E.por_codigo and E.fichas[E.por_codigo[c]].fuente == "seed":
+                return E.fichas[E.por_codigo[c]]
+        if venta.PRODUCTO_DEMO in E.por_codigo:
+            return E.fichas[E.por_codigo[venta.PRODUCTO_DEMO]]
     return None
+
+
+def es_del_anuncio(f, req) -> bool:
+    """La prenda es la del anuncio por el que llegó (la que nombra su título o la de la campaña)."""
+    if not (getattr(req, "desde_anuncio", False) or getattr(req, "anuncio", "")):
+        return False
+    return f.codigo in nombrados(getattr(req, "anuncio", "") or "") or f.codigo == venta.PRODUCTO_DEMO
 
 
 def talla_conocida(req: ChatIn) -> str:
@@ -974,6 +988,11 @@ def vitrina(req: ChatIn, qv: np.ndarray) -> list:
     return pool[:MAX_VITRINA]
 
 
+# «este vestido», «ese modelo», «el del anuncio»: habla de una prenda concreta que no nombra.
+RE_ESTA_PRENDA = re.compile(r"\b(est[ea]|es[ea]|aquel|aquella)\s+(vestido|modelo|conjunto|blusa|prenda|enterizo|look|falda)\b|"
+                            r"\b(el|la) (del|de la) (anuncio|publicaci[oó]n|foto|historia|publi)\b", re.I)
+
+
 # «vestidos», «otros modelos», «más opciones»: quiere ver varios, no el del anuncio.
 RE_VARIOS = re.compile(r"\b(vestidos|modelos|opciones|cat[aá]logo|otr[oa]s?|diferentes?|variedad)\b", re.I)
 
@@ -1065,6 +1084,16 @@ def conversar(req: ChatIn) -> dict:
         modelo, botones = "flujo_pedido", ["Lima", "Provincia"]
     elif foco and re.search(r"cambiar talla", req.mensaje, re.I):
         respuesta, modelo, tallas_boton = f"Claro 😊 ¿Qué talla prefieres para el *{foco.codigo}* {foco.nombre}?", "flujo_pedido", tallas_de(foco)
+    elif foco is None and (m_esta := RE_ESTA_PRENDA.search(req.mensaje)) and not nombrados(req.mensaje):
+        # «¿tienen este vestido?» sin anuncio, sin foto y sin nombre: no sabemos cuál es. Una vendedora pregunta;
+        # no adivina ni manda otro.
+        nombre = (req.cliente or "").split()[0] if (req.cliente or "").strip() else ""
+        hola = "" if any(t.rol != "cliente" for t in req.historial) else (
+            f"¡Hola{', ' + nombre if nombre else ''}! 😊" + (f" Soy {venta.ASESORA}, tu asesora de {req.negocio or NEGOCIO}." if venta.ASESORA else "") + "\n\n")
+        prenda = (m_esta.group(2) or "vestido").lower()
+        respuesta = hola + (f"¿Me compartes la foto o el nombre del {prenda} que viste? 📸 Así reviso al toque si lo tenemos."
+                            if prenda not in ("blusa", "prenda", "falda") else f"¿Me compartes la foto o el nombre de la {prenda} que viste? 📸 Así reviso al toque si la tenemos.")
+        modelo = "pide_cual"
     foto_pedida = None if (respuesta or pide) else pide_foto_de(req)
     if foto_pedida:
         cl = dict(cl, intencion="pide_foto")  # no es «te mando una foto»: quiere que se la mandemos
@@ -1097,7 +1126,7 @@ def conversar(req: ChatIn) -> dict:
         # «¿y el vestido Holly?» nombra una prenda: no es pedir el catálogo de vestidos.
         # Llegó por el anuncio de un vestido y sigue hablando de él («¿todavía tienen este vestido?»): no se
         # abre el catálogo ni se cambia de prenda. Solo si pide ver varios («otros modelos», «vestidos»).
-        solo_demo = bool(foco and foco.codigo == venta.PRODUCTO_DEMO and not nombrados(req.mensaje)
+        solo_demo = bool(foco and es_del_anuncio(foco, req) and not nombrados(req.mensaje)
                          and categoria_pedida(req.mensaje) in (None, categoria_de(foco)) and not RE_VARIOS.search(req.mensaje))
         es_catalogo = (not pide and not solo_demo and not nombrados(req.mensaje) and cl["intencion"] == "catalogo"
                        and (cl["confianza"] >= UMBRAL_ACCION or bool(categoria_pedida(req.mensaje))))
@@ -1144,7 +1173,7 @@ def conversar(req: ChatIn) -> dict:
         # Sólo si el mensaje no trae prenda alguna: «hola, ¿tienen el V21?» conserva sus fichas.
         if (cl["intencion"] in SIN_FICHAS and cl["confianza"] >= UMBRAL_SIN_FICHAS and not sugeridas and not ofrecer
                 and not noms and not datos.codigos_en(req.mensaje) and not RE_ROPA.search(req.mensaje)
-                and not (foco and foco.codigo == venta.PRODUCTO_DEMO)):
+                and not (foco and es_del_anuncio(foco, req))):
             fichas = []
         if req.usar_llm and motor == "deepseek":
             try:
@@ -1283,6 +1312,8 @@ class FotoIn(BaseModel):
     usar_llm: bool = True
     motor: str = ""
     etapa: str = ""
+    desde_anuncio: bool = False
+    anuncio: str = ""
 
 
 PLANTILLA_FOTO = {

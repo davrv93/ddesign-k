@@ -71,8 +71,10 @@ En `step()` de `backend/internal/bot/bot.go`:
   (97,0 / 95,6 % frente a 98,5 / 97,1 % del e5 sin ajustar) y en producción va apagado (`KD_SETFIT_PASOS=0`).
   Forzado suma ~300 MB de RAM. Detalle y cifras en [`agente/README.md`](agente/README.md).
 - **El primer mensaje siempre es prospección** (`primer_mensaje` en `etapas.py`), salvo compra explícita.
-- **Vestido del anuncio:** `KD_PRODUCTO_DEMO=V42`. Con eso «este vestido» es el V42 y no se mezclan otros
-  modelos salvo que los pida. Material y lámina en `agente/seed/producto_demo.json`.
+- **Vestido del anuncio:** `KD_PRODUCTO_DEMO=V42`, pero **solo para quien llega por un anuncio de clic a
+  WhatsApp** (el bot Go lo detecta en `contextInfo.externalAdReply` y lo recuerda en la conversación; si el
+  título del anuncio nombra otra prenda, manda esa). Sin anuncio, «¿tienen este vestido?» → el bot pregunta
+  cuál (foto o nombre). En el chat de prueba lo simula el botón «Desde anuncio». Material y lámina en `agente/seed/producto_demo.json`.
 - **Pago y envíos:** costos en `agente/seed/venta.json` (el total lo suma el código). Yape y titular en
   `agente/seed/pago.md`, **fuera de git a propósito** (el repo es público); solo se dan con pedido confirmado.
 - **Motor** (`MOTOR`): `actual` usa `LLM_*` (Gemini Flash-Lite, capa gratuita) y responde los saludos con

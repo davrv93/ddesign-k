@@ -43,6 +43,10 @@ type Request struct {
 	// Producto y Talla del pedido en curso (estados de talla, confirmación, pago y dirección).
 	Producto string `json:"producto,omitempty"`
 	Talla    string `json:"talla,omitempty"`
+	// DesdeAnuncio: la conversación empezó en un anuncio de clic a WhatsApp. Solo entonces «este vestido»
+	// es el del anuncio. Anuncio es el título del anuncio, si lo trae.
+	DesdeAnuncio bool   `json:"desde_anuncio,omitempty"`
+	Anuncio      string `json:"anuncio,omitempty"`
 }
 
 type Reply struct {
@@ -79,6 +83,9 @@ type PhotoRequest struct {
 	Estado    string `json:"estado"`
 	Negocio   string `json:"negocio"`
 	Etapa     string `json:"etapa,omitempty"`
+	// Igual que en Request: sin anuncio, el agente no asume prenda.
+	DesdeAnuncio bool   `json:"desde_anuncio,omitempty"`
+	Anuncio      string `json:"anuncio,omitempty"`
 }
 
 // PhotoResult dice qué tan seguro está el agente de haber encontrado la prenda.

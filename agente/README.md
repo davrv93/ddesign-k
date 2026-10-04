@@ -47,8 +47,13 @@ guarda en el contexto de la conversación; la UI web, en memoria. Cada decisión
 
 `docker logs kddesign_agente 2>&1 | grep CLASSIFIER` muestra por qué el bot está en cada etapa.
 
-**Vestido del anuncio** (`PRODUCTO_DEMO=V42`): la clienta llega desde un anuncio y dice «este vestido» sin
-nombrarlo. Con la variable puesta, ese vestido es la prenda en foco, se enseña una sola vez y no se mezclan
+**Vestido del anuncio** (`PRODUCTO_DEMO=V42`): la clienta llega desde un anuncio de clic a WhatsApp y dice
+«este vestido» sin nombrarlo. **Solo si llegó por el anuncio** (`desde_anuncio`, que el bot Go saca de
+`contextInfo.externalAdReply` del mensaje y recuerda toda la conversación) se asume la prenda: primero la que
+nombre el título del anuncio (`anuncio`) y, si no nombra ninguna, la de `PRODUCTO_DEMO`. Sin anuncio, «¿tienen
+este vestido?» recibe «¿me compartes la foto o el nombre del vestido que viste?» (`pide_cual`): una vendedora
+no adivina. En el chat de prueba, el botón **Desde anuncio** simula la llegada por el anuncio. Con anuncio, la
+prenda es la prenda en foco, se enseña una sola vez y no se mezclan
 otros modelos salvo que los pida («otros modelos», «vestidos»). Lo que el catálogo no guarda (material,
 ocasiones, lámina de materiales) está en `seed/producto_demo.json`; la lámina se manda cuando pregunta por
 el material.

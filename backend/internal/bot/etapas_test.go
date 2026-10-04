@@ -255,3 +255,52 @@ func TestOtrosModelosEnTallaSueltaElPedido(t *testing.T) {
 		t.Fatalf("debía soltar el pedido: %q %+v", s, cc)
 	}
 }
+
+// Un mensaje que llega desde un anuncio de clic a WhatsApp trae la referencia al anuncio. Solo entonces
+// «este vestido» es el del anuncio; sin ella, el agente pregunta cuál.
+func TestAnuncioSeDetectaYViajaAlAgente(t *testing.T) {
+	ad := `{"event":"Message","data":{"Info":{"ID":"AD1","Chat":"51911111111@s.whatsapp.net"},"Message":{"extendedTextMessage":{
+		"text":"Hola, quisiera saber si todavía tienen este vestido",
+		"contextInfo":{"externalAdReply":{"title":"Vestido Gala Capa Azul","body":"Nueva colección","sourceType":"ad","sourceURL":"https://fb.me/x"},
+		"conversionSource":"FB_Ads","entryPointConversionSource":"ctwa_ad"}}}}}`
+	in, err := ParseWebhook([]byte(ad))
+	if err != nil || !in.FromAd || in.AdTitle != "Vestido Gala Capa Azul" {
+		t.Fatalf("debía detectar el anuncio: %+v %v", in, err)
+	}
+	plano, _ := ParseWebhook([]byte(`{"event":"Message","data":{"Info":{"ID":"P1","Chat":"51911111111@s.whatsapp.net"},"Message":{"conversation":"hola, tienen este vestido?"}}}`))
+	if plano.FromAd {
+		t.Fatal("un mensaje normal no viene de un anuncio")
+	}
+
+	b, st, _ := setup(t, `{}`, false)
+	var reqs []agente.Request
+	b.Agent = agenteGuion(t, map[string]agente.Reply{
+		"Hola, quisiera saber si todavía tienen este vestido": {Accion: "responder", Respuesta: "¡Sí! 😊", Etapa: "prospeccion"},
+		"es para una boda": {Accion: "responder", Respuesta: "¡Qué lindo!", Etapa: "prospeccion"},
+	}, &reqs)
+	primero := text("Hola, quisiera saber si todavía tienen este vestido")
+	primero.FromAd, primero.AdTitle = true, "Vestido Gala Capa Azul"
+	handle(b, primero)
+	handle(b, text("es para una boda")) // el segundo mensaje ya no trae el anuncio: se recuerda
+	for k, r := range reqs {
+		if !r.DesdeAnuncio || r.Anuncio != "Vestido Gala Capa Azul" {
+			t.Fatalf("petición %d sin el anuncio: %+v", k, r)
+		}
+	}
+	handle(b, text("menu")) // reiniciar el flujo no lo borra
+	if _, cc := estadoDe(t, st); !cc.Anuncio {
+		t.Fatalf("el menú no debía borrar el anuncio: %+v", cc)
+	}
+}
+
+func TestSinAnuncioNoSeMarca(t *testing.T) {
+	b, _, _ := setup(t, `{}`, false)
+	var reqs []agente.Request
+	b.Agent = agenteGuion(t, map[string]agente.Reply{
+		"hola tienen este vestido?": {Accion: "responder", Respuesta: "¿Me pasas la foto o el nombre?", Etapa: "prospeccion"},
+	}, &reqs)
+	handle(b, text("hola tienen este vestido?"))
+	if len(reqs) != 1 || reqs[0].DesdeAnuncio {
+		t.Fatalf("sin anuncio no debía marcarse: %+v", reqs)
+	}
+}

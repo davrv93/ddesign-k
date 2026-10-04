@@ -24,6 +24,11 @@ type Incoming struct {
 	HasLocation bool
 	Lat, Lng    float64
 	LocationTxt string
+
+	// FromAd: el mensaje llegó desde un anuncio de clic a WhatsApp (Facebook/Instagram). AdTitle es el
+	// título del anuncio, que suele nombrar la prenda. Sin anuncio, «este vestido» no dice cuál es.
+	FromAd  bool
+	AdTitle string
 }
 
 // webhook es el sobre que manda evolution-go: {"event":"Message","data":{"Info":{...},"Message":{...}}}
@@ -46,11 +51,13 @@ type webhook struct {
 type waMessage struct {
 	Conversation        string `json:"conversation"`
 	ExtendedTextMessage *struct {
-		Text string `json:"text"`
+		Text        string       `json:"text"`
+		ContextInfo *contextInfo `json:"contextInfo"`
 	} `json:"extendedTextMessage"`
 	ImageMessage *struct {
-		Caption  string `json:"caption"`
-		Mimetype string `json:"mimetype"`
+		Caption     string       `json:"caption"`
+		Mimetype    string       `json:"mimetype"`
+		ContextInfo *contextInfo `json:"contextInfo"`
 	} `json:"imageMessage"`
 	LocationMessage     *location `json:"locationMessage"`
 	LiveLocationMessage *location `json:"liveLocationMessage"`
@@ -65,6 +72,30 @@ type waMessage struct {
 		} `json:"singleSelectReply"`
 	} `json:"listResponseMessage"`
 	Base64 string `json:"base64"`
+}
+
+// contextInfo trae, en los mensajes que llegan desde un anuncio de clic a WhatsApp, la referencia al
+// anuncio (externalAdReply) y el origen de la conversión.
+type contextInfo struct {
+	ExternalAdReply *struct {
+		Title      string `json:"title"`
+		Body       string `json:"body"`
+		SourceType string `json:"sourceType"`
+		SourceURL  string `json:"sourceURL"`
+	} `json:"externalAdReply"`
+	ConversionSource           string `json:"conversionSource"`
+	EntryPointConversionSource string `json:"entryPointConversionSource"`
+}
+
+func (c *contextInfo) fromAd() (bool, string) {
+	if c == nil {
+		return false, ""
+	}
+	if c.ExternalAdReply != nil {
+		return true, strings.TrimSpace(firstNonEmpty(c.ExternalAdReply.Title, c.ExternalAdReply.Body))
+	}
+	src := strings.ToLower(c.ConversionSource + " " + c.EntryPointConversionSource)
+	return strings.Contains(src, "ad"), ""
 }
 
 type location struct {
@@ -135,6 +166,12 @@ func ParseWebhook(body []byte) (*Incoming, error) {
 			in.RawMessage, _ = json.Marshal(raw)
 		}
 	}
+	for _, ci := range []*contextInfo{ctxOf(m.ExtendedTextMessage != nil, func() *contextInfo { return m.ExtendedTextMessage.ContextInfo }),
+		ctxOf(m.ImageMessage != nil, func() *contextInfo { return m.ImageMessage.ContextInfo })} {
+		if ok, title := ci.fromAd(); ok {
+			in.FromAd, in.AdTitle = true, firstNonEmpty(in.AdTitle, title)
+		}
+	}
 	loc := m.LocationMessage
 	if loc == nil {
 		loc = m.LiveLocationMessage
@@ -146,6 +183,13 @@ func ParseWebhook(body []byte) (*Incoming, error) {
 	}
 	in.Text = strings.TrimSpace(in.Text)
 	return in, nil
+}
+
+func ctxOf(ok bool, f func() *contextInfo) *contextInfo {
+	if !ok {
+		return nil
+	}
+	return f()
 }
 
 func firstNonEmpty(v ...string) string {

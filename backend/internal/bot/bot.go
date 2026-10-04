@@ -51,6 +51,9 @@ type convContext struct {
 	Etapa   string `json:"etapa,omitempty"`
 	Voucher bool   `json:"voucher,omitempty"` // ya mandó el comprobante de pago
 	Address bool   `json:"address,omitempty"` // ya dio la dirección de envío
+	// Llegó desde un anuncio de clic a WhatsApp (y su título): se recuerda toda la conversación.
+	Anuncio      bool   `json:"anuncio,omitempty"`
+	AnuncioTitle string `json:"anuncio_title,omitempty"`
 }
 
 type Bot struct {
@@ -226,6 +229,10 @@ func (b *Bot) step(ctx context.Context, conv *store.Conversation, in *Incoming, 
 	var cc convContext
 	_ = json.Unmarshal([]byte(conv.Context), &cc)
 	text := normalize(in.Text)
+	if in.FromAd && (!cc.Anuncio || (in.AdTitle != "" && in.AdTitle != cc.AnuncioTitle)) {
+		cc.Anuncio, cc.AnuncioTitle = true, firstNonEmpty(in.AdTitle, cc.AnuncioTitle)
+		b.setState(ctx, conv, conv.State, cc)
+	}
 
 	// Comandos globales. Con agente, el saludo lo contesta él como una persona; el menú sigue a mano
 	// con «menu» o «0».
@@ -300,6 +307,14 @@ func (b *Bot) step(ctx context.Context, conv *store.Conversation, in *Incoming, 
 }
 
 func (b *Bot) setState(ctx context.Context, conv *store.Conversation, state string, cc convContext) {
+	// Que llegó por un anuncio vale para toda la conversación: los reinicios del flujo (menú, cancelar,
+	// pedido cerrado) no lo borran.
+	if !cc.Anuncio {
+		var prev convContext
+		if json.Unmarshal([]byte(conv.Context), &prev) == nil && prev.Anuncio {
+			cc.Anuncio, cc.AnuncioTitle = true, prev.AnuncioTitle
+		}
+	}
 	raw, _ := json.Marshal(cc)
 	conv.State, conv.Context = state, string(raw)
 	if err := b.store.SetConversationState(ctx, conv.ID, state, string(raw)); err != nil {
@@ -1060,7 +1075,8 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 	defer cancel()
 	req := agente.Request{Mensaje: raw, Estado: conv.State, Negocio: b.cfg.BusinessName,
 		Cliente: b.customerName(conv), Historial: b.agentHistory(ctx, conv, raw),
-		Etapa: cc.Etapa, Conversacion: strconv.FormatInt(conv.ID, 10), Talla: cc.Size}
+		Etapa: cc.Etapa, Conversacion: strconv.FormatInt(conv.ID, 10), Talla: cc.Size,
+		DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle}
 	if conv.State != stIdle && cc.ProductID > 0 {
 		if p, err := b.store.GetProduct(ctx, cc.ProductID); err == nil {
 			req.Producto = p.Code
@@ -1139,7 +1155,7 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 	defer cancel()
 	req := agente.PhotoRequest{ImagenB64: base64.StdEncoding.EncodeToString(img.Data), Mensaje: msg.Body,
 		Estado: conv.State, Negocio: b.cfg.BusinessName, Cliente: b.customerName(conv),
-		Historial: b.agentHistory(ctx, conv, msg.Body), Etapa: cc.Etapa}
+		Historial: b.agentHistory(ctx, conv, msg.Body), Etapa: cc.Etapa, DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle}
 	r, err := b.Agent.Photo(actx, req)
 	if err != nil || r.Foto == nil {
 		log.Printf("bot: agente foto: %v", err)
