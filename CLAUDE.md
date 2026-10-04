@@ -122,6 +122,9 @@ responde. **No los arranques**: serían dos bots con el mismo número de WhatsAp
 - **Qwik con ruta base** deja el sitio en `dist/baruka/`. El `Dockerfile` lo sube a la raíz porque el
   alias quita el prefijo. Cualquier ruta absoluta nueva en el frontend debe pasar por `u()` de
   `src/lib/base.ts`, o romperá bajo `/baruka/`.
+- **Con ruta base, Qwik necesita `trailingSlash: true`.** Con `false`, el SSG trata «/baruka/» como una ruta
+  con barra de más y no genera la página de inicio: quedaba el `index.html` de fábrica de nginx y, tras el
+  login, salía «Welcome to nginx!» con un 200. `vite.config.ts` lo activa solo cuando `BASE_PATH` no es «/».
 - **Tocar el entrenamiento del agente re-entrena la imagen.** Si cambian `agente/data/`, `datos.py`,
   `modelo.py` o `entrenar.py`, el entrenamiento se rehace (≈4 min). Si cambian `imagen.py` o `imagenes/`,
   se reindexan las fotos. Si solo cambia `main.py`, el build tarda segundos.

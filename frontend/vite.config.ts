@@ -9,7 +9,9 @@ const backend = process.env.BACKEND_URL ?? "http://localhost:8080";
 export default defineConfig(() => ({
   // "/" o "/baruka/" si el panel va detrás de un alias de nginx (Dockerfile: ARG BASE_PATH).
   base: process.env.BASE_PATH || "/",
-  plugins: [qwikCity({ trailingSlash: false }), qwikVite(), tsconfigPaths()],
+  // Con ruta base y trailingSlash:false, el SSG no genera la página de inicio: «/baruka/» no es «/» y la
+  // trata como una ruta con barra de más. Quedaba el index.html de fábrica de nginx («Welcome to nginx!»).
+  plugins: [qwikCity({ trailingSlash: (process.env.BASE_PATH || "/") !== "/" }), qwikVite(), tsconfigPaths()],
   server: {
     proxy: {
       "/api": { target: backend, changeOrigin: true },

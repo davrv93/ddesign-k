@@ -87,6 +87,8 @@ fotos en **≥ 0,95**. Si baja, no levantes la imagen nueva: arregla los datos.
 B=https://proyectopostventa.site
 for p in / /baruka/ /baruka/login /baruka/catalogo /baruka/api/public/catalog /demo-design/ /demo-design/health; do
   curl -s -o /dev/null -m15 -w "$p %{http_code}\n" $B$p; done          # todo 200
+# Un 200 no basta: el 03-10 /baruka/ devolvía 200 con el «Welcome to nginx!» de fábrica.
+curl -s $B/baruka/ | grep -o "<title[^>]*>[^<]*"                       # …Pedidos · Baruka Design
 curl -s $B/demo-design/health | python3 -m json.tool | grep -E '"motor"|configurado|"fichas"'
 ssh -i $K $H 'docker ps --format "{{.Names}} {{.Status}}"; free -m | sed -n 2,3p'
 ```
