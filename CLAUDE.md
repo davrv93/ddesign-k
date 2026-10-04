@@ -100,7 +100,7 @@ En `step()` de `backend/internal/bot/bot.go`:
 | Chat de prueba | `https://proyectopostventa.site/demo-design/` |
 | Página de demo | `https://proyectopostventa.site/demo/` — un enlace con tres tarjetas: landing, panel con el QR y chat (`demo-hub/`) |
 | Código | `~/kddesign` (copiado con rsync, **sin `.git`**). `docker-compose.override.yml` existe **solo en el servidor** |
-| Borde | `~/landing`: contenedor `landing_web`, que además sirve la landing de consultoría en `/` |
+| Borde | `~/landing`: contenedor `landing_web`, que además sirve la landing de Consultoría Digital en `/` y la de Mennova en `/mennova/` (`DEPLOY.md` §5.2) |
 
 El panel va **detrás de un alias** (`/baruka/`), no en un subdominio. Por eso el frontend se compila con
 `KD_BASE_PATH=/baruka/`, y `PUBLIC_URL` vale `https://proyectopostventa.site/baruka`.

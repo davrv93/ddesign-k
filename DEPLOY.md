@@ -136,6 +136,32 @@ curl -s -o /dev/null -w "%{http_code}\n" https://proyectopostventa.site/demo/   
 Los puntos «En línea» consultan `/baruka/api/public/info` y `/demo-design/health`. Las fotos salen de
 `/landing-baruka/img/`: si se quita esa landing, la primera tarjeta se queda sin imagen.
 
+## 5.2 Landings estáticas del borde (`~/landing/site/`)
+
+Además del panel y el chat, el borde sirve páginas estáticas de un solo archivo. Sus fuentes **no** están
+en este repositorio, sino en la carpeta padre (`PjgFactSalud_completo/`, repositorio local sin remoto):
+
+| Ruta | Fuente | Qué es |
+|---|---|---|
+| `/` | `consultoria-digital-landing/` | Landing de Consultoría Digital. Se genera con `python3 consultoria-digital-landing/generar.py` a partir de `cuerpo.html` y `propio.css`; no se edita `index.html` a mano |
+| `/consultoria-digital/` | la misma | Copia de vista previa |
+| `/mennova/` | `landingmenova/editorial/` | Landing editorial de Mennova Solutions |
+
+```bash
+P=~/Downloads/PjgFactSalud_completo
+rsync -az -e "ssh -i $K" $P/consultoria-digital-landing/index.html "${H}:landing/site/index.html"
+rsync -az -e "ssh -i $K" $P/consultoria-digital-landing/img/logo.jpg "${H}:landing/site/img/logo.jpg"
+rsync -az -e "ssh -i $K" $P/landingmenova/editorial/index.html "${H}:landing/site/mennova/index.html"
+```
+
+**Respaldo de la raíz anterior** (sitio Qwik, sustituido el 04-10-2026): `~/landing/respaldos/raiz-consultoria-qwik-20261004-1834.tgz`
+(47 archivos: `index.html`, `build/`, `assets/` y demás). `build/` y `assets/` siguen en `site/`, así que para
+volver basta con restaurar el `index.html`:
+
+```bash
+ssh -i $K $H 'cd ~/landing && tar xzf respaldos/raiz-consultoria-qwik-20261004-1834.tgz -C site index.html'
+```
+
 ## 6. WhatsApp
 
 Para vincular o volver a vincular: entra a `https://proyectopostventa.site/baruka/whatsapp`, pulsa
