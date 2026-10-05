@@ -29,6 +29,8 @@ from contextvars import ContextVar
 
 from . import datos, etapas, jev, memoria, venta
 from . import animo, crm, estructurado, gasto, rerank
+from .v2 import config as v2cfg
+from .v2.agente import AgentV2
 from .modelo import Embedder, EmbedderOnnx, cargar, hay_setfit
 from . import stock as stk
 
@@ -235,6 +237,8 @@ class ChatIn(BaseModel):
     perfil: dict | None = None
     # Solo pruebas: lo que «escribió» el LLM en este turno. Se ignora salvo con RESPUESTA_LLM_PRUEBA=1 (ver PRUEBA_LLM).
     respuesta_llm: str = ""
+    # Versión del agente para este turno: "v1" | "v2". Vacío = AGENT_VERSION del entorno (v1 si no está).
+    version: str = ""
 
 
 RE_NO_TEXTO = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\ud800-\udfff]")
@@ -2323,9 +2327,16 @@ def ruta_clasificar(req: TextoIn):
     return cl
 
 
+_V2 = AgentV2(v1=conversar)
+
+
 @app.post("/chat")
 def ruta_chat(req: ChatIn):
-    res = conversar(req)
+    # V1 sigue siendo la ruta por defecto; V2 solo si la petición o AGENT_VERSION lo piden (app/v2/).
+    if v2cfg.version_pedida(req.version, v2cfg.version_por_defecto()) == "v2":
+        res = _V2.conversar(req)
+    else:
+        res = conversar(req) | {"version": "v1"}
     crm.avisar(req, res, venta.VENTA.get("envio"))   # chat web → Kommo, en segundo plano (app/crm.py)
     return res
 
