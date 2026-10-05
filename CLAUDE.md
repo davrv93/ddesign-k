@@ -202,6 +202,10 @@ responde. **No los arranques**: serían dos bots con el mismo número de WhatsAp
   se reindexan las fotos. Si solo cambia `main.py`, el build tarda segundos.
 - **El catálogo vivo** lo lee el agente del backend cada 5 min (`CATALOG_URL`). Justo al arrancar usa
   `catalogo_seed.json` hasta la primera lectura.
+- **La clave de OpenRouter de `.env` es la misma de producción y tiene límite** (US$ 2; el 04-10-2026 le quedaban
+  ~US$ 0,26 y vence el 09-10). Una prueba masiva (`app/conversaciones.py`, `evaluar_jev`) gasta del mismo saldo que el bot
+  de WhatsApp: mira `limit_remaining` en `GET https://openrouter.ai/api/v1/key` y usa `--tope`. Si se agota, DeepSeek cae a
+  Gemini y Jev se apaga, sin error visible.
 - **No hay respaldo automático** de los volúmenes `kddesign_backend_data` y `kddesign_evolution_db`. El
   respaldo manual está en `DEPLOY.md` §7.
 - **El README** todavía habla de `kddesign.pjgfactsalud.com.pe` y de un nginx en el host. Eso describe el

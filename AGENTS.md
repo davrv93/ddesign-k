@@ -75,6 +75,13 @@ curl -s -X POST https://proyectopostventa.site/demo-design/chat -H 'Content-Type
   horario del showroom vive en `memoria.py` (`ABRE`, `CIERRA`, `REFRIGERIO`), en `tienda.md` y en `venta.json`: si cambia,
   cámbialo en los tres. En Go, la cita llega al tablero por `registrarCita` (`internal/bot/memoria.go`), con su prueba
   `TestCitaQuedaEnElTablero`.
+- **Agente, prueba con conversaciones** (`app/conversaciones.py`, solo biblioteca estándar, corre en el host): 200
+  conversaciones completas (reales anonimizadas, guiones del cliente y clientas simuladas por una LLM que reaccionan al bot)
+  contra un agente de pruebas; reglas deterministas + Jev como juez. Córrelo antes de desplegar un cambio de conversación:
+  `python3 -m app.conversaciones correr --conjunto reservada --salida pruebas_conv/X.jsonl` e `informe … --comparar`. El
+  corpus y los resultados van en `agente/pruebas_conv/` (**fuera de git**: hay chats reales). Las 50 `reservada` no se
+  miran para corregir. Cuesta ~US$ 0,10 por 50 conversaciones con `deepseek-v4-flash`; **la clave de OpenRouter es la de
+  producción y tiene tope**: mira el saldo (`--tope`) antes de correr. Detalle en [`agente/README.md`](agente/README.md).
 - **Agente, Jev:** las 20 intenciones que ve Jev están descritas en `INTENCIONES` de `app/jev.py`; si se añade
   una intención a `comercial.csv`, va también ahí. Se mide con `python -m app.evaluar_jev --local …` dentro
   del contenedor (llamadas de pago, ~US$ 0,004). Jev nunca decide la etapa: solo entrega intención y confianza

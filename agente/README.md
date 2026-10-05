@@ -19,11 +19,11 @@ repitiendo «Responde SI o NO».
 
 | Pieza | Archivo | Qué hace |
 |---|---|---|
-| Clasificador comercial | `data/comercial.csv` (510 frases, 20 intenciones), `app/entrenar.py` | Qué quiere la clienta en términos de venta: `interesado`, `intencion_compra`, `confirmacion_compra`, `objecion`, `objecion_precio`, `consulta_precio`, `consulta_material`… Se mide con `data/prueba_comercial.csv` (68 frases que no entran al entrenamiento): **97,1 %** |
+| Clasificador comercial | `data/comercial.csv` (529 frases, 20 intenciones), `app/entrenar.py` | Qué quiere la clienta en términos de venta: `interesado`, `intencion_compra`, `confirmacion_compra`, `objecion`, `objecion_precio`, `consulta_precio`, `consulta_material`… Se mide con `data/prueba_comercial.csv` (68 frases que no entran al entrenamiento): **98,5 %** (97,1 % antes de la prueba con conversaciones) |
 | Máquina de etapas | `app/etapas.py` | Reglas explícitas, sin LLM. Devuelve la etapa nueva y el motivo |
 | Guion por etapa | `app/venta.py` | Prompt de sistema, guía de cada etapa, totales ya calculados, datos de pago |
-| Pruebas | `app/prueba_etapas.py` | 38 casos (los 7 del encargo, el primer contacto, la cita para probarse y la indagación). Se ejecutan al construir la imagen: si falla uno, no hay imagen |
-| Memoria y hilo | `app/memoria.py`, `app/prueba_memoria.py` | Lo que ya sabemos de la clienta, la pregunta pendiente, la siguiente pregunta, la temperatura y la cita (secciones siguientes). 204 casos, también en el build |
+| Pruebas | `app/prueba_etapas.py` | 40 casos (los 7 del encargo, el primer contacto, la cita para probarse, la indagación y «¿me lo apartas?»). Se ejecutan al construir la imagen: si falla uno, no hay imagen |
+| Memoria y hilo | `app/memoria.py`, `app/prueba_memoria.py` | Lo que ya sabemos de la clienta, la pregunta pendiente, la siguiente pregunta, la temperatura y la cita (secciones siguientes). 235 casos, también en el build |
 
 Reglas de `etapas.py`:
 
@@ -333,6 +333,80 @@ docker logs kddesign_agente 2>&1 | grep CLASSIFIER | grep '"fuente": "jev"'
 
 Antes de pasar a `cascada` en otra tienda, deja una semana en `sombra` y compara `[JEV]` con lo que pasó en
 el chat.
+
+## Prueba con conversaciones (04-10-2026)
+
+Los guiones de 6 a 10 mensajes no encontraban lo que el cliente veía en el chat real. `app/conversaciones.py` corre
+**200 conversaciones completas** contra un agente de pruebas, con la etapa, la memoria y el estado del pedido viajando de
+un turno al siguiente como en el bot Go (también emula el *SI* del resumen en WhatsApp y manda fotos por `/foto`). Solo
+usa la biblioteca estándar: corre en el host.
+
+| Tipo | Cuántas | Qué son |
+|---|---|---|
+| `real` | 14 | Los chats del número de pruebas (30-09, 01-10 y 04-10), **anonimizados a mano** (nombres cambiados, sin teléfonos ni enlaces). Van en `pruebas_conv/reales.jsonl`, fuera de git: el repo es público. Varios son charlas personales que llegaron al número del bot |
+| `escenario` | 16 | Guiones fijos: el método de Alvaro, los errores vistos el 04-10 (saludo, «busco un vestido», «quiero ver los modelos», fecha como objeción, «este vestido» sin anuncio, refrigerio, XL…) |
+| `simulada` | 170 | Una persona (28 plantillas: fría, apurada, desde anuncio, regatea, queja, audios, jerga, faltas, mensajes partidos, cambia de prenda, manda foto, cita, compra…) que una LLM interpreta **reaccionando a lo que dice el bot**, de 4 a 12 turnos |
+
+La semilla (2026) fija el corpus y el reparto: **150 de desarrollo y 50 reservadas** (estratificado por tipo). Las
+reservadas no se miran para corregir: solo miden antes y después.
+
+```bash
+cd agente
+python3 -m app.conversaciones generar                       # pruebas_conv/corpus.jsonl (+ reales.jsonl si existe)
+python3 -m app.conversaciones correr --conjunto reservada --salida pruebas_conv/res.jsonl --tope 0.12   # agente en 127.0.0.1:18483
+python3 -m app.conversaciones rejuzgar pruebas_conv/res_antes.jsonl    # mismo juez para antes y después (~US$ 0,005)
+python3 -m app.conversaciones informe pruebas_conv/res_antes.jsonl --comparar pruebas_conv/res.jsonl
+```
+
+**Errores.** Reglas deterministas por turno: fotos antes de conocer la necesidad sin pedirlas, más de una prenda sin
+pedir opciones, pregunta ya contestada o hecha tres veces, prospección sin pregunta, «¿para qué ocasión lo buscas?» sin
+prenda, prenda inventada («el que mencionaste»), vestido del anuncio sin anuncio, precio o talla que no existen (contra el
+catálogo y el stock de esa corrida), etapa que salta (cierre sin intención de compra, interés tratado como compra, fecha
+leída como objeción), cita fuera de horario o en refrigerio, datos de pago antes de confirmar, respuesta vacía o error, y
+latencia > 6 s. Además **Jev como juez** de la conversación entera (una llamada, seis preguntas `noul`: ¿respondió lo que
+preguntó?, ¿inventó algo de la prenda o la tienda?, ¿presionó a una fría?, ¿perdió el hilo?, ¿suena robótica?, ¿avanzó
+cuando tocaba?; error si p ≥ 0,70). `informe` **recalcula las reglas** sobre lo guardado (con el catálogo de esa corrida),
+así que una regla corregida vale igual para el antes y el después.
+
+**Gasto.** El agente devuelve `costo_usd` por mensaje (`app/gasto.py`: `usage.cost` de OpenRouter de DeepSeek y Jev) y el
+arnés suma también la clienta simulada y el juez; para en `--tope`. La clave de OpenRouter **es la de producción y tiene
+límite** (US$ 2 el 04-10): mira el saldo antes de correr, el arnés lo imprime al empezar y al terminar.
+
+**Medido el 04-10-2026** (Mac; agente de pruebas con catálogo y stock reales de producción por la API pública, Jev en
+cascada con verificación; redacta `deepseek/deepseek-v4-flash` —el respaldo de producción— en vez de `deepseek-chat-v3.1`,
+porque es ~4 veces más barato; clienta simulada con el mismo modelo). Las **50 reservadas**, antes y después de las
+correcciones de este día:
+
+| | Antes | Después |
+|---|---|---|
+| Conversaciones sin ningún error (reglas + juez) | 5 (10 %) | **12 (24 %)** |
+| Sin errores de reglas | 22 | **37** |
+| Sin errores graves (datos, etapas, fotos, preguntas repetidas, «lo» sin prenda) | 19 | **33** |
+| Errores de reglas (ocurrencias / turnos) | 50 / 335 | **16 / 338** |
+| Latencia media | 2,61 s | 2,29 s (variación del proveedor, no del código) |
+| Costo del agente | US$ 0,083 | US$ 0,077 |
+
+| Categoría (conversaciones con al menos uno) | Antes | Después |
+|---|---|---|
+| Juez: inventó algo de la prenda o la tienda | 10 | 7 |
+| Etapa que salta | 3 | 2 |
+| Vestido del anuncio sin anuncio | 1 | 0 |
+| Fotos sin conocer la necesidad | 3 | 2 |
+| Más de una prenda sin pedir opciones | 8 | **1** |
+| Pregunta repetida | 12 | **6** |
+| Juez: perdió el hilo | 29 | 21 |
+| Juez: no respondió lo que preguntó | 18 | **10** |
+| Prospección sin pregunta | 0 | 3 |
+| «lo/la» sin prenda | 9 | **0** |
+| Juez: presionó a una fría | 2 | 2 |
+| Juez: no avanzó cuando tocaba | 1 | 1 |
+| Juez: suena robótica | 25 | 20 |
+| Latencia > 6 s | 9 | 0 |
+
+Lo que se corrigió está en el commit «lo que destaparon 75 conversaciones de desarrollo». Queda: el juez marca «hilo» y
+«robótica» en ~40 % de las conversaciones (el LLM alarga y repite elogios; `_sin_repetir` quita lo casi idéntico, no lo
+parecido); las reglas tienen falsos positivos conocidos («dame tu Yape para pagar» no la cuenta como compra); el pedido
+de dos prendas a la vez solo arma una; y la cifra es con `deepseek-v4-flash`, no con el modelo principal.
 
 ## Stock como herramienta (no como conocimiento)
 

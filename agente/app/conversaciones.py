@@ -282,7 +282,7 @@ class Cuenta:
 
 
 SISTEMA_CLIENTA = """Eres una clienta peruana que escribe por WhatsApp a Baruka Design, una tienda de vestidos y ropa de mujer de Lima.
-Tú NO eres la vendedora: eres la clienta. Persona: {persona}
+Tú NO eres la vendedora: eres la clienta y te llamas {nombre}. Persona: {persona}
 Tu objetivo: {objetivo}
 Tu plan, en orden (adáptalo a lo que te responda la vendedora; no tienes que cumplirlo todo ni al pie de la letra):
 {plan}
@@ -307,7 +307,7 @@ def clienta(conv: dict, transcript: list[dict], turno: int, clave: str, modelo: 
             lineas.append(f"(La vendedora te envió la foto de {f})")
     usuario = ("Conversación hasta ahora:\n" + ("\n".join(lineas) if lineas else "(todavía no escribes nada: este es tu primer mensaje)")
                + f"\n\nVas por tu mensaje {turno + 1} de {conv['turnos']} como máximo. Escribe tu siguiente mensaje.")
-    sistema = SISTEMA_CLIENTA.format(persona=conv["persona"], objetivo=conv["objetivo"],
+    sistema = SISTEMA_CLIENTA.format(nombre=conv.get("cliente", ""), persona=conv["persona"], objetivo=conv["objetivo"],
                                      plan="\n".join(f"{i + 1}. {p}" for i, p in enumerate(conv["plan"])), estilo=ESTILOS[conv["estilo"]])
     cuerpo = {"model": modelo, "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}],
               "temperature": 0.9, "max_tokens": 160, "seed": conv["semilla"] + turno, "reasoning": {"enabled": False},
@@ -324,6 +324,8 @@ def clienta(conv: dict, transcript: list[dict], turno: int, clave: str, modelo: 
         except Exception as e:  # noqa: BLE001
             ultimo = e
             time.sleep(2 + 3 * intento)
+    if ultimo is None:
+        return "[FIN]"   # contestó vacío tres veces: se da la conversación por terminada
     raise RuntimeError(f"clienta simulada sin respuesta: {ultimo}")
 
 
@@ -349,18 +351,21 @@ def correr_una(conv: dict, url: str, clave: str, modelo_clienta: str, cuenta: Cu
         except Exception as e:  # noqa: BLE001
             error = str(e)[:200]
             break
+        fin = False
         if isinstance(crudo, dict):
             partes = [crudo]
-        elif crudo.strip().upper().startswith("[FIN]"):
-            break
         else:
+            fin = "[FIN]" in crudo.upper()
+            crudo = re.sub(r"\[fin\]", "", crudo, flags=re.I).strip()
+            if not crudo:
+                break
             partes = [p.strip() for p in crudo.split("||") if p.strip()] or [crudo]
         for parte in partes:
             foto = None
             if isinstance(parte, dict):            # reales: {"foto": "v35", "texto": "..."}
                 foto, parte = parte.get("foto"), parte.get("texto", "")
-            elif parte.upper().startswith("[FOTO]"):
-                foto, parte = conv.get("foto", "v35"), parte[6:].strip()
+            elif "[FOTO]" in parte.upper():
+                foto, parte = conv.get("foto", "v35"), re.sub(r"\s*\[foto\]\s*", " ", parte, flags=re.I).strip()
             t0 = time.time()
             go = None
             # Emulación mínima del bot Go en WhatsApp: el «SI» al resumen del pedido lo resuelve Go, no el agente.
@@ -419,6 +424,8 @@ def correr_una(conv: dict, url: str, clave: str, modelo_clienta: str, cuenta: Cu
             for s in sug:
                 historial.append({"rol": "bot", "texto": s.get("pie", "")})
         k += 1
+        if fin:
+            break
     return {"id": conv["id"], "tipo": conv["tipo"], "conjunto": conv["conjunto"], "canal": conv.get("canal", ""),
             "desde_anuncio": bool(conv.get("desde_anuncio")), "persona_clave": conv.get("persona_clave", conv["id"]),
             "persona": conv.get("persona", ""), "turnos": turnos, "error": error}
@@ -447,10 +454,10 @@ def catalogo(url_cat: str, url_stock: str) -> dict:
 
 _P = memoria._plano
 RE_PIDE_FOTOS = re.compile(r"muestr|ensen|foto|ver (los|las|unos|unas|el|la|tus|sus|algun|otros|otras|mas|que)|quiero ver|modelos|opciones|catalogo|"
-                           r"recomiend|sugier|que (tienes|tienen|hay)|tienen? (vestidos|conjuntos|blazers?|blusas|faldas|pantalones|enterizos|algo)|"
+                           r"recomiend|sugier|que (tienes|tienen|hay)|(tienen?|tienes) (vestidos|conjuntos|blazers?|blusas|faldas|pantalones|enterizos|algo)|"
                            r"(vestidos|conjuntos|blazers|blusas|faldas|pantalones|enterizos)\b|otro|mas barat|algo mas|pasame|mandame|enviame|ensename|"
                            r"\bv\d{2}\b|cual (me )?(recomiendas|sugieres)")
-RE_VARIAS = re.compile(r"otr[oa]s|\bmas\b|opciones|modelos|catalogo|vestidos|conjuntos|blazers|blusas|faldas|pantalones|que (tienes|tienen|hay)|"
+RE_VARIAS = re.compile(r"otr[oa]s?\b|\bmas\b|opciones|modelos|catalogo|vestidos|conjuntos|blazers|blusas|faldas|pantalones|que (tienes|tienen|hay)|"
                        r"variedad|alternativ|parecid")
 RE_LO_SIN_PRENDA = re.compile(r"\b(lo|la|los|las) (buscas|necesitas|quieres|usaras|usarias|vas a usar|estas buscando)\b|"
                               r"\b(buscarlo|usarlo|necesitarlo|buscarla|usarla)\b")
@@ -474,6 +481,8 @@ def _precios_validos(cat: dict) -> set[int]:
         if p.get("precio") is not None:
             pr = int(round(float(p["precio"])))
             vals |= {pr, pr + 15, pr + 20, pr * 2}
+    base = [int(round(float(p["precio"]))) for p in cat.values() if p.get("precio") is not None]
+    vals |= {a + b for a in base for b in base}   # «el conjunto completo me sale S/ 450»: suma de dos prendas
     return vals | set(envios)
 
 
@@ -494,11 +503,15 @@ def reglas_turno(conv: dict, t: dict, prev: list[dict], cat: dict) -> list[tuple
     cliente_previo = " ".join(_P(x["cliente"]) for x in prev) + " " + cli
     nombra = bool(re.search(r"\bv\d{2}\b", cli)) or any(_P(p["nombre"]).split()[-1] in cli for p in cat.values() if p.get("nombre"))
     fotos = [f for f in t["fotos"] if f]
-    if fotos and not anuncio and not t.get("foto") and not nombra:
-        conoce = all(sab_a.get(memoria.DATO_DE[k]) or k in (mem_a.get("preguntado") or []) for k in memoria.INDAGAR)
+    mem_d = t.get("memoria") or mem_a
+    sab_d = mem_d.get("sabemos") or {}
+    if fotos and not anuncio and not t.get("foto") and not nombra and not mem_d.get("pidio_ver"):
+        # Con lo que sabe DESPUÉS de leer el mensaje: «es un matrimonio de noche» completa la necesidad en ese turno.
+        conoce = all(sab_d.get(memoria.DATO_DE[k]) or k in (mem_a.get("preguntado") or []) for k in memoria.INDAGAR)
         if not conoce and not RE_PIDE_FOTOS.search(cli):
             e.append(("fotos_sin_necesidad", f"{len(fotos)} foto(s) {fotos} sin conocer la necesidad ni pedirlas"))
-    if len(set(fotos)) > 1 and not RE_VARIAS.search(cli) and not t.get("foto"):
+    describiendo = mem_a.get("pendiente") in ("cual_prenda", "describir_prenda")   # «¿es alguno de estos?»: por diseño
+    if len(set(fotos)) > 1 and not RE_VARIAS.search(cli) and not t.get("foto") and not describiendo:
         e.append(("varias_opciones", f"{len(set(fotos))} prendas {fotos} sin pedir opciones"))
     # Pregunta repetida: ya contestada (dato en la memoria antes del turno) o ya hecha dos veces antes.
     for q in memoria.preguntas_en(bot):
@@ -511,18 +524,22 @@ def reglas_turno(conv: dict, t: dict, prev: list[dict], cat: dict) -> list[tuple
         elif sum(1 for x in prev if kq in [memoria.clave_de(z) for z in memoria.preguntas_en(x["bot"] or "")]) >= 2:
             e.append(("pregunta_repetida", f"tercera vez que pregunta {kq}: «{q.strip()[:70]}»"))
     # Prospección sin pregunta (el hilo se corta), salvo despedida, fuera del rubro o flujo del código.
+    ya_abierta = "que_busca" in (mem_a.get("preguntado") or [])   # ya hizo la pregunta abierta: callar es correcto
     if (t["etapa"] == "prospeccion" and "?" not in bot and t.get("accion") == "responder" and t.get("intent") not in ("despedida", "cancelacion")
+            and not ya_abierta
             and not re.search(r"no es mi giro|asesora|\*4\*", pb) and not RE_FUERA.search(cli) and t.get("modelo") not in ("espera_cual",)):
         e.append(("prospeccion_sin_pregunta", "en prospección y el bot no pregunta nada"))
     # «¿Para qué ocasión lo buscas?» sin prenda.
-    if RE_LO_SIN_PRENDA.search(pb) and not (sab_a.get("prenda") or mem_a.get("producto") or mem_a.get("mostrados") or anuncio
+    preguntas_bot = " ".join(memoria.preguntas_en(pb))
+    if RE_LO_SIN_PRENDA.search(preguntas_bot) and not (sab_a.get("prenda") or mem_a.get("producto") or mem_a.get("mostrados") or anuncio
                                              or RE_PRENDA_CLIENTA.search(cliente_previo) or t.get("foto") or fotos):
-        e.append(("lo_sin_prenda", f"«{RE_LO_SIN_PRENDA.search(pb).group(0)}» sin saber de qué prenda habla"))
+        e.append(("lo_sin_prenda", f"«{RE_LO_SIN_PRENDA.search(preguntas_bot).group(0)}» sin saber de qué prenda habla"))
     # Inventa una prenda que ella no mencionó.
     if RE_INVENTA_MENCION.search(pb) and not nombra and not any(x.get("foto") for x in prev + [t]):
         e.append(("prenda_inventada", f"«{RE_INVENTA_MENCION.search(pb).group(0)}» sin que ella la nombrara"))
     # Sin anuncio, el vestido del anuncio (V42) aparece sin que ella lo pida.
-    if not anuncio and ("V42" in fotos) and len(prev) < 2 and not re.search(r"gala|capa|azul|v42", cliente_previo):
+    if (not anuncio and ("V42" in fotos) and len(prev) < 2 and not re.search(r"gala|capa|azul|v42", cliente_previo)
+            and not any(x.get("foto") for x in prev + [t])):
         e.append(("anuncio_asumido", "manda el vestido del anuncio sin que haya llegado por el anuncio"))
     # Precios que no existen.
     validos = _precios_validos(cat)
@@ -541,9 +558,10 @@ def reglas_turno(conv: dict, t: dict, prev: list[dict], cat: dict) -> list[tuple
     # Etapas.
     ea, en = t["etapa_antes"] or "prospeccion", t["etapa"]
     compra = bool(etapas.RE_COMPRA.search(cli) or memoria.RE_CITA.search(cli) or etapas.RE_BOTON_TALLA.search(cli)
-                  or re.search(r"lo quiero|quiero (ese|este|el)|me lo llevo|probarmel|probarme|cita|separ|reserv|confirm", cli))
+                  or re.search(r"lo quiero|quiero (ese|este|el)|me lo llevo|me llevo|probarmel|probarme|cita|separ|reserv|apart|confirm|"
+                               r"pedido|compr|voy por|me quedo|lo llevo|puedo (ir|pasar)|ir a ver|paso (manana|el|hoy)", cli))
     pend_a = mem_a.get("pendiente")
-    afirma_ok = pend_a in ("probar", "confirmar", "separar", "cita") and etapas.RE_AFIRMA.match(cli)
+    afirma_ok = pend_a in ("probar", "cita") or (pend_a in ("confirmar", "separar") and etapas.RE_AFIRMA.match(cli))
     if en in ("cierre", "venta_confirmada") and ea in ("prospeccion", "seguimiento") and not compra and not afirma_ok and t.get("accion") != "go_confirmar":
         e.append(("etapa_salto", f"{ea}→{en} sin intención de compra («{t['cliente'][:50]}»)"))
     if t.get("accion") == "pedido" and RE_INTERES.match(cli):
@@ -569,7 +587,7 @@ def reglas_conversacion(conv: dict, r: dict) -> list[tuple[int, str, str]]:
         for cat_, det in reglas_turno(conv, t, r["turnos"][:i], CAT):
             out.append((i, cat_, det))
     if r.get("error"):
-        out.append((len(r["turnos"]), "error_o_vacia", r["error"][:100]))
+        out.append((len(r["turnos"]), "error_arnes", r["error"][:100]))   # falla de la clienta simulada, no del bot
     return out
 
 
@@ -610,8 +628,12 @@ def _datos_reales(r: dict) -> str:
               f"stock {CAT[c].get('stock', {})}. {CAT[c]['descripcion'][:400]}" for c in sorted(cods) if c in CAT]
     tienda = ("TIENDA: showroom Juan Ayllón 459, Santa Anita (a 4 cuadras del Mall de Santa Anita), solo con cita, lunes a domingo "
               "9:00–19:00, refrigerio 13:00–14:00. Envíos: Lima S/ 15 (Olva), provincia S/ 20 (Olva o Shalom). Tallas S, M, L. "
-              "Cambios solo por falla de fábrica en 7 días. Promociones/descuentos y datos de pago: los da una asesora (*4*). "
-              "Vestido V42: material crepe y gasa con capa, corpiño bordado con pedrería (lámina de la tienda).")
+              "Cambios solo por falla de fábrica en 7 días. Promociones/descuentos y datos de pago: los da una asesora (*4*).")
+    try:
+        demo = json.load(open(os.path.join(AQUI, "..", "seed", "producto_demo.json"), encoding="utf-8"))
+        tienda += f" Material del {demo['codigo']} (lámina de la tienda): {demo.get('material', '')}"
+    except (OSError, ValueError, KeyError):
+        pass
     return tienda + "\nPRENDAS:\n" + ("\n".join(fichas) or "(ninguna)")
 
 
@@ -665,7 +687,7 @@ def resumir(resultados: list[dict]) -> dict:
             cats.setdefault(c, []).append((i, d))
         for c in errores_juez(r.get("juez") or {}):
             cats.setdefault(c, []).append((-1, f"p={r['juez'].get(c[5:])}"))
-        if not cats:
+        if not [c for c in cats if c != "error_arnes"]:
             sin_error += 1
         for c, v in cats.items():
             x = por_cat.setdefault(c, {"conversaciones": 0, "ocurrencias": 0, "ejemplos": []})
@@ -761,6 +783,10 @@ def main(argv=None):
     c.add_argument("--env", default=os.path.join(AQUI, "..", "..", ".env"))
     c.add_argument("--catalogo", default="https://proyectopostventa.site/baruka/api/public/catalog")
     c.add_argument("--stock", default="https://proyectopostventa.site/baruka/api/public/stock")
+    rj = sub.add_parser("rejuzgar", help="vuelve a pasar el juez (Jev) sobre resultados guardados: mismo juez para antes y después")
+    rj.add_argument("ruta")
+    rj.add_argument("--tope", type=float, default=0.03)
+    rj.add_argument("--env", default=os.path.join(AQUI, "..", "..", ".env"))
     i = sub.add_parser("informe")
     i.add_argument("ruta")
     i.add_argument("--comparar")
@@ -785,6 +811,16 @@ def main(argv=None):
     clave = _clave(a.env)
     if not clave:
         sys.exit("falta OPENROUTER_API_KEY (o --env)")
+    if a.cmd == "rejuzgar":
+        res = cargar(a.ruta)
+        cuenta = Cuenta(a.tope)
+        with cf.ThreadPoolExecutor(4) as ex:
+            jueces = list(ex.map(lambda r: juzgar(r, clave, cuenta) if r["turnos"] and not cuenta.agotada() else r.get("juez"), res))
+        with open(a.ruta, "w", encoding="utf-8") as fh:
+            for r, j in zip(res, jueces):
+                fh.write(json.dumps(dict(r, juez=j), ensure_ascii=False) + "\n")
+        print(f"rejuzgadas {len(res)} · gasto US$ {cuenta.total:.4f}")
+        return
     convs = [json.loads(x) for x in open(CORPUS, encoding="utf-8") if x.strip()]
     if a.ids:
         ids = set(a.ids.split(","))
