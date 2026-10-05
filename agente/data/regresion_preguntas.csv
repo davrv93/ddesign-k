@@ -1,0 +1,61 @@
+id,mensaje,contexto,comercial,intencion,extrae,no_extrae,si_no,pide_ver,accion,fotos,etapa,flujo,pregunta,contiene,no_contiene,nota
+P01,ola buenas noches,nuevo,saludo,,,,,,responder,0,prospeccion,,que_busca,,ocasión especial,"a un saludo se le pregunta qué busca, no la ocasión"
+P02,soy alvaro,saludo,,,"{""nombre"": ""Alvaro""}",talla,,,responder,0,prospeccion,,,,,el nombre se guarda; no deriva
+P03,mi nombre es rosa elvira,saludo,,,"{""nombre"": ""Rosa Elvira""}","color,ocasion",,,responder,0,,,,,,"«rosa» es su nombre, no un color"
+P04,te saluda carmen de chiclayo,nuevo,,,"{""nombre"": ""Carmen"", ""ciudad"": ""Chiclayo"", ""envio"": ""provincia""}",,,,responder,0,,,,,,nombre y ciudad en el mismo mensaje
+P05,"me llamo luz, cn quien tengo el gusto?",saludo,,,"{""nombre"": ""Luz""}",,,,responder,0,,,,,,"pregunta con quién habla: se contesta, no se deriva"
+P06,listo me lo llevo entonces,visto,intencion_compra,,,,,,responder,0,cierre,,talla,,,"compra explícita: cierre, y falta la talla"
+P07,quiero hablar con una persona x favor,visto,,asesora,,,,,asesora,,,,,,,
+P08,me comunicas con alguien de ventas?,nuevo,,,,,,,asesora,,,,,,,
+P09,necesito q me atienda una asesora no un bot,visto,,,,,,,asesora,,,,,,,
+P10,pasame con la encargada porfa,nuevo,,,,,,,asesora,,,,,,,
+P11,oe quiero poner un reclamo,visto,,,,,,,asesora,,,,,,,
+P12,"es para mi persona favorita, mi mami",ocasion,,,,,,,responder,0,,,,,,«persona» no es pedir una persona
+P13,alguien me dijo q sus vestidos son lindos,nuevo,,,,,,,responder,cat:vestido,,,,,,«alguien» no es pedir a alguien
+P14,eres un bot o una persona?,visto,,,,,,,responder,0,,,,,,"pregunta qué es: se contesta con honestidad, sin pausar el bot"
+P15,mi hermana es asesora de belleza y le encanto,visto,,,,,,,responder,0,,,,,,
+P16,a ver muéstrame,ocasion,,,,,,si,responder,1;cat:vestido,,,,,,"ya se le preguntó la ocasión y pide ver: una opción, del vestido que dijo"
+P17,tienen fotos d los vestidos?,nuevo,,,,,,si,responder,0,,,ocasion,,,"pide ver sin contar para qué: primero la ocasión, una vez"
+P18,pasame foto del holly,nuevo,,,,,,,responder,=V41,,,,,,"la foto de la prenda nombrada, ninguna otra"
+P19,como es el irla? manda foto,visto,,,,,,,responder,=V35,,,,,,pregunta por otra prenda: la foto es de esa
+P20,otros modelos tendras?,visto,,,,,,,responder,1+;no:V41,,,,,,pide más: otras que no vio
+P21,y en conjuntos q hay,visto,,,,,,,responder,1+;cat:conjunto,,,,,,cambia de categoría: solo conjuntos
+P22,tienen blazer?,nuevo,,,,,,,responder,cat:blazer,,,,,,"si se muestra algo, que sea un blazer"
+P23,kiero ver todo el catalogo,nuevo,,,,,,si,responder,0,,,,,,el catálogo sin prenda no saca fotos al azar
+P24,"no me muestres nada todavia, solo pregunto",visto,,,,,,no,responder,0,,,,,,«no me muestres» no es pedir ver
+P25,tienen en rojo?,visto,consulta_color,,"{""color"": ""rojo""}",,,,responder,0,,,,,,del vestido que ve no hay rojo: no se manda un conjunto rojo en su lugar
+P26,tienen vestidos verdes?,nuevo,,,"{""prenda"": ""vestido"", ""color"": ""verde""}",,,,responder,0,,,,,,no hay vestido verde (sí una blusa): no se manda la blusa
+P27,hay polos?,nuevo,,,"{""prenda"": ""polo""}",,,,responder,0,,,,,,la tienda no vende polos
+P28,ta bonito pero dejame consultarlo con mi esposo,visto,objecion,,,,,,responder,0,seguimiento,,,,,objeción: sin presionar
+P29,es pa mañana,fecha,,,"{""fecha"": ""manana""}",,,,,0,prospeccion,,horario,,,«pa» es «para»; responde a ¿para cuándo?
+P30,par aun quinceañero,ocasion,,,"{""ocasion"": ""quinceanero""}",,,,,0,,,fecha,,,espacio mal puesto
+P31,el 24 de octubre,fecha,,,"{""fecha"": ""24 de octubre""}",,,,,0,prospeccion,,horario,,,una fecha responde a ¿para cuándo?; no es una objeción
+P32,es el sabado 18 x la tarde,fecha,,,"{""fecha"": ""~sabado 18"", ""horario"": ""dia""}",,,,,1;cat:vestido,prospeccion,,,,,fecha y día/noche juntos: ya toca una opción
+P33,todavia no tengo fecha,fecha,,,,,,,responder,0,prospeccion,,!fecha,,,contestó que no sabe: no se le vuelve a preguntar
+P34,"de noche, empieza a las 8",horario,,,"{""horario"": ""noche""}",,,,,1;cat:vestido,prospeccion,,,,,
+P35,en la mañanita nomas,horario,,,"{""horario"": ""dia""}",,,,,1;cat:vestido,,,,,,
+P36,pa el matri de mi prima,ocasion,,,"{""ocasion"": ""matrimonio""}",,,,,0,,,fecha,,,«matri» es matrimonio
+P37,es la promo de mi hija,ocasion,,,"{""ocasion"": ""graduacion""}",,,,,0,,,fecha,,,«la promo» es la fiesta de promoción
+P38,cuanto sale el azra turquesa?,nuevo,consulta_precio,,,,,,responder,=V28,,,,{precio:V28},,"precio de la prenda nombrada, con su foto"
+P39,tengo un bautizo,saludo,,,"{""ocasion"": ""bautizo""}",,,,,0,,,fecha,,,
+P40,"ninguna ocasion, es pa diario",ocasion,,,,,,,responder,1;cat:vestido,,,!ocasion|fecha|horario,,,sin evento: no se insiste con fecha ni día/noche; se le muestra una opción
+P41,mi talla es L disculpa,talla,,,"{""talla"": ""L""}",,,,pedido,,cierre,,,Talla *L*,,"en el cierre, la talla que dice arma el pedido"
+P42,uso M pero a veces S,visto+talla,,,"{""talla"": ""M""}",,,,responder,0,,,,,,decir la talla fuera del cierre no arma el pedido
+P43,la ele,talla,,,"{""talla"": ""L""}",,,,pedido,,,,,,,la letra dicha con su nombre
+P44,"soy bien flaquita, que talla me recomiendas?",visto,consulta_talla,,,talla,,,responder,0,,,,,,pregunta por la talla; no dice ninguna
+P45,en XL hay?,visto,consulta_talla|consulta_disponibilidad,,"{""talla"": ""XL""}",,,,responder,0,,,,,,
+P46,d q tela es ese?,visto,consulta_material,,,,,,responder,0,,,,,,
+P47,si ca ver,pago,,,,,si,,,0,,flujo_pago,voucher,Yape,,es un sí a ¿te paso los datos para el pago?: los datos van ya
+P48,ya pues,otras,,,,,si,,,1+;no:V41,,,,,,es un sí a ¿quieres ver otras opciones?
+P49,claro q si pasame,pago,,,,,si,,,,,flujo_pago,,Yape,,
+P50,nel,otras,,,,,no,,responder,0,,,,,,es un no
+P51,ahorita no gracias,probar,,,,,no,,responder,0,!cierre,,,,,es un no a probárselo o separarlo: no se cierra
+P52,sii porfa,confirmar,,,,,si,,,,venta_confirmada,,,,,sí a ¿confirmamos tu pedido?
+P53,"mmm no se, dejame pensarlo",confirmar,objecion,,,,ni,,responder,,seguimiento,,,,,"ni sí ni no: duda, vuelve a seguimiento"
+P54,pasame el yape,pago,,,,,,,,,venta_confirmada,flujo_pago,,Yape,,pide los datos de pago con el pedido confirmado
+P55,a q numero yapeo?,visto,,,,,,,responder,,cierre,,talla,,Yape:,"quiere pagar sin pedido armado: es compra, falta la talla; los datos aún no"
+P56,cuanto demora a Piura,visto,consulta_delivery,,"{""ciudad"": ""Piura"", ""envio"": ""provincia""}",,,,responder,0,,,,,Yape:,ciudad de provincia; el tiempo de entrega no se inventa
+P57,hacen envios a huancayo?,nuevo,consulta_delivery,,"{""ciudad"": ""Huancayo"", ""envio"": ""provincia""}",,,,responder,0,,,,,,
+P58,para surco,envio,,,"{""envio"": ""lima""}",,,,,,,flujo_pago,voucher,{total:V41:lima};Yape,,un distrito de Lima responde a ¿Lima o provincia?
+P59,soy de tacna,envio,,,"{""envio"": ""provincia"", ""ciudad"": ""Tacna""}",nombre,,,,,,flujo_pago,,{total:V41:provincia};Yape,,"«soy de Tacna» es la ciudad, no su nombre"
+P60,"ya yapee, ahi va la captura",voucher,,,,,,,responder,0,venta_confirmada,flujo_pago,,comprobante,,dice que ya pagó: se espera el comprobante
