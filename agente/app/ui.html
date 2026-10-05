@@ -313,15 +313,23 @@ function panelVenta(j) {
 }
 
 // Memoria: qué sabe el bot de la clienta, qué pregunta dejó abierta y cuál toca después.
-const NOMBRE_DATO = { ocasion: 'ocasión', horario: 'día/noche', fecha: 'para cuándo', talla: 'talla', estatura: 'estatura', color: 'color',
-  presupuesto: 'presupuesto', envio: 'envío', ciudad: 'ciudad', le_gusto: 'le gustó' };
+const NOMBRE_DATO = { ocasion: 'ocasión', horario: 'día/noche', fecha: 'para cuándo', fecha_iso: 'fecha del evento', prenda: 'prenda',
+  talla: 'talla', estatura: 'estatura', color: 'color', presupuesto: 'presupuesto', envio: 'envío', ciudad: 'ciudad', le_gusto: 'le gustó',
+  cita: 'cita para probarse' };
+// Temperatura de la clienta (reglas del agente): por la fecha del evento y sus señales.
+const TEMP = { frio: ['🧊', 'fría'], tibio: ['🌤️', 'tibia'], caliente: ['🔥', 'caliente'] };
 function panelMemoria(j) {
   const m = memoria; if (!m) return '';
   const sab = Object.entries(m.sabemos || {}).filter(([, v]) => v);
   const l = j.lectura;
   const leido = l && l.pendiente ? `<div class="sub">esperaba <b>${esc(l.pendiente)}</b>: ${l.respondio ? 'lo respondió' : l.espera ? 'dice que ya lo manda (se espera)' : 'no lo respondió'}</div>` : '';
   const fuentes = l && Object.keys(l.datos || {}).length ? `<div class="sub">de este mensaje: ${Object.entries(l.datos).map(([k, v]) => `${esc(NOMBRE_DATO[k] || k)} ${esc(v)}${l.fuente && l.fuente[k] === 'jev' ? ' (Jev)' : ''}`).join(' · ')}</div>` : '';
-  return `<h2>Memoria</h2>
+  const t = TEMP[m.temperatura];
+  const temp = t ? `<h2>Temperatura</h2><div>${t[0]} <b>${esc(t[1])}</b>${m.temperatura_motivo ? ' — ' + esc(m.temperatura_motivo) : ''}</div>` : '';
+  const tent = m.cita_tentativa || {};
+  const cita = m.sabemos && m.sabemos.cita ? `<div class="sub">🗓️ cita: <b>${esc(m.sabemos.cita)}</b></div>`
+    : (tent.dia || tent.hora) ? `<div class="sub">🗓️ cita en curso: ${esc(tent.dia || 'falta el día')} · ${esc(tent.hora || 'falta la hora')}</div>` : '';
+  return `${temp}${cita}<h2>Memoria</h2>
     <div>Esperando: <b>${esc(m.pendiente || '—')}</b> · siguiente: <b>${esc(j.siguiente_pregunta || '—')}</b></div>${leido}${fuentes}
     <ul>${sab.length ? sab.map(([k, v]) => `<li>${esc(NOMBRE_DATO[k] || k)}: <b>${esc(v)}</b></li>`).join('') : '<li class="sub">todavía nada</li>'}</ul>
     <div class="sub">ya preguntó: ${esc((m.preguntado || []).join(', ') || '—')}${m.producto ? ` · prenda: ${esc(m.producto)}` : ''}${(m.mostrados || []).length ? ` · mostró: ${esc(m.mostrados.join(', '))}` : ''}${(m.objeciones || []).length ? ` · dudas: ${esc(m.objeciones.join(', '))}` : ''}${m.llego_por ? ` · llegó por: ${esc(m.llego_por)}` : ''}</div>`;

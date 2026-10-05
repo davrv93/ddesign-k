@@ -53,6 +53,9 @@ En `step()` de `backend/internal/bot/bot.go`:
 - **Después del *SI*** el estado es `esperando_pago` (`handlePayment`): el agente lleva Lima o provincia →
   total → datos de pago; **la foto que llega ahí es el comprobante** (`handleVoucher`, queda anotado en el
   pedido) y luego se pide la dirección. Sin agente sigue el flujo anterior (ubicación y una asesora cobra).
+- **Cita para probarse** (`registrarCita` en `internal/bot/memoria.go`): si la memoria que vuelve trae una `sabemos.cita`
+  nueva, se crea o anota un pedido en `consulta` con la prenda, la talla y «🗓️ Cita para probarse … · clienta caliente: …»,
+  y `Notify("orders")`. No reserva stock.
 - **Memoria de la conversación** (`internal/bot/memoria.go`): la ficha que devuelve el agente se guarda en
   `convContext.Memoria` y viaja en cada `askAgent`/`agentPhoto`, como la etapa. Los reinicios del flujo
   (`setState(..., convContext{})`) la conservan, como `Anuncio`, pero sueltan la pregunta pendiente. Los estados del
@@ -86,6 +89,14 @@ En `step()` de `backend/internal/bot/bot.go`:
   sabido no se repite (`quitar_repetidas` lo borra si el LLM insiste). Reemplazó a `esperando_cual`,
   `RE_PIDE_CONFIRMAR`, `talla_conocida` por historial y `_ultimos_del_bot` como fuente de verdad. Detalle en
   [`agente/README.md`](agente/README.md) («Memoria y hilo»).
+- **Método de venta** (pedido del cliente, 04-10-2026; detalle en [`agente/README.md`](agente/README.md), «Método de
+  venta: necesidad, temperatura y cierre con prueba»): sin anuncio ni prenda nombrada, primero se **indaga** (ocasión →
+  fecha → día/noche) sin mandar fotos; luego se ofrece **UNA opción** (`mejor_opcion`: RAG + stock); tela, corte y talla
+  con datos de la ficha; el cierre da el precio y pregunta «¿probártelo al showroom o te lo separo?». La **temperatura**
+  (`memoria.temperatura`: fría/tibia/caliente por la fecha del evento en hora de Lima y por señales; sin datos = fría)
+  cambia el tono y el orden del seguimiento. La **cita para probarse** la arma el código (`memoria.leer_cita`,
+  `validar_cita`: L–D 9–19 h, no en refrigerio 13–14 h) y se guarda en `sabemos.cita`; el bot Go la deja en el tablero
+  como pedido en `consulta` con una nota para la asesora (`registrarCita`, sin reservar stock).
 - **Vestido del anuncio:** `KD_PRODUCTO_DEMO=V42`, pero **solo para quien llega por un anuncio de clic a
   WhatsApp** (el bot Go lo detecta en `contextInfo.externalAdReply` y lo recuerda en la conversación; si el
   título del anuncio nombra otra prenda, manda esa). Sin anuncio, «¿tienen este vestido?» → el bot pregunta
@@ -162,7 +173,7 @@ responde. **No los arranques**: serían dos bots con el mismo número de WhatsAp
 | Política de cambios y devoluciones | **Real** (de la ficha de Diners), en `tienda.md` |
 | Productos V01–V20 | Ejemplo, **inactivos**. No se borran porque los pedidos de prueba #4, #5 y #7 los referencian |
 | Sucursales (Centro de Lima, Miraflores, Gamarra) | **Demostración, con direcciones inventadas.** Apagadas con `KD_SUCURSALES=0`: el bot ya no las menciona |
-| Showroom, horario, envíos | **Reales** (los dio la tienda el 04-10-2026): Juan Ayllón 459, Santa Anita; L–D 9–19 h, solo con cita; Lima S/ 15, provincia S/ 20. En `tienda.md` y `venta.json` |
+| Showroom, horario, envíos | **Reales** (los dio la tienda el 04-10-2026): Juan Ayllón 459, Santa Anita; L–D 9–19 h, solo con cita; Lima S/ 15, provincia S/ 20. En `tienda.md` y `venta.json` (copia en `showroom` para confirmar citas; el horario que valida la cita está en `memoria.py`: si cambia, se cambia en los tres) |
 | Vestido **V42** «Vestido Gala Capa Azul» | Foto y lámina de materiales **reales** (las mandó la tienda). **Nombre, precio (S/ 260) y stock provisionales**: falta que Baruka los confirme |
 | Precios de `agente/seed/precios_catalogo100.json` | Inventados. Con `CATALOGO100=0` no se usan |
 | Vestido Irla (V35) | Diners lo registra en «palo rosa», pero en su foto es negro. Se copió tal cual |

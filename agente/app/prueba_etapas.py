@@ -46,6 +46,20 @@ CASOS = [
     ("primer mensaje: comprar sí lo saca", "prospeccion", "intencion_compra", 0.95, "hola, quiero comprar este vestido", "", "cierre", "intencion_compra"),
 ]
 
+# Método de venta: pedir cita para probárselo es intención de compra (cierre) y marca `cita`.
+# (nombre, etapa, intención del clasificador, confianza, mensaje, pendiente) → (etapa, intención, cita)
+CITA = [
+    ("cita · quiere ir a probárselo", "seguimiento", "consulta_ubicacion", 0.97, "sí, quiero ir a probármelo", "", "cierre", "intencion_compra", True),
+    ("cita · ¿puedo ir a probarme?", "seguimiento", "consulta_ubicacion", 1.0, "¿puedo ir a probarme el vestido?", "", "cierre", "intencion_compra", True),
+    ("cita · sacar una cita", "seguimiento", "objecion", 0.40, "quiero sacar una cita", "", "cierre", "intencion_compra", True),
+    ("cita · «sí» a ¿te lo pruebas o te lo separo?", "seguimiento", "saludo", 0.40, "sí", "probar", "cierre", "intencion_compra", True),
+    ("cita · «sí» a otra pregunta no es cita", "seguimiento", "saludo", 0.40, "sí", "horario", "seguimiento", "interesado", False),
+    ("cita · desde prospección también cierra", "prospeccion", "consulta_ubicacion", 0.99, "hola, quiero ir a probarme el vestido azul", "", "cierre", "intencion_compra", True),
+    ("cita · «se puede probar?» es solo una consulta", "seguimiento", "consulta_ubicacion", 1.0, "¿se puede probar?", "", "seguimiento", "consulta_ubicacion", False),
+    ("cita · separarlo sigue siendo pedido", "seguimiento", "intencion_compra", 0.95, "mejor sepáramelo", "probar", "cierre", "intencion_compra", False),
+    ("cita · venta confirmada no retrocede", "venta_confirmada", "consulta_ubicacion", 0.9, "quiero ir a probármelo", "", "venta_confirmada", "intencion_compra", False),
+]
+
 
 def main() -> int:
     fallos = 0
@@ -55,7 +69,23 @@ def main() -> int:
         fallos += not ok
         if not ok:
             print(f"   ✗ {nombre}: {etapa} + «{msg}» → {d['etapa']}/{d['intent']} (esperado {e_esp}/{i_esp}) [{d['motivo']}]")
-    print(f"etapas     máquina de estados: {len(CASOS) - fallos}/{len(CASOS)} casos")
+    for nombre, etapa, intent, conf, msg, pend, e_esp, i_esp, c_esp in CITA:
+        d = decidir(etapa, intent, conf, msg, "", primer_mensaje=etapa == "prospeccion", pendiente=pend)
+        ok = (d["etapa"], d["intent"], d["cita"]) == (e_esp, i_esp, c_esp)
+        fallos += not ok
+        if not ok:
+            print(f"   ✗ {nombre}: {etapa} + «{msg}» → {d['etapa']}/{d['intent']}/cita={d['cita']} (esperado {e_esp}/{i_esp}/{c_esp}) [{d['motivo']}]")
+    # Indagando la necesidad (sin prenda mostrada): contar la fecha o preguntar no saca de prospección; comprar sí.
+    for nombre, intent, conf, msg, e_esp in [
+            ("indagando · la fecha no es seguimiento", "consulta_horario", 0.83, "el sábado 17", "prospeccion"),
+            ("indagando · «solo estoy viendo» tampoco", "objecion", 0.99, "solo estoy viendo", "prospeccion"),
+            ("indagando · comprar sí cierra", "intencion_compra", 0.95, "quiero comprar un vestido", "cierre")]:
+        d = decidir("prospeccion", intent, conf, msg, "", indagando=True)
+        fallos += d["etapa"] != e_esp
+        if d["etapa"] != e_esp:
+            print(f"   ✗ {nombre}: → {d['etapa']} (esperado {e_esp}) [{d['motivo']}]")
+    total = len(CASOS) + len(CITA) + 3
+    print(f"etapas     máquina de estados: {total - fallos}/{total} casos")
     return 1 if fallos else 0
 
 

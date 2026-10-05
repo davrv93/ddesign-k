@@ -258,13 +258,13 @@ def _texto_perfil(perfil: dict | None) -> str:
             + "). Puedes mencionarlo con naturalidad una vez («¡qué gusto que vuelvas!»), sin listar sus pedidos.\n")
 
 
-def bloque_memoria(mem: dict, sig: str, perfil: dict | None = None) -> str:
+def bloque_memoria(mem: dict, sig: str, perfil: dict | None = None, mensaje: str = "") -> str:
     """Lo que el LLM sabe de la conversación y la pregunta que le toca hacer, elegida por el código."""
     pend = mem.get("pendiente", "")
     esperando = (f"{memoria.ESPERA[pend]}. Si su mensaje no lo responde, no lo des por respondido ni lo inventes."
                  if pend else "nada en particular")
     if sig:
-        siguiente = f"«{memoria.PREGUNTAS[sig]}» (hazla tal cual al final, o no preguntes nada)"
+        siguiente = f"«{memoria.texto_pregunta(sig, mem, mensaje)}» (hazla tal cual al final, o no preguntes nada)"
     else:
         siguiente = "ninguna: no hagas preguntas nuevas; responde lo que preguntó"
     return (f"{_texto_perfil(perfil)}LO QUE YA SABEMOS DE ELLA (no lo vuelvas a preguntar): {memoria.lo_que_sabemos(mem)}\n"
@@ -503,10 +503,11 @@ MENSAJE NUEVO DEL CLIENTE:
     return [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}]
 
 
-def bloque_etapa(dec: dict, foco, paso: str = "", pedido: str = "") -> str:
-    """ETAPA ACTUAL para el LLM: en qué punto de la venta está y qué le toca hacer."""
+def bloque_etapa(dec: dict, foco, paso: str = "", pedido: str = "", mem: dict | None = None) -> str:
+    """ETAPA ACTUAL para el LLM: en qué punto de la venta está, qué le toca hacer y con qué tono (temperatura)."""
     e = dec["etapa"]
-    txt = f"ETAPA ACTUAL: {venta.NOMBRE_ETAPA[e]}\n{venta.guia(e, paso, pedido)}"
+    mem = mem or {}
+    txt = f"ETAPA ACTUAL: {venta.NOMBRE_ETAPA[e]}\n{venta.guia(e, paso, pedido, mem.get('temperatura', ''), mem.get('temperatura_motivo', ''))}"
     if e == "venta_confirmada" and foco is not None:
         txt += "\n\n" + venta.totales(foco.precio, MONEDA) + "\n\n" + venta.info_pago()
     return txt
@@ -524,9 +525,9 @@ def _prompt_comercial(req: ChatIn, cl: dict, dec: dict, foco, fichas, sugeridas=
     usuario = f"""CLIENTE: {req.cliente or "(sin nombre)"}
 {"YA ESTÁN CONVERSANDO: no saludes ni digas su nombre al empezar; responde directo." if ya_hablaron else "PRIMER MENSAJE: saluda y preséntate en una frase."}
 
-{bloque_etapa(dec, foco, paso, pedido)}
+{bloque_etapa(dec, foco, paso, pedido, mem)}
 
-{bloque_memoria(mem, sig, req.perfil) if mem is not None else ""}
+{bloque_memoria(mem, sig, req.perfil, req.mensaje) if mem is not None else ""}
 
 LO QUE ACABA DE HACER LA CLIENTA: {dec['intent']} (confianza {dec['confianza']:.2f}){' — ' + dec['motivo'] if dec['motivo'] else ''}
 PRODUCTO DEL QUE SE HABLA: {foco_txt}
@@ -966,11 +967,38 @@ def quiere_opciones(req: ChatIn, cl: dict) -> bool:
     # por turnos de la clienta, no por mensajes: una respuesta larga del bot llega partida en varios
     turnos = [k for k, t in enumerate(req.historial) if t.rol == "cliente"][-4:]
     recientes = req.historial[turnos[0]:] if turnos else req.historial[-6:]
-    if not any(t.rol != "cliente" and datos.codigos_en(t.texto) for t in recientes):
-        return True  # todavía no le enseñamos nada
+    if not any(t.rol != "cliente" and datos.codigos_en(t.texto) for t in recientes) and not (_mem_actual.get() or {}).get("mostrados"):
+        return True  # todavía no le enseñamos nada (ni en estos turnos ni según la memoria)
     # ya vio prendas: solo una búsqueda nueva (otra prenda u ocasión que no había nombrado) trae más fotos
     antes = set().union(*[_palabras_ropa(t.texto) for t in recientes if t.rol == "cliente"])
     return bool(_palabras_ropa(req.mensaje) - antes)
+
+
+def mejor_opcion(mem: dict, req: ChatIn):
+    """Método de venta: la UNA prenda que una vendedora ofrecería para la necesidad que contó (ocasión, día/noche,
+    color, presupuesto): el RAG propone y el stock de ahora decide. None si no hay ninguna con stock."""
+    sab = mem["sabemos"]
+    prenda = sab.get("prenda") or categoria_pedida(req.mensaje)
+    if not prenda and sab.get("ocasion") and sab["ocasion"] != "trabajo":
+        prenda = "vestido"
+    partes = [prenda or "prenda"]
+    if sab.get("ocasion"):
+        partes.append(f"para {sab['ocasion']}")
+    if sab.get("horario"):
+        partes.append("de noche" if sab["horario"] == "noche" else "de día")
+    if sab.get("color"):
+        partes.append(f"color {sab['color']}")
+    qv = E.emb([" ".join(partes)])[0]
+    vistos = _ya_mostrados(req)
+    cands = [f for f in recuperar(qv, [], prenda, k=12) if f.fuente == "seed" and f.codigo not in vistos and _imagen(f)]
+    st = E.stock.consultar([f.codigo for f in cands])
+    cands = [f for f in cands if disponible(f, st.get(f.codigo, {}))]
+    tope = float(sab["presupuesto"]) if str(sab.get("presupuesto") or "").isdigit() else None
+    rango = {"online": 0, "sucursal": 1}
+    # estable: conserva el orden del RAG; primero lo que se pide ya y lo que entra en su presupuesto
+    cands.sort(key=lambda f: (rango[disponible(f, st.get(f.codigo, {}))],
+                              tope is not None and f.precio is not None and f.precio > tope))
+    return cands[0] if cands else None
 
 
 def sugerir(req: ChatIn, cl: dict, fichas: list) -> list:
@@ -1116,10 +1144,34 @@ def conversar(req: ChatIn) -> dict:
             jev_mem = (com_jev or {}).get("memoria")
         elif jev.MODO == "sombra":
             jev.sombra(st_jev, com, req.conversacion, reglas)
-    lectura = memoria.leer(mem, req.mensaje, jev_mem)
+    ahora = memoria.ahora_lima()
+    lectura = memoria.leer(mem, req.mensaje, jev_mem, ahora=ahora)
+    # Método de venta: sin anuncio ni prenda concreta, primero se indaga la necesidad (ocasión → fecha → día/noche).
+    # Mientras tanto no se muestran prendas y la conversación sigue en prospección.
+    anuncio = bool(req.desde_anuncio or req.anuncio)
+    sin_mostrar = not (mem["mostrados"] or mem["producto"] or _ya_mostrados(req))
+    necesidad = (foco is None and not anuncio and sin_mostrar and not nombrados(req.mensaje)
+                 and memoria.en_necesidad(mem, req.mensaje))
+    indagando = necesidad and not memoria.necesidad_conocida(mem) and not memoria.pide_ver(req.mensaje) and not pide_mas(req)
     dec = etapas.decidir(etapa_in, com["intent"], com["confianza"], req.mensaje, ultimo_bot,
-                         primer_mensaje=not any(t.rol != "cliente" for t in req.historial), pendiente=pend)
+                         primer_mensaje=not any(t.rol != "cliente" for t in req.historial), pendiente=pend, indagando=indagando)
     etapa = dec["etapa"]
+    # Temperatura de la clienta (reglas): por la fecha del evento y sus señales. Cambia el tono que pide la guía.
+    memoria.anotar_senales(mem, req.mensaje, dec["intent"], dec["nivel"], cita=dec["cita"])
+    memoria.temperatura(mem, ahora.date())
+    # Cita para probárselo: la pide ahora, o responde con día u hora a la que se le pidió.
+    cita_l = lectura.get("cita") or {}
+    cita_turno = bool(lectura.get("es_cita") and (dec["cita"] or cita_l.get("dato") or cita_l.get("ok")))
+    if cita_turno and etapa in ("prospeccion", "seguimiento"):
+        etapa = dec["etapa"] = "cierre"
+        dec["transicion"] = dec["etapa_anterior"] != "cierre"
+    if pend == "cita" and not cita_turno and dec["intent"] in ("objecion", "objecion_precio", "cancelacion"):
+        mem["pendiente"] = ""      # se echó atrás: lo próximo que diga de un día ya no es la cita
+    plano = memoria._plano(req.mensaje)
+    compra_explicita = bool(etapas.RE_COMPRA.search(plano) or etapas.RE_BOTON_TALLA.search(plano))
+    cita_hecha = bool(mem["sabemos"].get("cita")) and not cita_turno
+    # Con cita hecha, decir la talla no arma el pedido (es la talla que se va a probar), salvo que pida comprarlo.
+    sin_pedido = cita_turno or (cita_hecha and not compra_explicita)
     forzar = None   # la pregunta que deja el flujo del código (None: la detecta en la respuesta)
     sig = ""        # la siguiente pregunta que elige el código para el LLM
     # Describe la prenda que vio («era fucsia, satinado y largo»): lo que salga son posibles coincidencias, aunque
@@ -1146,12 +1198,45 @@ def conversar(req: ChatIn) -> dict:
     # Decir la talla no es comprar. Solo en CIERRE (cuando ya dijo que quiere comprarlo, o eligió la
     # talla en el botón de la tarjeta) una talla arma el pedido; antes, la contesta el LLM y sigue la charla.
     talla = ""
-    if foco and not pide and etapa == "cierre":
+    if foco and not pide and etapa == "cierre" and not sin_pedido:
         if "?" not in req.mensaje and len(req.mensaje) <= 60:
             talla = talla_en(req.mensaje)
         if not talla and dec["intent"] == "intencion_compra":
             talla = talla_conocida(req)        # ya la había dicho: «soy talla M» … «quiero comprarlo»
-    if talla:
+    talla_cita = lectura["datos"].get("talla") if (cita_hecha and pend == "talla" and not compra_explicita) else ""
+    if cita_turno:
+        # La cita la arma el código: pide lo que falta, explica por qué una hora no vale (refrigerio, fuera de
+        # horario) o la confirma con la dirección del showroom. No reserva stock: la asesora la ve en el pedido.
+        hoy = ahora.date()
+        if cita_l.get("ok"):
+            dia, hora = mem["sabemos"]["cita"].split("T")
+            t_c = talla_conocida(req)
+            nombre = (req.cliente or "").split()[0] if (req.cliente or "").strip() else ""
+            respuesta = venta.cita_ok(dia, hora, hoy, f"*{foco.codigo}* {foco.nombre}" if foco is not None else "", t_c, nombre)
+            forzar = "talla" if (foco is not None and not t_c) else ""
+        elif cita_l.get("error"):
+            respuesta = venta.cita_invalida(cita_l["error"], cita_l.get("dia"), cita_l.get("hora"), hoy,
+                                            mem["sabemos"].get("fecha_iso"))
+            forzar = "cita"
+        else:
+            respuesta = venta.cita_pide(cita_l.get("dia"), cita_l.get("hora"), hoy, primera=pend != "cita")
+            forzar = "cita"
+        modelo = "flujo_cita"
+    elif talla_cita and foco is not None:
+        # Ya tiene cita y le preguntamos la talla: es la que se va a probar, no un pedido.
+        hay = next((x for x in tallas_de(foco) if x["talla"] == talla_cita), None)
+        dia, hora = mem["sabemos"]["cita"].split("T")
+        if hay and hay["disponible"]:
+            respuesta = (f"¡Anotado! 🙌 Te tendré el *{foco.codigo}* {foco.nombre} en talla *{talla_cita}* para tu cita "
+                         f"{venta.dia_humano(dia, ahora.date())} a las {venta.hora_humana(hora)} 💙")
+            forzar = ""
+        else:
+            libres = [x["talla"] for x in tallas_de(foco) if x["disponible"]]
+            respuesta = (f"La talla *{talla_cita}* del *{foco.codigo}* se nos agotó 😔"
+                         + (f"\n\nTenemos en {', '.join(libres)}. ¿Te separo alguna para tu cita?" if libres else ""))
+            forzar = "talla" if libres else ""
+        modelo = "flujo_cita"
+    elif talla:
         tallas_f = tallas_de(foco)
         hay = next((x for x in tallas_f if x["talla"] == talla), None)
         if hay and hay["disponible"]:
@@ -1164,7 +1249,7 @@ def conversar(req: ChatIn) -> dict:
             respuesta = (f"La talla *{talla}* del *{foco.codigo}* {foco.nombre} " + ("se nos agotó 😔" if hay else "no la tenemos 😔")
                          + (f"\n\nTenemos en {', '.join(libres)}. ¿Te sirve alguna?" if libres else ""))
             modelo, tallas_boton, forzar = "flujo_pedido", tallas_f, "talla"
-    elif foco and not pide and etapa == "cierre" and dec["intent"] == "intencion_compra":
+    elif foco and not pide and etapa == "cierre" and dec["intent"] == "intencion_compra" and not sin_pedido:
         # Quiere comprarlo y aún no dijo la talla: es el paso pendiente del cierre.
         respuesta = f"¡Perfecto! 😊 Para separar tu *{foco.codigo}* {foco.nombre} necesito tu talla.\n\n¿Cuál usas?"
         modelo, tallas_boton, forzar = "flujo_cierre", tallas_de(foco), "talla"
@@ -1243,7 +1328,15 @@ def conversar(req: ChatIn) -> dict:
                          and categoria_pedida(req.mensaje) in (None, categoria_de(foco)) and not RE_VARIOS.search(req.mensaje))
         es_catalogo = (not pide and not solo_demo and not nombrados(req.mensaje) and cl["intencion"] == "catalogo"
                        and (cl["confianza"] >= UMBRAL_ACCION or bool(categoria_pedida(req.mensaje))))
-        if foto_pedida:
+        # Método de venta: con la necesidad conocida (o si pide ver), UNA opción, la mejor con stock; mientras se
+        # indaga, ninguna. Si después pide ver más, entonces sí otras (otras_opciones, más abajo en otro turno).
+        una_opcion = mejor_opcion(mem, req) if (necesidad and not foto_pedida and not indagando) else None
+        if necesidad and (indagando or una_opcion is not None):
+            sugeridas = [una_opcion] if una_opcion is not None else []
+            if una_opcion is not None:
+                foco = una_opcion
+            pide = es_catalogo = False
+        elif foto_pedida:
             sugeridas = [foto_pedida]   # la pidió: se manda aunque ya la haya visto
         elif esperando_cual and not lectura["describe"]:
             sugeridas = []              # aún no sabemos cuál es: ninguna foto al azar
@@ -1263,9 +1356,17 @@ def conversar(req: ChatIn) -> dict:
         # Con confianza baja la intención no cuenta («es de noche» salía como material con 0.38).
         if foco and venta.pregunta_material(req.mensaje, dec["intent"] if dec["nivel"] != "baja" else ""):
             lamina = venta.imagen_material(foco.codigo)
+        if necesidad and (indagando or una_opcion is not None):
+            fichas = [una_opcion] if una_opcion is not None else []   # una sola prenda; indagando, ninguna
         if etapa == "cierre":
             t_c = talla_conocida(req)
-            if req.estado == "esperando_confirmacion":   # WhatsApp: ya tiene el resumen del pedido delante
+            if mem["sabemos"].get("cita"):
+                dia_c, hora_c = mem["sabemos"]["cita"].split("T")
+                paso = (f"ninguno: ya tiene cita para probárselo {venta.dia_humano(dia_c, ahora.date())} a las "
+                        f"{venta.hora_humana(hora_c)}. Responde lo que pregunte; no le pidas confirmar pedido ni datos de pago.")
+            elif mem["pendiente"] == "cita":
+                paso = "que te diga qué día y a qué hora viene a probárselo (el showroom atiende solo con cita)."
+            elif req.estado == "esperando_confirmacion":   # WhatsApp: ya tiene el resumen del pedido delante
                 paso = "que responda *SI* para confirmar el pedido del resumen. No repitas el resumen."
             elif req.estado == "esperando_talla":
                 paso = "preguntarle qué talla quiere. No le pidas confirmar nada todavía: el resumen del pedido sale cuando elija la talla."
@@ -1292,14 +1393,23 @@ def conversar(req: ChatIn) -> dict:
             fichas = []
         # La siguiente pregunta la elige el código: la primera de la etapa que no sepamos ni hayamos hecho.
         # Mientras se busca la prenda que describió, la pregunta es «¿es alguno de estos?», no la de la etapa.
-        sig = "" if (esperando_cual or describiendo) else memoria.siguiente(mem, etapa)
+        hay_prenda = bool(foco is not None or sugeridas or mem["mostrados"] or mem["producto"])
+        sig = "" if (esperando_cual or describiendo) else memoria.siguiente(mem, etapa, hay_prenda)
+        if etapa == "cierre" and (mem["sabemos"].get("cita") or mem["pendiente"] == "cita"):
+            sig = ""        # en la cita manda el paso de la cita, no «¿confirmamos tu pedido?»
         if req.usar_llm and motor == "deepseek":
             try:
                 nota = ("OJO: la clienta está DESCRIBIENDO un vestido que vio; todavía no sabemos cuál es. Las fotos son "
                         "posibles coincidencias: pregúntale si es alguno de ellos. No digas que ya sabes cuál es ni que ella lo mencionó."
                         if (esperando_cual or describiendo) and sugeridas else
                         "OJO: todavía no sabemos qué prenda vio. Responde lo que pregunta sin suponer ninguna y recuérdale que "
-                        "te pase la foto o el nombre." if esperando_cual else "")
+                        "te pase la foto o el nombre." if esperando_cual else
+                        f"OFRECES UNA SOLA OPCIÓN: {una_opcion.codigo} {una_opcion.nombre}. Preséntala conectándola con lo que te "
+                        f"contó ({memoria.lo_que_sabemos(mem)}): por qué le va bien para eso («para un matrimonio de noche te va "
+                        "perfecto porque…»), solo con datos de su ficha. Dile que le pasas la foto. No menciones otras prendas ni "
+                        "enumeres tallas." if una_opcion is not None else
+                        "OJO: todavía estás conociendo su necesidad: no le muestras prendas. No nombres ninguna ni prometas fotos."
+                        if indagando else "")
                 respuesta, modelo = llamar_deepseek(_prompt_comercial(req, cl, dec, foco, fichas, sugeridas, ofrecer, paso, pedido_txt,
                                                                       bool(lamina), nota, mem, sig))
                 respuesta = _sin_pies(_sin_resaludo(_whatsapp(respuesta), req))
@@ -1320,6 +1430,15 @@ def conversar(req: ChatIn) -> dict:
             # y del dataset no pasan por aquí.
             habladas = {f.codigo: f for f in ([foco] if foco is not None else []) + list(sugeridas)}
             respuesta = jev.filtrar(respuesta, "\n".join(ficha_txt(f) for f in (list(habladas.values()) or fichas[:4])), req.conversacion)
+        if respuesta and sig == "probar" and foco is not None and foco.precio is not None:
+            # El cierre del método de venta va con el precio: si el LLM no lo dijo, lo pone el código (de la ficha),
+            # justo antes de «¿te lo pruebas o te lo separo?».
+            precio = f"{MONEDA} {foco.precio:.2f}"
+            if precio not in respuesta and not re.search(rf"\b{int(foco.precio)}\b", respuesta):
+                partes = respuesta.split("\n\n")
+                i = next((k for k, p in enumerate(partes) if memoria.pregunta_de(p) == "probar"), len(partes))
+                partes.insert(i, f"Está a *{precio}* 😊")
+                respuesta = "\n\n".join(partes)
         if not respuesta and cl["intencion"] == "pregunta_general":
             respuesta, modelo = FUERA_DE_GIRO, "fuera_de_giro"
         if not respuesta:
@@ -1365,6 +1484,8 @@ def conversar(req: ChatIn) -> dict:
         "motivo": dec["motivo"], "accion": accion, "modelo": modelo, "respuesta": respuesta[:160],
         "memoria": {"pendiente_antes": pend, "respondio": lectura["respondio"], "datos": lectura["datos"],
                     "pendiente": mem["pendiente"], "siguiente": sig},
+        "temperatura": {"nivel": mem["temperatura"], "motivo": mem["temperatura_motivo"]},
+        "cita": mem["sabemos"].get("cita") or (cita_l.get("error") or ("pidiendo" if cita_turno else None)),
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S%z")}, ensure_ascii=False))
     return {
         "intencion": cl["intencion"], "confianza": cl["confianza"], "top_intenciones": cl["top_intenciones"],
@@ -1516,7 +1637,8 @@ def conversar_foto(req: FotoIn) -> dict:
         mem["pendiente"] = ""
     etapa_nueva = "seguimiento" if (caso == "online" and etapas.ORDEN.get(req.etapa, 0) < etapas.ORDEN["seguimiento"]) else (req.etapa or "prospeccion")
     # «es esa y hay»: toca conocerla (ocasión, día/noche…), aunque la etapa ya sea seguimiento.
-    sig = memoria.siguiente(mem, "prospeccion") if caso == "online" else ""
+    memoria.temperatura(mem, memoria.ahora_lima().date())
+    sig = memoria.siguiente(mem, "prospeccion", hay_prenda=True) if caso == "online" else ""
     respuesta, modelo = "", ""
     if req.usar_llm:
         datos_f = f"{f.texto()} | AHORA: {stk.resumen(st.get(f.codigo, {}))}"
@@ -1534,7 +1656,7 @@ PARECIDAS DISPONIBLES:
 {par}
 
 QUÉ HACER: {GUIA_FOTO[caso]}
-{bloque_memoria(mem, sig, req.perfil)}
+{bloque_memoria(mem, sig, req.perfil, req.mensaje)}
 El bot enviará después de tu texto las fotos de: {", ".join(x.codigo for x in sugeridas) or "ninguna"}. No las listes una por una.
 Máximo 3 frases."""
         motor = _motor(req.motor)

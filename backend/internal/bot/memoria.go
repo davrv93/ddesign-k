@@ -3,8 +3,11 @@ package bot
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"log"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/davrv93/ddesign-k/backend/internal/agente"
 	"github.com/davrv93/ddesign-k/backend/internal/store"
@@ -17,6 +20,9 @@ import (
 // Go la trata casi como opaca (json.RawMessage, para no perder campos que el agente añada). Solo toca:
 //   - `pendiente`, cuando la pregunta la hace el flujo fijo de Go (talla, confirmación, envío, dirección), y
 //   - `sabemos.talla` y `producto`, cuando el pedido los fija.
+//
+// Y lee (sin tocarlos) `sabemos.cita`, `temperatura` y `temperatura_motivo`: cuando el agente agenda una cita
+// para probarse, Go la deja en el tablero como consulta (registrarCita).
 
 // pendientePorEstado: la pregunta que deja abierta cada estado del flujo de Go.
 var pendientePorEstado = map[string]string{
@@ -127,4 +133,100 @@ func (b *Bot) perfil(ctx context.Context, conv *store.Conversation, cc *convCont
 		return nil
 	}
 	return p
+}
+
+// memVenta: lo que Go lee de la memoria para avisar a la asesora (cita y temperatura de la clienta).
+type memVenta struct {
+	Cita, Producto, Talla, Temperatura, Motivo string
+}
+
+func leerMemVenta(raw json.RawMessage) memVenta {
+	var m struct {
+		Producto    string         `json:"producto"`
+		Temperatura string         `json:"temperatura"`
+		Motivo      string         `json:"temperatura_motivo"`
+		Sabemos     map[string]any `json:"sabemos"`
+	}
+	if len(raw) > 0 {
+		_ = json.Unmarshal(raw, &m)
+	}
+	s := func(k string) string { v, _ := m.Sabemos[k].(string); return v }
+	return memVenta{Cita: s("cita"), Producto: m.Producto, Talla: s("talla"), Temperatura: m.Temperatura, Motivo: m.Motivo}
+}
+
+var (
+	tempTexto   = map[string]string{"frio": "fría", "tibio": "tibia", "caliente": "caliente"}
+	diasCortos  = [...]string{"dom", "lun", "mar", "mié", "jue", "vie", "sáb"}
+	mesesCortos = [...]string{"ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"}
+)
+
+// textoTemperatura: «clienta caliente: evento el 18-oct (en 6 días)», o "" si el agente no la mandó.
+func textoTemperatura(v memVenta) string {
+	t := tempTexto[v.Temperatura]
+	if t == "" {
+		return ""
+	}
+	if v.Motivo != "" {
+		return "clienta " + t + ": " + v.Motivo
+	}
+	return "clienta " + t
+}
+
+// notaCita es la línea que lee la asesora en el pedido: «🗓️ Cita para probarse V42 talla M el sáb 11-oct 16:00 ·
+// clienta caliente: evento el 18-oct (en 7 días)».
+func notaCita(v memVenta) string {
+	cuando := v.Cita
+	if t, err := time.Parse("2006-01-02T15:04", v.Cita); err == nil {
+		cuando = fmt.Sprintf("%s %d-%s %s", diasCortos[t.Weekday()], t.Day(), mesesCortos[t.Month()-1], t.Format("15:04"))
+	}
+	prenda := v.Producto
+	if prenda == "" {
+		prenda = "(sin prenda elegida)"
+	}
+	if v.Talla != "" {
+		prenda += " talla " + v.Talla
+	}
+	nota := "🗓️ Cita para probarse " + prenda + " el " + cuando
+	if t := textoTemperatura(v); t != "" {
+		nota += " · " + t
+	}
+	return nota
+}
+
+// registrarCita: si la memoria que devolvió el agente trae una cita nueva (o cambiada) para probarse, se deja
+// en el tablero un pedido en «consulta» con la prenda y una nota legible para la asesora, y se avisa al panel.
+// No reserva stock: la cita no es una compra. Si la conversación ya tiene un pedido abierto (consulta o
+// pendiente), se anota en ése; si no, se crea uno y queda como el pedido de la conversación, para que si luego
+// compra se reutilice (draftFor).
+func (b *Bot) registrarCita(ctx context.Context, conv *store.Conversation, cc *convContext, antes, despues json.RawMessage) {
+	v := leerMemVenta(despues)
+	if v.Cita == "" || v.Cita == leerMemVenta(antes).Cita {
+		return
+	}
+	nota := notaCita(v)
+	var items []store.OrderItem
+	if v.Producto != "" {
+		if p, err := b.store.GetProductByCode(ctx, v.Producto); err == nil {
+			items = []store.OrderItem{{ProductID: &p.ID, ProductCode: p.Code, ProductName: p.Name, Image: p.Image, Size: v.Talla,
+				Qty: 1, UnitPrice: p.Price}}
+		}
+	}
+	if cc.OrderID > 0 {
+		if o, err := b.store.GetOrder(ctx, cc.OrderID); err == nil && (o.Status == "consulta" || o.Status == "pendiente") {
+			if o.Status == "consulta" && !o.StockReserved && len(items) > 0 {
+				_ = b.store.ReplaceOrderItems(ctx, o.ID, items)
+			}
+			b.addOrderNote(ctx, o.ID, nota)
+			b.Notify("orders")
+			return
+		}
+	}
+	o := &store.Order{CustomerID: conv.CustomerID, Status: "consulta", Source: "whatsapp", Notes: nota, Items: items}
+	if err := b.store.CreateOrder(ctx, o); err != nil {
+		log.Printf("bot: cita: %v", err)
+		return
+	}
+	cc.OrderID = o.ID
+	b.setState(ctx, conv, conv.State, *cc)
+	b.Notify("orders")
 }

@@ -16,20 +16,41 @@ el «sí» dependía de cómo había redactado su última pregunta. Cada síntom
 El agente sigue sin estado: la memoria llega en la petición y vuelve en la respuesta, como la etapa. Si no
 llega (llamadas viejas), se reconstruye repasando el historial con las mismas funciones.
 
+4. **Método de venta** (04-10-2026): primero se indaga la necesidad (ocasión → fecha → día/noche), se calcula la
+   **temperatura** de la clienta por la fecha del evento y sus señales (`temperatura`), y el cierre ofrece separarlo
+   o pasar a probárselo con **cita** en el showroom (`leer_cita`, `validar_cita`).
+
 Sin dependencias: se prueba con `python3 -m app.prueba_memoria`.
 """
 from __future__ import annotations
 
 import copy
+import datetime as _dt
 import re
 import unicodedata
 
-CAMPOS = ("ocasion", "horario", "fecha", "talla", "estatura", "color", "presupuesto", "envio", "ciudad", "le_gusto")
+try:   # la imagen slim puede no traer tzdata: Perú no tiene horario de verano, UTC-5 fijo da lo mismo
+    from zoneinfo import ZoneInfo
+    LIMA = ZoneInfo("America/Lima")
+except Exception:  # noqa: BLE001
+    LIMA = _dt.timezone(_dt.timedelta(hours=-5), "America/Lima")
+
+CAMPOS = ("ocasion", "horario", "fecha", "fecha_iso", "prenda", "talla", "estatura", "color", "presupuesto", "envio",
+          "ciudad", "le_gusto", "cita")
+TEMPERATURAS = ("frio", "tibio", "caliente")
+
+
+def ahora_lima() -> _dt.datetime:
+    return _dt.datetime.now(LIMA)
 
 
 def nueva() -> dict:
     return {"etapa": "prospeccion", "producto": "", "mostrados": [], "pendiente": "",
-            "sabemos": {k: None for k in CAMPOS}, "objeciones": [], "llego_por": "", "preguntado": []}
+            "sabemos": {k: None for k in CAMPOS}, "objeciones": [], "llego_por": "", "preguntado": [],
+            # Temperatura de la clienta (reglas, no LLM) y las señales que la explican, en orden.
+            "temperatura": "frio", "temperatura_motivo": SIN_DATOS, "senales": [],
+            # Cita para probarse que se está armando: día y hora sueltos hasta que los dos valen.
+            "cita_tentativa": {"dia": None, "hora": None}}
 
 
 def normalizar(m: dict | None) -> dict:
@@ -37,16 +58,22 @@ def normalizar(m: dict | None) -> dict:
     base = nueva()
     if not isinstance(m, dict):
         return base
-    for k in ("etapa", "producto", "pendiente", "llego_por"):
+    for k in ("etapa", "producto", "pendiente", "llego_por", "temperatura_motivo"):
         if isinstance(m.get(k), str):
             base[k] = m[k]
-    for k in ("mostrados", "objeciones", "preguntado"):
+    if m.get("temperatura") in TEMPERATURAS:
+        base["temperatura"] = m["temperatura"]
+    for k in ("mostrados", "objeciones", "preguntado", "senales"):
         if isinstance(m.get(k), list):
             base[k] = [str(x) for x in m[k] if x][-30:]
     sab = m.get("sabemos") if isinstance(m.get("sabemos"), dict) else {}
     for k in CAMPOS:
         v = sab.get(k)
         base["sabemos"][k] = str(v)[:80] if v not in (None, "") else None
+    tent = m.get("cita_tentativa") if isinstance(m.get("cita_tentativa"), dict) else {}
+    for k in ("dia", "hora"):
+        v = tent.get(k)
+        base["cita_tentativa"][k] = str(v)[:10] if v else None
     if base["pendiente"] not in PENDIENTES:
         base["pendiente"] = ""
     return base
@@ -65,6 +92,9 @@ PREGUNTAS = {
     "fecha": "¿Para cuándo lo necesitas?",
     "que_le_gusto": "¿Qué es lo que más te gustó del modelo?",
     "separar": "¿Te gustaría separarlo?",
+    # El cierre del método de venta: dos caminos, separarlo ya o pasar a probárselo (con cita).
+    "probar": "¿Te gustaría pasar a probártelo al showroom o prefieres que te lo separe?",
+    "cita": "¿Qué día y a qué hora te acomoda venir a probártelo?",
     "confirmar": "¿Confirmamos tu pedido?",
     "lima_o_provincia": "¿El envío sería para Lima o para provincia?",
     "pago": "¿Te paso los datos para el pago?",
@@ -77,6 +107,8 @@ ESPERA = {
     "ocasion": "la ocasión", "horario": "si el evento es de día o de noche", "talla": "su talla",
     "estatura": "su estatura", "color": "el color que busca", "fecha": "para cuándo lo necesita",
     "que_le_gusto": "qué le gustó del modelo", "separar": "si quiere separarlo",
+    "probar": "si quiere pasar a probárselo al showroom (con cita) o que se lo separes",
+    "cita": "el día y la hora de su cita para probárselo",
     "confirmar": "que confirme el pedido", "lima_o_provincia": "si el envío es a Lima o a provincia",
     "pago": "si le pasas los datos de pago", "voucher": "la foto del comprobante de pago",
     "direccion": "su dirección de envío", "otras_opciones": "si quiere ver otras opciones",
@@ -85,14 +117,19 @@ ESPERA = {
 PENDIENTES = set(ESPERA)
 # Pendientes que se resuelven con un dato de `sabemos`.
 DATO_DE = {"ocasion": "ocasion", "horario": "horario", "talla": "talla", "estatura": "estatura", "color": "color",
-           "fecha": "fecha", "lima_o_provincia": "envio", "que_le_gusto": "le_gusto"}
+           "fecha": "fecha", "lima_o_provincia": "envio", "que_le_gusto": "le_gusto", "cita": "cita"}
 # Las que el código no suelta solo porque el LLM no volvió a preguntar: hasta que se respondan.
-PERSISTENTES = {"cual_prenda", "describir_prenda", "confirmar", "voucher", "direccion", "foto"}
+# «cita»: si entre medio pregunta otra cosa («¿hay estacionamiento?»), lo siguiente que diga de día u hora es la cita.
+PERSISTENTES = {"cual_prenda", "describir_prenda", "confirmar", "voucher", "direccion", "foto", "cita"}
 
 # La siguiente pregunta de cada etapa, en orden. Lo sabido o ya preguntado se salta.
+# Método de venta: primero la necesidad (ocasión → para cuándo, que da la urgencia → día/noche); la talla, solo
+# cuando ya se le mostró una prenda; y el cierre ofrece separarlo o pasar a probárselo (`probar`). La temperatura
+# cambia el seguimiento: caliente va al cierre antes que a la talla; fría no lo empuja (ver `siguiente`).
+INDAGAR = ("ocasion", "fecha", "horario")
 ORDEN = {
-    "prospeccion": ["ocasion", "horario", "talla", "estatura", "color"],
-    "seguimiento": ["fecha", "que_le_gusto", "separar"],
+    "prospeccion": ["ocasion", "fecha", "horario", "talla"],
+    "seguimiento": ["fecha", "horario", "talla", "probar"],
     "cierre": ["talla", "confirmar"],
     "venta_confirmada": ["lima_o_provincia", "pago", "voucher"],
 }
@@ -109,6 +146,11 @@ DETECTOR = [
     ("cual_prenda", re.compile(r"la foto o el nombre")),
     ("describir_prenda", re.compile(r"cuentame (como era|el color)|como era\b")),
     ("confirmar", re.compile(r"confirm(amos|as|ar)\b|confirmar tu pedido|responde \*?si\*?")),
+    # Antes que «horario» («a qué hora») y «separar» («o prefieres que te lo separe»).
+    ("cita", re.compile(r"que dia y (a )?que hora|que dia te (acomoda|queda|viene)|a que hora te (acomoda|queda|viene)|"
+                        r"te acomoda (a las|a la|desde|el|ese|venir)|(agendar|agendamos|coordinar|coordinamos|separar|separamos) "
+                        r"(tu |la |una )?cita")),
+    ("probar", re.compile(r"probartel[oa]|probarl[oa]|probarte\b|pasar a probar|venir a probar|ir a probar")),
     ("otras_opciones", re.compile(r"otras opciones")),
     ("lima_o_provincia", re.compile(r"\blima\b.*\bprovincia\b|\bprovincia\b.*\blima\b")),
     ("voucher", re.compile(r"comprobante|voucher|captura del (pago|yape)")),
@@ -154,15 +196,28 @@ RE_TALLA_SUELTA = re.compile(r"(?<!\d)(?<!\d )\b(xxl|xl|xs|s|m|l)\b(?!\s*/)")   
 RE_TALLA_ALIAS = re.compile(r"\b(?:talla|soy|uso)\s+(chica|pequena|small|mediana|medium|grande|large)\b")
 
 _MESES = r"ene(?:ro)?|feb(?:rero)?|mar(?:zo)?|abr(?:il)?|may(?:o)?|jun(?:io)?|jul(?:io)?|ago(?:sto)?|sep(?:tiembre)?|set(?:iembre)?|oct(?:ubre)?|nov(?:iembre)?|dic(?:iembre)?"
+_DIAS = r"lunes|martes|miercoles|jueves|viernes|sabado|domingo"
+_NUMS = r"una|un|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|quince|\d+"
 RE_FECHA = re.compile(
     rf"\b(\d{{1,2}}\s*(?:de\s+)?(?:{_MESES})\b|\d{{1,2}}/\d{{1,2}}(?:/\d{{2,4}})?"
-    r"|(?:este|el|el proximo|el otro|este otro)\s+(?:lunes|martes|miercoles|jueves|viernes|sabado|domingo)"
-    r"|(?:en|dentro de)\s+(?:una|dos|tres|cuatro|\d+)\s+(?:semanas?|dias|meses|mes)"
-    r"|(?:la\s+)?(?:proxima|siguiente)\s+semana|(?:el\s+)?(?:proximo|siguiente)\s+mes|fin de mes|a fin de (?:mes|ano)"
+    # «el sábado 17», «este viernes», «el próximo domingo 18 de octubre»
+    rf"|(?:(?:este|el|el proximo|proximo|el otro|este otro)\s+)?(?:{_DIAS})\s+\d{{1,2}}\b(?:\s*de\s+(?:{_MESES})\b)?"
+    rf"|(?:este|el|el proximo|el otro|este otro)\s+(?:{_DIAS})"
+    rf"|(?:en|dentro de)\s+(?:{_NUMS})\s+(?:semanas?|dias|meses|mes|anos?)"
+    r"|(?:la\s+)?(?:proxima|siguiente|otra)\s+semana|(?:la\s+)?semana que viene|(?:el\s+)?(?:proximo|siguiente)\s+mes"
+    r"|(?:el\s+)?mes que viene|fin de mes|a fin de (?:mes|ano)|fin de ano"
+    r"|(?:el\s+)?(?:proximo|siguiente|otro)\s+ano|(?:el\s+)?ano que viene"
     rf"|(?:en|para)\s+(?:{_MESES})\b)")
-RE_FECHA_DIA = re.compile(r"\b(el\s+\d{1,2})\b(?!\s*(?:soles|anos|cm|%))")   # «el 15», si no dijo el mes
-# «hoy», «mañana»: solo son la fecha del evento si el bot preguntó para cuándo («¿puedo ir hoy?» no lo es).
-RE_FECHA_CORTA = re.compile(r"\b(pasado manana|manana|hoy|esta semana|este fin de semana)\b")
+RE_FECHA_DIA = re.compile(r"\b(el\s+\d{1,2})\b(?!\s*(?:soles|anos|cm|%|/|:|de la|y media|hrs?\b|h\b|am\b|pm\b))")   # «el 15», si no dijo el mes
+# «hoy», «mañana»: solo son la fecha del evento si el bot preguntó para cuándo («¿puedo ir hoy?» no lo es)…
+RE_FECHA_CORTA = re.compile(r"\b(pasado manana|(?<!la )manana|hoy|esta semana|este fin de semana)\b")
+# …o si lo dice ella: «es para mañana», «lo necesito para este fin de semana».
+RE_FECHA_PARA = re.compile(r"\b(?:para|es|sera|seria)\s+(pasado manana|manana|hoy|esta semana|este fin de semana|el fin de semana)\b")
+# Prenda que busca (para elegir la opción que se le ofrece). El orden importa: «conjunto de blusa y falda» es conjunto.
+PRENDAS = [("conjunto", r"conjunt|\bset\b|dos piezas"), ("enterizo", r"enteriz|jumpsuit|\bmono\b"),
+           ("blazer", r"blazer|\bsaco\b"), ("falda", r"\bfalda"), ("jeans", r"\bjean"), ("pantalon", r"pantal|palazzo"),
+           ("polo", r"\bpolo\b|polera"), ("blusa", r"\bblus|\btop\b"), ("vestido", r"\bvestid")]
+RE_PRENDA = [(k, re.compile(rx)) for k, rx in PRENDAS]
 RE_ESTATURA = re.compile(r"\b(1[.,]\s?[4-9]\d?|1\s[4-9]\d)\b(?:\s*m\b|\s*mts?\b|\s*metros?\b)?|\bmido\s+(1[4-9]\d)\b|\b(1[4-9]\d)\s*cm\b")
 PROVINCIAS = ("arequipa", "cusco", "cuzco", "trujillo", "piura", "chiclayo", "iquitos", "huancayo", "tacna", "puno", "ica",
               "chimbote", "cajamarca", "ayacucho", "huanuco", "pucallpa", "tarapoto", "juliaca", "moquegua", "tumbes",
@@ -248,6 +303,12 @@ def extraer(texto: str, pendiente: str = "") -> dict:
         out["fecha"] = m.group(1)
     elif pendiente == "fecha" and (m := RE_FECHA_CORTA.search(t)):
         out["fecha"] = m.group(1)
+    elif m := RE_FECHA_PARA.search(t):
+        out["fecha"] = m.group(1)
+    for k, rx in RE_PRENDA:
+        if rx.search(t):
+            out["prenda"] = k
+            break
     if v := _estatura(t):
         out["estatura"] = v
     if m := RE_CIUDAD.search(t):
@@ -278,9 +339,326 @@ def extraer(texto: str, pendiente: str = "") -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Fechas y horas a ISO (hora de Lima). `hoy` se inyecta para poder probarlo.
+
+DIA_SEMANA = {"lunes": 0, "martes": 1, "miercoles": 2, "jueves": 3, "viernes": 4, "sabado": 5, "domingo": 6}
+MES_NUM = {"ene": 1, "feb": 2, "mar": 3, "abr": 4, "may": 5, "jun": 6, "jul": 7, "ago": 8, "sep": 9, "set": 9,
+           "oct": 10, "nov": 11, "dic": 12}
+NUM_PALABRA = {"un": 1, "una": 1, "uno": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7,
+               "ocho": 8, "nueve": 9, "diez": 10, "quince": 15}
+
+
+def _num(s: str) -> int:
+    return int(s) if s.isdigit() else NUM_PALABRA.get(s, 0)
+
+
+def _fecha(anio: int, mes: int, dia: int) -> _dt.date | None:
+    try:
+        return _dt.date(anio, mes, dia)
+    except ValueError:
+        return None
+
+
+def _dia_y_mes(dia: int, mes: int, hoy: _dt.date, anio: int | None = None) -> _dt.date | None:
+    """Día y mes sin año: si ya pasó este año, es el del año siguiente."""
+    if anio:
+        return _fecha(anio, mes, dia)
+    f = _fecha(hoy.year, mes, dia)
+    if f and f < hoy:
+        f = _fecha(hoy.year + 1, mes, dia)
+    return f
+
+
+def _solo_dia(dia: int, hoy: _dt.date) -> _dt.date | None:
+    """«el 17» sin mes: de este mes; si ya pasó, del siguiente."""
+    f = _fecha(hoy.year, hoy.month, dia)
+    if f is None or f < hoy:
+        mes, anio = (hoy.month % 12) + 1, hoy.year + (hoy.month == 12)
+        f = _fecha(anio, mes, dia)
+    return f
+
+
+def fecha_iso(texto: str, hoy: _dt.date) -> str | None:
+    """La fecha que dice el texto, en ISO: «AAAA-MM-DD»; «AAAA-MM» si solo dijo el mes; «AAAA» si solo el año.
+    None si no dice ninguna. Si el día ya pasó este año, es el del año siguiente."""
+    t = _plano(texto)
+    if m := re.search(r"\b(\d{1,2})/(\d{1,2})(?:/(\d{2,4}))?\b", t):
+        anio = int(m.group(3)) if m.group(3) else None
+        anio = anio + 2000 if anio is not None and anio < 100 else anio
+        f = _dia_y_mes(int(m.group(1)), int(m.group(2)), hoy, anio)
+        return f.isoformat() if f else None
+    if m := re.search(rf"\b(\d{{1,2}})\s*(?:de\s+)?({_MESES})\b(?:\s+(?:del?\s+)?(\d{{4}}))?", t):
+        f = _dia_y_mes(int(m.group(1)), MES_NUM[m.group(2)[:3]], hoy, int(m.group(3)) if m.group(3) else None)
+        return f.isoformat() if f else None
+    if re.search(r"\bpasado manana\b", t):
+        return (hoy + _dt.timedelta(days=2)).isoformat()
+    if re.search(r"(?<!la )\bmanana\b", t):
+        return (hoy + _dt.timedelta(days=1)).isoformat()
+    if re.search(r"\bhoy\b", t):
+        return hoy.isoformat()
+    if re.search(r"\bfin de semana\b|\besta semana\b", t):
+        return (hoy + _dt.timedelta(days=(5 - hoy.weekday()) % 7 if hoy.weekday() <= 5 else 0)).isoformat()
+    if m := re.search(rf"\b(?:(este otro|el otro|este|el proximo|proximo|el)\s+)?({_DIAS})(?:\s+(\d{{1,2}}))?\b", t):
+        if m.group(3):   # «el sábado 17»: manda el número
+            f = _solo_dia(int(m.group(3)), hoy)
+            return f.isoformat() if f else None
+        delta = (DIA_SEMANA[m.group(2)] - hoy.weekday()) % 7
+        if delta == 0 and (m.group(1) or "") != "este":
+            delta = 7            # «el viernes» dicho un viernes es el de la semana que viene
+        if (m.group(1) or "").endswith("otro"):
+            delta += 7
+        return (hoy + _dt.timedelta(days=delta)).isoformat()
+    if m := re.search(rf"\b(?:en|dentro de)\s+({_NUMS})\s+(semanas?|dias|meses|mes|anos?)\b", t):
+        n, u = _num(m.group(1)), m.group(2)
+        dias = n * (7 if u.startswith("semana") else 30 if u.startswith("mes") else 365 if u.startswith("ano") else 1)
+        return (hoy + _dt.timedelta(days=dias)).isoformat()
+    if re.search(r"\b(proxima|siguiente|otra) semana\b|\bsemana que viene\b", t):
+        return (hoy + _dt.timedelta(days=7)).isoformat()
+    if re.search(r"\b(proximo|siguiente|otro) ano\b|\bano que viene\b", t):
+        return str(hoy.year + 1)
+    if re.search(r"\bfin de ano\b", t):
+        return _dt.date(hoy.year, 12, 31).isoformat()
+    if re.search(r"\bfin de mes\b", t):
+        sig = _dt.date(hoy.year + (hoy.month == 12), (hoy.month % 12) + 1, 1)
+        return (sig - _dt.timedelta(days=1)).isoformat()
+    if re.search(r"\b(proximo|siguiente) mes\b|\bmes que viene\b", t):
+        return f"{hoy.year + (hoy.month == 12)}-{(hoy.month % 12) + 1:02d}"
+    if m := re.search(rf"\b(?:en|para)\s+({_MESES})\b", t):
+        mes = MES_NUM[m.group(1)[:3]]
+        return f"{hoy.year + (mes < hoy.month)}-{mes:02d}"
+    if m := RE_FECHA_DIA.search(t):
+        f = _solo_dia(int(m.group(1).split()[-1]), hoy)
+        return f.isoformat() if f else None
+    return None
+
+
+def _desde_iso(iso: str) -> _dt.date | None:
+    """La fecha más temprana que cubre el ISO («2026-11» → 1 de noviembre): así la urgencia nunca se subestima."""
+    try:
+        if len(iso) == 10:
+            return _dt.date.fromisoformat(iso)
+        if len(iso) == 7:
+            return _dt.date(int(iso[:4]), int(iso[5:]), 1)
+        if len(iso) == 4:
+            return _dt.date(int(iso), 1, 1)
+    except (ValueError, TypeError):
+        return None
+    return None
+
+
+def dias_hasta(iso: str | None, hoy: _dt.date) -> int | None:
+    d = _desde_iso(iso or "")
+    return (d - hoy).days if d else None
+
+
+RE_HORA = re.compile(
+    r"\b(?:a\s+)?(?:las?|eso de las?|tipo|como a las?)\s+(\d{1,2})(?:\s*[:.h]\s*(\d{2}))?(?:\s+y\s+(media|cuarto|\d{1,2}))?"
+    r"(?:\s*(am|a\.?\s?m\.?|pm|p\.?\s?m\.?|de la manana|de la tarde|de la noche|hrs?|horas)\b)?"
+    r"|\b(\d{1,2})\s*[:.]\s*(\d{2})\s*(am|pm|hrs?|h)?\b"
+    r"|\b(\d{1,2})\s*(am|pm|a\.\s?m\.|p\.\s?m\.)")
+
+
+def hora_en(texto: str) -> str | None:
+    """La hora que dice el texto, «HH:MM» de 24 h. Sin am/pm, de 1 a 8 es de la tarde («a las 5» → 17:00): el
+    showroom abre de 9 a 19 h."""
+    t = _plano(texto)
+    if re.search(r"\bmediodia\b|\bmedio dia\b", t):
+        return "12:00"
+    m = RE_HORA.search(t)
+    if not m:
+        return None
+    if m.group(1):
+        h, mi, extra, suf = int(m.group(1)), int(m.group(2) or 0), m.group(3), m.group(4) or ""
+        if extra:
+            mi = 30 if extra == "media" else 15 if extra == "cuarto" else int(extra)
+    elif m.group(5):
+        h, mi, suf = int(m.group(5)), int(m.group(6)), m.group(7) or ""
+    else:
+        h, mi, suf = int(m.group(8)), 0, m.group(9) or ""
+    suf = suf.replace(".", "").replace(" ", "")
+    if suf in ("am", "delamanana"):
+        h = 0 if h == 12 else h
+    elif suf in ("pm", "delatarde", "delanoche"):
+        h = h + 12 if h < 12 else h
+    elif 1 <= h <= 8:
+        h += 12
+    if not (0 <= h <= 23 and 0 <= mi <= 59):
+        return None
+    return f"{h:02d}:{mi:02d}"
+
+
+# Showroom (seed/tienda.md): lunes a domingo de 9:00 a 19:00, refrigerio de 13:00 a 14:00, solo con cita.
+ABRE, CIERRA, REFRIGERIO = "09:00", "19:00", ("13:00", "14:00")
+
+
+def validar_cita(dia: str, hora: str, ahora: _dt.datetime, evento: str | None = None) -> str:
+    """'' si la cita vale; si no, por qué: dia_pasado, hora_pasada, fuera_horario, refrigerio o despues_evento."""
+    hoy = ahora.date()
+    d = _desde_iso(dia)
+    if d is None or d < hoy:
+        return "dia_pasado"
+    if not (ABRE <= hora < CIERRA):
+        return "fuera_horario"
+    if REFRIGERIO[0] <= hora < REFRIGERIO[1]:
+        return "refrigerio"
+    if d == hoy and hora <= ahora.strftime("%H:%M"):
+        return "hora_pasada"
+    ev = _desde_iso(evento or "")
+    if ev and len(evento or "") == 10 and d > ev:
+        return "despues_evento"
+    return ""
+
+
+# Pedir cita para probarse es querer comprar (etapas.py lo trata como intención de compra).
+RE_CITA = re.compile(
+    r"\b(quiero|quisiera|me gustaria|puedo|podria|voy a|deseo|vamos a|iria|ire)\s+(ir|pasar|venir|acercarme|darme una vuelta)\b"
+    r"[^.?!]{0,40}\bprob(ar|arme|armel[oa]|arl[oa]|armelos)\b"
+    r"|\b(ir|pasar|venir) a probarme(l[oa])?\b"
+    r"|\b(agendar|agendame|separar|sacar|reservar|programar|coordinar|hacer|pedir|quiero|quisiera|dame)\s+(una |la |mi )?cita\b")
+# Cuenta una necesidad sin nombrar prenda: «tengo un evento», «busco algo para una boda».
+RE_NECESIDAD = re.compile(r"\bevento\b|\b(busco|necesito|quiero)\s+(un|una|algo)\b|\bpara (un|una|mi) "
+                          r"(evento|boda|matrimonio|fiesta|graduacion|cena|reunion|quinceanero|compromiso)\b")
+# Pide ver prendas: entonces se le muestra una opción aunque falte saber algo de la necesidad.
+RE_PIDE_VER = re.compile(r"\b(muestr\w*|ensen\w*|que (modelos|vestidos|opciones) (tienes|tienen|hay)|quiero ver|"
+                         r"ver (modelos|opciones|vestidos|fotos|algo)|pas\w* (fotos|opciones|modelos)|"
+                         r"tienes? (fotos|modelos|opciones|algo)|recomiend\w*|sugie\w*|que me (recomiendas|sugieres))\b")
+
+
+def en_necesidad(mem: dict, texto: str) -> bool:
+    """¿La conversación es de descubrir qué necesita? (contó un evento, o ya sabemos su ocasión o su fecha)."""
+    sab = mem["sabemos"]
+    return bool(sab.get("ocasion") or sab.get("fecha") or RE_NECESIDAD.search(_plano(texto))
+                or mem.get("pendiente") in INDAGAR)
+
+
+def necesidad_conocida(mem: dict) -> bool:
+    """Ya se puede ofrecer: ocasión, fecha y día/noche se saben o ya se preguntaron (no se insiste si no lo sabe)."""
+    sab, hechas = mem["sabemos"], set(mem["preguntado"])
+    return all(sab.get(DATO_DE[k]) or k in hechas for k in INDAGAR) and bool(sab.get("ocasion") or sab.get("fecha"))
+
+
+def pide_ver(texto: str) -> bool:
+    return bool(RE_PIDE_VER.search(_plano(texto)))
+
+
+# ---------------------------------------------------------------------------
+# Temperatura de la clienta: fría, tibia o caliente. Reglas, no LLM.
+#
+# - Por la fecha del evento (hoy en Lima): ≤ 7 días caliente; 8–30 tibia; > 30 fría.
+# - Por señales, en orden (la última fría reinicia las anteriores): «solo estoy viendo», «más adelante», «para el
+#   próximo año» → fría; preguntar precio, talla, disponibilidad, color o material, o decir que le interesa → al
+#   menos tibia; querer comprarlo, pedir cita para probárselo o «lo necesito urgente» → caliente. Después de que ELLA
+#   dijo que solo está viendo, una pregunta de precio no la calienta (sí una compra, una cita o una urgencia).
+# - Manda la más alta de las dos (con evento en 5 días, «solo estoy viendo» sigue siendo caliente).
+# - Sin datos: fría («sin datos todavía»). Así el bot acompaña sin presionar hasta saber más.
+
+SIN_DATOS = "sin datos todavía: se la trata como fría hasta saber más"
+RE_FRIO = re.compile(r"\bsolo (estoy |ando )?(viendo|mirando|averiguando|preguntando|cotizando)|\bnada mas (viendo|mirando)|"
+                     r"\bmas adelante|\btodavia no (tengo fecha|se cuando)|\baun no (tengo fecha|se cuando)|"
+                     r"\b(para el|el) (proximo|otro|siguiente) ano\b|\bano que viene\b|\bno (tengo|hay) (apuro|prisa)|"
+                     r"\bsin (apuro|prisa)|\bno es urgente|\bno me urge")
+RE_URGENTE = re.compile(r"\burgen(te|cia)\b|\bme urge\b|\blo antes posible|\bcuanto antes|\blo mas pronto|\bpara ya\b|"
+                        r"\blo necesito (ya|hoy|manana|para (hoy|manana|pasado manana|este fin de semana|esta semana))|"
+                        r"\bpara este fin de semana")
+SENAL_TIBIA = {"consulta_precio", "consulta_talla", "consulta_disponibilidad", "consulta_color", "consulta_material",
+               "interesado"}
+_RANGO = {"frio": 0, "tibio": 1, "caliente": 2}
+_MES_CORTO = ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
+
+
+def anotar_senales(mem: dict, texto: str, intent: str = "", nivel: str = "alta", cita: bool = False) -> list[str]:
+    """Las señales de temperatura que trae este mensaje (se acumulan en orden en la memoria)."""
+    t, nuevas = _plano(texto), []
+    if RE_FRIO.search(t):
+        nuevas.append("frio")
+    elif RE_URGENTE.search(t):
+        nuevas.append("urgente")
+    if cita:
+        nuevas.append("cita")
+    elif intent == "intencion_compra" and nivel == "alta":
+        nuevas.append("compra")
+    elif intent in SENAL_TIBIA and nivel != "baja":
+        nuevas.append("interes")
+    mem["senales"] = (mem.get("senales", []) + nuevas)[-20:]
+    return nuevas
+
+
+def _corta(d: _dt.date) -> str:
+    return f"{d.day}-{_MES_CORTO[d.month - 1]}"
+
+
+def temperatura(mem: dict, hoy: _dt.date) -> tuple[str, str]:
+    """Calcula y guarda la temperatura (`frio`/`tibio`/`caliente`) con su motivo."""
+    sab = mem["sabemos"]
+    por_senal, mot_senal, dijo_frio = None, "", False
+    for s in mem.get("senales", []):
+        if s == "frio":
+            por_senal, mot_senal, dijo_frio = "frio", "dijo que solo está viendo o que es para más adelante", True
+        elif s in ("compra", "cita", "urgente"):
+            por_senal, mot_senal, dijo_frio = "caliente", {"compra": "dijo que quiere comprarlo", "cita": "pidió cita para probárselo",
+                                                           "urgente": "dijo que lo necesita con urgencia"}[s], False
+        elif s == "interes" and not dijo_frio and _RANGO.get(por_senal, -1) < 1:
+            # Preguntar el precio no deshace un «solo estoy viendo» dicho por ella: eso lo cambia una señal fuerte.
+            por_senal, mot_senal = "tibio", "mostró interés (preguntó por precio, talla, disponibilidad o detalles)"
+    if sab.get("cita"):
+        por_senal, mot_senal = "caliente", "tiene cita para probárselo"
+    por_fecha, mot_fecha = None, ""
+    dias = dias_hasta(sab.get("fecha_iso"), hoy)
+    if dias is not None and dias >= 0:
+        d = _desde_iso(sab["fecha_iso"])
+        cuando = (f"evento el {_corta(d)} (en {dias} día{'s' if dias != 1 else ''})" if len(sab["fecha_iso"]) == 10
+                  else f"evento en {sab['fecha_iso']} (faltan al menos {dias} días)")
+        por_fecha = "caliente" if dias <= 7 else "tibio" if dias <= 30 else "frio"
+        mot_fecha = cuando
+    if por_fecha is None and por_senal is None:
+        nivel, motivo = "frio", SIN_DATOS
+    elif por_senal is None or (por_fecha is not None and _RANGO[por_fecha] >= _RANGO[por_senal]):
+        nivel, motivo = por_fecha, mot_fecha + (f"; {mot_senal}" if por_senal == por_fecha and mot_senal else "")
+    else:
+        nivel, motivo = por_senal, mot_senal + (f"; {mot_fecha}" if mot_fecha else "")
+    mem["temperatura"], mem["temperatura_motivo"] = nivel, motivo
+    return nivel, motivo
+
+
+# ---------------------------------------------------------------------------
 # Leer el mensaje nuevo contra la pendiente
 
-def leer(mem: dict, texto: str, jev: dict | None = None) -> dict:
+def es_cita(mem: dict, texto: str) -> bool:
+    """El mensaje trae (o pide) la cita: lo que diga de día u hora es de la cita, no la fecha del evento."""
+    t = _plano(texto)
+    pend = mem.get("pendiente", "")
+    return bool(pend == "cita" or RE_CITA.search(t) or (pend == "probar" and RE_AFIRMA.match(t)))
+
+
+def leer_cita(mem: dict, texto: str, ahora: _dt.datetime) -> dict:
+    """Día y hora de la cita que dice el mensaje, sumados a los que ya había dado. Si los dos valen, la cita queda en
+    `sabemos.cita` («AAAA-MM-DDTHH:MM», hora de Lima). Devuelve {dia, hora, dato, ok, error}."""
+    hoy = ahora.date()
+    tent = mem["cita_tentativa"]
+    dia, hora = fecha_iso(texto, hoy), hora_en(texto)
+    if dia and len(dia) != 10:
+        dia = None     # «en noviembre» no es un día de cita
+    if dia:
+        tent["dia"] = dia
+    if hora:
+        tent["hora"] = hora
+    res = {"dia": tent["dia"], "hora": tent["hora"], "dato": bool(dia or hora), "ok": False, "error": ""}
+    if tent["dia"] and tent["hora"]:
+        err = validar_cita(tent["dia"], tent["hora"], ahora, mem["sabemos"].get("fecha_iso"))
+        if err:
+            res["error"] = err
+            if err in ("fuera_horario", "refrigerio", "hora_pasada"):
+                tent["hora"] = None   # el día sigue en pie: solo falta otra hora
+            else:
+                tent["dia"] = None
+        else:
+            mem["sabemos"]["cita"] = f"{tent['dia']}T{tent['hora']}"
+            mem["cita_tentativa"] = {"dia": None, "hora": None}
+            res["ok"] = True
+    return res
+
+
+def leer(mem: dict, texto: str, jev: dict | None = None, ahora: _dt.datetime | None = None) -> dict:
     """Actualiza la memoria con el mensaje de la clienta y dice qué pasó con la pregunta pendiente.
 
     Devuelve {"pendiente": la que había, "respondio": bool, "espera": bool, "sin_dato": bool,
@@ -290,7 +668,13 @@ def leer(mem: dict, texto: str, jev: dict | None = None) -> dict:
     """
     pend = mem.get("pendiente", "")
     t = _plano(texto)
+    ahora = ahora or ahora_lima()
     datos = extraer(texto, pend)
+    cita = es_cita(mem, texto)
+    if cita:
+        datos.pop("fecha", None)     # el día que diga es el de la cita, no el del evento
+    elif "fecha" in datos:
+        datos["fecha_iso"] = fecha_iso(datos["fecha"], ahora.date())
     fuente = {k: "reglas" for k in datos}
     if jev:
         for k in ("ocasion", "talla", "horario"):
@@ -312,10 +696,14 @@ def leer(mem: dict, texto: str, jev: dict | None = None) -> dict:
             continue
         mem["sabemos"][k] = v
     res = {"pendiente": pend, "respondio": False, "espera": False, "sin_dato": False, "describe": False,
-           "datos": datos, "fuente": fuente}
+           "datos": datos, "fuente": fuente, "es_cita": cita, "cita": leer_cita(mem, texto, ahora) if cita else None}
     if not pend:
         return res
-    if pend in DATO_DE:
+    if pend == "cita":
+        res["respondio"] = res["cita"]["ok"]
+    elif pend == "probar":
+        res["respondio"] = bool(cita or RE_AFIRMA.match(t) or RE_NIEGA.match(t) or re.search(r"\b(separ|reserv|apart|compr|llev)\w*", t))
+    elif pend in DATO_DE:
         res["respondio"] = DATO_DE[pend] in datos
     elif pend in ("cual_prenda", "describir_prenda"):
         res["describe"] = bool(RE_DESCRIBE.search(t)) or bool(jev and jev.get("responde") and not RE_ESPERA.search(t)
@@ -347,16 +735,49 @@ def registrar_respuesta(mem: dict, respuesta: str, forzar: str | None = None, pr
     return mem["pendiente"]
 
 
-def siguiente(mem: dict, etapa: str) -> str:
-    """La pregunta que toca: la primera de la etapa que no se sepa ni se haya hecho ya. '' si no queda ninguna."""
+def siguiente(mem: dict, etapa: str, hay_prenda: bool | None = None) -> str:
+    """La pregunta que toca: la primera de la etapa que no se sepa ni se haya hecho ya. '' si no queda ninguna.
+
+    - La talla (fuera del cierre) solo cuando ya se le mostró una prenda (`hay_prenda`; por defecto, la memoria).
+    - `probar` (¿probártelo o te lo separo?) solo con la talla sabida, o si está caliente; nunca con cita ya hecha.
+    - Temperatura en seguimiento: caliente pregunta `probar` antes que la talla; fría no lo pregunta (no se empuja)."""
     sab, hechas = mem["sabemos"], set(mem["preguntado"])
-    for k in ORDEN.get(etapa, []):
+    temp = mem.get("temperatura") or ""
+    orden = list(ORDEN.get(etapa, []))
+    if etapa == "seguimiento" and temp == "caliente":
+        orden = ["fecha", "horario", "probar", "talla"]
+    elif etapa == "seguimiento" and temp == "frio":
+        orden.remove("probar")
+    if hay_prenda is None:
+        hay_prenda = bool(mem.get("mostrados") or mem.get("producto"))
+    for k in orden:
         if k in DATO_DE and sab.get(DATO_DE[k]):
             continue
         if k in hechas:
             continue
+        if k == "talla" and etapa != "cierre" and not hay_prenda:
+            continue
+        if k == "probar" and (sab.get("cita") or not hay_prenda or (temp != "caliente" and not sab.get("talla"))):
+            continue
         return k
     return ""
+
+
+# Con el artículo, para «¿Para cuándo es el matrimonio?».
+OCASION_TXT = {"matrimonio": "el matrimonio", "graduacion": "la graduación", "quinceanero": "el quinceañero",
+               "cumpleanos": "el cumpleaños", "bautizo": "el bautizo", "compromiso": "el compromiso",
+               "aniversario": "el aniversario", "baby shower": "el baby shower", "cena": "la cena", "gala": "la gala",
+               "fiesta": "la fiesta"}
+
+
+def texto_pregunta(k: str, mem: dict, mensaje: str = "") -> str:
+    """El texto de la pregunta `k`, ajustado a lo que ella dijo («tengo un evento» → «¿Qué evento es?»). Cada
+    variante se reconoce con DETECTOR igual que la de PREGUNTAS (lo comprueba la prueba)."""
+    if k == "ocasion" and re.search(r"\bevento\b", _plano(mensaje)):
+        return "¿Qué evento es?"
+    if k == "fecha" and (oc := OCASION_TXT.get(mem["sabemos"].get("ocasion") or "")):
+        return f"¿Para cuándo es {oc}?"
+    return PREGUNTAS.get(k, "")
 
 
 def quitar_repetidas(texto: str, mem: dict, permitida: str = "") -> str:
@@ -386,8 +807,10 @@ def quitar_repetidas(texto: str, mem: dict, permitida: str = "") -> str:
 
 def lo_que_sabemos(mem: dict) -> str:
     sab = {k: v for k, v in mem["sabemos"].items() if v}
-    nombres = {"ocasion": "ocasión", "horario": "día/noche", "fecha": "para cuándo", "talla": "talla", "estatura": "estatura",
-               "color": "color", "presupuesto": "presupuesto", "envio": "envío", "ciudad": "ciudad", "le_gusto": "lo que le gustó"}
+    nombres = {"ocasion": "ocasión", "horario": "día/noche", "fecha": "para cuándo", "fecha_iso": "fecha del evento",
+               "prenda": "prenda que busca", "talla": "talla", "estatura": "estatura", "color": "color",
+               "presupuesto": "presupuesto", "envio": "envío", "ciudad": "ciudad", "le_gusto": "lo que le gustó",
+               "cita": "cita para probárselo"}
     partes = [f"{nombres[k]}: {v}" for k, v in sab.items()]
     if mem.get("objeciones"):
         partes.append("dudas que puso: " + ", ".join(mem["objeciones"]))

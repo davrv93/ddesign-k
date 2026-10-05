@@ -10,6 +10,9 @@ Regla central: mostrar interés NO es comprar. «Sí, me interesa» deja la conv
 solo una intención clara de compra («quiero comprarlo», «resérvamelo») la lleva a cierre, y solo una
 confirmación explícita a una pregunta de confirmación la convierte en venta.
 
+Pedir cita para pasar a probárselo («quiero ir a probármelo», o «sí» a «¿te lo pruebas o te lo separo?») también
+es intención de compra: lleva al cierre y marca `cita` para que main.py agende la cita en vez de armar el pedido.
+
 Sin dependencias: se prueba con `python3 -m app.prueba_etapas`.
 """
 from __future__ import annotations
@@ -57,18 +60,29 @@ def pide_confirmar(ultimo_bot: str) -> bool:
 
 
 def decidir(etapa: str, intent: str, confianza: float, mensaje: str, ultimo_bot: str = "", primer_mensaje: bool = False,
-            pendiente: str | None = None) -> dict:
+            pendiente: str | None = None, indagando: bool = False) -> dict:
     """Devuelve la etapa nueva y la intención final, con el motivo de cada decisión (para el registro).
-    `pendiente` es la pregunta que el bot dejó abierta (memoria); sin ella se deduce de `ultimo_bot`."""
+    `pendiente` es la pregunta que el bot dejó abierta (memoria); sin ella se deduce de `ultimo_bot`.
+    `indagando`: todavía se está conociendo su necesidad y no se le mostró ninguna prenda; contar la fecha o
+    preguntar algo no la saca de prospección (no hay seguimiento de nada). Una compra explícita, sí."""
     etapa = etapa if etapa in ORDEN else "prospeccion"
     texto, motivos = _plano(mensaje), []
     corto = len(texto) <= 24
     confirma = (pendiente == "confirmar") if pendiente is not None else pide_confirmar(ultimo_bot)
+    cita = False   # pide cita para probárselo (main.py arma la cita en vez del pedido)
 
     # 1. Reglas de contexto: corrigen la intención antes de mirar umbrales.
     if RE_BOTON_TALLA.search(texto):
         intent, confianza = "intencion_compra", 1.0
         motivos.append("eligió talla en la tarjeta")
+    elif memoria.RE_CITA.search(texto) and not RE_NIEGA.match(texto):
+        # Pedir cita para probárselo es querer comprarlo: va al cierre, aunque el clasificador lo lea como
+        # «¿dónde quedan?» (consulta_ubicacion).
+        intent, confianza, cita = "intencion_compra", max(confianza, 0.9), True
+        motivos.append("pide cita para probárselo")
+    elif corto and RE_AFIRMA.match(texto) and pendiente == "probar":
+        intent, confianza, cita = "intencion_compra", 0.95, True
+        motivos.append("«sí» a pasar a probárselo: pide cita")
     elif corto and RE_AFIRMA.match(texto):
         if confirma:
             intent, confianza = "confirmacion_compra", 0.97
@@ -123,6 +137,10 @@ def decidir(etapa: str, intent: str, confianza: float, mensaje: str, ultimo_bot:
             motivos.append("primer mensaje: se queda en prospección")
         else:
             nueva = "seguimiento"
+    if indagando and etapa == "prospeccion" and nueva == "seguimiento":
+        nueva = "prospeccion"
+        motivos.append("indagando la necesidad (aún no se mostró ninguna prenda): se queda en prospección")
 
     return {"etapa_anterior": etapa, "etapa": nueva, "intent": intent, "confianza": round(float(confianza), 3),
-            "nivel": nivel, "cancelada": cancelada, "transicion": nueva != etapa, "motivo": "; ".join(motivos)}
+            "nivel": nivel, "cancelada": cancelada, "transicion": nueva != etapa, "motivo": "; ".join(motivos),
+            "cita": cita and nueva == "cierre"}

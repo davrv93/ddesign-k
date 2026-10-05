@@ -1,10 +1,13 @@
 package bot
 
 import (
+	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/davrv93/ddesign-k/backend/internal/agente"
+	"github.com/davrv93/ddesign-k/backend/internal/store"
 )
 
 // memDe lee la memoria guardada con la conversación.
@@ -169,4 +172,87 @@ func TestFotoLlevaLaMemoria(t *testing.T) {
 	if m := memDe(t, cc); m["producto"] != "V01" || sabemos(m, "ocasion") != "matrimonio" {
 		t.Fatalf("la memoria de la foto debía guardarse: %s", cc.Memoria)
 	}
+}
+
+// ordenesDe: los pedidos de la clienta de la conversación de prueba.
+func ordenesDe(t *testing.T, b *Bot) []*store.Order {
+	t.Helper()
+	conv, err := b.store.ConversationByCustomer(context.Background(), 1)
+	if err != nil {
+		t.Fatalf("sin conversación: %v", err)
+	}
+	orders, _ := b.store.ListOrders(context.Background(), conv.CustomerID)
+	return orders
+}
+
+// memConCita: la memoria que devuelve el agente cuando la clienta agenda (o no) su cita para probarse.
+func memConCita(cita string) json.RawMessage {
+	return json.RawMessage(`{"etapa":"cierre","producto":"V01","pendiente":"","temperatura":"caliente",` +
+		`"temperatura_motivo":"evento el 10-oct (en 6 días)","sabemos":{"talla":"M","fecha_iso":"2026-10-10","cita":` + cita + `}}`)
+}
+
+// Método de venta: cuando el agente agenda una cita para probarse, el pedido queda en el tablero como consulta,
+// con la prenda y una nota para la asesora, y se avisa al panel. No reserva stock. Repetir la misma cita no
+// duplica nada; cambiarla se anota en el mismo pedido.
+func TestCitaQuedaEnElTablero(t *testing.T) {
+	b, st, _ := setup(t, `{}`, false)
+	var topics []string
+	b.Notify = func(s string) { topics = append(topics, s) }
+	var reqs []agente.Request
+	b.Agent = agenteGuion(t, map[string]agente.Reply{
+		"quiero ir a probármelo":   {Accion: "responder", Respuesta: "¿Qué día y a qué hora te acomoda venir a probártelo?", Etapa: "cierre", Memoria: memConCita("null")},
+		"el viernes a las 5":       {Accion: "responder", Respuesta: "¡Listo! 🗓️ Te esperamos el viernes 9 de octubre a las 5:00 p. m.", Etapa: "cierre", Memoria: memConCita(`"2026-10-09T17:00"`)},
+		"gracias":                  {Accion: "responder", Respuesta: "¡A ti! 💙", Etapa: "cierre", Memoria: memConCita(`"2026-10-09T17:00"`)},
+		"mejor el sábado a las 11": {Accion: "responder", Respuesta: "¡Listo! Te esperamos el sábado.", Etapa: "cierre", Memoria: memConCita(`"2026-10-10T11:00"`)},
+	}, &reqs)
+
+	handle(b, text("quiero ir a probármelo"))
+	if o := ordenesDe(t, b); len(o) != 0 {
+		t.Fatalf("pedir la cita sin día ni hora todavía no es una cita: %+v", o[0])
+	}
+	topics = nil
+	handle(b, text("el viernes a las 5"))
+	o := ordenesDe(t, b)
+	if len(o) != 1 || o[0].Status != "consulta" || o[0].StockReserved {
+		t.Fatalf("la cita debía dejar un pedido en consulta, sin reservar: %+v", o)
+	}
+	mustContain(t, o[0].Notes, "🗓️ Cita para probarse V01 talla M el vie 9-oct 17:00 · clienta caliente: evento el 10-oct (en 6 días)")
+	if len(o[0].Items) != 1 || o[0].Items[0].ProductCode != "V01" || o[0].Items[0].Size != "M" {
+		t.Fatalf("el pedido debía llevar la prenda y la talla de la cita: %+v", o[0].Items)
+	}
+	if !strings.Contains(strings.Join(topics, ","), "orders") {
+		t.Fatalf("debía avisar al panel (orders): %v", topics)
+	}
+	if p, _ := st.GetProductByCode(context.Background(), "V01"); p.Variants[1].Available() != 2 || p.Variants[1].Reserved != 0 {
+		t.Fatalf("la cita no reserva stock: %+v", p.Variants)
+	}
+	if _, cc := estadoDe(t, st); cc.OrderID != o[0].ID {
+		t.Fatalf("el pedido de la cita queda como el de la conversación (si compra, se reutiliza): %d vs %d", cc.OrderID, o[0].ID)
+	}
+
+	handle(b, text("gracias"))
+	if o := ordenesDe(t, b); len(o) != 1 || strings.Count(o[0].Notes, "🗓️") != 1 {
+		t.Fatalf("la misma cita no se vuelve a anotar: %+v", o)
+	}
+	handle(b, text("mejor el sábado a las 11"))
+	o = ordenesDe(t, b)
+	if len(o) != 1 || strings.Count(o[0].Notes, "🗓️") != 2 {
+		t.Fatalf("cambiar la cita se anota en el mismo pedido: %+v", o)
+	}
+	mustContain(t, o[0].Notes, "el sáb 10-oct 11:00")
+}
+
+// La temperatura de la clienta también va en la nota de las consultas que deja la foto.
+func TestConsultaDeFotoLlevaLaTemperatura(t *testing.T) {
+	b, _, _ := setup(t, `{}`, false)
+	var last agente.PhotoRequest
+	b.Agent = fakeAgenteFoto(t, agente.Reply{Accion: "responder", Respuesta: "Lo tenemos en Miraflores 👇", Etapa: "seguimiento",
+		Foto:    &agente.PhotoResult{Nivel: "exacto", Caso: "sucursal", Codigo: "V01", Similitud: 0.88},
+		Memoria: json.RawMessage(`{"temperatura":"tibio","temperatura_motivo":"evento el 17-oct (en 13 días)","sabemos":{}}`)}, &last)
+	handle(b, photo())
+	o := ordenesDe(t, b)
+	if len(o) != 1 {
+		t.Fatalf("debía quedar una consulta: %+v", o)
+	}
+	mustContain(t, o[0].Notes, "sucursal", "clienta tibia: evento el 17-oct (en 13 días)")
 }

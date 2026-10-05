@@ -68,6 +68,13 @@ curl -s -X POST https://proyectopostventa.site/demo-design/chat -H 'Content-Type
   JSON opaco (`internal/bot/memoria.go`): solo se tocan `pendiente`, `sabemos.talla` y `producto`, siempre
   partiendo de `memoriaActual` (editar un `convContext{}` nuevo la reemplazaría por una vacía); sus pruebas están
   en `internal/bot/memoria_test.go`.
+- **Agente, método de venta** (indagar → temperatura → una opción → precio + probárselo → cita): la temperatura y la
+  cita son reglas de `app/memoria.py` (`temperatura`, `fecha_iso`, `hora_en`, `validar_cita`, `leer_cita`) y se prueban en
+  `prueba_memoria.py` con una fecha «hoy» fija; no dejes que el LLM las decida. Los textos de la cita los arma
+  `app/venta.py` (`cita_pide`, `cita_invalida`, `cita_ok`) con `seed/venta.json` → `showroom`; no inventes otros datos. El
+  horario del showroom vive en `memoria.py` (`ABRE`, `CIERRA`, `REFRIGERIO`), en `tienda.md` y en `venta.json`: si cambia,
+  cámbialo en los tres. En Go, la cita llega al tablero por `registrarCita` (`internal/bot/memoria.go`), con su prueba
+  `TestCitaQuedaEnElTablero`.
 - **Agente, Jev:** las 20 intenciones que ve Jev están descritas en `INTENCIONES` de `app/jev.py`; si se añade
   una intención a `comercial.csv`, va también ahí. Se mide con `python -m app.evaluar_jev --local …` dentro
   del contenedor (llamadas de pago, ~US$ 0,004). Jev nunca decide la etapa: solo entrega intención y confianza

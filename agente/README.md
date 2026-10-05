@@ -19,16 +19,18 @@ repitiendo «Responde SI o NO».
 
 | Pieza | Archivo | Qué hace |
 |---|---|---|
-| Clasificador comercial | `data/comercial.csv` (496 frases, 20 intenciones), `app/entrenar.py` | Qué quiere la clienta en términos de venta: `interesado`, `intencion_compra`, `confirmacion_compra`, `objecion`, `objecion_precio`, `consulta_precio`, `consulta_material`… Se mide con `data/prueba_comercial.csv` (68 frases que no entran al entrenamiento): **97,1 %** |
+| Clasificador comercial | `data/comercial.csv` (510 frases, 20 intenciones), `app/entrenar.py` | Qué quiere la clienta en términos de venta: `interesado`, `intencion_compra`, `confirmacion_compra`, `objecion`, `objecion_precio`, `consulta_precio`, `consulta_material`… Se mide con `data/prueba_comercial.csv` (68 frases que no entran al entrenamiento): **97,1 %** |
 | Máquina de etapas | `app/etapas.py` | Reglas explícitas, sin LLM. Devuelve la etapa nueva y el motivo |
 | Guion por etapa | `app/venta.py` | Prompt de sistema, guía de cada etapa, totales ya calculados, datos de pago |
-| Pruebas | `app/prueba_etapas.py` | 26 casos (los 7 del encargo y el primer contacto incluidos). Se ejecutan al construir la imagen: si falla uno, no hay imagen |
-| Memoria y hilo | `app/memoria.py`, `app/prueba_memoria.py` | Lo que ya sabemos de la clienta, la pregunta pendiente y la siguiente pregunta (sección siguiente). 92 casos, también en el build |
+| Pruebas | `app/prueba_etapas.py` | 38 casos (los 7 del encargo, el primer contacto, la cita para probarse y la indagación). Se ejecutan al construir la imagen: si falla uno, no hay imagen |
+| Memoria y hilo | `app/memoria.py`, `app/prueba_memoria.py` | Lo que ya sabemos de la clienta, la pregunta pendiente, la siguiente pregunta, la temperatura y la cita (secciones siguientes). 204 casos, también en el build |
 
 Reglas de `etapas.py`:
 
 - **Interés no es compra.** «Sí, me interesa» o preguntar el precio lleva a seguimiento, nunca a cierre.
-- Solo una intención clara de compra («quiero comprarlo», «resérvamelo», «¿cómo pago?») lleva a cierre.
+- Solo una intención clara de compra («quiero comprarlo», «resérvamelo», «¿cómo pago?») lleva a cierre. **Pedir cita para
+  probárselo** también («quiero ir a probármelo», o «sí» a «¿te lo pruebas o te lo separo?»): marca `cita` en la decisión.
+- Mientras se indaga la necesidad sin haber mostrado prenda (`indagando`), contar la fecha o preguntar no saca de prospección.
 - **El «sí» depende de la pregunta pendiente** (memoria, ver «Memoria y hilo»): con `pendiente: "confirmar"` es una
   confirmación; con cualquier otra es interés. Una confirmación solo vale en cierre. Sin memoria (pruebas,
   llamadas viejas) la pendiente se deduce del último mensaje del bot.
@@ -101,13 +103,13 @@ igual que la etapa.
 ```
 
 1. **La pregunta pendiente (el hilo).** Cada vez que el bot pregunta algo se anota qué espera: `cual_prenda`,
-   `describir_prenda`, `ocasion`, `horario`, `talla`, `estatura`, `color`, `fecha`, `que_le_gusto`, `separar`,
-   `confirmar`, `lima_o_provincia`, `pago`, `voucher`, `direccion`, `otras_opciones`, `foto`. Si la pregunta la
+   `describir_prenda`, `ocasion`, `horario`, `talla`, `estatura`, `color`, `fecha`, `que_le_gusto`, `separar`, `probar`,
+   `cita`, `confirmar`, `lima_o_provincia`, `pago`, `voucher`, `direccion`, `otras_opciones`, `foto`. Si la pregunta la
    hace el código (flujo del pedido, «¿cuál es?») la fija él; si la redacta el LLM, se reconoce en su texto
    (`memoria.DETECTOR`, solo en las frases con «?»). El mensaje siguiente se lee **primero** como respuesta a esa
    pendiente (`memoria.leer`): si la responde, se guarda el dato y se limpia; si no («a ver un momento»), sigue
-   pendiente y nadie la inventa. `cual_prenda`, `describir_prenda`, `confirmar`, `voucher`, `direccion` y `foto` no
-   se sueltan solas: hasta que se respondan. Las demás se sueltan si el bot no vuelve a preguntar.
+   pendiente y nadie la inventa. `cual_prenda`, `describir_prenda`, `confirmar`, `voucher`, `direccion`, `foto` y `cita`
+   no se sueltan solas: hasta que se respondan. Las demás se sueltan si el bot no vuelve a preguntar.
 2. **Extraer, no adivinar.** De cada mensaje de la clienta se sacan con reglas los datos que trae (talla, fecha,
    estatura, ciudad y Lima/provincia, ocasión, día/noche, color, presupuesto). Una letra suelta solo es talla si se
    preguntó la talla o el mensaje es corto («mido 1.60 m» no es talla M); «hoy» solo es fecha si se preguntó para
@@ -122,10 +124,14 @@ igual que la etapa.
 
    | Etapa | Orden |
    |---|---|
-   | prospección | ocasión → día/noche → talla → estatura → color |
-   | seguimiento | para cuándo → qué le gustó (una vez) → ¿separarlo? |
+   | prospección | ocasión → para cuándo → día/noche → talla (solo con una prenda ya mostrada) |
+   | seguimiento | para cuándo → día/noche → talla → ¿probártelo o separarlo? (`probar`, con la talla sabida) |
    | cierre | talla → confirmar (lo lleva el flujo del pedido) |
    | venta confirmada | Lima o provincia → ¿te paso los datos de pago? → comprobante |
+
+   Desde el método de venta (sección siguiente), la temperatura cambia el seguimiento: caliente pregunta `probar` antes
+   que la talla; fría no lo pregunta. «¿Qué le gustó?», «¿separarlo?», estatura y color ya no están en el orden (siguen
+   en `PREGUNTAS`/`DETECTOR` por si el LLM los pregunta).
 
    El LLM recibe en el prompt `LO QUE YA SABEMOS`, `ESTÁS ESPERANDO` y `SIGUIENTE PREGUNTA: «…» (hazla tal cual,
    o no preguntes nada)`; el historial queda como contexto de tono. Si aun así el LLM repite una pregunta ya hecha
@@ -152,6 +158,102 @@ cascada con verificación): latencia media 2,00 s antes y 1,95 s después (la ll
 una pendiente sin resolver; el resto es ruido del LLM); RAM 1,178 GiB antes y 1,149 GiB después (sin diferencia
 medible). Sin memoria, en una corrida del mismo guion el bot preguntó dos veces «¿qué es lo que más te gustó del
 modelo?»; con memoria, ninguna pregunta se repite.
+
+## Método de venta: necesidad, temperatura y cierre con prueba (04-10-2026)
+
+Lo pidió el cliente (Alvaro): «en el primer paso debe indagar la necesidad y ver si es un cliente frío, tibio o caliente
+según su urgencia de tener un vestido; luego en base a eso ofrecerle e insistir con que necesita ese vestido porque le
+queda bien, porque es lo que busca, y luego cerrar la venta diciéndole el precio, que pueda pasar a probárselo». Antes,
+«es un matrimonio» traía tres fotos al azar, «el sábado 17» se guardaba como «el sábado», «quiero ir a probármelo» armaba
+un pedido de otra prenda y una cita a la 1:30 p. m. (refrigerio) se daba por buena.
+
+```
+indagar (ocasión → fecha → día/noche) ─► temperatura ─► UNA opción ─► tela, corte, talla ─► precio + ¿probártelo o separarlo?
+         sin fotos                       por reglas      RAG + stock   razones, no presión     └─► cita (día/hora validados)
+```
+
+**1. Indagar antes de ofrecer.** Sin anuncio y sin prenda nombrada, si la clienta cuenta una necesidad («tengo un evento»,
+«busco algo para una boda»: `memoria.en_necesidad`), el bot no manda fotos ni habla de prendas (`indagando`; el prompt
+recibe PRODUCTO «(ninguna relevante)»). Pregunta, una por mensaje y en este orden, lo que `memoria.siguiente` elige:
+ocasión («¿Qué evento es?» si dijo «evento») → fecha («¿Para cuándo es el matrimonio?») → día/noche. Mientras tanto la
+etapa no sale de prospección (`etapas.decidir(..., indagando=True)`). Con anuncio (`desde_anuncio`) el vestido se enseña
+en el primer mensaje como antes, y aun así se indagan ocasión, fecha y día/noche antes de empujar.
+
+**2. Temperatura** (`memoria.temperatura`, reglas; `frio` | `tibio` | `caliente` con `temperatura_motivo`):
+
+| Fuente | Regla |
+|---|---|
+| Fecha del evento (hoy en Lima, `America/Lima`) | ≤ 7 días caliente · 8–30 tibia · > 30 fría |
+| «solo estoy viendo», «más adelante», «para el próximo año», «no es urgente» | fría |
+| Pregunta precio, talla, disponibilidad, color o material, o «me interesa» | al menos tibia |
+| Quiere comprarlo, pide cita para probárselo, «lo necesito urgente / para este fin de semana» | caliente |
+| Sin datos | **fría** («sin datos todavía»): el bot acompaña sin presionar hasta saber más |
+
+Las señales se guardan en orden (`senales`); manda la más alta entre fecha y señales (evento en 5 días + «solo estoy
+viendo» = caliente). **Decisión:** después de que ella dijo «solo estoy viendo», una pregunta de precio no la calienta
+(sí una compra, una cita o una urgencia); si no dijo eso, preguntar el precio la pone tibia aunque el evento sea lejano.
+
+La fecha que extrae la memoria se normaliza a ISO (`sabemos.fecha_iso`, `memoria.fecha_iso`): «el 18 de octubre», «el
+15/11», «este sábado», «el sábado 17» (manda el número), «en dos semanas», «mañana», «la próxima semana», «fin de mes». Si
+el día ya pasó este año es el del siguiente. Solo mes («para noviembre») → `2026-11`; solo año («el próximo año») → `2027`;
+para la urgencia se usa el primer día que cubre (así nunca se subestima).
+
+La temperatura cambia el tono que pide la guía (`venta.TONO`, en seguimiento y cierre, y en prospección si es caliente):
+fría → acompañar sin presionar y dejar la puerta abierta; tibia → recomendar y resolver dudas; caliente → directo al
+cierre (precio + probárselo o separarlo hoy), mencionando que por la fecha conviene asegurarlo. Nunca escasez inventada:
+del stock, solo la línea `AHORA:`. Y el orden de preguntas del seguimiento: caliente pregunta `probar` antes que la
+talla; fría no lo pregunta.
+
+Sale en el registro `[CLASSIFIER]` (`temperatura: {nivel, motivo}` y `cita`), en la respuesta (`memoria.temperatura`,
+`memoria.temperatura_motivo`) y en el panel de análisis del chat web (sección «Temperatura»).
+
+**3. UNA opción** (`main.mejor_opcion`). Con la necesidad conocida (ocasión, fecha y día/noche sabidas o ya preguntadas, y
+al menos ocasión o fecha: `memoria.necesidad_conocida`) o si pide ver («muéstrame», «qué me recomiendas»), se ofrece una
+sola prenda: el RAG busca con «vestido para matrimonio de noche [color]» (la prenda que nombró, `sabemos.prenda`, o
+vestido para una ocasión de fiesta) y el stock de ahora decide (primero lo que se pide ya, luego sucursal; si dijo
+presupuesto, primero lo que entra). El LLM recibe «OFRECES UNA SOLA OPCIÓN… conéctala con lo que te contó» y solo esa
+ficha. Con anuncio, la opción es la del anuncio. Si después pide ver más, `otras_opciones` enseña otras (como antes).
+
+**4. Tela, corte y talla con datos reales.** Tela: `material` de `seed/producto_demo.json` (y la lámina) para el V42; para
+el resto, lo que diga la descripción («satinado», «gasa»). Corte = silueta, escote, largo y mangas, de la descripción y la
+categoría («vestido largo»); lo que la ficha no diga no se afirma (lo vigila además la verificación de Jev). «¿qué corte
+tiene?», «¿es entallado?», «¿es largo?», «¿es corte sirena?» se clasifican como `consulta_producto` (14 frases nuevas en
+`data/comercial.csv`; antes «¿es entallado?» salía `consulta_pago` 0,39).
+
+**5. Insistir con razones.** La guía del seguimiento pide, en cada respuesta, conectar el vestido con lo que ella busca
+(`LO QUE YA SABEMOS`) y por qué le queda bien, con palabras distintas cada vez; la memoria sigue quitando preguntas repetidas.
+
+**6. Cerrar con precio y probárselo.** Con la talla sabida (o con la clienta caliente), la siguiente pregunta es `probar`:
+«¿Te gustaría pasar a probártelo al showroom o prefieres que te lo separe?». Si el LLM no dijo el precio, el código lo
+pone antes de esa pregunta («Está a *S/ 259.00*»). Separarlo sigue el cierre de siempre (talla → pedido). Probárselo
+abre la **cita**, que arma el código (`modelo: flujo_cita`, sin LLM):
+
+1. «quiero ir a probármelo» (o «sí» a `probar`) → `etapas` lo trata como intención de compra (cierre, `cita: true`), sube
+   la temperatura a caliente y el bot pide día y hora con la dirección y el horario (pendiente `cita`, que no se suelta sola).
+2. Día y hora se leen con `memoria.leer_cita` (`fecha_iso` + `hora_en`: «a las 5» → 17:00, «a la 1 y media» → 13:30; de 1 a 8
+   sin am/pm es de la tarde) y se suman a lo que ya dio (`cita_tentativa`). El día de la cita **no pisa** la fecha del evento.
+3. `memoria.validar_cita` (horario de `seed/tienda.md`: L–D 9:00–19:00, refrigerio 13:00–14:00): fuera de horario, en
+   refrigerio, una hora ya pasada, un día pasado o después del evento → el bot explica y propone (en refrigerio: «¿a las
+   12:30 p. m. o desde las 2:00 p. m.?»), conservando el día.
+4. Válida → `sabemos.cita` = `2026-10-09T17:00` (hora de Lima) y el bot confirma con la dirección (Juan Ayllón 459, Santa
+   Anita), la referencia (4 cuadras del Mall de Santa Anita), el aviso del GPS y que tendrá la prenda separada en su talla
+   (si no la sabe, la pregunta; esa talla ya no arma un pedido). Los textos salen de `venta.json` → `showroom` (copia de
+   `tienda.md`), nunca del LLM.
+
+**Bot Go** (`backend/internal/bot/memoria.go`, `registrarCita`): cuando la memoria que vuelve del agente trae una `cita`
+nueva o cambiada, deja un pedido en estado `consulta` con la prenda y la talla, y una nota para la asesora
+(«🗓️ Cita para probarse V42 talla M el vie 9-oct 17:00 · clienta caliente: evento el 17-oct (en 13 días)»), y llama
+`Notify("orders")`. **No reserva stock.** Si la conversación ya tiene un pedido abierto, la nota va en ése; si no, el nuevo
+queda como pedido de la conversación (si luego compra, `draftFor` lo reutiliza). La misma cita no se vuelve a anotar; una
+cita cambiada se anota en el mismo pedido. Las consultas que deja la foto llevan también la temperatura en la nota.
+
+**Medido el 04-10-2026** (Mac; misma máquina, agente con Jev en cascada y verificación; guion del cliente sin anuncio, 10
+mensajes): latencia media **2,05 s antes → 1,55 s después** (los tres pasos de la cita los responde el código en
+~0,05 s); RAM **1,086 → 1,087 GiB** en reposo y **1,088 → 1,088 GiB** tras el guion (sin diferencia). `evaluar_jev`:
+cascada 98,5 % (67/68), contexto 24/26 y verificación 8/9, igual que antes. Prueba comercial del build: 97,06 % (66/68),
+igual. Guiones: sin anuncio, desde anuncio, clienta fría («solo estoy viendo, es para el próximo año»: no se le empuja el
+cierre) y caliente («este sábado»: precio + ¿probártelo? sin pedir la talla antes) — ninguna foto antes de conocer la
+necesidad, una prenda por oferta y ninguna pregunta repetida.
 
 ## Decisiones: SetFit (local) y Jev (TypeSafe) (04-10-2026)
 

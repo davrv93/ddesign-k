@@ -140,17 +140,31 @@ M.registrar_respuesta(m, "¡Perfecto!", forzar="confirmar")
 caso("el código fuerza la pendiente", m["pendiente"], "confirmar")
 
 # --- 5. La siguiente pregunta la elige el código ----------------------------------------------------------
+# Método de venta (04-10-2026): ocasión → para cuándo (urgencia) → día/noche; la talla, después de mostrar una prenda;
+# y el cierre ofrece probárselo o separarlo (`probar`), que reemplazó a «¿qué te gustó?» y «¿separarlo?».
 caso("prospección empieza por la ocasión", M.siguiente(M.nueva(), "prospeccion"), "ocasion")
-caso("sabida la ocasión, día/noche", M.siguiente(con(ocasion="matrimonio"), "prospeccion"), "horario")
+caso("sabida la ocasión, para cuándo (la urgencia)", M.siguiente(con(ocasion="matrimonio"), "prospeccion"), "fecha")
 m = M.nueva(); m["preguntado"] = ["ocasion"]
-caso("preguntada (aunque sin respuesta) no se repite", M.siguiente(m, "prospeccion"), "horario")
-caso("talla del perfil: no se pregunta", M.siguiente(M.con_perfil(con(ocasion="boda", horario="noche"), {"tallas": ["M"]}), "prospeccion"), "estatura")
-m = M.nueva(); m["preguntado"] = ["fecha"]
-caso("seguimiento: qué le gustó, una sola vez", M.siguiente(m, "seguimiento"), "que_le_gusto")
-m["preguntado"] += ["que_le_gusto"]
-caso("seguimiento: luego separar", M.siguiente(m, "seguimiento"), "separar")
-m["preguntado"] += ["separar"]
+caso("preguntada (aunque sin respuesta) no se repite", M.siguiente(m, "prospeccion"), "fecha")
+caso("sabidas ocasión y fecha: día/noche", M.siguiente(con(ocasion="boda", fecha="el sabado"), "prospeccion"), "horario")
+caso("talla del perfil: no se pregunta",
+     M.siguiente(M.con_perfil(con(ocasion="boda", horario="noche", fecha="el 17"), {"tallas": ["M"]}), "prospeccion", True), "")
+caso("sin prenda mostrada, la talla no se pregunta", M.siguiente(con(ocasion="boda", horario="noche", fecha="el 17"), "prospeccion"), "")
+caso("con prenda mostrada, la talla sí", M.siguiente(con(ocasion="boda", horario="noche", fecha="el 17"), "prospeccion", True), "talla")
+m = con(ocasion="boda", horario="noche", fecha="el 17"); m["producto"] = "V42"; m["temperatura"] = "tibio"
+caso("seguimiento tibio: la talla antes del cierre", M.siguiente(m, "seguimiento"), "talla")
+m["preguntado"] += ["talla"]
+caso("seguimiento tibio: sin talla no se empuja el cierre", M.siguiente(m, "seguimiento"), "")
+m["sabemos"]["talla"] = "M"
+caso("seguimiento tibio: con talla, ¿probártelo o separarlo?", M.siguiente(m, "seguimiento"), "probar")
+m["preguntado"] += ["probar"]
 caso("seguimiento: no queda nada que preguntar", M.siguiente(m, "seguimiento"), "")
+m = con(ocasion="boda", horario="noche", fecha="mañana"); m["producto"] = "V42"; m["temperatura"] = "caliente"
+caso("seguimiento caliente: el cierre antes que la talla", M.siguiente(m, "seguimiento"), "probar")
+m = con(ocasion="boda", horario="noche", fecha="el otro año", talla="M"); m["producto"] = "V42"; m["temperatura"] = "frio"
+caso("seguimiento frío: no se empuja el cierre", M.siguiente(m, "seguimiento"), "")
+m = con(ocasion="boda", horario="noche", fecha="el 17", talla="M", cita="2026-10-09T17:00"); m["producto"] = "V42"; m["temperatura"] = "caliente"
+caso("con cita hecha no se vuelve a ofrecer", M.siguiente(m, "seguimiento"), "")
 caso("cierre con talla: confirmar", M.siguiente(con(talla="M"), "cierre"), "confirmar")
 caso("venta confirmada: Lima o provincia", M.siguiente(M.nueva(), "venta_confirmada"), "lima_o_provincia")
 caso("venta confirmada con envío: pago", M.siguiente(con(envio="provincia"), "venta_confirmada"), "pago")
@@ -186,22 +200,133 @@ m = M.normalizar({"pendiente": "inventada", "sabemos": {"talla": "M", "otra": 1}
 caso("normaliza lo que llega", (m["pendiente"], m["sabemos"]["talla"], "otra" in m["sabemos"], m["preguntado"]), ("", "M", False, []))
 caso("perfil no pisa lo de hoy", M.con_perfil(con(talla="S"), {"tallas": ["M"]})["sabemos"]["talla"], "S")
 
-# --- 9. Guion b) sin LLM: el bot siempre pregunta lo que dice `siguiente`; ninguna pregunta se repite --------
+# --- 9. Guion b) sin LLM (desde el anuncio del V42): el bot siempre pregunta lo que dice `siguiente`; ninguna
+# pregunta se repite; la temperatura se calcula en cada turno con «hoy» fijo ------------------------------------
+import datetime as _dt
+HOY = _dt.date(2026, 10, 4)                                    # domingo
+AHORA = _dt.datetime(2026, 10, 4, 18, 40, tzinfo=M.LIMA)
 m, etapa, hechas = M.nueva(), "prospeccion", []
-GUION = [("Hola, quisiera saber si todavía tienen este vestido", "prospeccion"), ("es para un matrimonio", "prospeccion"),
-         ("de noche", "prospeccion"), ("Sí, me interesa", "seguimiento"), ("¿cuánto cuesta?", "seguimiento"),
-         ("¿cómo es el material?", "seguimiento"), ("soy talla M", "seguimiento")]
-for msg, etapa in GUION:
-    M.leer(m, msg)
+m["producto"] = "V42"
+GUION = [("Hola, quisiera saber si todavía tienen este vestido", "prospeccion", ""), ("es para un matrimonio", "prospeccion", ""),
+         ("el sábado 17", "prospeccion", ""), ("de noche", "prospeccion", ""), ("Sí, me interesa", "seguimiento", "interesado"),
+         ("¿cuánto cuesta?", "seguimiento", "consulta_precio"), ("¿cómo es el material?", "seguimiento", "consulta_material"),
+         ("soy talla M", "seguimiento", "consulta_talla")]
+for msg, etapa, intent in GUION:
+    M.leer(m, msg, ahora=AHORA)
+    M.anotar_senales(m, msg, intent)
+    M.temperatura(m, HOY)
     k = M.siguiente(m, etapa)
     if k:
         hechas.append(k)
-        M.registrar_respuesta(m, "Respuesta.\n\n" + M.PREGUNTAS[k])
+        M.registrar_respuesta(m, "Respuesta.\n\n" + M.texto_pregunta(k, m, msg))
     else:
         M.registrar_respuesta(m, "Respuesta sin pregunta.")
-caso("guion b): preguntas en orden y sin repetir", hechas, ["ocasion", "horario", "talla", "fecha", "que_le_gusto", "separar"])
+caso("guion b): preguntas en orden y sin repetir", hechas, ["ocasion", "fecha", "horario", "talla", "probar"])
 caso("guion b): lo que sabemos al llegar al cierre", {k: v for k, v in m["sabemos"].items() if v},
-     {"ocasion": "matrimonio", "horario": "noche", "talla": "M"})
+     {"ocasion": "matrimonio", "fecha": "el sabado 17", "fecha_iso": "2026-10-17", "horario": "noche", "prenda": "vestido", "talla": "M"})
+caso("guion b): tibia por la fecha", (m["temperatura"], m["temperatura_motivo"].split(";")[0]), ("tibio", "evento el 17-oct (en 13 días)"))
+
+# --- 10. Fechas a ISO, con «hoy» fijo (domingo 4-oct-2026) ------------------------------------------------------
+FECHAS = [
+    ("el 18 de octubre", "2026-10-18"), ("el 2 de octubre", "2027-10-02"),     # si ya pasó este año, el siguiente
+    ("este sábado", "2026-10-10"), ("el sábado 17", "2026-10-17"), ("el sábado 18", "2026-10-18"),   # manda el número
+    ("el próximo viernes", "2026-10-09"), ("el domingo", "2026-10-11"), ("este domingo", "2026-10-04"),
+    ("el otro sábado", "2026-10-17"), ("en dos semanas", "2026-10-18"), ("dentro de 3 días", "2026-10-07"),
+    ("mañana", "2026-10-05"), ("pasado mañana", "2026-10-06"), ("hoy", "2026-10-04"),
+    ("el 15/11", "2026-11-15"), ("15/11/2027", "2027-11-15"), ("el 3/10", "2027-10-03"),
+    ("este fin de semana", "2026-10-04"), ("la próxima semana", "2026-10-11"), ("para noviembre", "2026-11"),
+    ("en septiembre", "2027-09"), ("para el próximo año", "2027"), ("fin de mes", "2026-10-31"),
+    ("el 9", "2026-10-09"), ("el 2", "2026-11-02"), ("el viernes a las 5", "2026-10-09"),
+    ("a las 10 de la mañana", None), ("el 31 de febrero", None), ("es un matrimonio", None),
+]
+for texto, iso in FECHAS:
+    caso(f"fecha «{texto}»", M.fecha_iso(texto, HOY), iso)
+caso("fin de semana dicho un lunes", M.fecha_iso("este fin de semana", _dt.date(2026, 10, 5)), "2026-10-10")
+r = M.leer(M.nueva(), "es el sábado 17 de octubre", ahora=AHORA)
+caso("leer guarda la fecha y la normaliza", {k: v for k, v in r["datos"].items() if k.startswith("fecha")},
+     {"fecha": "el sabado 17 de octubre", "fecha_iso": "2026-10-17"})
+caso("«lo necesito para mañana» es fecha aunque no se preguntó", M.extraer("lo necesito para mañana").get("fecha"), "manana")
+
+# --- 11. Horas y validación de la cita (showroom L–D 9–19 h, refrigerio 13–14 h) -----------------------------------
+HORAS = [("a las 5", "17:00"), ("a la 1 y media", "13:30"), ("a las 10", "10:00"), ("a las 10 de la mañana", "10:00"),
+         ("17:30", "17:30"), ("a las 4 y cuarto", "16:15"), ("5pm", "17:00"), ("al mediodía", "12:00"),
+         ("a las 8 de la noche", "20:00"), ("a las 7", "19:00"), ("el viernes", None)]
+for texto, h in HORAS:
+    caso(f"hora «{texto}»", M.hora_en(texto), h)
+VALIDAR = [(("2026-10-09", "17:00"), ""), (("2026-10-09", "13:30"), "refrigerio"), (("2026-10-09", "19:00"), "fuera_horario"),
+           (("2026-10-09", "08:30"), "fuera_horario"), (("2026-10-09", "18:30"), ""), (("2026-10-04", "18:00"), "hora_pasada"),
+           (("2026-10-03", "10:00"), "dia_pasado"), (("2026-10-09", "12:30"), ""), (("2026-10-09", "14:00"), "")]
+for (dia, hora), err in VALIDAR:
+    caso(f"cita {dia} {hora}", M.validar_cita(dia, hora, AHORA), err)
+caso("cita después del evento", M.validar_cita("2026-10-20", "10:00", AHORA, "2026-10-17"), "despues_evento")
+
+m = con(fecha="el sabado 17", fecha_iso="2026-10-17"); m["pendiente"] = "cita"
+r = M.leer(m, "el viernes a la 1 y media", ahora=AHORA)
+caso("cita en refrigerio: no vale, el día se queda", (r["cita"]["error"], m["cita_tentativa"], m["sabemos"]["cita"], m["pendiente"]),
+     ("refrigerio", {"dia": "2026-10-09", "hora": None}, None, "cita"))
+r = M.leer(m, "mejor a las 5 entonces", ahora=AHORA)
+caso("otra hora completa la cita", (r["cita"]["ok"], r["respondio"], m["sabemos"]["cita"], m["pendiente"]),
+     (True, True, "2026-10-09T17:00", ""))
+caso("el día de la cita no pisa la fecha del evento", (m["sabemos"]["fecha"], m["sabemos"]["fecha_iso"]), ("el sabado 17", "2026-10-17"))
+m = M.nueva()
+r = M.leer(m, "quiero ir a probármelo el sábado a las 11", ahora=AHORA)
+caso("cita pedida con día y hora en un mensaje", (r["es_cita"], m["sabemos"]["cita"], m["sabemos"]["fecha"]), (True, "2026-10-10T11:00", None))
+m = M.nueva(); m["pendiente"] = "probar"
+r = M.leer(m, "sí", ahora=AHORA)
+caso("«sí» a ¿probártelo o separarlo? es pedir cita", (r["es_cita"], r["respondio"], r["cita"]["dato"]), (True, True, False))
+m = M.nueva(); m["pendiente"] = "cita"
+r = M.leer(m, "¿tienen estacionamiento?", ahora=AHORA)
+caso("una pregunta no suelta la cita pendiente", (r["respondio"], m["pendiente"]), (False, "cita"))
+caso("la pendiente cita no se suelta sola", (M.registrar_respuesta(m, "Sí, hay estacionamiento cerca 😊"), m["pendiente"]), ("cita", "cita"))
+for q in ("¿A qué hora te acomoda el viernes 9 de octubre?", "¿Qué día te acomoda venir a las 5:00 p. m.?",
+          "¿Te acomoda a las 12:30 p. m. o desde las 2:00 p. m.?"):
+    caso(f"detecta cita «{q[:30]}»", M.pregunta_de(q), "cita")
+
+# --- 12. Temperatura: por fecha (hoy fijo) y por señales -----------------------------------------------------------
+def temp(fecha_iso=None, senales=(), **sab):
+    mm = con(fecha_iso=fecha_iso, **sab); mm["senales"] = list(senales)
+    return M.temperatura(mm, HOY)[0]
+
+caso("sin datos: fría", (temp(), M.temperatura(M.nueva(), HOY)[1]), ("frio", M.SIN_DATOS))
+for iso, t in [("2026-10-04", "caliente"), ("2026-10-10", "caliente"), ("2026-10-11", "caliente"), ("2026-10-12", "tibio"),
+               ("2026-10-17", "tibio"), ("2026-11-03", "tibio"), ("2026-11-04", "frio"), ("2026-11", "tibio"), ("2027", "frio")]:
+    caso(f"temperatura por fecha {iso}", temp(iso), t)
+caso("solo viendo: fría", temp(senales=["frio"]), "frio")
+caso("preguntó precio: tibia", temp(senales=["interes"]), "tibio")
+caso("pidió cita: caliente", temp(senales=["cita"]), "caliente")
+caso("urgente: caliente", temp(senales=["urgente"]), "caliente")
+caso("dijo «solo viendo» y luego pregunta el precio: sigue fría", temp(senales=["frio", "interes"]), "frio")
+caso("dijo «solo viendo» y luego quiere comprarlo: caliente", temp(senales=["frio", "interes", "compra"]), "caliente")
+caso("evento lejano pero pregunta el precio: tibia", temp("2026-12-20", ["interes"]), "tibio")
+caso("quería comprar y luego «más adelante»: fría", temp(senales=["compra", "frio"]), "frio")
+caso("evento en 5 días manda sobre «solo viendo»", temp("2026-10-09", ["frio"]), "caliente")
+caso("con cita hecha: caliente", temp(cita="2026-10-09T17:00"), "caliente")
+SENALES = [("solo estoy viendo", "", ["frio"]), ("no es urgente", "", ["frio"]), ("lo necesito urgente", "", ["urgente"]),
+           ("lo necesito para este fin de semana", "", ["urgente"]), ("¿cuánto cuesta?", "consulta_precio", ["interes"]),
+           ("ya, resérvamelo", "intencion_compra", ["compra"]), ("hola", "saludo", [])]
+for texto, intent, esperado in SENALES:
+    caso(f"señal «{texto}»", M.anotar_senales(M.nueva(), texto, intent), esperado)
+m = M.nueva()
+M.leer(m, "solo estoy viendo, es para el próximo año", ahora=AHORA)
+M.anotar_senales(m, "solo estoy viendo, es para el próximo año", "objecion")
+caso("caso frío completo", (M.temperatura(m, HOY)[0], m["sabemos"]["fecha_iso"]), ("frio", "2027"))
+
+# --- 13. Indagar antes de ofrecer --------------------------------------------------------------------------------
+caso("«tengo un evento» es una necesidad", M.en_necesidad(M.nueva(), "Hola, tengo un evento"), True)
+caso("«¿tienen blazers?» no es contar una necesidad", M.en_necesidad(M.nueva(), "¿tienen blazers?"), False)
+caso("solo la ocasión no basta para ofrecer", M.necesidad_conocida(con(ocasion="matrimonio")), False)
+caso("ocasión, fecha y día/noche: se ofrece", M.necesidad_conocida(con(ocasion="matrimonio", fecha="el 17", horario="noche")), True)
+m = con(ocasion="matrimonio"); m["preguntado"] = ["ocasion", "fecha", "horario"]
+caso("lo preguntado y no sabido no frena la oferta", M.necesidad_conocida(m), True)
+m = M.nueva(); m["preguntado"] = ["ocasion", "fecha", "horario"]
+caso("sin ocasión ni fecha no hay qué ofrecer", M.necesidad_conocida(m), False)
+caso("pide ver: «muéstrame opciones»", M.pide_ver("muéstrame opciones"), True)
+caso("«es un matrimonio» no pide ver", M.pide_ver("es un matrimonio"), False)
+caso("«tengo un evento» → ¿Qué evento es?", (M.texto_pregunta("ocasion", M.nueva(), "tengo un evento"),
+                                              M.clave_de(M.texto_pregunta("ocasion", M.nueva(), "tengo un evento"))), ("¿Qué evento es?", "ocasion"))
+q = M.texto_pregunta("fecha", con(ocasion="matrimonio"))
+caso("¿Para cuándo es el matrimonio?", (q, M.clave_de(q)), ("¿Para cuándo es el matrimonio?", "fecha"))
+caso("la prenda que busca se guarda", M.extraer("busco un conjunto para la oficina").get("prenda"), "conjunto")
 
 
 def main() -> int:

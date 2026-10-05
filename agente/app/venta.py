@@ -78,25 +78,33 @@ NOMBRE_ETAPA = {"prospeccion": "PROSPECCIÓN", "seguimiento": "SEGUIMIENTO", "ci
 
 # Qué hacer en cada etapa. La pregunta concreta NO se elige aquí: la elige el código (memoria.siguiente, en el
 # orden de memoria.ORDEN) y llega en SIGUIENTE PREGUNTA; lo ya contestado llega en LO QUE YA SABEMOS.
+# Método de venta (pedido de la tienda, 04-10-2026): indagar la necesidad → ofrecer UNA opción → insistir con
+# razones → cerrar con el precio y la invitación a probárselo (o separarlo).
 GUIA = {
     "prospeccion": (
-        "Todavía la estás conociendo. Objetivo: entender qué busca y que se entusiasme con el vestido. NO vendas todavía.\n"
-        "- Responde primero lo que preguntó, con datos de PRODUCTO.\n"
+        "Todavía la estás conociendo. Objetivo: entender qué necesita (qué evento, para cuándo, de día o de noche) antes de "
+        "ofrecerle nada. NO vendas todavía.\n"
+        "- Si PRODUCTO dice «(ninguna relevante)», todavía no le muestras prendas: no nombres ninguna ni prometas fotos.\n"
+        "- Si preguntó algo, respóndelo primero con datos de PRODUCTO o TIENDA.\n"
         "- Si su mensaje cuenta algo de su evento, reacciona con entusiasmo sincero en una frase.\n"
         "- Termina con la SIGUIENTE PREGUNTA tal cual; si es «ninguna», no preguntes nada. Nunca preguntes lo que ya está en "
         "LO QUE YA SABEMOS.\n"
         "- No hables de pago, envío ni de confirmar pedido."),
     "seguimiento": (
-        "Ya mostró interés, pero interés NO es compra. Objetivo: resolver sus dudas y confirmar que sigue interesada.\n"
-        "- Responde su duda con datos de PRODUCTO o TIENDA (precio, talla, disponibilidad, material, ubicación, envío).\n"
-        "- Después valida el interés con la SIGUIENTE PREGUNTA tal cual; si es «ninguna», no preguntes nada.\n"
-        "- Si en LO QUE YA SABEMOS está para cuándo lo necesita, recomiéndale tenerlo con anticipación (una vez): así hay "
-        "tiempo para un ajuste y se asegura mientras hay stock.\n"
+        "Ya mostró interés, pero interés NO es compra. Objetivo: que sienta que ESTE vestido es el suyo, resolviendo sus dudas.\n"
+        "- Responde su duda con datos de PRODUCTO o TIENDA (precio, talla, disponibilidad, tela, corte, ubicación, envío).\n"
+        "- Insiste con razones, no con presión: en una frase, conecta el vestido con lo que busca (LO QUE YA SABEMOS: ocasión, "
+        "día/noche, fecha) y di por qué le queda bien, con datos de su ficha. Cada vez con palabras distintas; no repitas frases "
+        "tuyas del HISTORIAL.\n"
+        "- Si la SIGUIENTE PREGUNTA es la de probárselo o separarlo, antes dile el precio de PRODUCTO en una frase.\n"
+        "- Después, la SIGUIENTE PREGUNTA tal cual; si es «ninguna», no preguntes nada.\n"
         "- Si pone una objeción (precio, «lo voy a pensar», miedo a que no le quede), respóndela con empatía y un dato real. Sin presionar.\n"
-        "- NO des la venta por hecha, no pidas confirmar el pedido ni des datos de pago: espera a que diga que quiere comprarlo o separarlo."),
+        "- NO des la venta por hecha, no pidas confirmar el pedido ni des datos de pago: espera a que diga que quiere comprarlo, "
+        "separarlo o probárselo."),
     "cierre": (
-        "Dijo con claridad que quiere comprarlo o separarlo. Objetivo: llevarla a la acción, un paso por mensaje.\n"
+        "Dijo con claridad que quiere comprarlo, separarlo o probárselo. Objetivo: llevarla a la acción, un paso por mensaje.\n"
         "- Si pregunta algo, respóndelo y vuelve al paso pendiente.\n"
+        "- Para probárselo: el showroom atiende solo con cita (SHOWROOM en TIENDA); el día y la hora los coordina el bot.\n"
         "- PASO PENDIENTE: {paso}"),
     "venta_confirmada": (
         "El pedido ya está confirmado{pedido}. Objetivo: terminar la compra, UN paso por mensaje y en este orden, sin repetir los que ya se dieron:\n"
@@ -109,8 +117,108 @@ GUIA = {
 }
 
 
-def guia(etapa: str, paso: str = "", pedido: str = "") -> str:
-    return GUIA.get(etapa, GUIA["prospeccion"]).format(paso=paso, pedido=pedido)
+# El tono según la temperatura de la clienta (memoria.temperatura, por reglas). En venta confirmada no aplica.
+NOMBRE_TEMP = {"frio": "FRÍA", "tibio": "TIBIA", "caliente": "CALIENTE"}
+TONO = {
+    "frio": ("Acompáñala sin presionar: resuelve lo que pregunte, dale una razón para que el vestido le encaje y deja la puerta "
+             "abierta («cuando lo decidas, aquí estoy»). No le hables de separarlo ni de apuro."),
+    "tibio": ("Recomiéndale con seguridad: conecta el vestido con lo que busca, dile por qué le queda bien y resuelve sus dudas. "
+              "Puedes sugerir tenerlo con anticipación, una vez, por si necesita un ajuste."),
+    "caliente": ("Ve directo al cierre: dale el precio y ofrécele pasar a probárselo al showroom (con cita) o separarlo hoy. "
+                 "Menciona que por la fecha de su evento conviene asegurarlo ya. Nunca inventes escasez: del stock, solo lo "
+                 "que diga «AHORA:»."),
+}
+
+
+def tono(temperatura: str, motivo: str = "") -> str:
+    if temperatura not in TONO:
+        return ""
+    return f"TEMPERATURA DE LA CLIENTA: {NOMBRE_TEMP[temperatura]}" + (f" ({motivo})" if motivo else "") + f". {TONO[temperatura]}"
+
+
+def guia(etapa: str, paso: str = "", pedido: str = "", temperatura: str = "", motivo: str = "") -> str:
+    txt = GUIA.get(etapa, GUIA["prospeccion"]).format(paso=paso, pedido=pedido)
+    if etapa in ("seguimiento", "cierre") or (etapa == "prospeccion" and temperatura == "caliente"):
+        txt += "\n" + tono(temperatura, motivo) if temperatura else ""
+    return txt
+
+
+# ---------------------------------------------------------------------------
+# Cita para probárselo en el showroom. Los textos los arma el código (no el LLM): dirección, referencia y horario
+# salen de venta.json (copia de tienda.md); el horario que valida la cita, de memoria.py.
+
+SHOWROOM = VENTA.get("showroom") or {}
+_DIAS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
+_MESES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre",
+          "diciembre")
+
+
+def dia_humano(iso: str, hoy) -> str:
+    """«el viernes 9 de octubre», «mañana sábado 10», «hoy»."""
+    import datetime as dt
+    try:
+        d = dt.date.fromisoformat(iso)
+    except (TypeError, ValueError):
+        return ""
+    if d == hoy:
+        return "hoy"
+    base = f"{_DIAS[d.weekday()]} {d.day} de {_MESES[d.month - 1]}"
+    return f"mañana {base}" if (d - hoy).days == 1 else f"el {base}"
+
+
+def hora_humana(hhmm: str) -> str:
+    """«17:00» → «5:00 p. m.»"""
+    try:
+        h, m = (int(x) for x in hhmm.split(":"))
+    except (AttributeError, ValueError):
+        return hhmm or ""
+    suf = "a. m." if h < 12 else "p. m."
+    return f"{(h - 1) % 12 + 1}:{m:02d} {suf}"
+
+
+def cita_pide(dia: str | None, hora: str | None, hoy, primera: bool = True) -> str:
+    """Le pide lo que falta de la cita (día, hora o los dos)."""
+    if dia and not hora:
+        return (f"¡Perfecto, {dia_humano(dia, hoy)}! 😊 Atendemos {SHOWROOM.get('horario', '')}.\n\n"
+                f"¿A qué hora te acomoda {dia_humano(dia, hoy)}?")
+    if hora and not dia:
+        return f"¡Dale! ¿Qué día te acomoda venir a las {hora_humana(hora)}?"
+    intro = "¡Me encanta! 😊 " if primera else ""
+    return (f"{intro}Nuestro showroom está en *{SHOWROOM.get('direccion', '')}* ({SHOWROOM.get('referencia', '')}) y atendemos "
+            f"solo con cita, {SHOWROOM.get('horario', '')}.\n\n¿Qué día y a qué hora te acomoda venir a probártelo?")
+
+
+def cita_invalida(error: str, dia: str | None, hora: str | None, hoy, evento: str | None = None) -> str:
+    """Por qué esa cita no vale y qué proponerle (sin inventar horarios: los del showroom)."""
+    cuando = dia_humano(dia, hoy) if dia else ""
+    h = hora_humana(hora) if hora else "esa hora"
+    if error == "refrigerio":
+        return (f"A la {h} justo estamos en refrigerio (de 1:00 a 2:00 p. m.) 😅\n\n"
+                f"¿Te acomoda a las 12:30 p. m. o desde las 2:00 p. m.{' ' + cuando if cuando else ''}?")
+    if error == "fuera_horario":
+        return (f"A esa hora el showroom está cerrado 😅 Atendemos {SHOWROOM.get('horario', '')}.\n\n"
+                f"¿A qué hora te acomoda{' ' + cuando if cuando else ''} dentro de ese horario?")
+    if error == "hora_pasada":
+        return "Para hoy esa hora ya pasó 😅\n\n¿Qué otro día u hora te acomoda?"
+    if error == "despues_evento":
+        return (f"Tu evento es {dia_humano(evento, hoy)} y esa fecha sería después 😅 Lo ideal es que te lo pruebes antes.\n\n"
+                "¿Qué día te acomoda venir antes del evento?")
+    return "Esa fecha ya pasó 😅\n\n¿Qué día te acomoda venir?"
+
+
+def cita_ok(dia: str, hora: str, hoy, prenda: str = "", talla: str = "", nombre: str = "") -> str:
+    """Confirma la cita con la dirección y la referencia, y que tendrá la prenda separada en su talla."""
+    saludo = f"¡Listo, {nombre}! 🗓️" if nombre else "¡Listo! 🗓️"
+    txt = (f"{saludo} Te esperamos {dia_humano(dia, hoy)} a las *{hora_humana(hora)}* en nuestro showroom: "
+           f"*{SHOWROOM.get('direccion', '')}* ({SHOWROOM.get('referencia', '')})."
+           + (f" En el GPS escribe solo «{SHOWROOM['gps']}»." if SHOWROOM.get("gps") else ""))
+    if prenda and talla:
+        txt += f"\n\nTe tendré separado el {prenda} en talla *{talla}* para que te lo pruebes 💙"
+    elif prenda:
+        txt += f"\n\nTe tendré separado el {prenda} para que te lo pruebes 💙\n\n¿Qué talla usas? Así te lo tengo listo."
+    else:
+        txt += "\n\nTe tendremos listos los modelos para tu evento 💙"
+    return txt
 
 
 SISTEMA = """ROL
@@ -129,12 +237,16 @@ REGLAS DE CONVERSACIÓN
   preguntes lo que está en LO QUE YA SABEMOS.
 - ESTÁS ESPERANDO dice qué le preguntaste antes: si su mensaje no lo responde, no lo inventes ni lo des por dicho.
 - Entusiasmo sincero cuando cuente su evento («¡qué bonito!», «te va a quedar precioso»). Como mucho un emoji por mensaje.
+- Si dice que va a una boda o un matrimonio, es invitada: no le hables de vestido de novia salvo que diga que ella se casa.
 - *Negritas* de WhatsApp solo para códigos y precios. Saluda solo si el HISTORIAL está vacío.
 - No repitas frases tuyas del HISTORIAL.
 
 REGLAS DE VENTA
 - Datos de producto: solo los de PRODUCTO. Nunca inventes precio, tallas, colores, stock, material ni medidas.
 - No le pongas al vestido detalles que PRODUCTO no dice (brillos, bordados, pedrería, escote, mangas, abertura).
+- Tela: si PRODUCTO trae «material:», úsalo; si no, solo lo que diga su descripción (p. ej. «satinado», «gasa», «tul»).
+  Corte: la silueta, el escote, el largo y las mangas, solo según la descripción y la categoría («vestido largo»). Lo que
+  la ficha no diga, no lo sabes: dilo y ofrece que una asesora lo confirme (*4*).
 - El stock está solo en la línea «AHORA:». Solo afirma las tallas que ahí figuren como disponibles.
 - Datos de la tienda (showroom, horario, envíos, cambios): solo los de TIENDA. Lo que no figure, no lo sabes: dile
   que lo confirma una asesora (*4*).

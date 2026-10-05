@@ -1121,8 +1121,10 @@ func (b *Bot) guardarMemoria(ctx context.Context, conv *store.Conversation, cc *
 	if len(r.Memoria) == 0 || string(r.Memoria) == "null" {
 		return
 	}
+	antes := memoriaActual(conv, cc)
 	cc.Memoria = r.Memoria
 	b.setState(ctx, conv, conv.State, *cc)
+	b.registrarCita(ctx, conv, cc, antes, r.Memoria) // cita para probarse nueva: al tablero, para la asesora
 }
 
 func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) bool {
@@ -1206,7 +1208,11 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 		}
 	}
 	// Todo lo que no termina en pedido queda en el tablero para que una asesora haga seguimiento.
-	inquiry(fmt.Sprintf("Agente (foto): %s · %s · similitud %.2f", r.Foto.Caso, r.Foto.Codigo, r.Foto.Similitud), r.Foto.Similitud)
+	nota := fmt.Sprintf("Agente (foto): %s · %s · similitud %.2f", r.Foto.Caso, r.Foto.Codigo, r.Foto.Similitud)
+	if t := textoTemperatura(leerMemVenta(cc.Memoria)); t != "" {
+		nota += " · " + t
+	}
+	inquiry(nota, r.Foto.Similitud)
 	b.setState(ctx, conv, stIdle, convContext{Etapa: firstNonEmpty(r.Etapa, cc.Etapa), Memoria: cc.Memoria})
 	b.sendAgentText(ctx, conv, r)
 	return true

@@ -2,7 +2,20 @@
   "_nota": "Costos de envío para que el código calcule los totales (el LLM no suma). Fuente: guion de venta de la tienda (spech.docx, 04-10-2026).",
   "asesora": "Rosmary",
   "envio": {
-    "lima": {"costo": 15, "detalle": "Olva Courier, entrega en tu dirección"},
-    "provincia": {"costo": 20, "detalle": "Olva Courier o Shalom, hasta la agencia de tu ciudad"}
+    "lima": {
+      "costo": 15,
+      "detalle": "Olva Courier, entrega en tu dirección"
+    },
+    "provincia": {
+      "costo": 20,
+      "detalle": "Olva Courier o Shalom, hasta la agencia de tu ciudad"
+    }
+  },
+  "showroom": {
+    "_nota": "Copia de seed/tienda.md (datos reales del 04-10-2026) para que el código confirme la cita sin inventar. El horario que valida la cita está en app/memoria.py (ABRE, CIERRA, REFRIGERIO).",
+    "direccion": "Juan Ayllón 459, Santa Anita",
+    "referencia": "a 4 cuadras del Mall de Santa Anita",
+    "gps": "Juan Ayllón 459",
+    "horario": "de lunes a domingo, de 9:00 a. m. a 7:00 p. m. (refrigerio de 1:00 a 2:00 p. m.)"
   }
 }
