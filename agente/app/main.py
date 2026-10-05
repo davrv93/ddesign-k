@@ -28,7 +28,7 @@ import json
 from contextvars import ContextVar
 
 from . import datos, etapas, jev, memoria, venta
-from . import animo, gasto, rerank
+from . import animo, estructurado, gasto, rerank
 from .modelo import Embedder, EmbedderOnnx, cargar, hay_setfit
 from . import stock as stk
 
@@ -586,14 +586,14 @@ def llamar_llm(mensajes: list[dict], json_mode: bool = False) -> tuple[str, str]
     return _llm(mensajes, OPENROUTER_URL, OPENROUTER_KEY, LLM_MODELOS, 0.4, LLM_MAX_TOKENS, json_mode)
 
 
-def llamar_deepseek(mensajes: list[dict]) -> tuple[str, str]:
+def llamar_deepseek(mensajes: list[dict], formato_json: bool = False) -> tuple[str, str]:
     if not DEEPSEEK_KEY:
         raise RuntimeError("DEEPSEEK_API_KEY / OPENROUTER_API_KEY vacío")
-    return _llm(mensajes, DEEPSEEK_URL, DEEPSEEK_KEY, DEEPSEEK_MODELOS, 0.7, DEEPSEEK_MAX_TOKENS)
+    return _llm(mensajes, DEEPSEEK_URL, DEEPSEEK_KEY, DEEPSEEK_MODELOS, 0.7, DEEPSEEK_MAX_TOKENS, formato_json=formato_json)
 
 
 def _llm(mensajes: list[dict], url: str, clave: str, modelos: list[str], temperatura: float, max_tokens: int,
-         json_mode: bool = False) -> tuple[str, str]:
+         json_mode: bool = False, formato_json: bool = False) -> tuple[str, str]:
     es_openrouter = "openrouter.ai" in url
     ultimo = None
     for modelo in modelos:
@@ -608,6 +608,8 @@ def _llm(mensajes: list[dict], url: str, clave: str, modelos: list[str], tempera
                 cuerpo["provider"] = {"sort": LLM_PROVIDER_SORT}
             if json_mode:
                 cuerpo |= {"response_format": {"type": "json_object"}, "temperature": 0}
+            elif formato_json:   # respuesta estructurada: JSON, pero con la temperatura de una conversación
+                cuerpo["response_format"] = {"type": "json_object"}
             r = _http.post(url, headers={"Authorization": f"Bearer {clave}"}, json=cuerpo)
             if r.status_code >= 400:
                 raise RuntimeError(f"{modelo}: HTTP {r.status_code} {r.text[:200]}")
@@ -1168,6 +1170,10 @@ def _pendiente_sin_resolver(pend: str, reglas: dict, mensaje: str) -> bool:
     return False
 
 
+NOTA_NO_RESPONDIO = ("OJO: tu respuesta anterior NO contestó lo que ella preguntó: «{m}». En \"responde\" contesta "
+                     "ESO primero, con datos de PRODUCTO, TIENDA o AHORA; si el dato no está, dile que lo confirma una asesora (*4*).")
+
+
 # «vestidos», «otros modelos», «más opciones»: quiere ver varios, no el del anuncio.
 # Preguntas sobre la prenda: si la verificación quita la respuesta, se dice que el dato no figura.
 PREGUNTA_PRENDA = {"consulta_producto", "consulta_material", "consulta_talla", "consulta_color", "consulta_disponibilidad"}
@@ -1445,7 +1451,10 @@ def conversar(req: ChatIn) -> dict:
                   "pantalon": "los pantalones", "blazer": "los blazers", "enterizo": "los enterizos"}.get(prenda, "los modelos")
         respuesta = (f"¡Claro! 😊 Para mostrarte {cuales} que mejor te van, cuéntame: ¿para qué ocasión es?")
         modelo, forzar = "indaga_antes_de_ver", "ocasion"
-    elif not respuesta and not foto_pedida and not pide and (opcion == "catalogo" or catalogo_generico(req, cl)):
+    elif (not respuesta and not foto_pedida and not pide and (opcion == "catalogo" or catalogo_generico(req, cl))
+          and not mem["sabemos"].get("prenda")):
+        # Con la prenda ya dicha («busco un vestido») no se le pregunta otra vez qué tipo quiere ver: se le muestra
+        # una opción de esa prenda (más abajo, mejor_opcion), como pide el método de venta.
         categorias = categorias_con_stock()
         if len(categorias) < 2:
             categorias = []   # con un solo tipo de prenda no hay nada que elegir: se enseña la vitrina
@@ -1501,6 +1510,17 @@ def conversar(req: ChatIn) -> dict:
                                     and cl["intencion"] != "censura" and _imagen(foco)) else []
         else:
             sugeridas = sugerir(req, cl, fichas)
+            dio_necesidad = any(k in (lectura.get("datos") or {}) for k in ("ocasion", "fecha", "fecha_iso", "horario"))
+            if ((mem["mostrados"] or _ya_mostrados(req)) and (dio_necesidad or (lectura.get("respondio") and pend in memoria.INDAGAR))
+                    and not memoria.pide_ver(req.mensaje)):
+                # Contestó una pregunta de la necesidad («para un matrimonio», «el 24») con una prenda ya en la mesa: se
+                # sigue con esa. No es una búsqueda nueva; antes mandaba tres fotos más (una blusa y un enterizo
+                # cuando buscaba vestido) y la conversación se iba a otra prenda.
+                sugeridas = []
+            prenda_q = mem["sabemos"].get("prenda")
+            if prenda_q and sugeridas and not categoria_pedida(req.mensaje):
+                # Si dijo qué prenda busca, las sugerencias son de esa prenda.
+                sugeridas = [f for f in sugeridas if categoria_de(f) == prenda_q]
         if foco and not pide and not es_catalogo and not nombrados(req.mensaje):
             fichas = [foco] + [f for f in fichas if f is not foco]     # la primera ficha es de la que se habla
         # Con confianza baja la intención no cuenta («es de noche» salía como material con 0.38).
@@ -1548,6 +1568,22 @@ def conversar(req: ChatIn) -> dict:
         sig = "" if (esperando_cual or describiendo) else memoria.siguiente(mem, etapa, hay_prenda)
         if etapa == "cierre" and (mem["sabemos"].get("cita") or mem["pendiente"] == "cita"):
             sig = ""        # en la cita manda el paso de la cita, no «¿confirmamos tu pedido?»
+        msgs_llm = None
+
+        def redactar(msgs: list[dict], sig_k: str, extra: str = "") -> tuple[str, str]:
+            """Respuesta estructurada (estructurado.py): el LLM da responde/por_que/pregunta y el código arma el mensaje
+            con la pregunta que eligió. Si no devuelve JSON legible, se usa su texto como antes."""
+            q = memoria.texto_pregunta(sig_k, mem, req.mensaje) if sig_k else ""
+            permitir = not sig_k and bool(esperando_cual or describiendo)
+            msgs = [dict(m) for m in msgs]
+            if extra:
+                msgs[-1]["content"] += "\n\n" + extra
+            if not estructurado.ACTIVO:
+                return llamar_deepseek(msgs)
+            msgs[-1]["content"] += "\n\n" + estructurado.formato(q, permitir)
+            txt, mod = llamar_deepseek(msgs, formato_json=True)
+            return estructurado.armar(txt, q, permitir) or estructurado.sin_json(txt), mod
+
         if req.usar_llm and motor == "deepseek":
             try:
                 nota = ("OJO: la clienta está DESCRIBIENDO un vestido que vio; todavía no sabemos cuál es. Las fotos son "
@@ -1563,8 +1599,8 @@ def conversar(req: ChatIn) -> dict:
                         if indagando else "")
                 if pide_tela:   # la tela sale de la ficha; si no figura, se dice que no figura (no se adivina)
                     nota = (nota + "\n" if nota else "") + venta.nota_tela(foco.codigo, foco.nombre, foco.detalle)
-                respuesta, modelo = llamar_deepseek(_prompt_comercial(req, cl, dec, foco, fichas, sugeridas, ofrecer, paso, pedido_txt,
-                                                                      bool(lamina), nota, mem, sig))
+                msgs_llm = _prompt_comercial(req, cl, dec, foco, fichas, sugeridas, ofrecer, paso, pedido_txt, bool(lamina), nota, mem, sig)
+                respuesta, modelo = redactar(msgs_llm, sig)
                 respuesta = _sin_escasez(_sin_pies(_sin_resaludo(_whatsapp(respuesta), req)))
                 respuesta = _sin_repetir(_sin_nombre(respuesta, req), req)
                 if sugeridas:   # la foto va igual: «te paso la foto», no «¿te paso la foto?»
@@ -1588,6 +1624,19 @@ def conversar(req: ChatIn) -> dict:
                 respuesta = _sin_pies(_sin_resaludo(_whatsapp(respuesta), req))
             except Exception as e:
                 log.warning("sin LLM, uso respuesta de referencia: %s", e)
+        # ¿Preguntó o pidió algo concreto? Entonces la respuesta tiene que contestarlo (Jev lo revisa en la misma llamada).
+        pregunto = bool("?" in req.mensaje or dec["intent"].startswith("consulta_") or cl["intencion"] in (
+            "consulta_precio", "consulta_stock", "consulta_entrega", "consulta_medidas", "producto_descripcion",
+            "producto_tallas_material", "tienda_info", "como_comprar"))
+        if respuesta and jev.VERIFICAR and msgs_llm is not None and pregunto and not fichas:
+            # Sin fichas no hay nada que verificar de la prenda, pero sí si contestó («¿cómo pago?», «¿dónde quedan?»).
+            _, p_resp = jev.revisar(respuesta, "", req.mensaje, req.conversacion, preguntar_responde=True)
+            if p_resp is not None and p_resp < jev.UMBRAL_RESPONDE:
+                try:
+                    nuevo, modelo = redactar(msgs_llm, sig, NOTA_NO_RESPONDIO.format(m=req.mensaje[:200]))
+                    respuesta = memoria.quitar_repetidas(_sin_escasez(_sin_pies(_sin_resaludo(_whatsapp(nuevo), req))), mem, permitida=sig) or respuesta
+                except Exception as e:
+                    log.warning("no se pudo regenerar: %s", e)
         if respuesta and jev.VERIFICAR and fichas:
             # Lo que el LLM redactó se contrasta con las prendas de las que habla: la del foco y las que van en
             # foto. Fuera lo que afirme de ellas y su ficha no diga («detalles brillantes»). Contra todas las
@@ -1595,7 +1644,18 @@ def conversar(req: ChatIn) -> dict:
             # y del dataset no pasan por aquí.
             habladas = {f.codigo: f for f in ([foco] if foco is not None else []) + list(sugeridas)}
             antes_jev = respuesta
-            respuesta = jev.filtrar(respuesta, "\n".join(ficha_txt(f) for f in (list(habladas.values()) or fichas[:4])), req.conversacion)
+            producto_txt = "\n".join(ficha_txt(f) for f in (list(habladas.values()) or fichas[:4]))
+            respuesta, p_resp = jev.revisar(respuesta, producto_txt, req.mensaje, req.conversacion,
+                                            preguntar_responde=pregunto and msgs_llm is not None)
+            if p_resp is not None and p_resp < jev.UMBRAL_RESPONDE and msgs_llm is not None:
+                # No contestó lo que preguntó: se regenera UNA vez avisándole, y se vuelve a quitar lo inventado.
+                try:
+                    nuevo, modelo = redactar(msgs_llm, sig, NOTA_NO_RESPONDIO.format(m=req.mensaje[:200]))
+                    nuevo = memoria.quitar_repetidas(_sin_escasez(_sin_pies(_sin_resaludo(_whatsapp(nuevo), req))), mem, permitida=sig)
+                    if nuevo:
+                        respuesta = jev.filtrar(nuevo, producto_txt, req.conversacion)
+                except Exception as e:
+                    log.warning("no se pudo regenerar: %s", e)
             if respuesta != antes_jev:
                 # La verificación quitó lo que el LLM inventó. Si con eso se fue la respuesta a lo que preguntó («¿tiene
                 # forro?», «¿es largo o midi?») o la presentación de la opción, la pone el código: no se deja a la clienta

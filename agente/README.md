@@ -408,6 +408,25 @@ Lo que se corrigió está en el commit «lo que destaparon 75 conversaciones de 
 parecido); las reglas tienen falsos positivos conocidos («dame tu Yape para pagar» no la cuenta como compra); el pedido
 de dos prendas a la vez solo arma una; y la cifra es con `deepseek-v4-flash`, no con el modelo principal.
 
+## Respuesta estructurada y control antes de enviar (04-10-2026)
+
+Con 50 conversaciones reservadas, lo que quedaba mal era la **redacción**: perdía el hilo (21/50), sonaba robótico por
+largo y elogios repetidos (20), no contestaba lo preguntado (10) y repetía preguntas (6). Dos cambios:
+
+1. **El LLM entrega piezas y el código arma el mensaje** (`app/estructurado.py`, `RESPUESTA_ESTRUCTURADA=1`). DeepSeek
+   devuelve JSON `{responde, por_que, pregunta}`: primero lo que contesta a SU mensaje (máx. 2 frases), luego por qué
+   le conviene (máx. 1) y al final la pregunta que eligió el código (`memoria.siguiente`); la del LLM solo cuando el
+   código no tiene ninguna. Las preguntas metidas en otros campos se quitan. Si el JSON no se lee, se usa el texto.
+   Pruebas: `python3 -m app.prueba_estructurado` (corre en el build).
+2. **Jev revisa antes de enviar en una sola llamada** (`jev.revisar`): además de quitar lo inventado de la prenda,
+   pregunta «¿contesta lo que ella preguntó?». Por debajo de `JEV_UMBRAL_RESPONDE` (0,35) se regenera UNA vez con
+   la nota «no contestaste: …» (log `[JEV-RESPONDE]`). En la prueba se activó en 1 de cada 8 mensajes.
+
+Y dos arreglos de hilo: contestar una pregunta de la necesidad («para un matrimonio») con una prenda ya mostrada sigue
+con esa prenda (antes mandaba tres fotos más, una blusa y un enterizo); y si dijo qué prenda busca, las sugerencias
+son de esa prenda. Con la prenda conocida, «quiero ver los modelos» muestra una opción de ella en vez de la lista de
+categorías.
+
 ## Stock como herramienta (no como conocimiento)
 
 Regla: **el RAG decide qué podría interesar; el stock de ahora decide qué se puede vender.**

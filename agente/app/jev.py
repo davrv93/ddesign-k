@@ -229,6 +229,45 @@ def verificar(parrafos: list[str], producto: str) -> list[float] | None:
         return None
 
 
+UMBRAL_RESPONDE = float(os.environ.get("JEV_UMBRAL_RESPONDE", "0.35"))   # por debajo, se regenera una vez
+PREGUNTA_RESPONDE = ("¿El mensaje de la vendedora (`respuesta`) contesta lo que la clienta preguntó o pidió en "
+                     "`mensaje_de_la_clienta`? Cuenta como contestado decir con claridad que ese dato lo confirma una asesora.")
+
+
+def revisar(respuesta: str, producto: str, mensaje: str, conversacion: str = "", preguntar_responde: bool = True) -> tuple[str, float | None]:
+    """Una sola llamada a Jev antes de enviar: quita los párrafos que inventan algo de la prenda (si hay ficha) y
+    dice con qué probabilidad la respuesta contesta lo que ella preguntó (None si no se preguntó o Jev no respondió).
+    Antes eran dos cosas separadas; juntas no suman latencia."""
+    parrafos = [p for p in respuesta.split("\n\n") if p.strip()]
+    if not CLAVE or not parrafos or not (producto or preguntar_responde):
+        return respuesta, None
+    preguntas = {}
+    if producto:
+        preguntas |= {f"p{k}": {"type": "noul", "instructions": {"parrafo": p, "producto": producto, "pregunta": PREGUNTA_INVENTO},
+                                "criteria": CRITERIO_INVENTO} for k, p in enumerate(parrafos)}
+    if preguntar_responde:
+        preguntas["responde"] = {"type": "noul", "instructions": {"mensaje_de_la_clienta": mensaje, "respuesta": respuesta,
+                                                                  "pregunta": PREGUNTA_RESPONDE}}
+    try:
+        ans, _ = _evaluar({"tarea": "Revisar la respuesta de una vendedora antes de enviarla."}, preguntas)
+    except Exception as e:
+        log.warning("Jev (revisión) no respondió: %s", e)
+        return respuesta, None
+    p_resp = round(float(ans["responde"]["noul"]), 3) if "responde" in ans else None
+    if producto:
+        pesos = [round(float(ans[f"p{k}"]["noul"]), 3) for k in range(len(parrafos)) if f"p{k}" in ans]
+        if len(pesos) == len(parrafos):
+            quedan = [p for p, w in zip(parrafos, pesos) if w < UMBRAL_INVENTO]
+            if len(quedan) < len(parrafos):
+                log.info("[JEV-VERIFICA] %s", json.dumps({"conversation_id": conversacion, "quitados": [
+                    {"parrafo": p[:160], "p": w} for p, w in zip(parrafos, pesos) if w >= UMBRAL_INVENTO]}, ensure_ascii=False))
+            respuesta = "\n\n".join(quedan) if quedan else respuesta
+    if p_resp is not None and p_resp < UMBRAL_RESPONDE:
+        log.info("[JEV-RESPONDE] %s", json.dumps({"conversation_id": conversacion, "mensaje": mensaje[:160],
+                                                  "respuesta": respuesta[:160], "p": p_resp}, ensure_ascii=False))
+    return respuesta, p_resp
+
+
 def filtrar(respuesta: str, producto: str, conversacion: str = "") -> str:
     """Quita los párrafos que Jev marca como inventados, salvo que no quede ninguno."""
     parrafos = [p for p in respuesta.split("\n\n") if p.strip()]
