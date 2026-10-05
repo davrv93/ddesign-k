@@ -47,7 +47,7 @@ sys.path.insert(0, os.path.join(AQUI, ".."))
 from app import estructurado, memoria  # noqa: E402
 
 DATOS = os.path.join(AQUI, "datos")
-EVAL = os.path.join(DATOS, "eval")
+EVAL = os.path.join(DATOS, "medicion")
 CRITERIOS = ("json", "contesta", "inventa", "pregunta", "repite", "metodo", "tono")
 
 

@@ -22,6 +22,7 @@ import hashlib
 import json
 import os
 import re
+import sys
 import threading
 import time
 import urllib.parse
@@ -29,10 +30,17 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, AQUI)
+import contexto  # noqa: E402
+
 DATOS = os.path.join(AQUI, "datos")
 
+# Carpeta (dentro de datos/) de prompts pendientes y respuestas escritas. Una tanda nueva del oro usa otra carpeta
+# (--cache puente_b): con la misma, un prompt idéntico a uno ya respondido se contestaba solo y el turno quedaba sin ejemplo.
+CACHE = "puente"
+COMPACTO = True
 UPSTREAM: dict[str, str] = {}
-CANDADOS: dict[str, threading.Lock] = {}
+GPU = threading.Lock()
 LOG_LOCK = threading.Lock()
 
 
@@ -56,7 +64,7 @@ def clave_suave(mensajes: list[dict]) -> str:
 
 
 def _dir(*p: str) -> str:
-    d = os.path.join(DATOS, "puente", *p)
+    d = os.path.join(DATOS, CACHE, *p)
     os.makedirs(d, exist_ok=True)
     return d
 
@@ -79,12 +87,14 @@ def respuesta_oro(cuerpo: dict) -> str:
 def proxy(nombre: str, cuerpo: dict) -> tuple[dict, float]:
     url = UPSTREAM[nombre].rstrip("/") + "/v1/chat/completions"
     cuerpo = dict(cuerpo)
+    if COMPACTO:   # el mismo recorte con que se entrenó (contexto.py), para todos los modelos por igual
+        cuerpo["messages"] = contexto.compactar(cuerpo.get("messages") or [])
     cuerpo.pop("model", None)              # mlx_lm.server usa el modelo con que arrancó
     cuerpo.pop("response_format", None)    # el modelo pequeño no tiene modo JSON forzado: se mide si lo da solo
     cuerpo["temperature"] = 0.0            # misma salida para la misma entrada: compara modelos, no la suerte
     cuerpo.setdefault("max_tokens", 350)
     req = urllib.request.Request(url, json.dumps(cuerpo).encode(), {"content-type": "application/json"})
-    with CANDADOS.setdefault(nombre, threading.Lock()):
+    with GPU:   # una generación a la vez en todo el Mac: la latencia que se mide no incluye la espera ni otra generación
         t0 = time.time()
         js = json.load(urllib.request.urlopen(req, timeout=300))
         ms = (time.time() - t0) * 1000
@@ -145,7 +155,11 @@ def main():
     ap.add_argument("--puerto", type=int, default=18493)
     ap.add_argument("--host", default="0.0.0.0")
     ap.add_argument("--upstream", action="append", default=[], help="nombre=url de un mlx_lm.server")
+    ap.add_argument("--cache", default="puente", help="carpeta de pendientes/respuestas dentro de datos/")
+    ap.add_argument("--completo", action="store_true", help="no recortar el contexto antes de pasarlo al modelo local")
     a = ap.parse_args()
+    global CACHE, COMPACTO
+    CACHE, COMPACTO = a.cache, not a.completo
     for x in a.upstream:
         k, v = x.split("=", 1)
         UPSTREAM[k] = v

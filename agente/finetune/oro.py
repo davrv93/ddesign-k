@@ -41,6 +41,7 @@ from app import memoria  # noqa: E402  (solo biblioteca estándar)
 
 DATOS = os.path.join(AQUI, "datos")
 IMAGENES = os.path.join(AQUI, "..", "imagenes", "tienda")
+CACHE = "puente"   # carpeta del puente (pendientes y respuestas); debe ser la misma con que arrancó puente.py (--cache)
 RE_PEND = re.compile(r"PENDIENTE-([0-9a-f]{16})")
 RE_SI = re.compile(r"^\s*(s[ií]+|si+p|ok|dale|confirmo|claro|ya|listo|s[ií],? confirm\w*|confirmar)\b[\s.!👍]*$", re.I)
 
@@ -387,7 +388,7 @@ def enviar_guion(url: str, c: dict, s: dict, m) -> None:
 
 
 def _leer_pendiente(k: str) -> dict:
-    r = os.path.join(DATOS, "puente", "pendientes", k + ".json")
+    r = os.path.join(DATOS, CACHE, "pendientes", k + ".json")
     with open(r, encoding="utf-8") as fh:
         return json.load(fh)
 
@@ -401,7 +402,7 @@ def escribir_vendedora(url: str, c: dict, s: dict, salida, modo: str) -> str:
         texto = json.dumps(js, ensure_ascii=False)
     else:
         js, texto = None, str(salida).strip()
-    d = os.path.join(DATOS, "puente", "respuestas")
+    d = os.path.join(DATOS, CACHE, "respuestas")
     os.makedirs(d, exist_ok=True)
     for kk in (pend["clave"], pend["clave_suave"]):
         with open(os.path.join(d, kk + ".json"), "w", encoding="utf-8") as fh:
@@ -488,9 +489,10 @@ def vista(c: dict, s: dict) -> str:
 
 # ---------------------------------------------------------------------------
 
-def cargar_specs(con_rehechas: bool = False) -> list[dict]:
+def cargar_specs(con_rehechas: bool = False, con_reparadas: bool = False) -> list[dict]:
     """Las 200 de specs.jsonl. Con `con_rehechas`, además las rehechas con ids nuevos (`specs_*_b.jsonl`) y sin las que
-    figuran en `oro/excluir_*.txt` (las originales que se rehicieron)."""
+    figuran en `oro/excluir_*.txt` (las originales que se rehicieron o que `reparar` reescribió). `con_reparadas` deja
+    entrar las de `excluir_reparadas.txt`: solo si el usuario lo aprueba."""
     with open(os.path.join(DATOS, "specs.jsonl"), encoding="utf-8") as fh:
         cs = [json.loads(x) for x in fh if x.strip()]
     if not con_rehechas:
@@ -498,6 +500,8 @@ def cargar_specs(con_rehechas: bool = False) -> list[dict]:
     import glob
     fuera = set()
     for r in glob.glob(os.path.join(DATOS, "oro", "excluir_*.txt")):
+        if con_reparadas and r.endswith("excluir_reparadas.txt"):
+            continue
         fuera |= {x.strip() for x in open(r, encoding="utf-8") if x.strip() and not x.startswith("#")}
     cs = [c for c in cs if c["id"] not in fuera]
     for r in sorted(glob.glob(os.path.join(DATOS, "specs_*_b.jsonl"))):
@@ -512,20 +516,27 @@ def main(argv=None):
     for nombre in ("ver", "avanzar"):
         p = sub.add_parser(nombre)
         p.add_argument("--lote", required=True)
-        p.add_argument("--modo", default="oro", help="oro | eval-<variante> (carpeta de estado propia)")
+        p.add_argument("--modo", default="oro", help="oro | conv-<variante> (conversaciones contra un modelo; carpeta de estado propia)")
         p.add_argument("--url", default="http://127.0.0.1:18491")
         p.add_argument("--specs", default="", help="otro archivo de specs (modo eval)")
+        p.add_argument("--cache", default="puente", help="carpeta del puente con que corre puente.py")
         if nombre == "avanzar":
             p.add_argument("--entrada", default="")
     cg = sub.add_parser("ciego", help="transcripciones a ciegas de dos variantes para el juez")
     cg.add_argument("--specs", default=os.path.join(DATOS, "specs_eval.jsonl"))
-    cg.add_argument("--variantes", default="afinado,base")
+    cg.add_argument("--variantes", default="conv-afinado,conv-base", help="modos (carpetas de estado) a comparar")
     cg.add_argument("--jueces", type=int, default=2)
     sub.add_parser("progreso",help="cuántas conversaciones y turnos de oro hay por lote")
+    xr = sub.add_parser("excluir-reparadas", help="lista las reparadas (fuera del oro) y prepara sus gemelas con id _b")
+    xr.add_argument("--lotes", type=int, default=8)
     sub.add_parser("reparar",help="quita los turnos caídos (agente sin responder) y deja el mensaje para reenviarlo")
     se = sub.add_parser("specs-eval",help="las conversaciones reservadas de app/conversaciones.py como specs")
     se.add_argument("--corpus", default=os.path.join(AQUI, "..", "pruebas_conv", "corpus.jsonl"))
     se.add_argument("--lotes", type=int, default=4)
+    se.add_argument("--n", type=int, default=0, help="solo una muestra estratificada de n conversaciones (0 = las 50)")
+    se.add_argument("--salida", default=os.path.join(DATOS, "specs_eval.jsonl"))
+    jz = sub.add_parser("juicios", help="lo que dijo el juez a ciegas (X/Y) → un archivo de juicios por variante")
+    jz.add_argument("archivos", nargs="+", help="JSON del juez: {id: {X: {...}, Y: {...}}}")
     rs = sub.add_parser("resultados", help="estado de una corrida eval → formato de app/conversaciones.py (informe)")
     rs.add_argument("--modo", required=True)
     rs.add_argument("--specs", default=os.path.join(DATOS, "specs_eval.jsonl"))
@@ -533,8 +544,12 @@ def main(argv=None):
     rs.add_argument("--salida", required=True)
     e = sub.add_parser("exportar")
     e.add_argument("--salida", default=os.path.join(DATOS, "oro.jsonl"))
+    e.add_argument("--con-reparadas", action="store_true",
+                   help="incluye las que `reparar` reescribió (solo si el usuario lo aprueba); por defecto quedan fuera")
     a = ap.parse_args(argv)
     os.makedirs(DATOS, exist_ok=True)
+    global CACHE
+    CACHE = getattr(a, "cache", "puente")
 
     if a.cmd == "specs":
         cs = specs()
@@ -566,7 +581,7 @@ def main(argv=None):
                       f"{'web' if c.get('canal') == 'web' else 'whatsapp'}", f"persona de la clienta: {c.get('persona') or '(chat real o guion)'}"]
             reales = set()
             for letra, v in zip("XY", orden):
-                s = cargar_estado(c, "eval-" + v)
+                s = cargar_estado(c, v)
                 r = {"turnos": s["turnos"]}
                 reales.add(cv._datos_reales(r))
                 partes.append(f"======== VENDEDORA {letra}")
@@ -602,6 +617,34 @@ def main(argv=None):
         print(f"total: {sum(v[1] for v in por.values())} terminadas · {sum(v[2] for v in por.values())} turnos de oro")
         return
 
+    if a.cmd == "excluir-reparadas":
+        # Las conversaciones que `reparar` reescribió quedan fuera del oro (decisión pendiente del usuario). Aquí solo se
+        # escribe la lista y se dejan listas sus gemelas con id nuevo (<id>_b) para rehacerlas desde cero: no se toca
+        # ningún estado ni su copia .antes_de_reparar.
+        import glob
+        ya = set()
+        for r in glob.glob(os.path.join(DATOS, "oro", "excluir_*.txt")):
+            if not r.endswith("excluir_reparadas.txt"):
+                ya |= {x.strip() for x in open(r, encoding="utf-8") if x.strip() and not x.startswith("#")}
+        quedan = sorted((c for c in cargar_specs() if c["id"] not in ya
+                         and os.path.exists(_ruta_estado(c["id"], "oro") + ".antes_de_reparar")),
+                        key=lambda c: (c["conjunto"], c["id"]))
+        with open(os.path.join(DATOS, "oro", "excluir_reparadas.txt"), "w", encoding="utf-8") as fh:
+            fh.write("# Conversaciones del oro cuyo estado reescribió `oro.py reparar` tras la caída del agente (04-10-2026).\n"
+                     "# Quedan FUERA del entrenamiento y de las reservadas mientras el usuario no decida lo contrario.\n"
+                     "# El estado reparado y su copia previa siguen en oro/estado/<id>.json y <id>.json.antes_de_reparar.\n"
+                     "# Para rehacerlas desde cero: specs_R_b.jsonl (mismo guion, id <id>_b). Las 20 de L02 van en excluir_L02.txt.\n")
+            for c in quedan:
+                fh.write(c["id"] + "\n")
+        with open(os.path.join(DATOS, "specs_R_b.jsonl"), "w", encoding="utf-8") as fh:
+            for i, c in enumerate(quedan):
+                x = dict(c, id=c["id"] + "_b", lote=f"R{i % a.lotes + 1:02d}")
+                if c["persona_clave"] == "este_vestido":
+                    x["foto"] = "v35"   # la persona describe el Irla; la foto al azar era de otra prenda
+                fh.write(json.dumps(x, ensure_ascii=False) + "\n")
+        print(f"{len(quedan)} excluidas → oro/excluir_reparadas.txt · gemelas en specs_R_b.jsonl ({a.lotes} lotes R01…)")
+        return
+
     if a.cmd == "reparar":
         # Turnos que fallaron porque el agente estaba caído (http 0) al final de cada conversación: se quitan (con su
         # entrada del historial) y el mensaje de la clienta queda para reenviarse en la próxima ronda. Copia antes.
@@ -633,6 +676,26 @@ def main(argv=None):
     if a.cmd == "specs-eval":
         corpus = [json.loads(x) for x in open(a.corpus, encoding="utf-8") if x.strip()]
         res = sorted((c for c in corpus if c["conjunto"] == "reservada"), key=lambda c: c["id"])
+        if a.n and a.n < len(res):
+            # Muestra estratificada y fija: de cada tipo en proporción (al menos 1) y, en las simuladas, una por persona
+            # antes de repetir ninguna. Semilla fija: la misma muestra cada vez.
+            rng = random.Random(2026)
+            por_tipo = {}
+            for c in res:
+                por_tipo.setdefault(c["tipo"], []).append(c)
+            cuota = {t: max(1, round(a.n * len(v) / len(res))) for t, v in por_tipo.items()}
+            cuota["simulada"] = a.n - sum(v for t, v in cuota.items() if t != "simulada")
+            elegidas = []
+            for t, v in sorted(por_tipo.items()):
+                v = v[:]
+                rng.shuffle(v)
+                vistas, primero, luego = set(), [], []
+                for c in v:
+                    k = c.get("persona_clave", c["id"])
+                    (luego if k in vistas else primero).append(c)
+                    vistas.add(k)
+                elegidas += (primero + luego)[:cuota[t]]
+            res = sorted(elegidas, key=lambda c: c["id"])
         out = []
         simuladas = [c for c in res if not c.get("mensajes")]
         for i, c in enumerate(res):
@@ -646,11 +709,25 @@ def main(argv=None):
             else:
                 x["lote"] = f"E{simuladas.index(c) % a.lotes + 1}"
             out.append(x)
-        with open(os.path.join(DATOS, "specs_eval.jsonl"), "w", encoding="utf-8") as fh:
+        with open(a.salida, "w", encoding="utf-8") as fh:
             for x in out:
                 fh.write(json.dumps(x, ensure_ascii=False) + "\n")
         from collections import Counter
         print(len(out), Counter(x["lote"] for x in out))
+        return
+
+    if a.cmd == "juicios":
+        d = os.path.join(DATOS, "juicio")
+        clave = json.load(open(os.path.join(d, "clave.json"), encoding="utf-8"))
+        por = {}
+        for ruta in a.archivos:
+            for cid, xy in json.load(open(ruta, encoding="utf-8")).items():
+                for letra, j in xy.items():
+                    por.setdefault(clave[cid][letra], {})[cid] = j
+        for v, js in por.items():
+            with open(os.path.join(d, f"juicios_{v}.json"), "w", encoding="utf-8") as fh:
+                json.dump(js, fh, ensure_ascii=False, indent=1)
+            print(v, len(js), "conversaciones juzgadas →", os.path.join(d, f"juicios_{v}.json"))
         return
 
     if a.cmd == "resultados":
@@ -682,7 +759,7 @@ def main(argv=None):
     if a.cmd == "exportar":
         n = 0
         with open(a.salida, "w", encoding="utf-8") as fh:
-            for c in cargar_specs(con_rehechas=True):
+            for c in cargar_specs(con_rehechas=True, con_reparadas=a.con_reparadas):
                 s = cargar_estado(c, "oro")
                 if not s["turnos"]:
                     continue
@@ -747,6 +824,9 @@ def main(argv=None):
                 aviso = escribir_vendedora(a.url, c, s, x.get("vendedora") or x.get("vendedora_texto"), a.modo)
                 if aviso:
                     avisos.append(aviso)
+                elif s["espera"] and x.get("clienta"):
+                    avisos.append(f"{c['id']}: quedaba otra parte del mensaje anterior (« || ») esperando a la vendedora; "
+                                  "tu «clienta» de esta ronda NO se aplicó: mándala en la siguiente")
             if not s["espera"] and not s["fin"] and x.get("clienta"):
                 enviar_clienta(a.url, c, s, x["clienta"], a.modo)
             guardar_estado(s, a.modo)
