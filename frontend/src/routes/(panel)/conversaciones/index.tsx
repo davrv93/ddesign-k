@@ -8,6 +8,8 @@ interface Thread {
   conversation: Conversation;
   messages: Message[];
   orders: Order[];
+  // Enlace al lead en Kommo CRM (solo si la integración está activa y la conversación ya se sincronizó).
+  kommo_url?: string;
 }
 
 const STATE_LABEL: Record<string, string> = {
@@ -142,6 +144,11 @@ export default component$(() => {
                   {STATE_LABEL[conv.state] && ` · ${STATE_LABEL[conv.state]}`}
                 </div>
               </div>
+              {thread.value!.kommo_url && (
+                <a class="btn btn-sm btn-ghost" href={thread.value!.kommo_url} target="_blank" rel="noreferrer" title="Abrir el lead de esta conversación en Kommo CRM">
+                  Ver en Kommo ↗
+                </a>
+              )}
               {conv.bot_paused ? (
                 <button class="btn btn-sm btn-primary" onClick$={() => toggleBot(false)} title="El bot vuelve a responder desde el menú">
                   🤖 Reactivar bot

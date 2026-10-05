@@ -25,6 +25,7 @@ repitiendo «Responde SI o NO».
 | Pruebas | `app/prueba_etapas.py` | 50 casos (los 7 del encargo, el primer contacto, la cita para probarse, la indagación, «¿me lo apartas?» y el sí y el no dichos de otra manera). Se ejecutan al construir la imagen: si falla uno, no hay imagen |
 | Memoria y hilo | `app/memoria.py`, `app/prueba_memoria.py` | Lo que ya sabemos de la clienta, la pregunta pendiente, la siguiente pregunta, la temperatura y la cita (secciones siguientes). 313 casos, también en el build |
 | Regresión | `app/regresion.py`, `data/regresion_*` | 60 preguntas, 30 conversaciones, entradas raras y aguante contra un agente de pruebas, **sin costo** (sección «Prueba de regresión»). Se corre antes de desplegar |
+| Aviso al CRM (chat web) | `app/crm.py`, `app/prueba_crm.py` | Al final de cada turno de `/demo-design` (`canal: "web"` con la sesión del navegador en `conversacion`) avisa al backend por `POST /api/internal/crm/evento` (red interna, `CRM_EVENT_SECRET`) para que el turno llegue a Kommo como los de WhatsApp. En un hilo aparte, 3 s de tope: nunca retrasa la respuesta. Sin `CRM_EVENT_URL`/`CRM_EVENT_SECRET` no hace nada. 14 casos, también en el build |
 
 Reglas de `etapas.py`:
 

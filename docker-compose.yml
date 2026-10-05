@@ -77,6 +77,12 @@ services:
       WEBHOOK_BASE_URL: http://backend:8080
       MEDIA_BASE_URL: http://backend:8080
       AGENT_URL: ${AGENT_URL-http://agente:8000}
+      # Kommo CRM (backend/internal/kommo): apagado por defecto. KOMMO_TOKEN y CRM_EVENT_SECRET llegan por el
+      # env_file (.env). Ojo: `docker compose config` sí imprime el env_file; en el servidor usa `config -q`.
+      KOMMO_ENABLED: ${KOMMO_ENABLED:-0}
+      KOMMO_SUBDOMAIN: ${KOMMO_SUBDOMAIN:-}
+      KOMMO_PIPELINE_NAME: ${KOMMO_PIPELINE_NAME:-Baruka · Ventas por WhatsApp}
+      KOMMO_SYNC_TRANSCRIPT: ${KOMMO_SYNC_TRANSCRIPT:-0}
     volumes:
       - backend_data:/data
     mem_limit: 128m
@@ -133,6 +139,10 @@ services:
       CURRENCY: ${CURRENCY:-S/}
       EMBED_THREADS: "2"
       CATALOGO100: ${KD_CATALOGO100:-1}
+      # Chat web → CRM: al final de cada turno de /demo-design el agente avisa al backend por la red interna
+      # (app/crm.py). Sin CRM_EVENT_SECRET no avisa. El backend solo lo lleva a Kommo con KOMMO_ENABLED=1.
+      CRM_EVENT_URL: ${CRM_EVENT_URL:-http://backend:8080/api/internal/crm/evento}
+      CRM_EVENT_SECRET: ${CRM_EVENT_SECRET:-}
       TZ: America/Lima
     volumes:
       - agente_data:/data

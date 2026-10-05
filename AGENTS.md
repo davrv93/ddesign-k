@@ -19,6 +19,8 @@ letra**; nunca inventes comandos de despliegue.
 backend/            Go 1.26 · API, webhook de evolution, bot (internal/bot/bot.go), SQLite (internal/store)
   internal/agente/  cliente HTTP del agente        internal/ai/   Gemini (respaldo y «describe» de fotos)
   internal/seed/    catálogo y sucursales iniciales (solo el primer arranque)
+  internal/kommo/   CRM Kommo: cliente API v4, embudo y campos, Sincronizador; simulado/ = Kommo falso para pruebas
+  cmd/kommo-seed/   embudo + campos, leads demo, --limpiar, --desde-base [--dry-run] (DEPLOY.md §11)
 frontend/           Qwik City estático + nginx · src/lib/api.ts (cliente) · src/lib/base.ts (ruta base)
 agente/             Python 3.12 · FastAPI · app/main.py (conversación, prompts, motores, fotos sugeridas)
   app/entrenar.py   entrena clasificadores e índice RAG (en el build)   app/imagen.py  índice de fotos
@@ -104,6 +106,13 @@ curl -s -X POST https://proyectopostventa.site/demo-design/chat -H 'Content-Type
   pruebas) y se aplica en `bot/juicio.go` (`JUICIO_MODO`: `sombra` registra, `activo` aplica). El agente solo
   propone. Ánimo y urgencia van por reglas en `agente/app/animo.py`. No metas política de negocio en el
   prompt ni condicionales sueltos en `bot.go`: van en `juicio`.
+- **CRM Kommo** (`internal/kommo`, detalle en `CLAUDE.md`): los dos canales pasan por el mismo `Sincronizador`. En el
+  bot Go, un paso nuevo que merezca nota para la asesora usa `b.hito(ctx, conv, "…")`, y si toca un pedido,
+  `b.crmPedido(ctx, id)`; **nunca** llames a Kommo desde el flujo (todo va en cola, en segundo plano). Un dato nuevo de la
+  memoria que deba verse en Kommo va en `kommo.Campos` (se crea solo) y en `Sincronizador.campos`. Las pruebas van contra
+  `kommo/simulado`, que falla con cualquier petición mal formada o por encima de 7/s; la de «Kommo caído no cambia las
+  respuestas» (`TestKommoCaidoNoCambiaLasRespuestas`) no se toca. El chat web avisa desde `agente/app/crm.py`
+  (`python3 -m app.prueba_crm`). El token de Kommo es un secreto como los demás.
 - **Seguimiento:** el recordatorio de silencio es un job de fondo apagado por defecto
   (`seguimiento_habilitado`); activarlo escribe a clientas reales, consúltalo antes.
 - **Secretos:** nunca los imprimas ni los subas. `.env` está en `.gitignore`.

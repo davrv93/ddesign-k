@@ -231,6 +231,60 @@ respuesta del agente pasa por `gateJuicio` (`bot/juicio.go`), que evalúa etapa,
   activarlo hace que el bot escriba a clientas reales. Horario de Lima 8–21 h; el contador se reinicia si
   la clienta vuelve.
 
+## CRM Kommo (`backend/internal/kommo`, 05-10-2026)
+
+Los dos canales llegan a **Kommo** (kommo.com, antes amoCRM; API v4) por **un solo camino**: un `kommo.Evento` por
+turno, con el estado completo de la conversación, que el `Sincronizador` aplica **en segundo plano** (cola, un
+trabajador, 6 peticiones/s, 5 reintentos ante 429/5xx). Un Kommo caído o lento **nunca** retrasa ni cambia lo que el bot
+contesta (prueba `TestKommoCaidoNoCambiaLasRespuestas`). **Apagado por defecto** (`KOMMO_ENABLED=0`); credenciales, seed y
+despliegue en [`DEPLOY.md`](DEPLOY.md) §11.
+
+```
+WhatsApp → bot Go (Handle: un turno) ──────────────────────────────┐
+Chat web → agente /chat, /foto ─ POST /api/internal/crm/evento ────┼─► kommo.Sincronizador ─► Kommo API v4
+           (app/crm.py, hilo aparte, X-CRM-Secret)                 │    (cola en memoria; vínculos en la SQLite)
+Tablero → PATCH /api/orders/{id} (bot.PedidoCambio) ───────────────┘
+```
+
+- **WhatsApp:** `Handle` abre un *turno* (`bot/crm.go`); los pasos del flujo dejan sus hitos (`handoff`, foto,
+  `pauseDraft`, dirección) y marcan el pedido tocado (`sendSummary`, `confirmOrder`, `handleVoucher`, `cancelDraft`);
+  `askAgent`/`agentPhoto` guardan la intención comercial y `replySuggestion`/`offerProduct` las prendas mostradas. Al
+  terminar el turno sale **un** evento con etapa, memoria, anuncio, pedido y el último intercambio. Va también con el bot
+  en pausa. La cita no necesita gancho: sale de comparar `sabemos.cita` con lo último enviado.
+- **Chat web:** el agente avisa al backend al final de cada turno (`app/crm.py`) con la sesión del navegador
+  (`conversacion: "web-…"`, nueva en cada «Nuevo chat»). La ruta interna solo existe con `CRM_EVENT_SECRET`, rechaza lo
+  que llega con cabeceras de proxy y el nginx del panel la devuelve 404: no se ve desde internet.
+- **Tablero:** mover un pedido a preparando/enviado/entregado → «Venta pagada»; cancelarlo después de confirmado →
+  «Venta perdida».
+
+| Etapa del bot / hecho | Estado del embudo «Baruka · Ventas por WhatsApp» |
+|---|---|
+| `prospeccion` · `seguimiento` · `cierre` | Prospección · Seguimiento · Cierre (siguen al agente, también hacia atrás si la clienta duda) |
+| `venta_confirmada` o pedido `confirmado` | Venta confirmada (**no retrocede sola**: si se arrepiente con el stock descontado, decide una persona) |
+| Comprobante recibido, o pedido preparando/enviado/entregado | Venta pagada (estado de sistema 142, «ganado») |
+| Pedido cancelado después de confirmado | Venta perdida (143). Cancelar un borrador antes del *SI* **no** es perder la venta |
+
+- **Contacto:** uno por clienta; en WhatsApp se busca por teléfono antes de crearlo (`PHONE`, `MOB`). En la web, uno por
+  sesión, sin teléfono. **Lead:** uno por conversación (`kommo_vinculos`: clave `wa:<id>` o `web:<sesión>`). Si el lead ya
+  está cerrado y la clienta vuelve en otra sesión (6 h), es otra venta: lead nuevo, mismo contacto. Si se perdió el
+  vínculo local, el lead abierto se encuentra por el campo «ID kddesign» antes de crear otro.
+- **Campos del lead** (se crean solos, por nombre): Temperatura (select), Ocasión, Fecha del evento (date), Día o noche
+  (select), Talla, Prenda en foco («V35 · Vestido Irla»), Ciudad / envío, Cita para probarse (date_time), Canal (select),
+  Llegó por anuncio (checkbox), Pedido kddesign, Conversación en kddesign (url al panel), ID kddesign. Solo se manda lo
+  que cambió desde el último envío.
+- **Precio:** la prenda en foco o el total del pedido; con la venta confirmada, más el envío (los costos los da el agente
+  en `/health` → `envios`, desde `seed/venta.json`: no se copian en Go).
+- **Etiquetas:** `kddesign`, canal (`whatsapp`/`web`), temperatura (`fría`/`tibia`/`caliente`), `anuncio V42`, `demo`.
+  Un PATCH con etiquetas las **reemplaza** todas en Kommo: antes se leen y se conservan las que puso una persona.
+- **Notas:** una por turno con los hitos («💬 Preguntó por la tela del V35», «📸 Se le mostró…», «🗓️ Cita para probarse
+  agendada el vie 9-oct 17:00 (V35 talla M)», «🧾 Resumen del pedido #14…», «✅ Pedido #14 confirmado…», «💳 Comprobante
+  de pago recibido…», «🙋‍♀️ Pidió hablar con una asesora»). Con `KOMMO_SYNC_TRANSCRIPT=1`, además la transcripción del
+  turno; **los datos de pago nunca salen** (`kommo.Limpiar`: mensajes de pago enteros y números de 9+ cifras tapados).
+- **Panel:** la conversación muestra «Ver en Kommo ↗» cuando ya tiene lead.
+- **Pruebas:** `internal/kommo/simulado` es un Kommo de mentira que valida rutas, cuerpos, cabeceras, tipos de campo,
+  estados y el límite de 7/s; lo usan `internal/kommo`, `internal/bot/kommo_test.go`, `internal/api/crm_test.go` y el
+  seed. **La API v4 no borra leads**: `kommo-seed --limpiar` los cierra como perdidos y el borrado final es a mano.
+
 ## Reglas
 
 1. **No despliegues sin que el usuario lo pida.** Aun así, una orden de desplegar ya es la autorización:

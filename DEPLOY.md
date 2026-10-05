@@ -53,7 +53,7 @@ ssh -i $K $H 'cd ~/kddesign && awk -F= "{print \$1, (length(\$2)>0?\"set\":\"EMP
 ```bash
 cd $R/backend  && go vet ./... && go test ./...                 # bot, reservas, agente simulado
 cd $R/frontend && BASE_PATH=/baruka/ npm run build && rm -rf dist # tsc + build con la ruta base real
-cd $R/agente   && python3 -m py_compile app/*.py && python3 -m app.prueba_etapas && python3 -m app.prueba_memoria   # sintaxis, etapas y memoria
+cd $R/agente   && python3 -m py_compile app/*.py && python3 -m app.prueba_etapas && python3 -m app.prueba_memoria && python3 -m app.prueba_crm   # sintaxis, etapas, memoria y aviso al CRM
 # Si cambió algo de la conversación (agente/app, agente/data o internal/bot): la prueba de regresión, que no cuesta nada.
 # Necesita el agente de pruebas en 127.0.0.1:18497 (cómo levantarlo: agente/README.md, «Prueba de regresión»).
 cd $R/agente   && python3 -m app.regresion --url http://127.0.0.1:18497      # 60 preguntas, 30 conversaciones, entradas raras y aguante; debe decir «REGRESIÓN OK»
@@ -270,3 +270,110 @@ recarga `landing_web`. Para probarlo: `sudo certbot renew --dry-run --no-random-
 - **Datos del CRM:** `docker compose stop backend`, vacía el volumen y restaura el `.tgz` de §7 con
   `tar xzf` desde un contenedor `alpine` montando `kddesign_backend_data`. Después `up -d backend`.
 - **Sesión de WhatsApp:** restaura el `.sql.gz` de §7 (comando en §7) o vuelve a escanear el QR (§6).
+- **Kommo:** `KOMMO_ENABLED=0` + `docker compose up -d backend` (§11.5).
+
+## 11. Kommo CRM (`backend/internal/kommo`)
+
+Lleva al CRM Kommo (kommo.com, API v4) lo que capturan los dos canales: **un contacto por clienta, un lead por
+conversación** en el embudo «Baruka · Ventas por WhatsApp», con sus campos, etiquetas y una nota por hito. Qué se
+sincroniza y cuándo: [`CLAUDE.md`](CLAUDE.md), «CRM Kommo». **Apagado por defecto** (`KOMMO_ENABLED=0`): sin las
+variables no se llama a Kommo y el bot se comporta igual que antes.
+
+### 11.1 Crear la integración privada y el token (una vez, en Kommo)
+
+Lo hace un usuario **administrador** de la cuenta (solo un administrador puede generar el token y crear embudos y
+campos; el token trabaja con sus permisos).
+
+1. Entra a `https://<subdominio>.kommo.com` → **Ajustes** → **Integraciones** → **Crear integración** (arriba a la
+   derecha) → integración **privada**. Nombre: «kddesign». **No** hace falta Redirect URL ni el webhook de revocación.
+2. Acceso: marca el acceso a los datos del **CRM** (leads, contactos, embudos, campos y notas). Chats, archivos y
+   notificaciones no hacen falta. Guarda.
+3. En la integración, pestaña **Llaves y alcances** → **Generar token de larga duración** → elige la caducidad (de 1
+   día a 5 años; recomendado 1 año, con un recordatorio para renovarlo) → **copia el token ya**: Kommo no vuelve a
+   mostrarlo.
+4. Para revocarlo: pestaña **Autorización** → **Revocar acceso**. Un token revocado o caducado hace que cada envío
+   termine en 401 (`[KOMMO] … HTTP 401` en el log del backend); el bot sigue contestando igual.
+
+### 11.2 Variables en el `.env` del servidor
+
+| Variable | Valor |
+|---|---|
+| `KOMMO_ENABLED` | `0` al desplegar; `1` cuando el seed haya pasado (§11.4) |
+| `KOMMO_SUBDOMAIN` | El subdominio: `baruka` de `https://baruka.kommo.com` |
+| `KOMMO_TOKEN` | El token de larga duración. **Nunca** lo imprimas ni lo pegues en un chat |
+| `KOMMO_PIPELINE_NAME` | `Baruka · Ventas por WhatsApp` (se busca por nombre; si no existe, se crea) |
+| `KOMMO_SYNC_TRANSCRIPT` | `0` = solo hitos; `1` = además cada turno como nota (sin datos de pago ni números de 9+ cifras) |
+| `CRM_EVENT_SECRET` | `openssl rand -hex 24`. Lo comparten backend y agente para los turnos del chat web |
+
+Para añadirlas sin que el token pase por la pantalla ni por el historial (`read -rs` lo pide sin mostrarlo):
+
+```bash
+read -rs KT && ssh -i $K $H "cd ~/kddesign && cp .env .env.bak-\$(date +%Y%m%d%H%M) && cat >> .env" <<EOF
+KOMMO_ENABLED=0
+KOMMO_SUBDOMAIN=baruka
+KOMMO_TOKEN=$KT
+KOMMO_PIPELINE_NAME="Baruka · Ventas por WhatsApp"
+KOMMO_SYNC_TRANSCRIPT=0
+CRM_EVENT_SECRET=$(openssl rand -hex 24)
+EOF
+unset KT
+ssh -i $K $H 'cd ~/kddesign && awk -F= "/^(KOMMO|CRM_EVENT)/{print \$1, (length(\$2)>0?\"set\":\"EMPTY\")}" .env'
+```
+
+**`docker compose config` imprime el `.env` entero** (también el token): en el servidor usa `docker compose config -q`.
+
+### 11.3 Desplegar
+
+Primero se despliega con `KOMMO_ENABLED=0` y se comprueba que nada cambió; la sincronización se enciende en el §11.4.
+
+```bash
+# 0. Respaldo (§7). La tabla nueva kommo_vinculos es CREATE TABLE IF NOT EXISTS, pero se respalda igual.
+# 1. Subir (§2) y compilar de uno en uno (§3):
+ssh -i $K $H 'cd ~/kddesign && docker compose build backend && docker compose up -d backend'     # ~1 min (incluye kommo-seed)
+ssh -i $K $H 'cd ~/kddesign && docker compose build agente && docker compose up -d agente'       # segundos: main.py, crm.py, ui.html
+ssh -i $K $H 'cd ~/kddesign && docker compose build frontend && docker compose up -d frontend'   # ~2 min: bloqueo de /api/internal y «Ver en Kommo»
+# 2. Verificar (§4) y además:
+curl -s -o /dev/null -w "%{http_code}\n" -X POST $B/baruka/api/internal/crm/evento     # 404: la ruta interna no se ve desde fuera
+curl -s $B/demo-design/health | python3 -c "import json,sys; h=json.load(sys.stdin); print(h['crm'], h['envios'])"   # True {'lima': 15, 'provincia': 20}
+ssh -i $K $H 'docker logs kddesign_backend 2>&1 | grep -i kommo | tail -3'              # nada mientras KOMMO_ENABLED=0
+```
+
+### 11.4 Seed: embudo, campos, demo y volcado
+
+`kommo-seed` va dentro de la imagen del backend y lee las mismas variables (no mira `KOMMO_ENABLED`: correrlo ya es
+pedirlo). Va a 4 peticiones/s para dejarle sitio al backend dentro del límite de la cuenta (7/s).
+
+```bash
+KS='cd ~/kddesign && docker compose exec -T backend kommo-seed'
+ssh -i $K $H "$KS --verificar"                          # crea o verifica el embudo, sus estados y los 13 campos; imprime los ids
+ssh -i $K $H "$KS --demo"                               # 24 leads de demostración (etiqueta «demo», contactos «DEMO · …», +51 900 000 0xx)
+ssh -i $K $H "$KS --desde-base --dry-run | head -80"    # qué subiría de la SQLite, sin llamar a Kommo (teléfonos enmascarados)
+ssh -i $K $H "$KS --desde-base --limite 5"              # primero las 5 conversaciones más recientes
+ssh -i $K $H "$KS --desde-base"                         # todo lo capturado (idempotente: repetirlo no duplica)
+```
+
+- La demo usa prendas, nombres y precios **reales** del catálogo (`CATALOG_URL`, por defecto el público de producción,
+  solo lectura). Las clientas son inventadas y obvias («Ana Demo», «Hilda Prueba»…), con teléfonos `+51 900 000 0xx`.
+- `--limpiar` cierra como «Venta perdida» los leads con la etiqueta `demo` y olvida sus vínculos locales. **La API v4
+  de Kommo no tiene método para borrar leads ni contactos**: para eliminarlos del todo, en Kommo filtra la lista de
+  leads por la etiqueta `demo`, selecciona todos → **Eliminar** (y lo mismo con los contactos «DEMO · …»).
+
+Cuando el seed haya pasado, se enciende la sincronización en vivo (editando en sitio, sin imprimir nada):
+
+```bash
+ssh -i $K $H 'cd ~/kddesign && python3 -c "import re;p=\".env\";s=open(p).read();open(p,\"w\").write(re.sub(r\"(?m)^KOMMO_ENABLED=.*$\",\"KOMMO_ENABLED=1\",s))" \
+  && docker compose up -d backend && sleep 3 && docker logs kddesign_backend 2>&1 | grep -i kommo | tail -2'
+# → «kommo: sincronización activa con https://baruka.kommo.com (embudo …)». Escribe en /demo-design/ y mira el lead en Kommo.
+```
+
+`up -d` recrea el contenedor si cambió el `.env`; `restart` **no** vuelve a leer el `env_file`.
+
+### 11.5 Diagnóstico y volver atrás
+
+- Errores: `docker logs kddesign_backend 2>&1 | grep KOMMO`. Cada petición se reintenta hasta 5 veces ante 429/5xx (espera
+  exponencial o la de `Retry-After`); si no sale, se registra y se sigue. El turno siguiente de esa conversación lleva el
+  estado completo, así que el lead se pone al día solo; lo que se pierde es la nota de ese turno.
+- Los ids del embudo y los campos quedan en el ajuste `kommo_esquema` de la SQLite (solo para consultar; se rehacen al
+  arrancar). Si alguien renombra un campo en Kommo, se crea otro con el nombre original.
+- **Apagar:** `KOMMO_ENABLED=0` + `docker compose up -d backend`. El chat web deja de avisar con `CRM_EVENT_SECRET` vacío
+  + `docker compose up -d agente` (con el secreto puesto y Kommo apagado, el backend acepta el aviso y no hace nada).
