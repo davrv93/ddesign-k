@@ -526,6 +526,7 @@ def main(argv=None):
     cg.add_argument("--specs", default=os.path.join(DATOS, "specs_eval.jsonl"))
     cg.add_argument("--variantes", default="conv-afinado,conv-base", help="modos (carpetas de estado) a comparar")
     cg.add_argument("--jueces", type=int, default=2)
+    cg.add_argument("--archivo", action="append", default=[], help="nombre=ruta de una corrida de app/conversaciones.py")
     sub.add_parser("progreso",help="cuántas conversaciones y turnos de oro hay por lote")
     xr = sub.add_parser("excluir-reparadas", help="lista las reparadas (fuera del oro) y prepara sus gemelas con id _b")
     xr.add_argument("--lotes", type=int, default=8)
@@ -541,6 +542,7 @@ def main(argv=None):
     rs.add_argument("--modo", required=True)
     rs.add_argument("--specs", default=os.path.join(DATOS, "specs_eval.jsonl"))
     rs.add_argument("--juicios", default="", help="JSON {id: {respondio, invento, presiono, hilo, robotica, avanzo}}")
+    rs.add_argument("--llamadas", default="", help="llamadas_<variante>.jsonl del puente: latencia de generación, sin la fila")
     rs.add_argument("--salida", required=True)
     e = sub.add_parser("exportar")
     e.add_argument("--salida", default=os.path.join(DATOS, "oro.jsonl"))
@@ -573,25 +575,31 @@ def main(argv=None):
         rng = random.Random(99)
         clave, grupos = {}, {}
         variantes = a.variantes.split(",")
+        # Corridas guardadas en el formato de app/conversaciones.py (p. ej. la de DeepSeek): entran como una vendedora más.
+        externas = {}
+        for x in a.archivo:
+            nombre, ruta = x.split("=", 1)
+            externas[nombre] = {json.loads(l)["id"]: json.loads(l) for l in open(ruta, encoding="utf-8") if l.strip()}
+            variantes.append(nombre)
+        letras = "XYZW"[:len(variantes)]
         for i, c in enumerate(cs):
             orden = variantes[:]
             rng.shuffle(orden)
-            clave[c["id"]] = dict(zip("XY", orden))
+            clave[c["id"]] = dict(zip(letras, orden))
             partes = [f"################ {c['id']} · {'desde anuncio' if c.get('desde_anuncio') else 'sin anuncio'} · canal "
                       f"{'web' if c.get('canal') == 'web' else 'whatsapp'}", f"persona de la clienta: {c.get('persona') or '(chat real o guion)'}"]
-            reales = set()
-            for letra, v in zip("XY", orden):
-                s = cargar_estado(c, v)
-                r = {"turnos": s["turnos"]}
-                reales.add(cv._datos_reales(r))
+            todos = []
+            for letra, v in zip(letras, orden):
+                turnos = externas[v][c["id"]]["turnos"] if v in externas else cargar_estado(c, v)["turnos"]
+                todos += turnos
                 partes.append(f"======== VENDEDORA {letra}")
-                for t in s["turnos"]:
+                for t in turnos:
                     partes.append(f"👤 {t['cliente']}")
                     for p in (t["bot"] or "(sin respuesta)").split("\n\n"):
                         partes.append("   🤖 " + p.replace("\n", " / "))
                     if t["fotos"]:
                         partes.append("   📷 fotos enviadas: " + ", ".join(t["fotos"]))
-            partes.insert(2, "DATOS REALES:\n" + "\n".join(sorted(reales)))
+            partes.insert(2, "DATOS REALES:\n" + cv._datos_reales({"turnos": todos}))
             grupos.setdefault(f"J{i % a.jueces + 1}", []).append("\n".join(partes))
         d = os.path.join(DATOS, "juicio")
         os.makedirs(d, exist_ok=True)
@@ -733,9 +741,24 @@ def main(argv=None):
     if a.cmd == "resultados":
         cs = [json.loads(x) for x in open(a.specs, encoding="utf-8") if x.strip()]
         juicios = json.load(open(a.juicios, encoding="utf-8")) if a.juicios else {}
+        # Latencia: el `ms` del turno incluye la espera en la fila de la GPU (varias conversaciones a la vez contra un solo
+        # Mac). Con --llamadas se sustituye por el tiempo de generación que midió el puente para ese mensaje (+150 ms del
+        # resto del agente); los turnos que no pasaron por el modelo conservan el suyo.
+        gen = {}
+        if a.llamadas:
+            for l in open(a.llamadas, encoding="utf-8"):
+                x = json.loads(l)
+                u = x["messages"][-1]["content"]
+                cli = re.search(r"^CLIENTE: (.*)$", u, re.M)
+                msg = re.search(r"MENSAJE NUEVO DE[L LA]* CLIENT[AE]:\n(.*?)(?:\n\nFORMATO DE SALIDA|$)", u, re.S)
+                gen.setdefault(((cli.group(1) if cli else "").strip(), (msg.group(1) if msg else "").strip()), []).append(x["ms"])
         with open(a.salida, "w", encoding="utf-8") as fh:
             for c in cs:
                 s = cargar_estado(c, a.modo)
+                for t in s["turnos"]:
+                    cola = gen.get(((c.get("cliente") or "(sin nombre)").strip(), (t["cliente"] or "").strip()))
+                    if cola:
+                        t["ms"] = int(cola.pop(0)) + 150
                 r = {"id": c["id"], "tipo": c.get("tipo", "simulada"), "conjunto": "reservada", "canal": c.get("canal", ""),
                      "desde_anuncio": bool(c.get("desde_anuncio")), "persona_clave": c.get("persona_clave", c["id"]),
                      "persona": c.get("persona", ""), "turnos": s["turnos"], "error": "" if s["fin"] else "sin terminar"}

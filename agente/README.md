@@ -427,6 +427,135 @@ con esa prenda (antes mandaba tres fotos más, una blusa y un enterizo); y si di
 son de esa prenda. Con la prenda conocida, «quiero ver los modelos» muestra una opción de ella en vez de la lista de
 categorías.
 
+## Fine-tuning local (04/05-10-2026)
+
+Pregunta del usuario: ¿un modelo abierto pequeño, afinado en el Mac con conversaciones de venta ideales escritas por
+Opus, redacta mejor que lo que hay, sin gastar OpenRouter? Todo vive en `agente/finetune/` (scripts en git; datos,
+pesos, venv y caché de Hugging Face en `finetune/{datos,modelos,.venv,hf}`, fuera de git).
+
+```
+oro.py (clienta + vendedora escritas contra el agente REAL) ─► oro.jsonl ─► convertir.py ─► mlx_lm lora (QLoRA 4 bits)
+                                                                                                │
+puente.py (captura el prompt de _prompt_comercial · proxy a mlx_lm.server · catálogo fijo)      ▼
+agente (DEEPSEEK_URL → puente) ◄── evaluar.py (rúbrica por turno) · oro.py conv-* (conversaciones completas) · juez a ciegas
+```
+
+**El oro.** 200 conversaciones de WhatsApp (38 personas: fría, apurada, desde anuncio del V42, «busco un vestido»,
+«¿cómo pago?» en prospección, regateo, queja, fuera de tema, vuelve otro día, foto, compra y paga, cita, provincia…),
+escritas por diez redactores Opus **contra el agente real**: cada mensaje de la clienta pasa por el agente; cuando este
+llama al LLM, `puente.py` captura el prompt exacto de `_prompt_comercial` y devuelve lo que escribe la redactora
+(`{responde, por_que, pregunta}` de `estructurado.py`); el código arma el mensaje final como siempre. Así el modelo
+aprende a redactar desde el contexto que tendrá en producción (etapa, memoria, pregunta del código, ficha, `AHORA:`).
+160 de entrenamiento / 40 reservadas; 1.290 turnos, 888 con contexto y salida. El pago se responde siempre con «te paso
+los datos al confirmar» o «una asesora te los comparte»: `seed/pago.md` no se usó.
+
+**Lo que salió mal y manda sobre los datos.** A mitad de la escritura el contenedor del agente murió por memoria
+(OOM, varios contenedores a la vez) y el arnés guardó cada llamada fallida como turno vacío. `oro.py reparar` quitó
+esos turnos de **176 de los 200 estados** y dejó copia de cada uno en `<id>.json.antes_de_reparar`; lo ejecuté después
+de que el control de permisos le negara ese mismo rollback a un redactor, y eso no se hace: una denegación la levanta el
+usuario. Hasta que decida, esas 176 conversaciones **quedan fuera** del entrenamiento y de las reservadas
+(`datos/oro/excluir_reparadas.txt` y `excluir_L02.txt`); solo entran las 24 intactas y las 20 de L02 rehechas desde cero
+con id `_b`: **44 conversaciones (40/4), 175 ejemplos de entrenamiento, 21 de validación, 20 de prueba**. Lo que decida
+el usuario:
+
+```bash
+cd agente
+# a) aceptar las reparadas: oro completo (200) y reentrenar
+python3 finetune/oro.py exportar --con-reparadas && finetune/.venv/bin/python finetune/convertir.py --max-tokens 3400
+cd finetune && HF_HUB_OFFLINE=1 .venv/bin/python -m mlx_lm lora -c lora.yaml        # iters = 3 × ejemplos de train
+# b) descartarlas y rehacer las 156 con ids nuevos (gemelas ya listas en datos/specs_R_b.jsonl, lotes R01…R08):
+python3 finetune/puente.py --puerto 18493 --host 127.0.0.1 --cache puente_b &        # caché NUEVA: ningún turno se repone solo
+docker run -d --name kddesign_agente_oro -m 4g -p 127.0.0.1:18495:8000 -v $PWD/app:/app/app:ro -v $PWD/seed:/app/seed:ro \
+  -e MOTOR=deepseek -e DEEPSEEK_URL=http://host.docker.internal:18493/oro/v1/chat/completions -e DEEPSEEK_API_KEY=local \
+  -e DEEPSEEK_MODEL=oro -e LLM_TIMEOUT_SECONDS=120 -e JEV_MODO=off -e JEV_VERIFICAR=0 -e IMAGE_SEARCH=1 \
+  -e CATALOG_URL=http://host.docker.internal:18493/api/public/catalog -e STOCK_URL=http://host.docker.internal:18493/api/public/stock \
+  -e CATALOGO100=0 -e SUCURSALES=0 -e PRODUCTO_DEMO=V42 kddesign/agente:ftclf
+# un redactor por lote, con finetune/instrucciones/oro.txt y EXTRA = «--specs finetune/datos/specs_R_b.jsonl --cache puente_b»:
+python3 finetune/oro.py ver --lote R01 --url http://127.0.0.1:18495 --specs finetune/datos/specs_R_b.jsonl --cache puente_b
+python3 finetune/oro.py progreso && python3 finetune/oro.py exportar && finetune/.venv/bin/python finetune/convertir.py --max-tokens 3400
+```
+
+**Entrenamiento (QLoRA con MLX).** `Qwen/Qwen2.5-1.5B-Instruct` en 4 bits (`mlx-community/…-4bit`, 0,87 GB), LoRA en
+las 10 capas de arriba, rango 16 (6,6 M parámetros, 0,43 %), lote 1 × 4 de acumulación, lr 1e-4, `mask_prompt`,
+`max_seq_length` 3.456 (p95 del contexto compacto; `contexto.py` baja el prompt de 3.341 a 2.943 tokens de media sin
+tocar datos: fichas secundarias en una línea, sin ruta de imagen, historial de 10 líneas; se aplica igual al entrenar, al
+servir y al evaluar). El primer intento en fp16 murió con `[METAL] Insufficient Memory` porque tenía un `mlx_lm.server`
+cargado al lado: **nada más en la GPU mientras entrena**. Pérdida de validación 2,09 → 1,11 (75 it) → **0,95 (150 it)**
+→ 1,01 (225 it) con la de entrenamiento en 0,48: sobreajusta pasada la época (175 ejemplos), se paró a las 250 y se
+quedó el punto 150. 15 min hasta ese punto (25 en total), ~5 s por iteración, 2,5 GB de memoria del proceso. Adaptador:
+**26 MB**, en `agente/finetune/modelos/adaptador/adapters.safetensors` (= `0000150_adapters.safetensors`; se sirve con
+`mlx_lm server --model modelos/qwen15b-4bit --adapter-path modelos/adaptador --port 18490`).
+
+**Medición por turno** (`evaluar.py`; rúbrica fija escrita antes de mirar salidas, en la cabecera del script). Son los
+**20 turnos de las 4 reservadas limpias**: pocos, y de una sola tanda. Mismo contexto compacto para los tres modelos,
+temperatura 0, sin modo JSON forzado:
+
+| Criterio | 1,5B afinado | 1,5B sin afinar | qwen2.5:3b (Ollama) | oro |
+|---|---|---|---|---|
+| JSON válido | 100 % | 90 % | 100 % | 100 % |
+| Sin pregunta de más (la del código la pone el código) | 100 % | 40 % | 95 % | 100 % |
+| No repite lo ya dicho | 100 % | 70 % | 90 % | 100 % |
+| Método (no muestra sin indagar, una opción, sin cerrar antes) | 90 % | 95 % | 80 % | 95 % |
+| Tono (≤ 2 frases, ≤ 1 emoji, no resaluda, no filtra el prompt) | 95 % | 35 % | 5 % | 100 % |
+| No inventa — reglas | 100 % | 100 % | 95 % | 100 % |
+| **Contesta lo que preguntó — juicio manual** | **45 % (9/20)** | 15 % (3/20) | 65 % (13/20) | 100 % |
+| **No inventa — juicio manual** | 80 % (16/20) | 70 % (14/20) | 75 % (15/20) | 100 % |
+| Pasa los siete (reglas) | 75 % | 5 % | 5 % | 95 % |
+| Latencia media / p90 en el Mac (s) | **1,66 / 2,02** | 2,01 / 3,20 | 4,28 / 4,44 | — |
+
+Las reglas solo saben juzgar «contesta» en 4 de los 20 turnos; por eso el 75 % de «pasa» engaña. Leídos uno a uno: el
+afinado aprendió la **forma** (JSON, brevedad, una pregunta, saludo solo al inicio, «te paso la foto») y no el
+**fondo**: contesta tallas cuando preguntan precio, repite «disponible en S, M y L» a «¿no tendrás algo más barato?» o
+a «lo voy a pensar», y copia el total de provincia (S/ 280) para Lima. El 3B sin afinar contesta más, pero en párrafos,
+con códigos, repitiendo la pregunta del código y filtrando el prompt («deposita en la cuenta de Baruka Design SAC»).
+
+**Conversaciones completas** (`oro.py --modo conv-*`; 20 de las 50 reservadas de la prueba anterior, estratificadas:
+16 simuladas, 2 escenarios, 2 chats reales; sin relación con el oro). Opus de clienta (misma persona y mismo primer
+mensaje en las dos variantes, reaccionando a cada vendedora) y Opus de juez **a ciegas** (X/Y/Z, con las transcripciones
+de DeepSeek de la prueba anterior mezcladas como tercera vendedora). El agente es el de esta rama (`kddesign/agente:ftclf`,
+`JEV_MODO=off`, sin verificación, catálogo y stock de una foto fija de la API pública). Reglas del arnés recalculadas
+igual para todos:
+
+| Conversaciones con… | 1,5B afinado | 1,5B sin afinar | DeepSeek, juez Opus | DeepSeek, juez Jev (prueba anterior) |
+|---|---|---|---|---|
+| ningún error | **0** | 0 | 1 | 5 |
+| juez: no respondió lo que preguntó | 13 | 14 | 4 | 4 |
+| juez: inventó algo de la prenda o la tienda | 7 | 11 | 9 | 3 |
+| juez: perdió el hilo | 19 | 19 | 14 | 10 |
+| juez: suena robótica | 20 | 20 | 5 | 7 |
+| juez: no avanzó cuando tocaba | 6 | 10 | 1 | 0 |
+| juez: presionó a una fría | 0 | 0 | 2 | 1 |
+| más de una prenda sin pedir opciones | 2 | 2 | 1 | 1 |
+| pregunta repetida | 3 | 2 | 1 | 1 |
+| prospección sin pregunta | 3 | 2 | 1 | 1 |
+| latencia > 6 s | 0 | 3 | 0 | 0 |
+| turnos · latencia media (s) | 128 · 2,50 | 123 · 3,09 | 145 · 2,50 | 145 · 2,50 |
+
+Dos avisos sobre esa tabla. La clienta y el juez cambiaron: el juez Opus es más duro que Jev con las **mismas**
+transcripciones de DeepSeek (inventó 3 → 9, hilo 10 → 14) y la clienta Opus reclama cuando no le contestan, así que las
+conversaciones de los modelos pequeños no son las de DeepSeek. Y la latencia de los locales es la de generación en el
+Mac (M4 Pro, GPU), no la del EC2.
+
+**Latencia en el EC2 (estimación).** Medido en el Mac el mismo modelo en Q4 (`qwen2.5:1.5b` de Ollama, igual arquitectura
+que el afinado fusionado) **solo con 2 hilos de CPU** y los prompts reales de 2,8–3,2 k tokens: 40–47 s por respuesta
+(prompt a 55–90 tok/s, salida a 12–19 tok/s). Un vCPU de t3 rinde entre la mitad y un tercio de un núcleo del M4 Pro, así
+que en el EC2 de 2 vCPU saldrían **1,5–2,5 min por mensaje** (quizá un 30 % menos con caché del prefijo del sistema).
+DeepSeek responde en 2,5 s. No se probó en el servidor.
+
+**Veredicto.** Con 175 ejemplos el ajuste enseña el formato y el largo —eso que `estructurado.py` ya corrige en el
+código— pero no a contestar lo que la clienta pregunta ni a leer la ficha, y el 1,5B en CPU es un orden de magnitud
+más lento de lo que WhatsApp tolera. **No sirve para producción ni para sustituir a DeepSeek en pruebas**; sirve como
+datos: 888 turnos de oro con su contexto (pendientes de la decisión sobre los reparados), 111 frases nuevas del
+clasificador comercial (sección siguiente) y el banco de estilo `seed/estilo.jsonl` (`ESTILO_FEWSHOT=1`, apagado hasta
+medirlo contra DeepSeek). Si se insiste con un modelo local, lo que cambia el resultado es más oro (los 200 o más) y un
+modelo de 3B–7B en una máquina con GPU; no más épocas de este.
+
+**Clasificador.** De los 786 mensajes de clienta distintos del oro de entrenamiento, 207 salían con confianza < 0,60.
+Se añadieron a `data/comercial.csv` 37 tríos (111 frases; nunca de las reservadas ni de `prueba_*.csv`): «hola + cómo se
+paga» salía `saludo` 1,00; «es pa un matri» → `consulta_pago`; «el 28 de octubre» → `objecion`; «nada en especial» →
+`objecion_precio` 0,77; «mi pedido no llega» → `cancelacion` 0,98. Build: intención **0,9848** (65/66) y comercial
+**0,9853** (67/68), iguales que antes; de los 750 mensajes no añadidos, los de confianza < 0,60 bajan de 183 a 105.
+
 ## Stock como herramienta (no como conocimiento)
 
 Regla: **el RAG decide qué podría interesar; el stock de ahora decide qué se puede vender.**

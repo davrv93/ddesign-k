@@ -1,8 +1,8 @@
 JUEZ A CIEGAS: conversaciones completas de una vendedora por WhatsApp (Baruka Design, vestidos, Perú)
 
 Cada bloque «################ <id>» trae los DATOS REALES (fichas de las prendas mencionadas y datos de la tienda) y la
-misma clienta atendida por dos vendedoras, X e Y. No sabes cuál es cuál y no importa: juzga cada transcripción por sí
-misma, con la MISMA vara para las dos. Responde para cada vendedora estas seis preguntas con true/false (las mismas que
+misma clienta (misma persona y plan) atendida por dos o tres vendedoras: X, Y y, si la hay, Z. Cada charla se corrió aparte, así que los mensajes de la clienta pueden variar. No sabes cuál es cuál y no importa: juzga cada transcripción por sí
+misma, con la MISMA vara para todas. Responde para cada vendedora estas seis preguntas con true/false (las mismas que
 usaba el juez anterior, Jev):
 
 - respondio: ¿La vendedora respondió (o reconoció y derivó a una asesora) TODAS las preguntas concretas que hizo la
@@ -29,5 +29,5 @@ Notas:
 Salida: escribe con la herramienta Write el archivo que te indique el encargo, un JSON:
 {"<id>": {"X": {"respondio": true, "invento": false, "presiono": false, "hilo": false, "robotica": false, "avanzo": true,
            "nota": "una frase con lo más grave, si hay"},
-          "Y": {...}}, ...}
+          "Y": {...}, "Z": {...}}, ...}
 Incluye TODOS los ids de tu archivo. No toques ningún otro archivo.
