@@ -203,6 +203,26 @@ responde. **No los arranques**: serían dos bots con el mismo número de WhatsAp
 - **El README** todavía habla de `kddesign.pjgfactsalud.com.pe` y de un nginx en el host. Eso describe el
   esquema original; el vigente es el de este archivo.
 
+## Discernimiento (Capa de Juicio y seguimiento)
+
+El **LLM propone; la Capa de Juicio decide** (`backend/internal/juicio/`, paquete puro con sus pruebas). Cada
+respuesta del agente pasa por `gateJuicio` (`bot/juicio.go`), que evalúa etapa, intención, confianza, riesgo
+(dinero/stock/promesa/queja), ánimo y urgencia, y decide **enviar / sugerir / derivar / callar**.
+
+- **Modo** (`JUICIO_MODO`): `off` = no hace nada; `sombra` (por defecto) = registra `[JUICIO]` y guarda la
+  decisión en la tabla `decisiones`, sin cambiar lo que se envía; `activo` = además deriva y calla. Va en
+  sombra a propósito: se mide antes de dejarle decidir, como se hizo con Jev.
+- **Ánimo y urgencia**: por reglas, en el agente (`agente/app/animo.py`, `python3 -m app.prueba_animo`), y
+  viajan en cada respuesta (`sentimiento`, `urgencia`).
+- **Conversión**: `juicio.EstimarConversion`, heurística transparente sobre etapa, reincidencia, urgencia y
+  ánimo. La sustituirá un modelo cuando haya decisiones acumuladas.
+- **Memoria de criterio**: tablas `decisiones` (qué se hizo y por qué, autor `bot`/`asesora`) y `pares_dpo`
+  (turno de la clienta, lo que propuso el bot y lo que respondió la persona). Se llenan solas al operar.
+- **Seguimiento** (stopping agent): job de fondo (`followups` en `cmd/server/main.go`) que manda **un solo**
+  recordatorio tras 24 h de silencio y nunca más de dos. **Apagado por defecto** (`seguimiento_habilitado`);
+  activarlo hace que el bot escriba a clientas reales. Horario de Lima 8–21 h; el contador se reinicia si
+  la clienta vuelve.
+
 ## Reglas
 
 1. **No despliegues sin que el usuario lo pida.** Aun así, una orden de desplegar ya es la autorización:

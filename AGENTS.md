@@ -86,5 +86,11 @@ curl -s -X POST https://proyectopostventa.site/demo-design/chat -H 'Content-Type
   ahí y en `RE_ROPA`.
 - **Códigos de producto:** `V` + 2 dígitos (`V21`). Es el formato que reconocen a la vez el bot Go
   (`reCode`) y el agente (`datos.RE_CODIGO`). Otro prefijo exige cambiar ambos.
+- **Capa de Juicio:** la decisión de enviar/derivar/callar vive en `backend/internal/juicio` (pura, con sus
+  pruebas) y se aplica en `bot/juicio.go` (`JUICIO_MODO`: `sombra` registra, `activo` aplica). El agente solo
+  propone. Ánimo y urgencia van por reglas en `agente/app/animo.py`. No metas política de negocio en el
+  prompt ni condicionales sueltos en `bot.go`: van en `juicio`.
+- **Seguimiento:** el recordatorio de silencio es un job de fondo apagado por defecto
+  (`seguimiento_habilitado`); activarlo escribe a clientas reales, consúltalo antes.
 - **Secretos:** nunca los imprimas ni los subas. `.env` está en `.gitignore`.
 - **WhatsApp:** no mandes mensajes de prueba a números reales sin consultar antes.

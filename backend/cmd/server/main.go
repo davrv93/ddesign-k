@@ -51,6 +51,7 @@ func main() {
 
 	go srv.Bootstrap(ctx)
 	go resumePausedBots(ctx, st, hub)
+	go followups(ctx, st, b, hub)
 
 	httpSrv := &http.Server{
 		Addr:              ":" + cfg.Port,
@@ -70,6 +71,43 @@ func main() {
 	}
 	// Entrega lo que quedó en cola antes de salir.
 	b.Drain(15 * time.Second)
+}
+
+// followups manda un único recordatorio a las conversaciones que quedaron en silencio (stopping
+// agent). Está apagado por defecto (`seguimiento_habilitado`): sin activarlo no se escribe a nadie.
+// Solo actúa en horario de atención de Lima y la Capa de Juicio pone el tope de recordatorios.
+func followups(ctx context.Context, st *store.Store, b *bot.Bot, hub *api.Hub) {
+	lima := time.FixedZone("America/Lima", -5*3600) // Perú no tiene horario de verano
+	t := time.NewTicker(time.Hour)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			if st.Setting(ctx, "seguimiento_habilitado", "false") != "true" {
+				continue
+			}
+			if h := time.Now().In(lima).Hour(); h < 8 || h >= 21 {
+				continue
+			}
+			hours, _ := strconv.Atoi(st.Setting(ctx, "seguimiento_horas", "24"))
+			if hours <= 0 {
+				hours = 24
+			}
+			convs, err := st.ConversationsToFollowUp(ctx, time.Duration(hours)*time.Hour, 2)
+			if err != nil {
+				log.Printf("seguimiento: %v", err)
+				continue
+			}
+			for _, cv := range convs {
+				b.Followup(ctx, cv)
+			}
+			if len(convs) > 0 {
+				hub.Publish("conversations")
+			}
+		}
+	}
 }
 
 // resumePausedBots devuelve el chat al bot cuando la asesora lo dejó pausado demasiado tiempo.

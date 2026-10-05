@@ -76,6 +76,10 @@ type Reply struct {
 	Sugerencias []Sugerencia `json:"sugerencias"`
 	// Etapa comercial en la que queda la conversación; se devuelve tal cual en el siguiente mensaje.
 	Etapa string `json:"etapa"`
+	// Sentimiento (-1..1) y urgencia (0..1) del mensaje, por reglas (agente/app/animo.py). Alimentan la
+	// Capa de Juicio del bot. Cero si el agente no los calculó (llamadas viejas).
+	Sentimiento float64 `json:"sentimiento"`
+	Urgencia    float64 `json:"urgencia"`
 	// Memoria actualizada: se guarda y se manda tal cual en el siguiente mensaje.
 	Memoria json.RawMessage `json:"memoria,omitempty"`
 	// Foto sólo viene en las respuestas de /foto.

@@ -166,6 +166,8 @@ func (s *Store) AddMessage(ctx context.Context, m *Message) error {
 	unread := 0
 	if m.Direction == "in" {
 		unread = 1
+		// La clienta volvió: se reinicia el contador de recordatorios de seguimiento.
+		_, _ = s.DB.ExecContext(ctx, `DELETE FROM followups WHERE conversation_id=?`, m.ConversationID)
 	}
 	_, err = s.DB.ExecContext(ctx, `UPDATE conversations SET last_message=?, last_message_at=?, unread=unread+? WHERE id=?`,
 		preview, m.CreatedAt, unread, m.ConversationID)

@@ -28,6 +28,7 @@ import json
 from contextvars import ContextVar
 
 from . import datos, etapas, jev, memoria, venta
+from . import animo
 from .modelo import Embedder, EmbedderOnnx, cargar, hay_setfit
 from . import stock as stk
 
@@ -1470,6 +1471,7 @@ def conversar(req: ChatIn) -> dict:
 
     memoria.registrar_respuesta(mem, respuesta, forzar)
     memoria.anotar_turno(mem, etapa, foco.codigo if foco is not None else "", [f.codigo for f in sugeridas], dec["intent"])
+    animo_r = animo.evaluar(req.mensaje, mem)   # ánimo y urgencia para la Capa de Juicio del bot Go
 
     tarjetas = _sugerencias_json(sugeridas)
     if lamina and accion == "responder":
@@ -1506,6 +1508,7 @@ def conversar(req: ChatIn) -> dict:
                       "fuente": com["fuente"], "jev": com_jev},
         "botones": botones,
         "memoria": mem,
+        "sentimiento": animo_r["sentimiento"], "urgencia": animo_r["urgencia"],
         "siguiente_pregunta": sig,
         "lectura": {k: lectura[k] for k in ("pendiente", "respondio", "espera", "datos", "fuente")} | {"jev": (jev_mem or {}).get("_probs")},
         "stock_fuente": E.stock.ultima_fuente,
@@ -1680,6 +1683,7 @@ Máximo 3 frases."""
         respuesta = memoria.quitar_repetidas(respuesta, mem, permitida=sig)
     memoria.registrar_respuesta(mem, respuesta)
     memoria.anotar_turno(mem, etapa_nueva, f.codigo if caso in ("online", "sucursal") else "", [x.codigo for x in sugeridas])
+    animo_r = animo.evaluar(req.mensaje or "", mem)   # ánimo y urgencia para la Capa de Juicio del bot Go
 
     return {
         "intencion": "foto", "confianza": round(sim, 3), "accion": accion, "codigo": codigo_oferta,
@@ -1690,7 +1694,8 @@ Máximo 3 frases."""
         "sugerencias": _sugerencias_json(sugeridas),
         # Mandar la foto de una prenda que sí hay es mostrar interés: de prospección pasa a seguimiento.
         "etapa": etapa_nueva,
-        "memoria": mem, "siguiente_pregunta": sig,
+        "memoria": mem, "sentimiento": animo_r["sentimiento"], "urgencia": animo_r["urgencia"],
+        "siguiente_pregunta": sig,
         "stock_fuente": E.stock.ultima_fuente,
         "ms": int((time.time() - t0) * 1000),
     }

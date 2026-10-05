@@ -137,6 +137,8 @@ func (b *Bot) Handle(ctx context.Context, in *Incoming) {
 		// Mensaje escrito por la dueña desde el celular: queda en el historial y el bot cede el chat.
 		msg.Direction, msg.Author = "out", "asesora"
 		_ = b.store.AddMessage(ctx, msg)
+		_ = b.store.IntervencionHumana(ctx, conv.ID, "", "respondió desde el celular")
+		b.registrarDPO(ctx, conv, in.Text)
 		if b.store.Setting(ctx, "pause_on_manual_reply", "true") == "true" && !conv.BotPaused {
 			_ = b.store.SetBotPaused(ctx, conv.ID, true)
 		}
@@ -422,6 +424,8 @@ func (b *Bot) sendOrderStatus(ctx context.Context, conv *store.Conversation) {
 func (b *Bot) handoff(ctx context.Context, conv *store.Conversation) {
 	b.setState(ctx, conv, stHumanAsked, convContext{})
 	_ = b.store.SetBotPaused(ctx, conv.ID, true)
+	_ = b.store.SaveDecision(ctx, &store.Decision{ConversationID: conv.ID, Decision: "derivar_humano",
+		Razon: "paso a una asesora", Autor: "bot"})
 	b.reply(ctx, conv, "🙋‍♀️ ¡Listo! Una asesora te atenderá en breve por este mismo chat.")
 	b.Notify("conversations")
 }
@@ -798,6 +802,8 @@ func (b *Bot) confirmOrder(ctx context.Context, conv *store.Conversation, cc *co
 	}
 	b.Notify("orders")
 	b.Notify("products")
+	_ = b.store.SaveDecision(ctx, &store.Decision{ConversationID: conv.ID, Decision: "venta_confirmada",
+		Resultado: "cerrada", Razon: "la clienta confirmó el pedido", Autor: "bot"})
 	if b.Agent != nil {
 		cc.Etapa = "venta_confirmada"
 		b.setState(ctx, conv, stPayment, *cc)
@@ -847,6 +853,9 @@ func (b *Bot) closingReply(ctx context.Context, conv *store.Conversation, cc *co
 	}
 	if strings.TrimSpace(r.Respuesta) == "" {
 		return false
+	}
+	if b.gateJuicio(ctx, conv, cc, r) { // Capa de Juicio: derivar/callar en pleno cierre
+		return true
 	}
 	otraPrenda := false
 	for _, sg := range r.Sugerencias {
@@ -915,6 +924,9 @@ func (b *Bot) handlePayment(ctx context.Context, conv *store.Conversation, cc *c
 	}
 	if r.Accion != "responder" && r.Accion != "" {
 		b.dispatchAgent(ctx, conv, cc, r)
+		return
+	}
+	if b.gateJuicio(ctx, conv, cc, r) { // Capa de Juicio: derivar/callar tras el pago
 		return
 	}
 	if r.Etapa != "" && r.Etapa != "venta_confirmada" {
@@ -1166,6 +1178,9 @@ func (b *Bot) dispatchAgent(ctx context.Context, conv *store.Conversation, cc *c
 		if strings.TrimSpace(r.Respuesta) == "" {
 			return false
 		}
+		if b.gateJuicio(ctx, conv, cc, r) { // Capa de Juicio: derivar/callar antes de enviar
+			return true
+		}
 		b.setState(ctx, conv, conv.State, *cc) // la etapa viaja con la conversación
 		b.sendAgentText(ctx, conv, r)
 	}
@@ -1214,6 +1229,9 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 	}
 	inquiry(nota, r.Foto.Similitud)
 	b.setState(ctx, conv, stIdle, convContext{Etapa: firstNonEmpty(r.Etapa, cc.Etapa), Memoria: cc.Memoria})
+	if b.gateJuicio(ctx, conv, cc, r) { // Capa de Juicio: derivar/callar la respuesta a la foto
+		return true
+	}
 	b.sendAgentText(ctx, conv, r)
 	return true
 }
@@ -1254,6 +1272,8 @@ func (b *Bot) replyImage(ctx context.Context, conv *store.Conversation, url, cap
 
 // SendManual encola un mensaje escrito por la asesora desde el panel.
 func (b *Bot) SendManual(ctx context.Context, conv *store.Conversation, text string) error {
+	_ = b.store.IntervencionHumana(ctx, conv.ID, "", "respondió desde el panel")
+	b.registrarDPO(ctx, conv, text)
 	return b.queueMessage(ctx, conv, &store.Message{Kind: "text", Body: text, Author: "asesora"}, outJob{text: text})
 }
 

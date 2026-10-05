@@ -154,6 +154,42 @@ CREATE TABLE IF NOT EXISTS settings (
 	key   TEXT PRIMARY KEY,
 	value TEXT NOT NULL
 );
+-- Recordatorios de seguimiento enviados a una conversación en silencio (stopping agent). El tope lo
+-- aplica la Capa de Juicio; aquí se cuenta cuántos lleva. Se borra cuando la clienta vuelve a escribir.
+CREATE TABLE IF NOT EXISTS followups (
+	conversation_id INTEGER PRIMARY KEY REFERENCES conversations(id) ON DELETE CASCADE,
+	count           INTEGER NOT NULL DEFAULT 0,
+	last_at         DATETIME
+);
+-- Memoria de criterio (case-based reasoning): qué se decidió en cada turno, por qué y con qué resultado.
+-- Guarda tanto las decisiones de la Capa de Juicio (autor «bot») como las intervenciones humanas
+-- (autor «asesora»): es el dato que alimentará el criterio del bot y la medida de discernimiento.
+CREATE TABLE IF NOT EXISTS decisiones (
+	id              INTEGER PRIMARY KEY AUTOINCREMENT,
+	conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+	etapa           TEXT NOT NULL DEFAULT '',
+	intent          TEXT NOT NULL DEFAULT '',
+	caso            TEXT NOT NULL DEFAULT '',
+	decision        TEXT NOT NULL DEFAULT '',
+	razon           TEXT NOT NULL DEFAULT '',
+	resultado       TEXT NOT NULL DEFAULT '',
+	autor           TEXT NOT NULL DEFAULT '',
+	created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_decisiones_intent ON decisiones(intent, id);
+CREATE INDEX IF NOT EXISTS idx_decisiones_conv ON decisiones(conversation_id, id);
+-- Pares para alineación (DPO): cuando una persona responde en un chat, se guarda lo último que dijo la
+-- clienta, lo que había propuesto el bot y lo que escribió la persona. Es el dato con el que el bot
+-- aprende el criterio de la tienda, no el genérico.
+CREATE TABLE IF NOT EXISTS pares_dpo (
+	id              INTEGER PRIMARY KEY AUTOINCREMENT,
+	conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+	contexto        TEXT NOT NULL DEFAULT '',
+	respuesta_bot   TEXT NOT NULL DEFAULT '',
+	respuesta_humana TEXT NOT NULL DEFAULT '',
+	created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_pares_conv ON pares_dpo(conversation_id, id);
 `
 
 func (s *Store) migrate() error {
