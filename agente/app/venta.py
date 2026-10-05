@@ -294,6 +294,45 @@ def cita_ok(dia: str, hora: str, hoy, prenda: str = "", talla: str = "", nombre:
     return txt
 
 
+# ---------------------------------------------------------------------------
+# Banco de estilo (few-shot): turnos ejemplares del «oro» de agente/finetune, cortos y por etapa. Con
+# ESTILO_FEWSHOT=1 se añaden 2–3 de la etapa al prompt del motor deepseek, como guía de tono y largo (no de datos:
+# cada ejemplo es de otra conversación y otra prenda). Apagado por defecto: falta medirlo contra DeepSeek.
+
+ESTILO_FEWSHOT = os.environ.get("ESTILO_FEWSHOT", "0") == "1"
+ESTILO_N = int(os.environ.get("ESTILO_N", "3"))
+ESTILO_JSONL = os.environ.get("ESTILO_JSONL", os.path.join(_SEED, "estilo.jsonl"))
+
+
+def _cargar_estilo(ruta: str = ESTILO_JSONL) -> list[dict]:
+    try:
+        with open(ruta, encoding="utf-8") as fh:
+            return [json.loads(x) for x in fh if x.strip()]
+    except (OSError, ValueError):
+        return []
+
+
+ESTILO = _cargar_estilo()
+
+
+def bloque_estilo(etapa: str, n: int = ESTILO_N, banco: list[dict] | None = None, activo: bool | None = None) -> str:
+    """Hasta `n` ejemplos de la etapa para el prompt, o '' si está apagado o no hay ejemplos. Los de la etapa van primero;
+    si son menos de 2, se completa con los de otras etapas (el tono es el mismo)."""
+    if not (ESTILO_FEWSHOT if activo is None else activo):
+        return ""
+    banco = ESTILO if banco is None else banco
+    propios = [e for e in banco if e.get("etapa") == etapa]
+    otros = [e for e in banco if e.get("etapa") != etapa]
+    elegidos = (propios + (otros if len(propios) < 2 else []))[:max(0, n)]
+    if not elegidos:
+        return ""
+    lineas = ["EJEMPLOS DE ESTILO (otras clientas y otras prendas: imita el tono y el largo, NUNCA sus datos):"]
+    for e in elegidos:
+        lineas.append(f"- [{NOMBRE_ETAPA.get(e.get('etapa', ''), e.get('etapa', ''))}] {e.get('situacion', '')}\n"
+                      f"  clienta: {e['clienta']}\n  tú: {json.dumps(e['salida'], ensure_ascii=False)}")
+    return "\n".join(lineas)
+
+
 SISTEMA = """ROL
 Eres {asesora}la asesora de ventas por WhatsApp de "{negocio}", que confecciona vestidos y ropa de mujer en Perú.
 Conversas como una vendedora real: cálida, cercana y segura, en español peruano y tuteando. Si te preguntan si

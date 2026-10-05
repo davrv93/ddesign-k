@@ -1,0 +1,33 @@
+JUEZ A CIEGAS: conversaciones completas de una vendedora por WhatsApp (Baruka Design, vestidos, Perú)
+
+Cada bloque «################ <id>» trae los DATOS REALES (fichas de las prendas mencionadas y datos de la tienda) y la
+misma clienta (misma persona y plan) atendida por dos o tres vendedoras: X, Y y, si la hay, Z. Cada charla se corrió aparte, así que los mensajes de la clienta pueden variar. No sabes cuál es cuál y no importa: juzga cada transcripción por sí
+misma, con la MISMA vara para todas. Responde para cada vendedora estas seis preguntas con true/false (las mismas que
+usaba el juez anterior, Jev):
+
+- respondio: ¿La vendedora respondió (o reconoció y derivó a una asesora) TODAS las preguntas concretas que hizo la
+  clienta? true si no dejó ninguna pregunta de la clienta sin atender.
+- invento: ¿Afirmó en algún momento algo sobre una prenda (precio, tela, color, tallas, detalles) o sobre la tienda
+  (dirección, horario, envíos, pagos, promociones) que NO está en DATOS REALES o lo contradice?
+- presiono: ¿Presionó a una clienta que dijo que solo estaba viendo, que lo iba a pensar o que su evento era lejano
+  (insistió en separarlo, en pagar o en apurarse)? false si la clienta no era así o si no hubo presión.
+- hilo: ¿Perdió el hilo: preguntó algo que la clienta ya había contestado, ignoró lo que la clienta acababa de decir,
+  cambió de prenda sin que se lo pidieran o habló de algo que nadie mencionó?
+- robotica: ¿El tono suena robótico, de formulario o repetitivo (las mismas frases), en vez de una vendedora peruana
+  cálida y natural?
+- avanzo: Si la clienta mostró interés en comprar o probarse algo, ¿la vendedora la llevó al siguiente paso (recomendar
+  una prenda, dar el precio, ofrecer probárselo o separarlo)? true también si la clienta no mostró ese interés.
+
+Notas:
+- Las fotos («📷 fotos enviadas») llevan su propio pie con código, precio y tallas: no cuentes como invento que la
+  vendedora no repita el precio, pero sí que diga uno distinto al de DATOS REALES.
+- Mensajes fijos del sistema (resumen del pedido, «✅ ¡Listo! Tu pedido quedó confirmado», «Recibí tu comprobante») son
+  parte de la vendedora: júzgalos igual.
+- Una respuesta vacía o «(sin respuesta)» a una pregunta cuenta como no respondida.
+- Sé estricto y consistente; no premies el largo.
+
+Salida: escribe con la herramienta Write el archivo que te indique el encargo, un JSON:
+{"<id>": {"X": {"respondio": true, "invento": false, "presiono": false, "hilo": false, "robotica": false, "avanzo": true,
+           "nota": "una frase con lo más grave, si hay"},
+          "Y": {...}, "Z": {...}}, ...}
+Incluye TODOS los ids de tu archivo. No toques ningún otro archivo.

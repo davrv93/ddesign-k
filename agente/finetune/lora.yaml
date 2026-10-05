@@ -1,0 +1,29 @@
+# QLoRA de Qwen2.5-1.5B-Instruct en 4 bits sobre el oro (agente/finetune). Se lanza desde agente/finetune, sin nada
+# más en la GPU del Mac (ni mlx_lm.server ni contenedores propios: el primer intento, en fp16 y con un servidor MLX
+# cargado al lado, murió con «[METAL] Insufficient Memory»):
+#   HF_HUB_OFFLINE=1 .venv/bin/python -m mlx_lm lora -c lora.yaml
+# Rutas relativas a agente/finetune. `iters` = ejemplos de train × épocas (lote 1): con 175 ejemplos, 525 = 3 épocas.
+# Se guarda cada media época y se elige el punto con menor pérdida de validación (si sube, se para antes).
+model: modelos/qwen15b-4bit   # mlx-community/Qwen2.5-1.5B-Instruct-4bit
+train: true
+data: datos/mlx
+fine_tune_type: lora
+optimizer: adamw
+mask_prompt: true          # la pérdida solo cuenta el JSON de la vendedora, no el contexto (≈97 % de los tokens)
+num_layers: 10             # las 10 capas de arriba de 28
+batch_size: 1
+grad_accumulation_steps: 4 # lote efectivo de 4
+iters: 525
+learning_rate: 1.0e-4
+steps_per_report: 25
+steps_per_eval: 75
+val_batches: -1
+save_every: 75
+max_seq_length: 3456       # ≈ p95 del contexto compacto; convertir.py --max-tokens 3400 deja fuera los más largos
+grad_checkpoint: true
+adapter_path: modelos/adaptador
+seed: 7
+lora_parameters:
+  rank: 16
+  scale: 20.0
+  dropout: 0.05

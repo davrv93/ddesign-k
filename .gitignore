@@ -14,3 +14,8 @@ __pycache__/
 agente/seed/pago.md
 # Prueba con conversaciones (app/conversaciones.py): corpus anonimizado y resultados, solo en local
 agente/pruebas_conv/
+# Fine-tuning local (agente/finetune): datos de oro, pesos, venv y caché de Hugging Face, solo en local
+agente/finetune/datos/
+agente/finetune/.venv/
+agente/finetune/hf/
+agente/finetune/modelos/

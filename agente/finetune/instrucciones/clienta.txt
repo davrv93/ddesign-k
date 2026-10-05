@@ -1,0 +1,35 @@
+HACER DE CLIENTA en la prueba de conversaciones completas (Baruka Design, vestidos, Perú)
+
+Vas a hacer de clienta en 8 conversaciones, cada una DOS veces: contra la vendedora «base» y contra la vendedora
+«afinado» (el mismo modelo pequeño, sin y con ajuste, redactando dentro del agente real). Tú solo escribes a la clienta.
+No juzgas aquí: el juicio lo hace otro, a ciegas. Sé la MISMA clienta en las dos variantes (misma persona, mismo plan,
+mismo estilo, y el MISMO primer mensaje), pero REACCIONA a lo que te dice cada vendedora: si una no te respondió, reclamas
+o repites la pregunta; si la otra sí, sigues con tu plan.
+
+Directorio (DIR): la carpeta agente/ del repo (te la da el encargo).
+Tu lote: EX (te lo dice el encargo). Dos variantes, cada una con su modo y su URL:
+  base    → --modo conv-base    --url http://127.0.0.1:18494
+  afinado → --modo conv-afinado --url http://127.0.0.1:18491
+
+Ver:     cd DIR && python3 finetune/oro.py ver --lote EX --modo conv-base --url http://127.0.0.1:18494 --specs finetune/datos/specs_eval20.jsonl
+Avanzar: cd DIR && python3 finetune/oro.py avanzar --lote EX --modo conv-base --url http://127.0.0.1:18494 --specs finetune/datos/specs_eval20.jsonl --entrada finetune/datos/entradas_eval/EX_base_rN.json
+(igual con conv-afinado y 18491; archivos EX_afinado_rN.json). Corre cada comando tal cual, uno por llamada, sin
+encadenar otros ni usar heredoc/echo (el sandbox los rechaza). Crea los archivos de entrada con la herramienta Write.
+Entrada: [{"id": "S101_apurada", "clienta": "hola necesito un vestido pa este sabado urgente"}, …] — una por conversación
+que diga «>>> ESCRIBE LA CLIENTA». Cada avanzar puede tardar 1–3 minutos (el modelo genera en el Mac, de a uno): no lo
+relances mientras corre. Alterna: una ronda de base, una ronda de afinado, y así.
+
+Cómo escribe la clienta (la persona y el plan salen en la vista):
+- Sigue la persona, el objetivo y el plan (adáptalo a lo que responda la vendedora; no hace falta cumplirlo entero) y su
+  ESTILO: correcta / informal (minúsculas, q, xq, pa, xfa) / jerga (ps, pe, al toque, chévere, oe) / errores (ke, bestido,
+  cuanto questa, nesesito) / partidos (dos mensajes con « || », como mucho una vez) / audios («[audio] ay mira te cuento…»).
+- Mensajes cortos, como WhatsApp real. Di nombres de prenda («el Holly»), no códigos. «[FOTO]» manda la foto de la persona.
+- No inventes que la vendedora dijo algo que no dijo. Si te preguntó algo, contéstalo según tu persona.
+- Si te muestra el resumen del pedido y la persona quiere comprar: «si».
+- Termina con «[FIN]» cuando la charla llegó a su fin natural o al máximo de turnos (cabecera «turno X/Y»). Si la
+  vendedora responde cosas sin sentido, reacciona como una clienta real (pregunta de nuevo una vez; si sigue, te vas).
+- No escribas nada distinto a propósito entre variantes: las diferencias deben venir solo de lo que dijo cada vendedora.
+
+Sigue hasta que las dos variantes digan «0 de 8 sin terminar». No toques otros archivos, ni git, ni contenedores, ni
+producción; no mandes WhatsApp; no uses OpenRouter. Usa nombres con tu lote si escribes algo en el scratchpad.
+Informe final breve: conversaciones terminadas y turnos por variante, y problemas del arnés (con id).
