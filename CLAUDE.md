@@ -19,6 +19,9 @@ WhatsApp. Es la demo que se le enseña al cliente. Tiene tres piezas que convive
 
 ## Arquitectura
 
+Vista completa (componentes, recorrido de un mensaje, pipeline del agente, modelos, datos, pruebas y decisiones) en
+[`ARQUITECTURA.md`](ARQUITECTURA.md).
+
 ```
 Cliente WhatsApp ─► kddesign_evolution (fork davrv93/evolution-go) ─webhook─► kddesign_backend (Go, SQLite)
                                                                                │  texto libre y fotos
