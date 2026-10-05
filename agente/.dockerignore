@@ -1,2 +1,4 @@
 index/
 __pycache__/
+# Casos de la prueba de regresión (app/regresion.py corre en el host): que editarlos no re-entrene la imagen.
+data/regresion_*

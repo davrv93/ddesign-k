@@ -92,7 +92,25 @@ def main() -> int:
         fallos += d["etapa"] != e_esp
         if d["etapa"] != e_esp:
             print(f"   ✗ {nombre}: → {d['etapa']} (esperado {e_esp}) [{d['motivo']}]")
-    total = len(CASOS) + len(CITA) + 3 + 2
+    # Prueba de regresión (05-10-2026): el sí y el no dichos de otra manera, y compras que el clasificador no veía.
+    regresion = [
+        ("«ya pues» a ¿confirmamos? confirma", "cierre", "otro", 0.4, "ya pues", "confirmar", "venta_confirmada"),
+        ("«sip» a ¿confirmamos? confirma", "cierre", "saludo", 0.4, "sip", "confirmar", "venta_confirmada"),
+        ("«ya pues» sin pregunta de confirmación no cierra", "seguimiento", "otro", 0.4, "ya pues", "otras_opciones", "seguimiento"),
+        ("«nel» a ¿confirmamos? cancela", "cierre", "otro", 0.4, "nel", "confirmar", "seguimiento"),
+        ("«ahorita no gracias» a ¿te lo pruebas? no cierra", "seguimiento", "otro", 0.4, "ahorita no gracias", "probar", "seguimiento"),
+        ("«a q numero yapeo?» es compra", "seguimiento", "consulta_pago", 0.6, "a q numero yapeo?", "", "cierre"),
+        ("«me encanta, lo quiero» es compra", "seguimiento", "interesado", 0.7, "me encanta, lo quiero", "", "cierre"),
+        ("«no lo quiero» no es compra", "seguimiento", "otro", 0.5, "no lo quiero", "", "seguimiento"),
+        ("«lo quiero ver» no es compra", "seguimiento", "consulta_producto", 0.7, "lo quiero ver primero", "", "seguimiento"),
+        ("«ya lo quiero, soy de arequipa» es compra, no un «ya»", "seguimiento", "otro", 0.5, "ya lo quiero, soy de arequipa", "", "cierre"),
+    ]
+    for nombre, etapa, intent, conf, msg, pend, e_esp in regresion:
+        d = decidir(etapa, intent, conf, msg, "", pendiente=pend)
+        fallos += d["etapa"] != e_esp
+        if d["etapa"] != e_esp:
+            print(f"   ✗ {nombre}: → {d['etapa']}/{d['intent']} (esperado {e_esp}) [{d['motivo']}]")
+    total = len(CASOS) + len(CITA) + 3 + 2 + len(regresion)
     print(f"etapas     máquina de estados: {total - fallos}/{total} casos")
     return 1 if fallos else 0
 

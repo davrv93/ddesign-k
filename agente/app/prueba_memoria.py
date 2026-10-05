@@ -154,7 +154,14 @@ m = M.nueva(); m["preguntado"] = ["que_busca"]
 caso("«¿qué buscas?» sin respuesta: se repite una vez, con otras palabras",
      (M.siguiente(m, "prospeccion"), M.clave_de(M.texto_pregunta("que_busca", m))), ("que_busca", "que_busca"))
 m = M.nueva(); m["preguntado"] = ["que_busca", "que_busca"]
-caso("tras dos «¿qué buscas?» sin respuesta: la ocasión", M.siguiente(m, "prospeccion"), "ocasion")
+# Ajustado (05-10-2026, prueba de regresión): este caso pedía pasar a «¿es para alguna ocasión especial?» tras dos
+# «¿qué buscas?» sin respuesta. Es la queja literal de la tienda («hola» → «¿Es para alguna ocasión especial?» sin saber
+# qué busca): a quien solo saluda tres veces no se le pregunta la ocasión. Sin nada contado, no se insiste más.
+caso("tras dos «¿qué buscas?» sin respuesta: no se pregunta la ocasión", M.siguiente(m, "prospeccion"), "")
+caso("«tengo un evento» tras el saludo: «¿Qué evento es?»",
+     (M.siguiente(con(), "prospeccion", None, "tengo un evento"), M.texto_pregunta("ocasion", con(), "tengo un evento")),
+     ("ocasion", "¿Qué evento es?"))
+caso("«ya pues la S» trae la talla", M.extraer("ya ps la S").get("talla"), "S")
 # Ajustado (04-10-2026, prueba con conversaciones): el caso pedía pasar a la fecha tras dos intentos, pero sin ninguna
 # necesidad contada el bot terminaba preguntando «¿para cuándo lo necesitas?» a quien solo saludó. Con la prenda dicha
 # se sigue con la fecha como antes; sin nada, una pregunta abierta.
@@ -167,8 +174,19 @@ caso("agotadas la abierta y la ocasión, no se insiste", M.siguiente(m, "prospec
 caso("sin prenda ni ocasión, «¿para cuándo sería?» (sin «lo»)", M.texto_pregunta("fecha", M.nueva()), "¿Para cuándo sería?")
 caso("«es este finde» es la fecha", M.extraer("es este finde", "fecha").get("fecha"), "este fin de semana")
 caso("sabidas ocasión y fecha: día/noche", M.siguiente(con(ocasion="boda", fecha="el sabado"), "prospeccion"), "horario")
-caso("talla del perfil: no se pregunta",
-     M.siguiente(M.con_perfil(con(ocasion="boda", horario="noche", fecha="el 17"), {"tallas": ["M"]}), "prospeccion", True), "")
+# Regla del dueño (04-10-2026): la talla de un pedido anterior no es la de hoy. Este caso decía «talla del perfil: no se
+# pregunta» y el bot armó un pedido en M que la clienta tuvo que corregir («mi talla es L disculpa»). Ahora se pregunta,
+# sugiriéndole la de antes.
+_mp = M.con_perfil(con(ocasion="boda", horario="noche", fecha="el 17"), {"tallas": ["M"]})
+caso("talla del perfil: se pregunta (no se asume)", M.siguiente(_mp, "prospeccion", True), "talla")
+caso("talla del perfil: no pasa a «sabemos»", (_mp["sabemos"]["talla"], _mp["talla_perfil"]), (None, "M"))
+caso("talla del perfil: la pregunta la sugiere y se reconoce", ("*M*" in M.texto_pregunta("talla", _mp), M.clave_de(M.texto_pregunta("talla", _mp))),
+     (True, "talla"))
+_mp["pendiente"] = "talla"
+caso("«si la misma» toma la talla del perfil", M.leer(_mp, "si la misma")["datos"].get("talla"), "M")
+_mp = M.con_perfil(M.nueva(), {"tallas": ["M"]}); _mp["pendiente"] = "talla"
+caso("otra talla manda sobre la del perfil", M.leer(_mp, "no, mejor L")["datos"].get("talla"), "L")
+caso("perfil con tipos equivocados no rompe", M.con_perfil(M.nueva(), {"tallas": 5, "productos": "x"})["talla_perfil"], "")
 caso("sin prenda mostrada, la talla no se pregunta", M.siguiente(con(ocasion="boda", horario="noche", fecha="el 17"), "prospeccion"), "")
 caso("con prenda mostrada, la talla sí", M.siguiente(con(ocasion="boda", horario="noche", fecha="el 17"), "prospeccion", True), "talla")
 m = con(ocasion="boda", horario="noche", fecha="el 17"); m["producto"] = "V42"; m["temperatura"] = "tibio"
@@ -353,7 +371,11 @@ caso("la prenda que busca se guarda", M.extraer("busco un conjunto para la ofici
 # Saludo, «busco un vestido», «quiero ver los modelos» (04-10-2026, chat real): el bot preguntaba por un «lo» que no
 # existía, daba la ocasión por preguntada sin respuesta y mostraba tres vestidos sin saber para qué.
 q = M.texto_pregunta("ocasion", M.nueva(), "hoola")
-caso("saludo: la ocasión sin «lo» huérfano", (q, M.clave_de(q)), ("¿Es para alguna ocasión especial?", "ocasion"))
+# Ajustado (05-10-2026): el texto era «¿Es para alguna ocasión especial?», la frase de la que se quejó la tienda.
+caso("saludo: la ocasión sin «lo» huérfano", (q, M.clave_de(q)), ("¿Para qué ocasión sería?", "ocasion"))
+m = M.nueva(); m["preguntado"] = ["que_busca", "que_busca"]
+caso("«quisiera ropa formal» con la abierta agotada: la ocasión",
+     M.siguiente(m, "prospeccion", None, "Quisiera ropa formal para mi pareja"), "ocasion")
 q = M.texto_pregunta("ocasion", con(prenda="vestido"), "busco un vestido")
 caso("con prenda: ¿para qué ocasión buscas el vestido?", (q, M.clave_de(q)), ("¿Para qué ocasión buscas el vestido?", "ocasion"))
 m = con(prenda="vestido"); M.registrar_respuesta(m, "¿Para qué ocasión buscas el vestido?")
@@ -424,6 +446,67 @@ caso("«soy talla M» no es un nombre", M.extraer("soy talla M").get("nombre"), 
 
 caso("ocasión con el espacio mal puesto: «par aboda»", M.extraer("hola busco un vestido par aboda").get("ocasion"), M.extraer("para una boda").get("ocasion"))
 caso("«te regalo» no es una gala", M.extraer("te regalo algo").get("ocasion"), None)
+
+
+# --- Prueba de regresión (05-10-2026): lo que fallaba en las 60 preguntas nuevas --------------------------------
+for t, pend, esp in [
+        ("soy alvaro", "", {"nombre": "Alvaro"}),
+        ("te saluda carmen de chiclayo", "", {"nombre": "Carmen", "ciudad": "Chiclayo", "envio": "provincia"}),
+        ("Que tal buenas noches te saluda Julio", "", {"nombre": "Julio"}),
+        ("me llamo luz, cn quien tengo el gusto?", "", {"nombre": "Luz"}),
+        ("pa el matri de mi prima", "ocasion", {"ocasion": "matrimonio"}),
+        ("es la promo de mi hija", "ocasion", {"ocasion": "graduacion"}),
+        ("pa mi promo", "ocasion", {"ocasion": "graduacion"}),
+        ("es pa mañana", "", {"fecha": "manana"}),
+        ("es el sabado 18 x la tarde", "fecha", {"horario": "dia"}),
+        ("en la mañanita nomas", "horario", {"horario": "dia"}),
+        ("d noche", "horario", {"horario": "noche"}),
+        ("tienen vestidos verdes?", "", {"prenda": "vestido", "color": "verde"}),
+        ("hay polos?", "", {"prenda": "polo"}),
+        ("la ele", "talla", {"talla": "L"}),
+        ("buenas, el vestido holly lo tienen en M?", "", {"talla": "M"}),
+        ("Ok sería en L, pero lo tienes en otros colores?", "", {"talla": "L"}),
+        ("mi talla es L disculpa", "", {"talla": "L"}),
+        ("para surco", "lima_o_provincia", {"envio": "lima", "ciudad": "Surco"}),
+        ("sjl", "lima_o_provincia", {"envio": "lima", "ciudad": "SJL"}),
+        ("soy de tacna", "lima_o_provincia", {"envio": "provincia", "ciudad": "Tacna"}),
+        ("vivo en los olivos", "", {"envio": "lima"}),
+        ("es pa diario", "ocasion", {"ocasion": "diario"})]:
+    d = M.extraer(t, pend)
+    caso(f"regresión · extraer «{t}»", {k: d.get(k) for k in esp}, esp)
+for t, pend, clave in [("mi nombre es rosa elvira", "", "color"), ("soy talla M", "", "nombre"), ("soy de tacna", "", "nombre"),
+                       ("soy bajita", "", "nombre"), ("ese vestido me gusta", "", "talla"), ("cuesta en S/ 330?", "", "talla"),
+                       ("hay alguna promo?", "", "ocasion"), ("me ate el cabello", "", "envio"), ("la victoria es mia", "", "envio"),
+                       ("soy bien flaquita, que talla me recomiendas?", "", "talla"), ("mido 1.58 y peso 60", "talla", "talla")]:
+    caso(f"regresión · «{t}» no trae {clave}", M.extraer(t, pend).get(clave), None)
+caso("regresión · «mi nombre es rosa elvira»", M.extraer("mi nombre es rosa elvira").get("nombre"), "Rosa Elvira")
+for t, esp in [("nel", True), ("ahorita no gracias", True), ("no por ahora", True), ("no gracias", True), ("no tengo la foto", False),
+               ("no se", False), ("ya pues", False)]:
+    caso(f"regresión · niega «{t}»", M.niega(t), esp)
+for t, esp in [("a ver muéstrame", True), ("tienen fotos d los vestidos?", True), ("q vestidos tienen pa matrimonio?", True),
+               ("no me muestres nada todavia, solo pregunto", False), ("kiero ver todo el catalogo", True)]:
+    caso(f"regresión · pide ver «{t}»", M.pide_ver(t), esp)
+# «todavía no tengo fecha» responde a «¿para cuándo?»: no se vuelve a preguntar.
+m = con(ocasion="matrimonio", prenda="vestido"); M.registrar_respuesta(m, "¿Para cuándo es el matrimonio?")
+r = M.leer(m, "todavia no tengo fecha")
+caso("regresión · «todavía no tengo fecha» responde", (r["respondio"], r["no_sabe"], M.siguiente(m, "prospeccion")), (True, True, "horario"))
+# Sin evento (oficina, diario) no hay fecha ni día/noche que preguntar: ya se puede ofrecer.
+m = con(prenda="conjunto", ocasion="trabajo")
+caso("regresión · para la oficina no se pregunta la fecha", (M.siguiente(m, "prospeccion"), M.necesidad_conocida(m)), ("", True))
+m = con(prenda="vestido"); m["pendiente"] = "ocasion"
+caso("regresión · «ninguna ocasión» es para diario", M.leer(m, "ninguna, es para mi nomas")["datos"].get("ocasion"), "diario")
+# Pedir cita: «quiero probármelo antes» no es un pedido.
+caso("regresión · «quiero probarme el vestido holly» pide cita", bool(M.RE_CITA.search(M._plano("quiero probarme el vestido holly"))), True)
+caso("regresión · «lo quiero pero quiero probarmelo antes» pide cita",
+     decidir("seguimiento", "intencion_compra", 0.9, "Lo quiero en talla L , pero quiero probarmelo antes", "")["cita"], True)
+# La memoria que llega de fuera con basura no rompe nada (entradas raras de la regresión).
+_b = M.normalizar({"sabemos": {"cita": "basura", "fecha_iso": "pronto", "talla": 12, "ocasion": ["boda"], "envio": "marte", "presupuesto": "mucho"},
+                   "mostrados": ["V41", None, 3], "pendiente": 5, "cita_tentativa": {"dia": "nunca", "hora": "tarde"}, "temperatura": ["x"]})
+caso("regresión · memoria con basura se limpia",
+     (_b["sabemos"]["cita"], _b["sabemos"]["fecha_iso"], _b["sabemos"]["talla"], _b["sabemos"]["ocasion"], _b["sabemos"]["envio"],
+      _b["mostrados"], _b["pendiente"], _b["cita_tentativa"], _b["temperatura"]),
+     (None, None, None, None, None, ["V41"], "", {"dia": None, "hora": None}, "frio"))
+caso("regresión · una cita bien formada se conserva", M.normalizar({"sabemos": {"cita": "2026-10-09T17:00"}})["sabemos"]["cita"], "2026-10-09T17:00")
 
 
 def main() -> int:

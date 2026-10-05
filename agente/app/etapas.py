@@ -48,11 +48,13 @@ RE_COMPRA = re.compile(
     r"|quiero (hacer|confirmar) (el|mi|la) (pedido|compra)|quiero (ese|este|el vestido)\b"
     r"|(me )?lo (llevo|compro)\b|ya lo quiero|me quedo con (ese|este|el)\b"
     r"|como (hago para |puedo )?(comprar|pagar|lo compro|te pago|hago (el|mi) pedido)\w*"
-    r"|donde (deposito|te deposito|pago|te yapeo)|a (que numero|donde) te (yapeo|deposito)"
+    r"|donde (deposito|te deposito|pago|te yapeo)|a (que numero|donde) (te |les )?(yapeo|deposito|pago|transfiero)"
     r"|(reserva|separa|aparta|guarda|envia)melo|pasame (el|tu) yape"
     r"|quisiera (apartar|separar|reservar|comprar)\w*|deseo comprar\w*"
     # «¿me lo apartas?», «me lo puedes separar para el sábado?» (prueba con conversaciones, 04-10-2026)
-    r"|me l[oa] (puedes |podrias |pueden |podrian )?(apart|separ|reserv|guard)\w*)")
+    r"|me l[oa] (puedes |podrias |pueden |podrian )?(apart|separ|reserv|guard)\w*"
+    # «me encanta, lo quiero», «lo quiero en talla S» (prueba de regresión); «no lo quiero» y «lo quiero ver» no.
+    r"|(?<!no )(?<!no me )\bl[oa] quiero\b(?! (ver|probar|pensar|consultar|mirar)))")
 # El botón de talla de las tarjetas de la web: elegir talla es querer esa prenda.
 RE_BOTON_TALLA = re.compile(r"^talla\s+\w+\s+del\s+[a-z]{1,3}-?\d+")
 def pide_confirmar(ultimo_bot: str) -> bool:
@@ -68,7 +70,7 @@ def decidir(etapa: str, intent: str, confianza: float, mensaje: str, ultimo_bot:
     `indagando`: todavía se está conociendo su necesidad y no se le mostró ninguna prenda; contar la fecha o
     preguntar algo no la saca de prospección (no hay seguimiento de nada). Una compra explícita, sí."""
     etapa = etapa if etapa in ORDEN else "prospeccion"
-    texto, motivos = _plano(mensaje), []
+    texto, motivos = memoria._plano(mensaje), []     # con las abreviaturas de chat resueltas («a q numero yapeo»)
     corto = len(texto) <= 24
     confirma = (pendiente == "confirmar") if pendiente is not None else pide_confirmar(ultimo_bot)
     cita = False   # pide cita para probárselo (main.py arma la cita en vez del pedido)
@@ -92,16 +94,25 @@ def decidir(etapa: str, intent: str, confianza: float, mensaje: str, ultimo_bot:
         else:
             intent, confianza = "interesado", 0.95
             motivos.append("«sí» sin pregunta de confirmación: interés, no compra")
-    elif corto and RE_NIEGA.match(texto):
+    elif corto and (RE_NIEGA.match(texto) or memoria.niega(mensaje)):
         if confirma:
             intent, confianza = "cancelacion", 0.95
             motivos.append("«no» a una pregunta de confirmación")
         else:
             intent, confianza = "otro", 0.5
             motivos.append("«no» sin contexto de compra: no cambia la etapa")
-    elif RE_COMPRA.search(texto):
+    elif RE_COMPRA.search(texto) and etapa != "venta_confirmada":   # con el pedido confirmado, «¿a qué número yapeo?» es pago
         intent, confianza = "intencion_compra", max(confianza, 0.9)
         motivos.append("señal fuerte de compra")
+    elif (corto and "?" not in mensaje and len(texto.split()) <= 3 and memoria.afirma(mensaje)
+          and pendiente in ("confirmar", "probar")):     # «ya pues la S» trae más que un sí: no cuenta
+        # Un sí dicho de otra manera («ya pues», «si ca ver», «claro q si») a una pregunta de sí o no del cierre.
+        if pendiente == "probar":
+            intent, confianza, cita = "intencion_compra", 0.9, True
+            motivos.append("«sí» (dicho de otra manera) a pasar a probárselo: pide cita")
+        else:
+            intent, confianza = "confirmacion_compra", 0.9
+            motivos.append("«sí» (dicho de otra manera) a una pregunta de confirmación")
 
     # 2. Confirmar solo vale si ya se estaba cerrando y el bot lo preguntó.
     if intent == "confirmacion_compra" and not (etapa == "cierre" and confirma):
