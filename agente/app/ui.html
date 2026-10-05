@@ -327,7 +327,7 @@ pintarMotor();
 
 const TICKS = '<svg class="ticks" viewBox="0 0 17 11" role="img" aria-label="Leído"><path d="M1 5.9 4.4 9.5 11 1.5M6.9 8.3 8 9.5 14.9 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const RESPONDER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>';
-const INICIO = '<div class="dia">HOY</div><div class="aviso">🔒 Los mensajes y las llamadas están cifrados de extremo a extremo. Solo las personas en este chat pueden leerlos, escucharlos o compartirlos.</div>';
+const INICIO = '<div class="dia">HOY</div><div class="aviso">✨ Demo del asistente de Baruka Design. Aquí conversas con una asistente virtual: es el mismo bot que atiende por WhatsApp.</div>';
 const INFO_VACIA = '<p class="sub">Escribe como clienta para ver la intención, la prenda y las fuentes.</p>';
 
 // Un mensaje: el globo con su hora (y los checks en los enviados). «hueco» es el sitio que la hora reserva al final del texto.
@@ -383,6 +383,9 @@ async function enviar(texto) {
 async function mostrar(j) {
   // Los párrafos salen como mensajes separados, igual que escribe una persona.
   const partes = (j.respuesta || '').split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
+  // Con foto, la pregunta final va DESPUÉS de la foto: «te recomiendo este» → foto → «¿qué talla usas?».
+  let cierre = '';
+  if ((j.sugerencias || []).length && partes.length > 1 && partes[partes.length - 1].includes('?')) cierre = partes.pop();
   for (let i = 0; i < partes.length; i++) {
     if (i > 0) { tecleando(true); await espera(pausa(partes[i])); }
     tecleando(false); burbuja('bot', wa(partes[i])); hist.push({ rol:'bot', texto: partes[i] });
@@ -404,6 +407,7 @@ async function mostrar(j) {
     }
     hist.push({ rol:'bot', texto: s.pie });
   }
+  if (cierre) { tecleando(true); await espera(pausa(cierre)); tecleando(false); burbuja('bot', wa(cierre)); hist.push({ rol:'bot', texto: cierre }); }
   tecleando(false);
   // Catálogo sin prenda: se pregunta qué quiere ver, con un botón por tipo de prenda.
   if ((j.categorias || []).length) {

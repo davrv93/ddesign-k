@@ -1227,13 +1227,26 @@ func (b *Bot) dispatchAgent(ctx context.Context, conv *store.Conversation, cc *c
 // sendAgentText manda un párrafo por mensaje, como escribe una persona por WhatsApp, y
 // después las fotos sugeridas.
 func (b *Bot) sendAgentText(ctx context.Context, conv *store.Conversation, r *agente.Reply) {
+	var partes []string
 	for _, parte := range strings.Split(r.Respuesta, "\n\n") {
 		if parte = strings.TrimSpace(parte); parte != "" {
-			b.reply(ctx, conv, parte)
+			partes = append(partes, parte)
 		}
+	}
+	// Con foto, la pregunta final va DESPUÉS de la foto: «te recomiendo este» → foto → «¿qué talla usas?». Antes la
+	// pregunta quedaba arriba de la foto y la clienta contestaba a la foto, no a la pregunta.
+	cierre := ""
+	if n := len(partes); len(r.Sugerencias) > 0 && n > 1 && strings.Contains(partes[n-1], "?") {
+		cierre, partes = partes[n-1], partes[:n-1]
+	}
+	for _, parte := range partes {
+		b.reply(ctx, conv, parte)
 	}
 	for _, sg := range r.Sugerencias {
 		b.replySuggestion(ctx, conv, sg)
+	}
+	if cierre != "" {
+		b.reply(ctx, conv, cierre)
 	}
 }
 

@@ -101,9 +101,10 @@ func TestAgentePresentaCatalogo(t *testing.T) {
 	if got := len(fe.sent) - n; got != 3 {
 		t.Fatalf("se esperaban 2 párrafos + 1 foto, salieron %d: %+v", got, fe.sent[n:])
 	}
+	// Con foto, la pregunta final va después de la foto: presentación → foto → pregunta.
 	mustContain(t, fe.sent[n]["text"].(string), "Mira estos")
-	mustContain(t, fe.sent[n+1]["text"].(string), "ocasión")
-	mustContain(t, fe.sent[n+2]["caption"].(string), "V01")
+	mustContain(t, fe.sent[n+1]["caption"].(string), "V01")
+	mustContain(t, fe.sent[n+2]["text"].(string), "ocasión")
 }
 
 func TestAgenteCaidoVuelveAGemini(t *testing.T) {
