@@ -159,6 +159,11 @@ por porcentaje (A/B) o para todas desde **Ajustes → Versión del agente** del 
 En modo **sombra** decide y se mide pero la clienta recibe el texto de V1; en **activo** habla solo al recomendar, cuando su plan
 coincide con V1 y su texto pasa el control de calidad. Arquitectura, variables, cómo comparar y lo medido, en
 [`agente/V2.md`](agente/V2.md). El bot Go decide la versión (`backend/internal/bot/versionagente.go`) y la manda en cada petición.
+**Cambios de tema** («suspender, no cancelar», `agente/app/v2/temas.py`): si la clienta interrumpe una pregunta del bot («¿Qué talla usas?» →
+«¿Hacen delivery a Surco?»), V2 guarda el pendiente en una pila (`memoria.v2.temas`, dentro de la ficha que ya viaja), V1 contesta lo que
+preguntó y, si el pendiente importa (`resume_priority ≥ 50`), V2 le suma UNA retoma con otras palabras y respuestas rápidas. Corre siempre
+con V2 (en sombra solo se mide); **la retoma solo sale al cliente con `V2_HABLA=recomendar,preguntar,responder_y_retomar`** y V2 en modo
+activo. `V2_TEMAS=0` lo apaga todo. El bot Go todavía no pinta las respuestas rápidas (`respuestas_rapidas`) ni manda el `payload`.
 
 ## Producción
 

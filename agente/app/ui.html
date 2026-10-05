@@ -378,7 +378,7 @@ function tecleando(on) {
 const pausa = texto => Math.min(2200, Math.max(600, texto.length * 25));
 function ocupar(on) { ocupado = on; $('enviar').disabled = on; }
 
-async function enviar(texto) {
+async function enviar(texto, payload) {
   if (ocupado || !texto.trim()) return;
   ocupar(true);
   // Quien llega por un anuncio trae la referencia citada en su primer mensaje, como en WhatsApp.
@@ -388,7 +388,7 @@ async function enviar(texto) {
   let j;
   try {
     const r = await fetch('chat', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, conversacion: sesion, desde_anuncio: desdeAnuncio, memoria, ...versionDe() }) });
+      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, conversacion: sesion, desde_anuncio: desdeAnuncio, memoria, ...(payload ? { payload } : {}), ...versionDe() }) });
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
@@ -438,6 +438,9 @@ async function mostrar(j) {
       enviar: `Talla ${t.talla} del ${t.codigo}`, off: !t.disponible })), true);
   }
   if ((j.botones || []).length) botones(j.botones.map(t => ({ texto: t, enviar: t })));
+  // Retoma de un cambio de tema (V2): respuestas rápidas del dato que quedó pendiente. Pulsar una manda su texto Y su payload;
+  // ella puede ignorarlas y seguir escribiendo libremente.
+  if ((j.respuestas_rapidas || []).length) botones(j.respuestas_rapidas.map(r => ({ texto: r.label, enviar: r.label, payload: r.payload })));
   if (j.confirmar_pedido) {
     botones([{ texto: 'Sí, confirmar', enviar: 'Sí, confirmo', si: true }, { texto: 'Cambiar talla', enviar: 'Cambiar talla' }]);
   }
@@ -467,7 +470,7 @@ function botones(lista, tallas = false) {
       if (ocupado) return;
       const m = d.parentNode; d.remove();
       if (!m.querySelector('.resp')) { m.classList.remove('con-resp'); if (!m.querySelector('.b')) m.remove(); }
-      enviar(b.enviar);
+      enviar(b.enviar, b.payload);
     };
     d.appendChild(el);
   });
@@ -533,7 +536,23 @@ function panelV2(j) {
       <div class="sub">${esc(plan.razon || '')}</div>` : '<div class="sub">Sin plan en este turno.</div>'}
     ${sb.jev ? `<div class="sub">Jev local propuso <b>${esc(sb.jev.opcion)}</b> (${(sb.jev.p * 100).toFixed(0)} %)</div>` : ''}
     ${v.motivo_v1 ? `<div class="sub">V2 no habló: ${esc(v.motivo_v1)}</div>` : sb.no_habla && v.modo === 'activo' ? `<div class="sub">V2 no habló: ${esc(sb.no_habla)}</div>` : ''}
+    ${panelTemas(v.temas)}
     ${g.intentos ? `<div class="sub">Control de calidad: ${g.passed ? 'pasó' : 'no pasó'}${g.motor ? ' · realizó ' + esc(g.motor) : ''}${g.plantillas ? ' · plantillas ' + g.plantillas.map(esc).join(' + ') : ''}${g.regeneraciones ? ' · ' + g.regeneraciones + ' regeneración(es)' : ''}</div>` : ''}`;
+}
+
+// Cambios de tema (V2): qué hizo ella con la pregunta pendiente y qué retomaría o retomó.
+const NIVEL_TEMA = { SOFT_INTERRUPT: 'pregunta secundaria', SIDE_TOPIC: 'tema lateral', HARD_SWITCH: 'cambio total' };
+function panelTemas(t) {
+  if (!t || t.omitido || t.error) return t && t.error ? `<div class="sub">Cambios de tema: falló (${esc(t.error)}); habló V1.</div>` : '';
+  const ev = t.evento || {}, r = t.retoma;
+  const que = ev.nivel ? `<b>${esc(NIVEL_TEMA[ev.nivel] || ev.nivel)}</b>${ev.tema ? ' · ' + esc(ev.tema) : ''}`
+    : ev.tipo === 'ayuda' ? `<b>pide ayuda</b> · ${esc(ev.ayuda || '')}` : ev.tipo === 'responde' ? 'contestó lo pendiente' : 'sin cambio de tema';
+  const pila = (t.pendientes || []).map(x => `${esc(x.slot)} <span class="sub">${esc(x.status)} · ${x.priority} · ${x.attempts}×</span>`).join(', ');
+  return `<h3>Cambios de tema</h3>
+    <div>${que}</div>
+    ${pila ? `<div class="sub">pila de pendientes: ${pila}</div>` : ''}
+    ${r ? `<div class="sub">${t.enviada ? 'retomó' : t.simulada ? 'retomaría (sombra)' : 'iba a retomar'} <b>${esc(r.slot)}</b> (${esc(r.modo)}, intento ${r.intento})${r.texto ? ': «' + esc(r.texto) + '»' : ''}</div>`
+      : t.bloqueo ? `<div class="sub">no se retomó: ${esc(t.bloqueo)}</div>` : ''}`;
 }
 
 function panelVenta(j) {

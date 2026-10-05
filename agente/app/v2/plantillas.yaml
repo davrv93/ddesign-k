@@ -20,6 +20,7 @@
 #   forma        cómo se arma: {parte} se cambia por la variante elegida de esa parte
 #   partes       variantes de cada parte; una variante con {{SLOT}} solo es elegible si ese dato existe
 #   sin_modelo   true = ningún modelo la toca (es una decisión de código)
+#   modo         solo en `retoma`: obligatorio | util | ayuda:no_sabe | ayuda:dudosa | ayuda:ambigua (ver «Cambios de tema» en V2.md)
 #   fijas        parte → índice de la variante que NO se elige ni por hash ni por el modelo. En las preguntas, la variante 0 es
 #                {{PREGUNTA_V1}}: el texto con el que V1 ya hace esa pregunta (memoria.texto_pregunta). Es lógica de negocio con casos
 #                («¿Qué evento es?» si ella dijo «evento», otra redacción la segunda vez, la talla del pedido anterior): V2 la conserva.
@@ -32,6 +33,20 @@ version: 1
 config:
   max_emojis: 1
   max_chars: 360
+
+# Cambios de tema («suspender, no cancelar»; app/v2/temas.py). ANSWER_AND_RESUME = responder lo que ella preguntó y luego retomar UN
+# solo pendiente anterior. La respuesta es la de V1 (nunca se reescribe: no pasa por ningún modelo); lo que escribe esta capa es solo
+# la frase de retoma (plantillas RESUME_*, tipo «retoma»). Las reglas de abajo las hace cumplir el código y una prueba las comprueba.
+temas:
+  accion: ANSWER_AND_RESUME
+  semantica: [responder_completamente_el_tema_actual, no_ignorar_la_pregunta, recordar_un_solo_pendiente_anterior,
+              explicar_brevemente_por_que_se_necesita, ofrecer_respuestas_faciles]
+  reglas:
+    max_pending_to_resume: 1
+    current_question_has_priority: true
+    never_resume_before_answering_current: true
+    do_not_repeat_exact_previous_question: true
+  resume_priority_minima: 50
 
 plantillas:
 
@@ -568,3 +583,153 @@ plantillas:
     partes:
       cuerpo: ["Voy a dejar esta consulta con una asesora para que pueda ayudarte mejor."]
       cierre: ["Ya le paso el contexto de lo que estamos viendo."]
+
+  # ------------------------------------------------------------------------------------------------------------------------
+  # RETOMAS (cambios de tema): lo que se dice DESPUÉS de contestar lo que ella preguntó, para volver al dato que quedó pendiente.
+  # Nunca repiten la pregunta de V1 con las mismas palabras (una prueba lo exige) y cada pregunta lleva la clave de V1 de su slot
+  # (memoria.clave_de), para que la memoria de V1 reconozca qué se está esperando. Una sola pregunta por retoma. La frase de la pregunta
+  # no la elige el modelo: se fija por intento (el segundo intento usa otras palabras que el primero).
+  # modo obligatorio = sin eso no se compra · util = se retoma suave · ayuda:* = ella dijo que no sabe, duda o contestó ambiguo.
+  # ------------------------------------------------------------------------------------------------------------------------
+  RESUME_SIZE_REQUIRED:
+    tipo: retoma
+    clave: talla
+    modo: obligatorio
+    activa: true
+    acciones: [responder_y_retomar]
+    objetivo: obtener_talla_antes_de_separar
+    semantica: [explicar_que_sin_talla_no_se_avanza, preguntar_TALLA, ofrecer_respuestas_faciles, no_sugerir_talla]
+    protegidos: [PRODUCTO]
+    prohibido: [inferir_talla, decir_que_talla_le_quedara, prometer_reserva, hacer_multiples_preguntas]
+    max_frases: 3
+    fijas: {}
+    forma: "{puente} {emoji} {pregunta}"
+    partes:
+      puente: ["Para separar {{PRODUCTO}} todavía necesito confirmar tu talla.", "Para dejar {{PRODUCTO}} listo, solo me falta tu talla.",
+               "Para avanzar con tu pedido todavía necesito tu talla."]
+      pregunta: ["¿Qué talla usas: S, M o L, o prefieres pasarme tus medidas?", "¿Qué talla te corresponde (S, M o L) o prefieres pasarme tus medidas?",
+                 "¿Cuál es tu talla habitual: S, M o L, o prefieres pasarme tus medidas?"]
+      emoji: ["😊", ""]
+
+  RESUME_SIZE_USEFUL:
+    tipo: retoma
+    clave: talla
+    modo: util
+    activa: true
+    acciones: [responder_y_retomar]
+    objetivo: obtener_talla_para_recomendar
+    semantica: [retomar_suave_la_talla, explicar_brevemente_por_que_se_necesita, ofrecer_respuestas_faciles, no_sugerir_talla]
+    protegidos: [PRODUCTO]
+    prohibido: [inferir_talla, decir_que_talla_le_quedara, hacer_multiples_preguntas]
+    max_frases: 3
+    forma: "{puente} {emoji} {pregunta}"
+    partes:
+      puente: ["Para seguir con {{PRODUCTO}}, solo me faltaría tu talla.", "Para recomendarte mejor, me falta saber tu talla.",
+               "Y para ayudarte a elegir, me falta tu talla."]
+      pregunta: ["¿Qué talla usas: S, M o L, o prefieres pasarme tus medidas?", "¿Qué talla te corresponde (S, M o L) o prefieres pasarme tus medidas?",
+                 "¿Cuál es tu talla habitual: S, M o L, o prefieres pasarme tus medidas?"]
+      emoji: ["😊", ""]
+
+  RESUME_SIZE_HELP:
+    tipo: retoma
+    clave: talla
+    modo: "ayuda:no_sabe"
+    activa: true
+    acciones: [responder_y_retomar]
+    objetivo: ayudar_a_decir_la_talla
+    semantica: [tranquilizar, ofrecer_otra_forma_de_decir_la_talla, ofrecer_respuestas_faciles, no_sugerir_talla]
+    protegidos: []
+    prohibido: [inferir_talla, decir_que_talla_le_quedara, hacer_multiples_preguntas]
+    max_frases: 3
+    forma: "{puente} {emoji} {pregunta}"
+    partes:
+      puente: ["No te preocupes, lo resolvemos fácil.", "Sin problema, a muchas personas les pasa.", "No pasa nada, lo vemos con calma."]
+      pregunta: ["¿Qué talla sueles comprar en otras tiendas, o prefieres pasarme tus medidas?",
+                 "¿Qué talla usas normalmente en otras tiendas: S, M o L?"]
+      emoji: ["😊", ""]
+
+  RESUME_SIZE_DOUBT:
+    tipo: retoma
+    clave: talla
+    modo: "ayuda:dudosa"
+    activa: true
+    acciones: [responder_y_retomar]
+    objetivo: aclarar_entre_dos_tallas
+    semantica: [reconocer_la_duda, preguntar_cual_de_las_dos_tallas_que_ella_dijo, no_sugerir_talla]
+    protegidos: [TALLA_A, TALLA_B]
+    prohibido: [inferir_talla, decir_que_talla_le_quedara, agregar_tallas, hacer_multiples_preguntas]
+    max_frases: 3
+    forma: "{puente} {emoji} {pregunta}"
+    partes:
+      puente: ["Entiendo, es normal dudar entre dos tallas.", "Gracias por contarme, eso ayuda.", "Entiendo, mejor lo dejamos bien claro."]
+      pregunta: ["¿Qué talla prefieres que veamos: {{TALLA_A}} o {{TALLA_B}}?", "¿Qué talla te da más confianza: {{TALLA_A}} o {{TALLA_B}}?",
+                 "¿Con qué talla seguimos: {{TALLA_A}} o {{TALLA_B}}?"]
+      emoji: ["😊", ""]
+
+  RESUME_SIZE_CHOOSE:
+    tipo: retoma
+    clave: talla
+    modo: "ayuda:ambigua"
+    activa: true
+    acciones: [responder_y_retomar]
+    objetivo: aclarar_un_si_ambiguo
+    semantica: [pedir_que_elija, ofrecer_respuestas_faciles, no_sugerir_talla]
+    protegidos: []
+    prohibido: [inferir_talla, decir_que_talla_le_quedara, hacer_multiples_preguntas]
+    max_frases: 3
+    forma: "{puente} {emoji} {pregunta}"
+    partes:
+      puente: ["Para no equivocarme, necesito que me digas cuál.", "Solo para confirmar, necesito saber cuál."]
+      pregunta: ["¿Qué talla usas: S, M o L?", "¿Cuál es tu talla: S, M o L?"]
+      emoji: ["😊", ""]
+
+  RESUME_OCCASION:
+    tipo: retoma
+    clave: ocasion
+    modo: util
+    activa: true
+    acciones: [responder_y_retomar]
+    objetivo: retomar_la_ocasion
+    semantica: [retomar_suave_la_ocasion, explicar_brevemente_por_que_se_necesita]
+    protegidos: []
+    prohibido: [asumir_dia_noche, asumir_fecha, recomendar_producto_sin_validacion, hacer_multiples_preguntas]
+    max_frases: 3
+    forma: "{puente} {emoji} {pregunta}"
+    partes:
+      puente: ["Para recomendarte algo que te acompañe bien, me falta saber para qué lo necesitas.", "Y para elegir mejor, me falta saber para qué lo buscas."]
+      pregunta: ["¿Para qué evento lo estás buscando?", "¿Qué celebración tienes en mente?"]
+      emoji: ["😊", ""]
+
+  RESUME_DATE:
+    tipo: retoma
+    clave: fecha
+    modo: util
+    activa: true
+    acciones: [responder_y_retomar]
+    objetivo: retomar_la_fecha
+    semantica: [retomar_suave_la_fecha, explicar_brevemente_que_ayuda_a_elegir]
+    protegidos: []
+    prohibido: [prometer_reserva, asumir_fecha, hacer_multiples_preguntas]
+    max_frases: 3
+    forma: "{puente} {emoji} {pregunta}"
+    partes:
+      puente: ["Con la fecha reviso qué opciones te convienen.", "Así veo qué opciones van mejor para tu evento."]
+      pregunta: ["¿Para qué fecha lo necesitas?", "¿Ya tienes fecha para tu evento?"]
+      emoji: ["😊", ""]
+
+  RESUME_DAY_NIGHT:
+    tipo: retoma
+    clave: horario
+    modo: util
+    activa: true
+    acciones: [responder_y_retomar]
+    objetivo: retomar_dia_o_noche
+    semantica: [retomar_suave_dia_o_noche, explicar_brevemente_por_que_se_necesita]
+    protegidos: []
+    prohibido: [asumir_dia_noche, hacer_multiples_preguntas]
+    max_frases: 3
+    forma: "{puente} {emoji} {pregunta}"
+    partes:
+      puente: ["Con eso te muestro lo que mejor va.", "Eso me ayuda a elegir mejor."]
+      pregunta: ["¿Tu evento sería de día o de noche?", "¿Sería de día o de noche?"]
+      emoji: ["😊", ""]

@@ -31,7 +31,7 @@ from typing import Callable
 
 from .delex import Protegidos
 from .factual import CompuertaFactual, Esperado
-from .plantillas import Mensaje, SinPlantilla, Selector
+from .plantillas import ACCION_RETOMA, Mensaje, SinPlantilla, Selector
 
 SISTEMA_REESCRITURA = (
     "Eres un realizador lingüístico de mensajes de WhatsApp de una tienda de ropa peruana. Recibes un mensaje que ya es correcto y "
@@ -159,7 +159,7 @@ class RedactorSemantico:
         return self.realizador.usa_modelo
 
     def atiende(self, plan: dict) -> bool:
-        return plan.get("accion") in self.selector.habla
+        return plan.get("accion") in self.selector.habla or plan.get("accion") == ACCION_RETOMA
 
     def elegir(self, plan: dict, contexto: dict | None) -> Mensaje:
         return self.selector.elegir(plan, contexto or {})

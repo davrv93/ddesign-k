@@ -27,12 +27,14 @@ import time
 from typing import Callable
 
 from . import config
+from . import temas as T
 from .accion import accion_v1, es_flujo_fijo, tarjetas_de_prenda
 from .calidad import FALLBACK
 from .contexto import ContextBuilder
 from .estado import separar
 from .generacion import Encadenada
 from .motor import MotorRecursivo, Resultado
+from .plan import Plan
 from .plantillas import SinPlantilla
 
 log = logging.getLogger("agente.v2")
@@ -94,6 +96,7 @@ class AgentV2:
                     veces_v1 = 2
                     if previo_ms is not None and "ms" in res:
                         res["ms"] += previo_ms
+        self._temas(req, res, traza, activo)       # cambios de tema: la pila de pendientes y, si está encendido, la retoma
         traza["llamadas_v1"] = veces_v1
         traza["sombra"] = sombra
         traza["ms"] = int((time.perf_counter() - t0) * 1000)
@@ -132,6 +135,86 @@ class AgentV2:
         if r.plan is not None and not r.errores and redactor and self.calidad and puede_hablar:
             salida["generacion"] = self._redactar(r, res, ctx, redactor)
         return salida
+
+    # ------------------------------------------------------------------------------------------------------------
+    def _temas(self, req, res: dict, traza: dict, activo: bool) -> None:
+        """Cambios de tema («suspender, no cancelar», v2/temas.py). Nunca tira el turno: si algo falla, la respuesta es la de siempre."""
+        if not config.temas_activos():
+            return
+        try:
+            traza["temas"] = self._temas_turno(req, res, traza, activo)
+        except Exception as e:
+            log.warning("v2: los cambios de tema fallaron (%s); el turno sigue igual", type(e).__name__)
+            traza["temas"] = {"error": type(e).__name__}
+
+    def _temas_turno(self, req, res: dict, traza: dict, activo: bool) -> dict:
+        mem = res.get("memoria")
+        if not isinstance(mem, dict) or not isinstance(mem.get("sabemos"), dict):
+            return {"omitido": "sin ficha de memoria"}
+        mem_req = req.memoria if isinstance(getattr(req, "memoria", None), dict) else {}
+        guardado = mem_req.get("v2") if isinstance(mem_req.get("v2"), dict) else {}
+        previo = T.normalizar_estado(guardado.get("temas"))
+        rapida = T.interpretar_rapida(req.mensaje or "", getattr(req, "payload", None), previo["ofrecidas"])
+        lect = res.get("lectura") if isinstance(res.get("lectura"), dict) else {}
+        sab_antes = mem_req.get("sabemos") if isinstance(mem_req.get("sabemos"), dict) else {}
+        turno = T.Turno(
+            mensaje=req.mensaje or "",
+            pend_antes=lect.get("pendiente") or mem_req.get("pendiente") or T.pendiente_inferida(previo),
+            respondio=bool(lect.get("respondio")), espera=bool(lect.get("espera")), datos=lect.get("datos") or {},
+            sabemos_antes=sab_antes, sabemos=mem["sabemos"], intent=(res.get("comercial") or {}).get("intent") or "",
+            etapa=res.get("etapa") or "", respuesta=res.get("respuesta") or "", flujo_fijo=_flujo_fijo_de_temas(req, res),
+            estado_go=getattr(req, "estado", "") or "", primer_mensaje=not (req.historial or []),
+            hay_prenda=bool(mem.get("producto") or mem.get("mostrados")), rapida=rapida)
+        dec = T.evaluar(previo, turno)
+        retoma = dec["retoma"]
+        # Solo habla V2 activo y con «responder_y_retomar» en V2_HABLA. En cualquier otro caso la pila avanza como si hubiera salido
+        # (en sombra se mide lo que V2 haría), pero la clienta recibe el texto de V1 y la ficha de V1 no se toca.
+        puede = activo and T.ACCION in self.habla
+        out: dict = {"evento": {k: dec["evento"].get(k) for k in ("nivel", "tipo", "tema", "ayuda", "cambio", "causa")},
+                     "retoma": None, "bloqueo": dec["bloqueo"], "v1_retomo": dec["v1_retomo"], "invalida": dec["invalida"],
+                     "habla": puede, "enviada": False, "pendientes_antes": T.resumen(previo)}
+        if rapida:
+            out["respuesta_rapida"] = rapida
+        texto_retoma = None
+        redactor = self.redactor_activo if activo else self.redactor
+        if retoma and self.calidad is not None and redactor is not None:
+            ctx = self.contexto.construir(req, res)
+            foco = mem.get("producto") or None
+            plan = Plan(accion=T.ACCION, producto=foco, razon=f"retomar {retoma['slot']} ({retoma['modo']})", retoma=retoma,
+                        hechos=[f"{k}: {v}" for k, v in (mem["sabemos"] or {}).items() if v],
+                        pregunta={"tipo": retoma["slot"], "texto": T.pregunta_canonica(retoma["slot"])})
+            gen = self._redactar(Resultado(plan=plan, errores=[]), res, ctx, redactor)
+            ok = bool(gen.get("passed")) and not gen.get("fallback") and bool(gen.get("texto"))
+            out["retoma"] = {"slot": retoma["slot"], "topic": retoma["topic"], "modo": retoma["modo"], "prioridad": retoma["prioridad"],
+                             "intento": retoma["intento"], "pasa_la_compuerta": ok, "motor": gen.get("motor"),
+                             "plantillas": gen.get("plantillas"), "sin_plantilla": gen.get("sin_plantilla"),
+                             "errores": sorted({e for i in gen.get("intentos") or [] for e in i.get("errors") or []})}
+            if ok:
+                texto_retoma = gen["texto"]
+                out["retoma"]["texto"] = texto_retoma
+                out["plan"] = {"action": "ANSWER_AND_RESUME", "answer_intent": retoma.get("answer_intent"),
+                               "resume": {"topic": retoma["topic"], "slot": retoma["slot"]}}
+                out["respuestas_rapidas"] = T.rapidas_de(retoma["slot"])
+        # Estado: lo que sale (o se simula en sombra) cuenta como pregunta hecha; si la retoma no pasó la compuerta, no cuenta.
+        if puede and texto_retoma:
+            res["respuesta"] = (res.get("respuesta") or "").rstrip() + "\n\n" + texto_retoma
+            T.registrar_en_ficha(mem, res["respuesta"])         # la memoria de V1 reconoce qué se espera (memoria.clave_de)
+            res["respuestas_rapidas"] = out["respuestas_rapidas"]
+            out["enviada"] = True
+            traza["enviado"] = "v2"
+            traza["retoma_enviada"] = True
+        if puede:
+            if dec["invalida"]:
+                out["invalidados_en_ficha"] = T.aplicar_invalidacion(mem, dec["evento"].get("cambio") or "", turno.datos)
+            if rapida and rapida["intent"] == "provide_size" and T.aplicar_talla(mem, rapida["size"]):
+                out["talla_de_la_respuesta_rapida"] = rapida["size"]
+            if dec["evento"].get("ayuda") == "dudosa" and texto_retoma and T.olvidar_talla_adivinada(mem):
+                out["talla_adivinada_borrada"] = True
+        nuevo = dec["estado_enviado"] if texto_retoma else dec["estado"]
+        out["simulada"] = bool(texto_retoma) and not puede
+        mem["v2"] = {"temas": nuevo}
+        out["pendientes"] = T.resumen(nuevo)
+        return out
 
     def _motivo_no_habla(self, res_v1: dict, r: Resultado, ctx: dict) -> str | None:
         """None = V2 puede hablar en este turno. Si no, la razón, en una frase."""
@@ -206,6 +289,14 @@ class AgentV2:
         return {"texto": FALLBACK, "passed": False, "fallback": True, "motor": None,
                 "regeneraciones": max(0, len(intentos) - 1), "intentos": _sin_texto(intentos),
                 "v1_texto": res_v1.get("respuesta")}
+
+
+def _flujo_fijo_de_temas(req, res: dict) -> bool:
+    """¿Lo resolvió un flujo de código? Igual que `es_flujo_fijo`, salvo los botones de talla: son solo del chat web (el bot de WhatsApp
+    no los pinta), así que en WhatsApp no son una pregunta hecha. En la web sí lo son: ahí la talla ya la pregunta V1."""
+    if getattr(req, "canal", "") != "web" and res.get("tallas"):
+        return es_flujo_fijo({**res, "tallas": []})
+    return es_flujo_fijo(res)
 
 
 def _sin_texto(intentos: list[dict]) -> list[dict]:

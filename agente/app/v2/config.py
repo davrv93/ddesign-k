@@ -2,7 +2,8 @@
 
 AGENT_VERSION      v1 (por defecto) | v2
 V2_MODO            sombra (por defecto: V2 solo observa) | activo (V2 puede hablar)
-V2_HABLA           acciones en las que V2 habla en modo activo (por defecto: recomendar,preguntar)
+V2_HABLA           acciones en las que V2 habla en modo activo (por defecto: recomendar,preguntar; «responder_y_retomar» = cambios de tema)
+V2_TEMAS           0 apaga el seguimiento de cambios de tema (pila de pendientes); por defecto corre con V2
 MAX_AGENT_STEPS    pasos del agente por turno (1–10)
 MAX_DECISION_CALLS llamadas al motor de decisión por turno (0–10; 4 = el camino stock→RAG→stock→recomendar)
 MAX_TOOL_CALLS     herramientas (stock, RAG, CRM) por turno (0–10)
@@ -37,7 +38,11 @@ def modo_por_defecto(env=os.environ) -> str:
     return m if m in MODOS else "sombra"
 
 
-ACCIONES_HABLADAS = ("recomendar", "preguntar")
+ACCIONES_HABLADAS = ("recomendar", "preguntar", "responder_y_retomar")
+# «responder_y_retomar» (cambios de tema: responde lo que ella preguntó y retoma UN pendiente) NO está en el valor por defecto: se
+# enciende a propósito con V2_HABLA=recomendar,preguntar,responder_y_retomar. Sin ella, V2 sigue la pila de temas en sombra
+# (la traza dice qué retomaría) pero la clienta recibe el texto de siempre.
+HABLA_DEFECTO = ("recomendar", "preguntar")
 
 
 def habla_por_defecto(env=os.environ) -> tuple[str, ...]:
@@ -46,9 +51,14 @@ def habla_por_defecto(env=os.environ) -> tuple[str, ...]:
     En `preguntar`, V1 reconoce lo que la clienta acaba de decir («¡Sí, tenemos vestidos!», «¡Mucho gusto, Alvaro!»). Con
     las plantillas semánticas V2 también lo reconoce (acuses con datos de V1), así que el A/B arranca con preguntas y
     recomendaciones. Antes de las plantillas, una V2 que solo ponía la pregunta perdía esos acuses y la regresión lo detectó."""
-    pedidas = tuple(x.strip().lower() for x in (env.get("V2_HABLA") or "recomendar,preguntar").split(",") if x.strip())
+    pedidas = tuple(x.strip().lower() for x in (env.get("V2_HABLA") or ",".join(HABLA_DEFECTO)).split(",") if x.strip())
     ok = tuple(x for x in pedidas if x in ACCIONES_HABLADAS)
-    return ok or ("recomendar", "preguntar")
+    return ok or HABLA_DEFECTO
+
+
+def temas_activos(env=os.environ) -> bool:
+    """V2_TEMAS=0 apaga por completo el seguimiento de cambios de tema (la pila y su traza). Por defecto corre cuando corre V2."""
+    return (env.get("V2_TEMAS") or "1").strip().lower() not in ("0", "no", "off", "false")
 
 
 def modo_pedido(valor: str | None, defecto: str) -> str:

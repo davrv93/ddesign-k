@@ -158,6 +158,7 @@ class Chat:
         self.mem: dict | None = None
         self.estado, self.producto, self.talla = "", "", ""
         self.pausado = False
+        self.payload: dict | None = None      # respuesta rápida pulsada en este turno (solo V2 la lee)
 
     # -- piezas ---------------------------------------------------------------------------------------------
     def poner(self, etapa="", mem=None, historial=(), estado="", producto="", talla=""):
@@ -188,6 +189,8 @@ class Chat:
             cuerpo["perfil"] = self.perfil
         if llm:
             cuerpo["respuesta_llm"] = llm
+        if self.payload:
+            cuerpo["payload"] = self.payload
         est, j, txt = _http(self.url + "/chat", cuerpo, self.timeout)
         if est != 200 or not isinstance(j, dict):
             return est, {"respuesta": "", "error": txt[:200], "sugerencias": []}
@@ -237,8 +240,9 @@ class Chat:
         return j
 
     # -- un turno -------------------------------------------------------------------------------------------
-    def turno(self, texto: str, llm: str = "", pausa_horas: float = 0) -> tuple[int, dict, dict | None]:
+    def turno(self, texto: str, llm: str = "", pausa_horas: float = 0, payload: dict | None = None) -> tuple[int, dict, dict | None]:
         """Devuelve (http, respuesta, memoria antes del turno)."""
+        self.payload = payload
         if pausa_horas >= 6 and self.estado in ("", "esperando_foto"):
             # Vuelve después de horas: sesión nueva. El agente no ve el historial anterior ni la memoria.
             self.historial, self.etapa, self.mem, self.pausado, self.anuncio = [], "", None, False, False
@@ -436,9 +440,73 @@ def universales(j: dict, antes: dict | None, etapa_antes: str, esp: dict, cat: C
     return f
 
 
-def evaluar(esp: dict, j: dict, antes: dict | None, cat: Catalogo) -> list[str]:
+# Con --temas se EXIGEN las afirmaciones de cambios de tema aunque el agente no hable con la retoma (V1, V2 en sombra): así se mide el antes.
+# Sin la bandera, el texto de la retoma solo se exige cuando V2 dice que habla con ella (`v2.temas.habla`), y la traza (nivel, pila…) solo
+# si V2 la trae. V1 y V2 sin V2_HABLA=…responder_y_retomar siguen pasando las conversaciones nuevas por sus afirmaciones normales.
+TEMAS_EXIGIDOS = False
+
+
+def _preguntas(texto: str) -> list[str]:
+    return memoria.preguntas_en(texto)
+
+
+def evaluar_temas(esp: dict, j: dict, bot_previos: list[str]) -> list[str]:
+    """Afirmaciones de «cambios de tema» (app/v2/temas.py). `espera.tema`: la traza de V2 (nivel, tipo, retoma que planea, por qué no,
+    pila…). `espera.retoma`/`sin_retoma`/`no_repite_literal`: el texto que sale. Todo se evalúa solo si V2 lo trae o se exige (--temas)."""
+    f: list[str] = []
+    t = (j.get("v2") or {}).get("temas")
+    texto = j.get("respuesta") or ""
+    mem = j.get("memoria") or {}
+    habla = bool((t or {}).get("habla"))
+    tema = esp.get("tema") or {}
+    if tema and (t is not None or TEMAS_EXIGIDOS):
+        if t is None or "evento" not in t:
+            f.append("sin traza de cambios de tema de V2 (el agente no es V2 o no la calculó)")
+        else:
+            ev, ret = t["evento"], (t.get("retoma") or {})
+            for clave, real in (("nivel", ev.get("nivel")), ("tipo", ev.get("tipo")), ("ayuda", ev.get("ayuda")), ("cambio", ev.get("cambio")),
+                                ("v1_retomo", t.get("v1_retomo"))):
+                if clave in tema and tema[clave] != real:
+                    f.append(f"tema.{clave}: {real!r} (esperado {tema[clave]!r})")
+            if "retoma" in tema and tema["retoma"] != (ret.get("slot") or None):
+                f.append(f"retoma que planea V2: {ret.get('slot')!r} (esperada {tema['retoma']!r}; bloqueo: {t.get('bloqueo')!r})")
+            if "bloqueo" in tema and tema["bloqueo"] not in (t.get("bloqueo") or ""):
+                f.append(f"bloqueo de la retoma: {t.get('bloqueo')!r} (esperaba «{tema['bloqueo']}»)")
+            pila = {f"{x['slot']}:{x['status']}" for x in t.get("pendientes") or []}
+            if falta := [x for x in tema.get("pila", []) if x not in pila]:
+                f.append(f"pila de pendientes: {sorted(pila)} (falta {falta})")
+            if sobra := [x for x in tema.get("pila_sin", []) if any(p.split(":")[0] == x for p in pila)]:
+                f.append(f"pila de pendientes: {sorted(pila)} (no debía tener {sobra})")
+            if falta := [x for x in tema.get("invalida", []) if x not in (t.get("invalida") or [])]:
+                f.append(f"slots invalidados: {t.get('invalida')} (falta {falta})")
+    if not (TEMAS_EXIGIDOS or habla):
+        return f                                    # lo de abajo es el texto de la retoma: solo si V2 habla con ella
+    qs = _preguntas(texto)
+    if "retoma" in esp:
+        slot = esp["retoma"]
+        if memoria.pregunta_de(texto) != slot or len(qs) != 1:
+            f.append(f"debía retomar «{slot}» con UNA pregunta: pregunta {len(qs)}, la última es «{memoria.pregunta_de(texto) or '∅'}»")
+    if esp.get("sin_retoma") and qs:
+        f.append(f"no debía retomar nada y pregunta: {qs[-1][:60]!r}")
+    if esp.get("no_repite_literal") and qs:
+        ultima = _P(qs[-1]).strip(" ¿?")
+        if repetida := [p for p in bot_previos if ultima and ultima in _P(p)]:
+            f.append(f"repite literal una pregunta anterior: {qs[-1][:60]!r}")
+    for k in tema.get("ficha_limpia", []):
+        if (mem.get("sabemos") or {}).get(k):
+            f.append(f"sabemos.{k} debía haberse invalidado y vale {(mem.get('sabemos') or {}).get(k)!r}")
+    if "pendiente" in tema and mem.get("pendiente", "") != tema["pendiente"]:
+        f.append(f"memoria.pendiente: {mem.get('pendiente')!r} (esperado {tema['pendiente']!r}: V1 debe reconocer lo que se espera)")
+    if "ofrece" in tema:
+        etiquetas = [r.get("label") for r in j.get("respuestas_rapidas") or []]
+        if falta := [x for x in tema["ofrece"] if x not in etiquetas]:
+            f.append(f"respuestas rápidas: {etiquetas} (falta {falta})")
+    return f
+
+
+def evaluar(esp: dict, j: dict, antes: dict | None, cat: Catalogo, bot_previos: list[str] | None = None) -> list[str]:
     """Las afirmaciones de un turno (`espera` del caso) contra la respuesta del agente."""
-    f = []
+    f = evaluar_temas(esp, j, bot_previos or [])
     mem = j.get("memoria") or {}
     sab = mem.get("sabemos") or {}
     texto, plano = j.get("respuesta") or "", _P(j.get("respuesta") or "")
@@ -739,13 +807,14 @@ def correr_conversacion(url: str, conv: dict, cat: Catalogo) -> dict:
         if t.get("pausa_horas", 0) >= 6 and ch.estado in ("", "esperando_foto"):
             previos = [t["cliente"]]      # sesión nueva: el agente no ve lo de antes
             vistas = set()
-        est, j, antes = ch.turno(t["cliente"], t.get("llm", ""), t.get("pausa_horas", 0))
+        bot_previos = [h.get("texto", "") for h in ch.historial if h.get("rol") == "bot"]
+        est, j, antes = ch.turno(t["cliente"], t.get("llm", ""), t.get("pausa_horas", 0), t.get("payload"))
         esp = t.get("espera") or {}
         ft = []
         if est != 200:
             ft.append(f"HTTP {est}: {j.get('error', '')[:100]}")
         elif not j.get("silencio"):
-            ft += evaluar(esp, j, antes, cat)
+            ft += evaluar(esp, j, antes, cat, bot_previos)
             if not j.get("go") or j["go"] == "confirmar+envio":
                 ft += universales(j, antes, etapa_antes, esp, cat, veces, previos)
             # Una foto ya enviada no se reenvía, salvo que la pida otra vez (`foto_repetida` en el caso).
@@ -976,7 +1045,12 @@ def main(argv=None) -> int:
     ap.add_argument("--detalle", action="store_true", help="listar también los aprobados")
     ap.add_argument("--transcripcion", action="store_true", help="imprimir las conversaciones que fallan, turno por turno")
     ap.add_argument("--solapes", action="store_true", help="solo comprobar que la prueba no está copiada de los datos")
+    ap.add_argument("--temas", action="store_true",
+                    help="exigir TAMBIÉN las afirmaciones de cambios de tema (retoma en el texto, traza de V2) aunque el agente sea V1 o V2 en sombra: "
+                         "mide el «antes». Sin la bandera, solo se exigen si V2 habla con la retoma (V2_HABLA=…,responder_y_retomar).")
     a = ap.parse_args(argv)
+    global TEMAS_EXIGIDOS
+    TEMAS_EXIGIDOS = a.temas
 
     copiadas = solapes()
     if a.solapes or copiadas:
@@ -1010,7 +1084,11 @@ def main(argv=None) -> int:
     if "conversaciones" in bloques:
         r = correr_conversaciones(url, cat, a.caso)
         salida["conversaciones"] = r
-        mal_total += _tabla("CONVERSACIONES", r, a.detalle)[1]
+        # Las de cambios de tema (tipo «interrupcion») se cuentan aparte: las 32 de siempre siguen siendo comparables con las medidas viejas.
+        mal_total += _tabla("CONVERSACIONES", [x for x in r if x.get("tipo") != "interrupcion"], a.detalle)[1]
+        nuevas = [x for x in r if x.get("tipo") == "interrupcion"]
+        if nuevas:
+            mal_total += _tabla("CONVERSACIONES DE CAMBIOS DE TEMA" + (" (exigiendo la retoma: --temas)" if a.temas else ""), nuevas, a.detalle)[1]
         if a.transcripcion:
             for x in r:
                 if x["fallos"] or a.caso:

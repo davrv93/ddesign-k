@@ -7,6 +7,7 @@ from dataclasses import asdict, dataclass, field
 ACCIONES = frozenset({
     "responder", "recomendar", "preguntar", "consultar_stock",
     "confirmar_pedido", "pedir_asesora", "derivar",
+    "responder_y_retomar",       # ANSWER_AND_RESUME (cambios de tema, v2/temas.py)
 })
 ACCIONES_CON_PRODUCTO = frozenset({"recomendar", "consultar_stock", "confirmar_pedido"})
 
@@ -18,6 +19,7 @@ class Plan:
     hechos: list[str] = field(default_factory=list)
     razon: str = ""
     pregunta: dict | None = None   # {"tipo": "talla", "texto": "¿Qué talla usas?"}
+    retoma: dict | None = None     # solo en «responder_y_retomar»: {slot, modo, intento, ayuda, tallas, answer_intent…}
 
     def a_dict(self) -> dict:
         return asdict(self)

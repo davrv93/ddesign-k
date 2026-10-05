@@ -25,17 +25,20 @@ from collections import Counter
 from . import regresion as R
 
 
-def turnos(url: str) -> list[dict]:
+def turnos(url: str, con_temas: bool = False) -> list[dict]:
     filas = []
     for conv in R.cargar_conversaciones():
+        if conv.get("tipo") == "interrupcion" and not con_temas:
+            continue            # las de cambios de tema se miden aparte: así las cifras de siempre siguen siendo comparables
         ch = R.Chat(url, conv)
         for t in conv["turnos"]:
-            est, j, _ = ch.turno(t["cliente"], t.get("llm", ""), t.get("pausa_horas", 0))
+            est, j, _ = ch.turno(t["cliente"], t.get("llm", ""), t.get("pausa_horas", 0), t.get("payload"))
             if est != 200 or not isinstance(j, dict):
                 continue
             v2 = j.get("v2") or {}
             sb = v2.get("sombra") or {}
             gen = sb.get("generacion") or {}
+            tm = v2.get("temas") or {}
             filas.append({
                 "conv": conv["id"], "mensaje": t["cliente"], "version": j.get("version"), "modo": v2.get("modo"),
                 "v1": sb.get("v1_accion"), "fijo": bool(sb.get("v1_flujo_fijo")),
@@ -47,9 +50,33 @@ def turnos(url: str) -> list[dict]:
                 "jev": sb.get("jev"), "respuesta": j.get("respuesta"),
                 "v1_texto": v2.get("v1_texto_respaldo") or gen.get("v1_texto"),
                 "v2_texto": gen.get("texto") if gen.get("passed") else None,
-                "razon": (sb.get("plan") or {}).get("razon"),
+                "razon": (sb.get("plan") or {}).get("razon"), "conv_tipo": conv.get("tipo", ""),
+                "tema_nivel": (tm.get("evento") or {}).get("nivel"), "tema_tipo": (tm.get("evento") or {}).get("tipo"),
+                "tema_retoma": (tm.get("retoma") or {}).get("slot"), "tema_retoma_pasa": (tm.get("retoma") or {}).get("pasa_la_compuerta"),
+                "tema_enviada": tm.get("enviada"), "tema_v1_retomo": tm.get("v1_retomo"), "tema_bloqueo": tm.get("bloqueo"),
+                "tema_habla": tm.get("habla"), "tema_error": tm.get("error"),
+                "tema_pendientes": [f"{x['slot']}:{x['status']}" for x in tm.get("pendientes") or []],
             })
     return filas
+
+
+def resumen_temas(filas: list[dict]) -> None:
+    """Cambios de tema (app/v2/temas.py): qué interrupciones vio V2, qué retomaría, cuántas veces ya lo hizo V1 solo y cuántas salieron."""
+    con = [f for f in filas if f.get("tema_nivel") or f.get("tema_tipo") or f.get("tema_retoma")]
+    if not any(f.get("tema_tipo") for f in filas):
+        return
+    inter = [f for f in filas if f.get("tema_tipo") == "interrumpe"]
+    print("cambios de tema:")
+    print(f"  interrupciones de la clienta: {len(inter)} · por nivel {dict(Counter(f['tema_nivel'] for f in inter))}")
+    print(f"  cambios totales (HARD_SWITCH): {sum(1 for f in filas if f.get('tema_nivel') == 'HARD_SWITCH')} · "
+          f"ayuda («no sé», duda, «sí» ambiguo): {sum(1 for f in filas if f.get('tema_tipo') == 'ayuda')}")
+    retomas = [f for f in filas if f.get("tema_retoma")]
+    print(f"  retomas que V2 planea: {len(retomas)} · pasan la compuerta {sum(1 for f in retomas if f['tema_retoma_pasa'])} · "
+          f"salieron al cliente {sum(1 for f in retomas if f['tema_enviada'])}")
+    print(f"  V1 ya volvió a preguntar el pendiente solo: {sum(1 for f in filas if f.get('tema_v1_retomo'))}")
+    print("  por qué no se retomó en las interrupciones sin retoma:",
+          dict(Counter((f['tema_bloqueo'] or '—').split(' (')[0][:48] for f in inter if not f.get('tema_retoma')).most_common(5)))
+    print(f"  errores de la capa: {sum(1 for f in filas if f.get('tema_error'))}")
 
 
 def _clase(motivo: str | None) -> str:
@@ -61,8 +88,9 @@ def main() -> int:
     ap.add_argument("--url", default="http://127.0.0.1:18497")
     ap.add_argument("--minimo-acuerdo", type=float, default=0.0)
     ap.add_argument("--salida", default="", help="JSONL con el texto de V1 y de V2 por turno")
+    ap.add_argument("--temas", action="store_true", help="incluir también las conversaciones de cambios de tema (tipo «interrupcion»)")
     a = ap.parse_args()
-    todas = turnos(a.url)
+    todas = turnos(a.url, a.temas)
     filas = [f for f in todas if f["version"]]                  # /chat; los turnos de foto (/foto) no traen versión
     print(f"turnos de foto y de flujo de Go (fuera de la comparación): {len(todas) - len(filas)}")
     versiones = Counter(f["version"] for f in filas)
@@ -104,6 +132,7 @@ def main() -> int:
         jev = [f["jev"] for f in filas if f["jev"]]
         print(f"Jev local: {len(jev)} consultas, p media {sum(j['p'] for j in jev) / len(jev):.2f}; "
               f"propuso {dict(Counter(j['opcion'] for j in jev))}")
+    resumen_temas(filas)
     desacuerdos = Counter((f["v1"], f["plan"]) for f in comparables if f["v1"] != f["plan"])
     if desacuerdos:
         print("desacuerdos (V1 → V2), para revisar uno a uno:")

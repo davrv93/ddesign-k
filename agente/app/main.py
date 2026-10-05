@@ -251,6 +251,9 @@ class ChatIn(BaseModel):
     version: str = ""
     # Modo de la V2 para este turno: "sombra" (V2 solo observa) | "activo" (V2 puede hablar). Vacío = V2_MODO del entorno.
     modo: str = ""
+    # Respuesta rápida pulsada: {"intent": "provide_size", "size": "M"} (app/v2/temas.py). Solo la lee V2; V1 la ignora. El texto de la
+    # respuesta (`mensaje`) sigue siendo lo que se ve en el chat: el payload solo le ahorra a V2 interpretarlo.
+    payload: dict | None = None
 
 
 RE_NO_TEXTO = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\ud800-\udfff]")

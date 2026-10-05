@@ -11,12 +11,13 @@ from __future__ import annotations
 import os
 import re
 import zlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Callable, Protocol
 
 import yaml
 
 from .delex import SLOT_RE, Protegidos
+from .temas import ACCION as ACCION_RETOMA
 
 RUTA = os.path.join(os.path.dirname(__file__), "plantillas.yaml")
 PART_RE = re.compile(r"(?<!\{)\{([a-z_]+)\}(?!\})")
@@ -64,18 +65,25 @@ class Plantilla:
     sin_modelo: bool = False
     id_spec: int | None = None
     fijas: dict[str, int] = field(default_factory=dict)
+    modo: str = ""            # solo en las de tipo «retoma»: obligatorio | util | ayuda:no_sabe | ayuda:dudosa | ayuda:ambigua
 
 
 class Catalogo:
-    def __init__(self, plantillas: dict[str, Plantilla], config: dict):
+    def __init__(self, plantillas: dict[str, Plantilla], config: dict, temas: dict | None = None):
         self.plantillas = plantillas
         self.config = config
+        self.temas = temas or {}            # reglas de ANSWER_AND_RESUME (sección `temas` del YAML)
 
     def __getitem__(self, id_: str) -> Plantilla:
         return self.plantillas[id_]
 
     def por_clave(self, clave: str) -> list[Plantilla]:
         return [p for p in self.plantillas.values() if p.tipo == "pregunta" and p.clave == clave and p.activa]
+
+    def retoma(self, slot: str, modo: str) -> Plantilla | None:
+        """La plantilla de retoma de ese slot en ese modo; si no hay para el modo, la «util» del mismo slot."""
+        activas = [p for p in self.plantillas.values() if p.tipo == "retoma" and p.clave == slot and p.activa]
+        return next((p for p in activas if p.modo == modo), None) or next((p for p in activas if p.modo == "util"), None)
 
 
 def cargar(ruta: str = RUTA) -> Catalogo:
@@ -88,15 +96,15 @@ def cargar(ruta: str = RUTA) -> Catalogo:
             partes={k: list(v) for k, v in (d.get("partes") or {}).items()}, protegidos=list(d.get("protegidos") or []),
             prohibido=list(d.get("prohibido") or []), max_frases=int(d.get("max_frases", 2)), clave=d.get("clave"),
             objetivo=d.get("objetivo", ""), semantica=list(d.get("semantica") or []), sin_modelo=bool(d.get("sin_modelo", False)),
-            id_spec=d.get("id_spec"), fijas={k: int(v) for k, v in (d.get("fijas") or {}).items()})
-    return Catalogo(out, y.get("config") or {})
+            id_spec=d.get("id_spec"), fijas={k: int(v) for k, v in (d.get("fijas") or {}).items()}, modo=str(d.get("modo") or ""))
+    return Catalogo(out, y.get("config") or {}, y.get("temas") or {})
 
 
 def validar(cat: Catalogo) -> list[str]:
     """Errores de estructura del catálogo (vacío = bien). Se corre en las pruebas y al arrancar."""
     errores: list[str] = []
     for p in cat.plantillas.values():
-        if p.tipo not in ("acuse", "pregunta", "mensaje"):
+        if p.tipo not in ("acuse", "pregunta", "mensaje", "retoma"):
             errores.append(f"{p.id}: tipo desconocido {p.tipo!r}")
         marcadores = set(PART_RE.findall(p.forma))
         if marcadores - set(p.partes):
@@ -114,8 +122,12 @@ def validar(cat: Catalogo) -> list[str]:
         for t in p.prohibido:
             if t not in PROHIBIDO_A_REGLA:
                 errores.append(f"{p.id}: etiqueta «prohibido» sin regla en la compuerta: {t}")
-        if p.tipo == "pregunta" and not p.clave:
+        if p.tipo in ("pregunta", "retoma") and not p.clave:
             errores.append(f"{p.id}: una pregunta necesita su clave de V1")
+        if p.tipo == "retoma" and not p.modo:
+            errores.append(f"{p.id}: una retoma necesita su modo")
+        if p.tipo == "retoma" and "pregunta" not in p.partes:
+            errores.append(f"{p.id}: una retoma necesita la parte «pregunta»")
         if p.activa and not p.acciones:
             errores.append(f"{p.id}: activa pero sin acciones")
     return errores
@@ -266,8 +278,37 @@ class Selector:
         return None
 
     # -- elegir -----------------------------------------------------------------------------------------------------
+    def _retoma(self, plan: dict) -> Mensaje:
+        """ANSWER_AND_RESUME, la parte de retomar: UNA plantilla del slot pendiente (la respuesta a lo que ella preguntó es la de V1 y
+        no pasa por aquí). Los datos salen solo del backend (la prenda en foco) y de lo que ella misma dijo (sus tallas)."""
+        r = plan.get("retoma") or {}
+        slot, ayuda = r.get("slot"), r.get("ayuda")
+        modo = f"ayuda:{ayuda}" if ayuda else (r.get("modo") or "util")
+        p = self.cat.retoma(slot or "", modo)
+        if p is None:
+            raise SinPlantilla(f"sin plantilla de retoma para «{slot}» ({modo})")
+        valores: dict[str, str] = {}
+        codigo = plan.get("producto")
+        datos = self.hechos.producto(codigo) if codigo else None
+        if datos and datos.get("PRODUCTO"):
+            valores["PRODUCTO"] = datos["PRODUCTO"]
+        if ayuda == "dudosa":
+            tallas = [t for t in (r.get("tallas") or []) if t in ("XS", "S", "M", "L", "XL", "XXL")]
+            if len(tallas) < 2:
+                raise SinPlantilla("duda entre tallas, pero ella no nombró dos")
+            valores["TALLA_A"], valores["TALLA_B"] = f"*{tallas[0]}*", f"*{tallas[1]}*"
+        # La pregunta NO se repite con las mismas palabras: cada intento usa otra variante (y ninguna es la de V1).
+        ok = elegibles(p, "pregunta", valores)
+        if not ok:
+            raise SinPlantilla("la retoma no tiene variante de pregunta con los datos que hay")
+        intento = max(2, int(r.get("intento") or 2))
+        p = replace(p, fijas={**p.fijas, "pregunta": ok[(intento - 2) % len(ok)]})
+        return Mensaje([Bloque(p, valores)], clave_pregunta=p.clave)
+
     def elegir(self, plan: dict, ctx: dict) -> Mensaje:
         accion = plan.get("accion")
+        if accion == ACCION_RETOMA:
+            return self._retoma(plan)               # ANSWER_AND_RESUME: que salga o no lo decide V2_HABLA en AgentV2, no el selector
         if accion not in self.habla:
             raise SinPlantilla(f"V2 no habla en «{accion}»")
         conv = ctx.get("conversation") or {}

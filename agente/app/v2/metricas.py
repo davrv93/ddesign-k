@@ -55,6 +55,18 @@ class Registro:
                     c["habla_v2"] += 1
                 elif traza.get("motivo_v1"):
                     self._motivos[version][_clase(traza["motivo_v1"])] += 1
+            tm = traza.get("temas") or {}
+            if tm.get("evento"):                      # cambios de tema (v2/temas.py)
+                tipo = tm["evento"].get("tipo")
+                c["temas_turnos"] += 1
+                c["temas_interrupciones"] += tipo == "interrumpe"
+                c["temas_cambios_totales"] += tipo == "cambio"
+                c["temas_ayuda"] += tipo == "ayuda"
+                c["temas_retomas_planeadas"] += bool(tm.get("retoma"))
+                c["temas_retomas_enviadas"] += bool(tm.get("enviada"))
+                c["temas_v1_retomo"] += bool(tm.get("v1_retomo"))
+            elif tm.get("error"):
+                c["temas_error"] += 1
             gen = sb.get("generacion") or {}
             if gen.get("intentos"):
                 c["con_borrador"] += 1
@@ -87,6 +99,10 @@ class Registro:
                     "calidad_ok": round(c["calidad_ok"] / b, 3),
                     "regeneracion": round(c["regeneraciones"] / b, 3),
                     "fallback_codigo": round(c["fallback_codigo"] / b, 3),
+                    # Cambios de tema: cuántas interrupciones vio, cuántas retomas planeó/envió y cuántas veces V1 ya había vuelto a preguntar solo
+                    "temas": {"interrupciones": c["temas_interrupciones"], "cambios_totales": c["temas_cambios_totales"], "ayuda": c["temas_ayuda"],
+                              "retomas_planeadas": c["temas_retomas_planeadas"], "retomas_enviadas": c["temas_retomas_enviadas"],
+                              "v1_retomo_solo": c["temas_v1_retomo"], "errores": c["temas_error"]},
                 }
             return out
 
