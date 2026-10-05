@@ -12,3 +12,5 @@ __pycache__/
 .DS_Store
 # Datos de pago de la tienda (Yape, titular): solo en la máquina de despliegue y en el servidor.
 agente/seed/pago.md
+# Prueba con conversaciones (app/conversaciones.py): corpus anonimizado y resultados, solo en local
+agente/pruebas_conv/

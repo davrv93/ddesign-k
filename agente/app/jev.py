@@ -31,6 +31,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 
+from . import gasto
+
 log = logging.getLogger("agente.jev")
 
 MODO = os.environ.get("JEV_MODO", "off").strip().lower()
@@ -163,6 +165,7 @@ def _evaluar(state, preguntas: dict) -> tuple[dict, dict]:
     r.raise_for_status()
     j = r.json()
     uso = j.get("usage") or {}
+    gasto.sumar(uso)
     return j.get("answers") or {}, {"ms": int((time.time() - t0) * 1000), "tokens": uso.get("input_tokens"), "costo": uso.get("cost")}
 
 

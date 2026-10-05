@@ -28,7 +28,7 @@ import json
 from contextvars import ContextVar
 
 from . import datos, etapas, jev, memoria, venta
-from . import animo, rerank
+from . import animo, gasto, rerank
 from .modelo import Embedder, EmbedderOnnx, cargar, hay_setfit
 from . import stock as stk
 
@@ -601,6 +601,7 @@ def _llm(mensajes: list[dict], url: str, clave: str, modelos: list[str], tempera
             if es_openrouter:
                 # deepseek-v4 razona por defecto: 11 s frente a 2-3 s sin razonar, para un chat de 3 frases.
                 cuerpo["reasoning"] = {"enabled": False}
+                cuerpo["usage"] = {"include": True}   # trae usage.cost: lo suma gasto.py
             if LLM_PROVIDER_SORT and es_openrouter:
                 cuerpo["provider"] = {"sort": LLM_PROVIDER_SORT}
             if json_mode:
@@ -608,7 +609,9 @@ def _llm(mensajes: list[dict], url: str, clave: str, modelos: list[str], tempera
             r = _http.post(url, headers={"Authorization": f"Bearer {clave}"}, json=cuerpo)
             if r.status_code >= 400:
                 raise RuntimeError(f"{modelo}: HTTP {r.status_code} {r.text[:200]}")
-            texto = (r.json()["choices"][0]["message"].get("content") or "").strip().strip('"')
+            js = r.json()
+            gasto.sumar(js.get("usage"))
+            texto = (js["choices"][0]["message"].get("content") or "").strip().strip('"')
             if texto:
                 return texto, modelo
             raise RuntimeError(f"{modelo}: respuesta vacía")
@@ -1111,6 +1114,7 @@ RE_VARIOS = re.compile(r"\b(vestidos|modelos|opciones|cat[aá]logo|otr[oa]s?|dif
 
 def conversar(req: ChatIn) -> dict:
     t0 = time.time()
+    gasto.iniciar()
     if not req.mensaje.strip():
         raise HTTPException(400, "mensaje vacío")
     consulta = req.mensaje
@@ -1548,6 +1552,7 @@ def conversar(req: ChatIn) -> dict:
         "siguiente_pregunta": sig,
         "lectura": {k: lectura[k] for k in ("pendiente", "respondio", "espera", "datos", "fuente")} | {"jev": (jev_mem or {}).get("_probs")},
         "stock_fuente": E.stock.ultima_fuente,
+        "costo_usd": gasto.total(),
         "ms": int((time.time() - t0) * 1000),
     }
 
@@ -1631,6 +1636,7 @@ GUIA_FOTO = {
 
 def conversar_foto(req: FotoIn) -> dict:
     t0 = time.time()
+    gasto.iniciar()
     if E.img is None:
         raise HTTPException(503, "búsqueda por foto desactivada")
     try:
@@ -1733,6 +1739,7 @@ Máximo 3 frases."""
         "memoria": mem, "sentimiento": animo_r["sentimiento"], "urgencia": animo_r["urgencia"],
         "siguiente_pregunta": sig,
         "stock_fuente": E.stock.ultima_fuente,
+        "costo_usd": gasto.total(),
         "ms": int((time.time() - t0) * 1000),
     }
 
