@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/davrv93/ddesign-k/backend/internal/agente"
 	"github.com/davrv93/ddesign-k/backend/internal/store"
@@ -255,4 +256,61 @@ func TestConsultaDeFotoLlevaLaTemperatura(t *testing.T) {
 		t.Fatalf("debía quedar una consulta: %+v", o)
 	}
 	mustContain(t, o[0].Notes, "sucursal", "clienta tibia: evento el 17-oct (en 13 días)")
+}
+
+// Vuelve después de horas: conversación nueva. El agente no recibe el historial ni la memoria de la mañana, y
+// la pausa por «asesora» caduca.
+func TestVuelveDespuesDeHorasEsSesionNueva(t *testing.T) {
+	b, st, fe := setup(t, `{}`, false)
+	var reqs []agente.Request
+	b.Agent = agenteGuion(t, map[string]agente.Reply{
+		"quiero ver vestidos": {Accion: "responder", Respuesta: "Mira este 😍", Etapa: "seguimiento",
+			Memoria:     json.RawMessage(`{"etapa":"seguimiento","producto":"V01","mostrados":["V01"],"pendiente":"talla","sabemos":{"ocasion":"boda"}}`),
+			Sugerencias: []agente.Sugerencia{{Codigo: "V01", Fuente: "seed", Imagen: "/media/products/v01.jpg", Pie: "*V01* Vestido Esmeralda"}}},
+		"hola": {Accion: "responder", Respuesta: "¡Hola! ¿Qué estás buscando hoy?", Etapa: "prospeccion"},
+	}, &reqs)
+	ctx := context.Background()
+	handle(b, text("quiero ver vestidos"))
+	handle(b, text("asesora")) // pide una persona: el bot se pausa
+	convs, _ := st.ListConversations(ctx, 10)
+	if !convs[0].BotPaused {
+		t.Fatal("debía quedar en pausa")
+	}
+	// Pasan 7 horas.
+	viejo := time.Now().UTC().Add(-7 * time.Hour)
+	if _, err := st.DB.ExecContext(ctx, `UPDATE conversations SET last_message_at=?`, viejo); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.DB.ExecContext(ctx, `UPDATE messages SET created_at=?`, viejo); err != nil {
+		t.Fatal(err)
+	}
+	n := len(fe.sent)
+	handle(b, text("hola"))
+	if len(fe.sent) == n {
+		t.Fatal("tras horas, la pausa por asesora debía caducar y el bot contestar")
+	}
+	last := reqs[len(reqs)-1]
+	if len(last.Historial) != 0 {
+		t.Fatalf("no debía mandar el historial de la sesión anterior: %+v", last.Historial)
+	}
+	if strings.Contains(string(last.Memoria), "V01") || last.Etapa != "" {
+		t.Fatalf("no debía arrastrar memoria ni etapa: %s etapa=%q", last.Memoria, last.Etapa)
+	}
+}
+
+// «menu» devuelve el bot tras pedir una asesora.
+func TestMenuQuitaLaPausaDeAsesora(t *testing.T) {
+	b, st, fe := setup(t, `{}`, false)
+	handle(b, text("4"))
+	mustContain(t, fe.lastText(), "asesora", "menu")
+	n := len(fe.sent)
+	handle(b, text("hola?")) // en pausa: no contesta
+	if len(fe.sent) != n {
+		t.Fatal("en pausa no debía contestar")
+	}
+	handle(b, text("menu"))
+	mustContain(t, fe.lastText(), "1️⃣")
+	if convs, _ := st.ListConversations(context.Background(), 10); convs[0].BotPaused {
+		t.Fatal("«menu» debía quitar la pausa")
+	}
 }

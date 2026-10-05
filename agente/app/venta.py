@@ -112,6 +112,26 @@ def info_pago() -> str:
         return "PAGO: los datos de pago los comparte una asesora (escribe 4)."
 
 
+def texto_pago() -> str:
+    """Los datos de pago tal como se le mandan a la clienta (del archivo privado pago.md). Los arma el código: cuando
+    el bot dice «te paso los datos», los datos van en ese mismo mensaje, no en la siguiente promesa."""
+    lineas = [l.strip()[2:].strip() for l in info_pago().splitlines() if l.strip().startswith("- ")]
+    lineas = [l for l in lineas if not re.search(r"comprobante|voucher", l, re.I)]
+    if not lineas:
+        return "Los datos para el pago te los comparte una asesora: escribe *4* y te los pasa al toque 😊"
+    return "💳 *Datos para el pago*\n" + "\n".join("• " + re.sub(r"\(escribe 4\)", "(escribe *4*)", l) for l in lineas)
+
+
+def texto_total(zona: str, precio: float | None, moneda: str, ciudad: str = "") -> str:
+    """«El envío a Trujillo es S/ 20.00 (…). Total: S/ 340.00», calculado por el código."""
+    e = (VENTA.get("envio") or {}).get(zona)
+    if not e or precio is None:
+        return ""
+    destino = ciudad.title() if ciudad and zona == "provincia" else zona.capitalize()
+    return (f"El envío a {destino} es *{moneda} {e['costo']:.2f}* ({e['detalle']}).\n"
+            f"Total con tu prenda: *{moneda} {precio + e['costo']:.2f}*")
+
+
 def totales(precio: float | None, moneda: str) -> str:
     """El total lo calcula el código: un LLM pequeño suma mal y un total equivocado cuesta una venta."""
     envios = VENTA.get("envio") or {}
@@ -308,6 +328,8 @@ REGLAS DE VENTA
   paga antes del envío y se manda el comprobante (CÓMO SE COMPRA en TIENDA).
 - Nunca digas que una prenda «se agota rápido», «es muy pedida», «no suele durar» o que «quedan pocas»: del stock solo vale
   lo que diga «AHORA:».
+- Tiempos de entrega, descuentos, cuotas o medios de pago que TIENDA y PAGO no digan: no los inventes («el tiempo
+  exacto te lo confirma la asesora al programar el envío»).
 - Si pregunta por otra prenda, respóndele por esa. No sustituyas una prenda por otra.
 - Cada foto lleva su propio pie: no escribas listas de códigos, precios ni tallas.
 

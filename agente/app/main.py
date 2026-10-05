@@ -1170,6 +1170,40 @@ def _pendiente_sin_resolver(pend: str, reglas: dict, mensaje: str) -> bool:
     return False
 
 
+RE_PIDE_ASESORA = re.compile(r"\b(asesor[ae]?s?|vendedor[ae]?s?|persona|humano|alguien|encargad[oa]|operador[ae]?|agente|"
+                             r"atiend[ae]n?|atender|hablar con|reclamo|queja|gerente|due[nñ][oa])\b", re.I)
+RE_PIDE_ESTADO = re.compile(r"\b(pedido|orden|compra|env[ií]o|paquete|lleg[oóa]|estado|seguimiento|tracking|rastre)\w*", re.I)
+RE_PIDE_PAGO = re.compile(r"\b(datos|pasos|formas?|medios?|m[eé]todos?) (de|del|para el) pago|\bc[oó]mo (te |le |les )?(pago|deposito|yapeo|transfiero)|"
+                          r"\ba qu[eé] (n[uú]mero|cuenta)|\bd[oó]nde (te |les )?(deposito|pago|yapeo)|\b(tu|su|el|pasa\w*) (yape|plin|n[uú]mero de cuenta)|"
+                          r"\bcuenta (bcp|interbank|bbva)|\bn[uú]mero de yape", re.I)
+RE_PROMETE_PAGO = re.compile(r"[^.!?\n]*\bte (paso|env[ií]o|mando|comparto|dejo)\b[^.!?\n]*\bdatos\b[^.!?\n]*\bpago\b[^.!?\n]*[.!]?", re.I)
+RE_QUIERE_FOTO = re.compile(r"\bfotos?\b|\bim[aá]gen(es)?\b|\bc[oó]mo es\b|\bquiero verl[oa]\b|\bmu[eé]stra(me)?l[oa]\b", re.I)
+
+
+def nombradas_en_respuesta(texto: str, foco=None) -> list:
+    """Prendas de la tienda que el BOT nombra en su respuesta: por código o por su nombre propio escrito con
+    mayúscula («Azra», «Irla»; «con capa» en minúscula no es el Vestido Gala Capa). Si el nombre lo comparten dos
+    colores, la del color que dice el texto o la que estaba en foco."""
+    import unicodedata
+    plano_may = "".join(c for c in unicodedata.normalize("NFD", texto or "") if unicodedata.category(c) != "Mn")
+    with E.lock:
+        seed = [f for f in E.fichas if f.fuente == "seed"]
+    cods = [c for c in datos.codigos_en(texto or "") if c in E.por_codigo]
+    out = [E.fichas[E.por_codigo[c]] for c in cods if E.fichas[E.por_codigo[c]].fuente == "seed"]
+    grupos: dict[str, list] = {}
+    for f in seed:
+        propias = [w for w in re.findall(r"[a-zñ]+", _sin_tildes(f.nombre)) if len(w) >= 4 and w not in _GENERICAS]
+        if any(re.search(rf"\b{w.capitalize()}\b", plano_may) for w in propias):
+            grupos.setdefault(" ".join(propias[:1]), []).append(f)
+    palabras = set(re.findall(r"[a-zñ]+", _sin_tildes(texto or "")))
+    for fs in grupos.values():
+        if len(fs) > 1:
+            con_color = [f for f in fs if set(re.findall(r"[a-zñ]+", _sin_tildes(f.color))) & palabras]
+            fs = con_color[:1] or ([foco] if foco in fs else fs[:1])
+        out += [f for f in fs if f not in out]
+    return out
+
+
 NOTA_NO_RESPONDIO = ("OJO: tu respuesta anterior NO contestó lo que ella preguntó: «{m}». En \"responde\" contesta "
                      "ESO primero, con datos de PRODUCTO, TIENDA o AHORA; si el dato no está, dile que lo confirma una asesora (*4*).")
 
@@ -1318,6 +1352,7 @@ def conversar(req: ChatIn) -> dict:
     if pide:
         cl = dict(cl, intencion="otras_opciones")  # un «sí» suelto no es saludo ni acción del bot
     tallas_boton, confirmar, talla_pedida, codigo_pedido = [], False, "", ""
+    es_catalogo = False   # pidió ver una categoría («quiero ver vestidos»); se decide más abajo
     # Decir la talla no es comprar. Solo en CIERRE (cuando ya dijo que quiere comprarlo, o eligió la
     # talla en el botón de la tarjeta) una talla arma el pedido; antes, la contesta el LLM y sigue la charla.
     talla = ""
@@ -1382,6 +1417,25 @@ def conversar(req: ChatIn) -> dict:
         # Quiere comprarlo y aún no dijo la talla: es el paso pendiente del cierre.
         respuesta = f"¡Perfecto! 😊 Para separar tu *{foco.codigo}* {foco.nombre} necesito tu talla.\n\n¿Cuál usas?"
         modelo, tallas_boton, forzar = "flujo_cierre", tallas_de(foco), "talla"
+    elif (etapa == "venta_confirmada" and not dec["transicion"] and foco is not None and pend == "lima_o_provincia"
+          and (lectura.get("datos") or {}).get("envio") and venta.texto_total(lectura["datos"]["envio"], foco.precio, MONEDA)):
+        # Dijo a dónde va: el total (lo suma el código) y los datos de pago van juntos. Un paso menos donde romperse:
+        # antes venían «¿te paso los datos?» → «sí» → «te los paso» → y no llegaban.
+        respuesta = (venta.texto_total(lectura["datos"]["envio"], foco.precio, MONEDA, mem["sabemos"].get("ciudad") or "")
+                     + "\n\n" + venta.texto_pago()
+                     + "\n\nCuando hagas el pago, mándame la foto del comprobante por aquí y programo tu envío 🙌")
+        modelo, forzar = "flujo_pago", "voucher"
+        mem["preguntado"] += ["pago_enviado", "pago"]
+    elif (etapa == "venta_confirmada" and not dec["transicion"]
+          and ((pend == "pago" and memoria.afirma(req.mensaje)) or RE_PIDE_PAGO.search(req.mensaje)
+               or (pend == "voucher" and memoria.afirma(req.mensaje) and "pago_enviado" not in mem["preguntado"]))):
+        # Dijo que sí a «¿te paso los datos para el pago?» (o los pidió): los datos van YA, armados por el código.
+        # Antes el LLM contestaba «perfecto, te paso los datos» y no los pasaba.
+        respuesta = venta.texto_pago() + "\n\nCuando hagas el pago, mándame la foto del comprobante por aquí y programo tu envío 🙌"
+        modelo, forzar = "flujo_pago", "voucher"
+        mem["preguntado"] += ["pago_enviado", "pago"]
+    elif etapa == "venta_confirmada" and pend == "voucher" and memoria.afirma(req.mensaje):
+        respuesta, modelo, forzar = "¡Perfecto! 🙌 Aquí espero tu comprobante para programar el envío.", "flujo_pago", "voucher"
     elif foco and etapa == "venta_confirmada" and dec["transicion"]:
         # Dijo «sí» a «¿Confirmamos tu pedido?». En WhatsApp ese SI lo recibe el bot Go (estado de
         # confirmación) y no llega aquí; este camino es el de la web.
@@ -1466,7 +1520,11 @@ def conversar(req: ChatIn) -> dict:
     if respuesta:
         pass  # contestó el flujo de pedido, el menú o el catálogo por categorías
     elif (not pide and not foto_pedida and cl["intencion"] in ACCIONES_BOT and cl["confianza"] >= UMBRAL_ACCION
-          and not (cl["intencion"] == "foto" and (nombrados(req.mensaje) or foco is not None))):
+          and not (cl["intencion"] == "foto" and (nombrados(req.mensaje) or foco is not None))
+          # Pasar a una asesora PAUSA el bot: solo si lo pide con palabras. «me llamo Alvaro» salía como «asesora»
+          # y la clienta se quedaba hablando sola. Lo mismo con el estado del pedido.
+          and not (cl["intencion"] == "asesora" and not RE_PIDE_ASESORA.search(req.mensaje))
+          and not (cl["intencion"] == "pedido_estado" and not RE_PIDE_ESTADO.search(req.mensaje))):
         accion, respuesta = cl["intencion"], TEXTO_ACCION[cl["intencion"]]
         forzar = "foto" if accion == "foto" else ""
     elif not pide and etapa == "cierre" and len(seed_cods) == 1 and cl["intencion"] in ("producto_descripcion", "consulta_precio", "consulta_stock"):
@@ -1714,6 +1772,38 @@ def conversar(req: ChatIn) -> dict:
             ofrecer = False
             respuesta = "\n\n".join(p for p in respuesta.split("\n\n") if "otras opciones" not in p.lower())
 
+    # --- Lo que se dice es lo que se manda (05-10-2026) ---------------------------------------------------------
+    # En WhatsApp real el bot dijo «te mando fotos del vestido Azra Turquesa» y mandó un enterizo, un blazer y otro
+    # vestido; y dijo «te paso los datos para el pago» y no los pasó. Reglas:
+    #  - Si la respuesta nombra una prenda, las fotos son de ESA prenda (no de otras), salvo que la clienta haya
+    #    pedido ver varias. Si no pidió varias y el texto no nombra ninguna, como mucho una foto.
+    #  - Si promete una foto y no hay ninguna que mandar, se manda la de la prenda en foco o se quita la promesa.
+    #  - Si promete los datos de pago (con el pedido confirmado), van en ese mismo mensaje.
+    if accion == "responder" and respuesta and etapa != "venta_confirmada" and modelo not in ("pide_cual", "espera_cual"):
+        quiere_varias = bool(pide or es_catalogo or describiendo or (esperando_cual and sugeridas) or categorias)
+        nombradas_r = nombradas_en_respuesta(respuesta, foco)
+        promete = bool(RE_PROMESA_FOTOS.search(respuesta))
+        if nombradas_r and not quiere_varias:
+            vistos = set(mem["mostrados"]) | _ya_mostrados(req)
+            pidio_foto = bool(promete or foto_pedida is not None or RE_QUIERE_FOTO.search(req.mensaje))
+            sugeridas = [f for f in nombradas_r if _imagen(f) and (pidio_foto or f.codigo not in vistos)][:MAX_SUGERENCIAS]
+            if foco is None or foco not in nombradas_r:
+                foco = nombradas_r[0]
+        elif not nombradas_r and not quiere_varias and len(sugeridas) > 1:
+            sugeridas = sugeridas[:1]
+        if promete and not sugeridas:
+            if foco is not None and _imagen(foco):
+                sugeridas = [foco]
+            else:
+                respuesta = "\n\n".join(x for x in (RE_PROMESA_FOTOS.sub("", p).strip() for p in respuesta.split("\n\n")) if re.search(r"\w", x)) or respuesta
+    promesa_pago = next((m for m in RE_PROMETE_PAGO.finditer(respuesta or "")
+                         if "¿" not in m.group(0) and not (respuesta or "")[m.end():m.end() + 1] == "?"), None)
+    if (etapa == "venta_confirmada" and accion == "responder" and modelo != "flujo_pago" and promesa_pago is not None
+            and "pago_enviado" not in mem["preguntado"]):
+        respuesta = ((respuesta[:promesa_pago.start()] + respuesta[promesa_pago.end():]).strip() + "\n\n" + venta.texto_pago()
+                     + "\n\nCuando hagas el pago, mándame la foto del comprobante por aquí y programo tu envío 🙌").strip()
+        forzar = "voucher"
+        mem["preguntado"] += ["pago_enviado", "pago"]
     memoria.registrar_respuesta(mem, respuesta, forzar)
     memoria.anotar_turno(mem, etapa, foco.codigo if foco is not None else "", [f.codigo for f in sugeridas], dec["intent"])
     animo_r = animo.evaluar(req.mensaje, mem)   # ánimo y urgencia para la Capa de Juicio del bot Go

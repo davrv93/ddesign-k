@@ -51,7 +51,9 @@ def formato(pregunta_codigo: str, permitir_pregunta: bool) -> str:
 
 
 def _frases(texto: str) -> list[str]:
-    return [f.strip() for f in RE_FRASE.findall(texto or "") if f.strip()]
+    # El punto de un decimal o de una hora no termina la frase: «S/ 20.00» salía como «S/ 20. 00».
+    t = re.sub(r"(?<=\d)\.(?=\d)", "\u2024", texto or "")
+    return [f.strip().replace("\u2024", ".") for f in RE_FRASE.findall(t) if f.strip()]
 
 
 def _recortar(texto: str, max_frases: int, max_chars: int, sin_preguntas: bool = True) -> str:

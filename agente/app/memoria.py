@@ -36,7 +36,7 @@ except Exception:  # noqa: BLE001
     LIMA = _dt.timezone(_dt.timedelta(hours=-5), "America/Lima")
 
 CAMPOS = ("ocasion", "horario", "fecha", "fecha_iso", "prenda", "talla", "estatura", "color", "presupuesto", "envio",
-          "ciudad", "le_gusto", "cita")
+          "ciudad", "le_gusto", "cita", "nombre")
 TEMPERATURAS = ("frio", "tibio", "caliente")
 
 
@@ -105,7 +105,7 @@ PREGUNTAS = {
     "voucher": "Cuando hagas el pago, ¿me mandas la foto del comprobante?",
     # Solo saludó o escribe de otra cosa y ya se le preguntó dos veces la ocasión: una pregunta abierta, no «¿para
     # cuándo lo necesitas?» (un «lo» sin prenda, a quien no dijo que necesitara nada).
-    "que_busca": "¿Qué estás buscando? Cuéntame y te ayudo 😊",
+    "que_busca": "¿Qué estás buscando hoy? Cuéntame y te ayudo 😊",
 }
 # Qué está esperando el bot, en palabras (para el prompt y el panel).
 ESPERA = {
@@ -140,13 +140,16 @@ INDAGAR = ("ocasion", "fecha", "horario")
 VECES_INDAGAR = 2
 
 
+REPETIBLES = INDAGAR + ("que_busca",)
+
+
 def veces(mem: dict, k: str) -> int:
     return mem["preguntado"].count(k)
 
 
 def ya_hecha(mem: dict, k: str) -> bool:
     """Se hizo y no toca repetirla: las de indagar, tras dos intentos; el resto, tras uno."""
-    return veces(mem, k) >= (VECES_INDAGAR if k in INDAGAR else 1)
+    return veces(mem, k) >= (VECES_INDAGAR if k in REPETIBLES else 1)
 ORDEN = {
     "prospeccion": ["ocasion", "fecha", "horario", "talla"],
     "seguimiento": ["fecha", "horario", "talla", "probar"],
@@ -287,6 +290,19 @@ RE_DESCRIBE = re.compile(r"\b(azul|roj[oa]|rosad[oa]|rosa|palo rosa|negr[oa]|bla
                          r"cruzad[oa]|asimetric[oa]|drapead[oa])\b")
 RE_AFIRMA = re.compile(r"^(s+i+p?|claro|ok\w*|dale|ya|bueno|listo|perfecto|de acuerdo|por supuesto|si+ (por favor|porfa|claro))[\s.!,]*$")
 RE_NIEGA = re.compile(r"^(no+|nop|no gracias|mejor no|todavia no|aun no)[\s.!,]*$")
+# Un «sí» dicho de cualquier manera a una pregunta de sí/no: «si ca ver», «ya pues», «claro que sí pásamelos».
+RE_AFIRMA_INICIO = re.compile(r"^(s+i+p?|sip|claro|ya|dale|ok\w*|listo|bueno|perfecto|de acuerdo|por supuesto|porfa|por favor|"
+                              r"pasa(me)?l[oa]s?|envia(me)?l[oa]s?|manda(me)?l[oa]s?)\b")
+# «me llamo Alvaro», «mi nombre es Ana María»: el nombre, no un pedido de hablar con una persona.
+RE_NOMBRE = re.compile(r"\b(?:me llamo|mi nombre es)\s+([a-zñ]{2,20}(?:\s+[a-zñ]{2,20})?)")
+
+
+def afirma(texto: str) -> bool:
+    """¿Es un sí a una pregunta de sí/no? Corto, sin signo de pregunta y empezando por una afirmación."""
+    t = _plano(texto)
+    if RE_AFIRMA.match(t):
+        return True
+    return bool(len(t.split()) <= 6 and "?" not in t and not re.match(r"^(no|ya no|todavia no)\b", t) and RE_AFIRMA_INICIO.match(t))
 
 
 def _talla(t: str, pendiente: str) -> str | None:
@@ -320,6 +336,8 @@ def extraer(texto: str, pendiente: str = "") -> dict:
     """Los datos que trae el mensaje, por reglas. Solo lo que aparece; nada se supone."""
     t = _plano(texto)
     out: dict = {}
+    if m := RE_NOMBRE.search(t):
+        out["nombre"] = " ".join(w.capitalize() for w in m.group(1).split() if w not in ("y", "de", "pero", "busco", "quiero"))[:40]
     if v := _talla(t, pendiente):
         out["talla"] = v
     if m := RE_FECHA.search(t) or RE_FECHA_DIA.search(t):
@@ -347,6 +365,15 @@ def extraer(texto: str, pendiente: str = "") -> dict:
         if rx.search(t):
             out["ocasion"] = k
             break
+    if "ocasion" not in out:
+        # Espacio mal puesto al teclear: «par aboda», «matri monio». Solo palabras largas e inconfundibles.
+        pegado = re.sub(r"\s+", "", t)
+        for k, clave in (("matrimonio", "paraboda"), ("matrimonio", "paraunaboda"), ("matrimonio", "matrimonio"),
+                         ("graduacion", "graduacion"), ("quinceanero", "quinceanero"), ("cumpleanos", "cumpleanos"),
+                         ("bautizo", "bautizo"), ("aniversario", "aniversario")):
+            if clave in pegado:
+                out["ocasion"] = k
+                break
     sin_saludo = RE_SALUDO_NOCHE.sub("", t)
     if RE_NOCHE.search(sin_saludo):
         out["horario"] = "noche"
@@ -763,8 +790,8 @@ def leer(mem: dict, texto: str, jev: dict | None = None, ahora: _dt.datetime | N
                                                               and len(t.split()) >= 3)
         res["sin_dato"] = bool(RE_SIN_DATO.search(t)) and not res["describe"]
         res["respondio"] = res["describe"]
-    elif pend in ("separar", "pago", "otras_opciones"):
-        res["respondio"] = bool(RE_AFIRMA.match(t) or RE_NIEGA.match(t))
+    elif pend in ("separar", "pago", "otras_opciones", "voucher"):
+        res["respondio"] = bool(afirma(texto) or RE_NIEGA.match(t))
     elif pend == "confirmar":
         res["respondio"] = bool(RE_AFIRMA.match(t) or RE_NIEGA.match(t) or re.search(r"\bconfirm", t))
     if not res["respondio"] and RE_ESPERA.search(t) and not pregunta:
@@ -782,7 +809,7 @@ def registrar_respuesta(mem: dict, respuesta: str, forzar: str | None = None, pr
     if clave:
         # Cada vez que pregunta una de indagar, cuenta (hasta VECES_INDAGAR). Antes solo contaba si seguía pendiente: si
         # entre medio se soltaba, la tercera y la cuarta «¿para cuándo lo necesitas?» no se contaban y se repetía sin fin.
-        repite = clave in INDAGAR
+        repite = clave in REPETIBLES
         mem["pendiente"] = clave
         if clave not in mem["preguntado"] or (repite and veces(mem, clave) < VECES_INDAGAR):
             mem["preguntado"].append(clave)
@@ -808,11 +835,12 @@ def siguiente(mem: dict, etapa: str, hay_prenda: bool | None = None) -> str:
         hay_prenda = bool(mem.get("mostrados") or mem.get("producto"))
     if etapa == "prospeccion" and not (sab.get("ocasion") or sab.get("prenda") or sab.get("fecha") or hay_prenda
                                        or mem.get("pidio_ver")):
-        # No contó ninguna necesidad (saludó, mandó un emoji, escribe de otra cosa): no hay «para cuándo» ni «de día o de
-        # noche» de nada. La ocasión, dos veces; luego una pregunta abierta, una vez; luego, ninguna.
-        if not ya_hecha(mem, "ocasion"):
-            return "ocasion"
-        return "" if ya_hecha(mem, "que_busca") else "que_busca"
+        # No contó ninguna necesidad (saludó, mandó un emoji, escribe de otra cosa). A un «hola» no se le pregunta «¿es
+        # para alguna ocasión especial?» (¿qué cosa?): primero la pregunta abierta, «¿qué estás buscando?», una vez;
+        # luego la ocasión, dos veces; luego, ninguna.
+        if not ya_hecha(mem, "que_busca"):
+            return "que_busca"
+        return "" if ya_hecha(mem, "ocasion") else "ocasion"
     for k in orden:
         if k in DATO_DE and sab.get(DATO_DE[k]):
             continue
@@ -838,6 +866,8 @@ def texto_pregunta(k: str, mem: dict, mensaje: str = "") -> str:
     variante se reconoce con DETECTOR igual que la de PREGUNTAS (lo comprueba la prueba)."""
     if k == "ocasion" and re.search(r"\bevento\b", _plano(mensaje)):
         return "¿Qué evento es?"
+    if k == "que_busca" and veces(mem, "que_busca") >= 1:
+        return "Cuéntame, ¿qué estás buscando: un vestido, un conjunto, otra prenda? 😊"
     if k == "ocasion":
         prenda = mem["sabemos"].get("prenda") or ""
         if veces(mem, "ocasion") >= 1:   # segunda vez: con otras palabras y diciendo para qué
@@ -888,7 +918,7 @@ def lo_que_sabemos(mem: dict) -> str:
     nombres = {"ocasion": "ocasión", "horario": "día/noche", "fecha": "para cuándo", "fecha_iso": "fecha del evento",
                "prenda": "prenda que busca", "talla": "talla", "estatura": "estatura", "color": "color",
                "presupuesto": "presupuesto", "envio": "envío", "ciudad": "ciudad", "le_gusto": "lo que le gustó",
-               "cita": "cita para probárselo"}
+               "cita": "cita para probárselo", "nombre": "se llama"}
     partes = [f"{nombres[k]}: {v}" for k, v in sab.items()]
     if mem.get("objeciones"):
         partes.append("dudas que puso: " + ", ".join(mem["objeciones"]))

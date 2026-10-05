@@ -51,6 +51,8 @@ type convContext struct {
 	Etapa   string `json:"etapa,omitempty"`
 	Voucher bool   `json:"voucher,omitempty"` // ya mandó el comprobante de pago
 	Address bool   `json:"address,omitempty"` // ya dio la dirección de envío
+	// Desde: inicio (unix) de la sesión actual. Lo anterior no se le manda al agente (ver nuevaSesion).
+	Desde int64 `json:"desde,omitempty"`
 	// Llegó desde un anuncio de clic a WhatsApp (y su título): se recuerda toda la conversación.
 	Anuncio      bool   `json:"anuncio,omitempty"`
 	AnuncioTitle string `json:"anuncio_title,omitempty"`
@@ -145,15 +147,42 @@ func (b *Bot) Handle(ctx context.Context, in *Incoming) {
 		b.Notify("conversations")
 		return
 	}
+	prevAt := conv.LastMessageAt // antes de guardar este mensaje: cuándo fue el último de la conversación
 	if err := b.store.AddMessage(ctx, msg); err != nil {
 		log.Printf("bot: guardar mensaje: %v", err)
 	}
 	b.Notify("conversations")
 
+	// Vuelve después de horas: es una conversación nueva. Sin esto el agente seguía «hablando» de las prendas de la
+	// mañana (ofrecía una sin que la pidan) y arrastraba la etapa y la pregunta pendiente de entonces.
+	vuelve := !prevAt.IsZero() && time.Since(prevAt) > sessionGap
+	if vuelve && (conv.State == stIdle || conv.State == stPhoto || conv.State == stHumanAsked) {
+		b.nuevaSesion(ctx, conv)
+	}
+	// La pausa por «hablar con una asesora» no es una calle sin salida: «menu» devuelve el bot.
+	if conv.BotPaused && conv.State == stHumanAsked && !in.HasImage && isAny(normalize(in.Text), "menu", "0", "inicio", "bot") {
+		_ = b.store.SetBotPaused(ctx, conv.ID, false)
+		conv.BotPaused = false
+	}
 	if conv.BotPaused || b.store.Setting(ctx, "bot_enabled", "true") != "true" {
 		return
 	}
 	b.step(ctx, conv, in, msg, img)
+}
+
+// sessionGap: silencio a partir del cual el siguiente mensaje abre una conversación nueva.
+const sessionGap = 6 * time.Hour
+
+// nuevaSesion olvida el hilo anterior (etapa, memoria, pendiente, anuncio) y marca desde cuándo cuenta el historial
+// que ve el agente. Lo que se sabe de la clienta por sus pedidos vuelve por el perfil. Si el bot estaba en pausa
+// porque pidió una asesora horas atrás, la pausa caduca: que no se quede hablando sola.
+func (b *Bot) nuevaSesion(ctx context.Context, conv *store.Conversation) {
+	if conv.BotPaused && conv.State == stHumanAsked {
+		_ = b.store.SetBotPaused(ctx, conv.ID, false)
+		conv.BotPaused = false
+	}
+	conv.Context = "{}"
+	b.setState(ctx, conv, stIdle, convContext{Desde: time.Now().Unix()})
 }
 
 func (b *Bot) imageBytes(ctx context.Context, in *Incoming) ([]byte, string, error) {
@@ -319,6 +348,9 @@ func (b *Bot) setState(ctx context.Context, conv *store.Conversation, state stri
 	if !cc.Anuncio && prev.Anuncio {
 		cc.Anuncio, cc.AnuncioTitle = true, prev.AnuncioTitle
 	}
+	if cc.Desde == 0 {
+		cc.Desde = prev.Desde // el inicio de la sesión también sobrevive a los reinicios del flujo
+	}
 	// La memoria tampoco: un reinicio (convContext nuevo) conserva lo que sabemos de la clienta, pero suelta la
 	// pregunta pendiente, porque el flujo cambió. Al entrar en un estado del flujo de Go, la pendiente es la
 	// de ese estado (talla, confirmar, envío, dirección).
@@ -426,7 +458,7 @@ func (b *Bot) handoff(ctx context.Context, conv *store.Conversation) {
 	_ = b.store.SetBotPaused(ctx, conv.ID, true)
 	_ = b.store.SaveDecision(ctx, &store.Decision{ConversationID: conv.ID, Decision: "derivar_humano",
 		Razon: "paso a una asesora", Autor: "bot"})
-	b.reply(ctx, conv, "🙋‍♀️ ¡Listo! Una asesora te atenderá en breve por este mismo chat.")
+	b.reply(ctx, conv, "🙋‍♀️ ¡Listo! Una asesora te atenderá en breve por este mismo chat.\nSi prefieres seguir conmigo mientras tanto, escribe *menu*.")
 	b.Notify("conversations")
 }
 
@@ -1077,7 +1109,12 @@ func (b *Bot) agentHistory(ctx context.Context, conv *store.Conversation, curren
 	if err != nil {
 		return nil
 	}
+	var cc convContext
+	_ = json.Unmarshal([]byte(conv.Context), &cc)
 	for _, m := range msgs {
+		if cc.Desde > 0 && m.CreatedAt.Unix() < cc.Desde {
+			continue // de una sesión anterior: el agente no lo ve
+		}
 		// Los pies de foto cuentan: así el agente sabe qué prendas ya ofreció.
 		if (m.Kind != "text" && m.Kind != "image") || strings.TrimSpace(m.Body) == "" {
 			continue

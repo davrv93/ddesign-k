@@ -144,10 +144,17 @@ caso("el código fuerza la pendiente", m["pendiente"], "confirmar")
 # --- 5. La siguiente pregunta la elige el código ----------------------------------------------------------
 # Método de venta (04-10-2026): ocasión → para cuándo (urgencia) → día/noche; la talla, después de mostrar una prenda;
 # y el cierre ofrece probárselo o separarlo (`probar`), que reemplazó a «¿qué te gustó?» y «¿separarlo?».
-caso("prospección empieza por la ocasión", M.siguiente(M.nueva(), "prospeccion"), "ocasion")
+# Sin ninguna necesidad contada (solo «hola»): primero «¿qué estás buscando?»; la ocasión cuando diga qué busca.
+caso("solo saludó: primero qué busca", M.siguiente(M.nueva(), "prospeccion"), "que_busca")
+caso("dijo la prenda: la ocasión", M.siguiente(con(prenda="vestido"), "prospeccion"), "ocasion")
 caso("sabida la ocasión, para cuándo (la urgencia)", M.siguiente(con(ocasion="matrimonio"), "prospeccion"), "fecha")
-m = M.nueva(); m["preguntado"] = ["ocasion"]
+m = con(prenda="vestido"); m["preguntado"] = ["ocasion"]
 caso("preguntada una vez sin respuesta: se repite (indagar)", M.siguiente(m, "prospeccion"), "ocasion")
+m = M.nueva(); m["preguntado"] = ["que_busca"]
+caso("«¿qué buscas?» sin respuesta: se repite una vez, con otras palabras",
+     (M.siguiente(m, "prospeccion"), M.clave_de(M.texto_pregunta("que_busca", m))), ("que_busca", "que_busca"))
+m = M.nueva(); m["preguntado"] = ["que_busca", "que_busca"]
+caso("tras dos «¿qué buscas?» sin respuesta: la ocasión", M.siguiente(m, "prospeccion"), "ocasion")
 # Ajustado (04-10-2026, prueba con conversaciones): el caso pedía pasar a la fecha tras dos intentos, pero sin ninguna
 # necesidad contada el bot terminaba preguntando «¿para cuándo lo necesitas?» a quien solo saludó. Con la prenda dicha
 # se sigue con la fecha como antes; sin nada, una pregunta abierta.
@@ -155,8 +162,8 @@ m = con(prenda="vestido"); m["preguntado"] = ["ocasion", "ocasion"]
 caso("preguntada dos veces sin respuesta: no se insiste más", M.siguiente(m, "prospeccion"), "fecha")
 m = M.nueva(); m["preguntado"] = ["ocasion", "ocasion"]
 caso("solo saludó y no contestó la ocasión dos veces: pregunta abierta", M.siguiente(m, "prospeccion"), "que_busca")
-m["preguntado"].append("que_busca")
-caso("la pregunta abierta, una sola vez", M.siguiente(m, "prospeccion"), "")
+m["preguntado"] += ["que_busca", "que_busca"]
+caso("agotadas la abierta y la ocasión, no se insiste", M.siguiente(m, "prospeccion"), "")
 caso("sin prenda ni ocasión, «¿para cuándo sería?» (sin «lo»)", M.texto_pregunta("fecha", M.nueva()), "¿Para cuándo sería?")
 caso("«es este finde» es la fecha", M.extraer("es este finde", "fecha").get("fecha"), "este fin de semana")
 caso("sabidas ocasión y fecha: día/noche", M.siguiente(con(ocasion="boda", fecha="el sabado"), "prospeccion"), "horario")
@@ -349,7 +356,7 @@ q = M.texto_pregunta("ocasion", M.nueva(), "hoola")
 caso("saludo: la ocasión sin «lo» huérfano", (q, M.clave_de(q)), ("¿Es para alguna ocasión especial?", "ocasion"))
 q = M.texto_pregunta("ocasion", con(prenda="vestido"), "busco un vestido")
 caso("con prenda: ¿para qué ocasión buscas el vestido?", (q, M.clave_de(q)), ("¿Para qué ocasión buscas el vestido?", "ocasion"))
-m = M.nueva(); M.registrar_respuesta(m, "¿Es para alguna ocasión especial?")
+m = con(prenda="vestido"); M.registrar_respuesta(m, "¿Para qué ocasión buscas el vestido?")
 caso("ocasión sin contestar: se vuelve a preguntar una vez", M.siguiente(m, "prospeccion"), "ocasion")
 q = M.texto_pregunta("ocasion", m, "busco un vestido")
 caso("la segunda vez, con otras palabras", (M.clave_de(q), q.startswith("Cuéntame")), ("ocasion", True))
@@ -401,6 +408,22 @@ caso("fecha, segunda vez: otras palabras", (M.clave_de(q), q != "¿Para cuándo 
 m = con(ocasion="matrimonio"); M.registrar_respuesta(m, "¿El evento es de día o de noche?")
 q = M.texto_pregunta("horario", m)
 caso("día/noche, segunda vez: otras palabras", (M.clave_de(q), q != M.PREGUNTAS["horario"]), ("horario", True))
+
+
+# WhatsApp real (04-10-2026): «si ca ver» a «¿te paso los datos para el pago?» no se leyó como sí; y «me llamo
+# alvaro» se tomó por pedir una asesora y el bot se pausó.
+for t, esp in [("si ca ver", True), ("si claro", True), ("ya pues", True), ("pasamelos porfa", True), ("no gracias", False),
+               ("sí?", False), ("no", False), ("el vestido de qué tela es", False)]:
+    caso(f"afirma: «{t}»", M.afirma(t), esp)
+m = M.nueva(); m["pendiente"] = "pago"
+caso("«si ca ver» responde a la pendiente de pago", M.leer(m, "si ca ver")["respondio"], True)
+caso("nombre: me llamo alvaro", M.extraer("me llamo alvaro").get("nombre"), "Alvaro")
+caso("nombre: mi nombre es Ana María", M.extraer("hola, mi nombre es Ana María").get("nombre"), "Ana Maria")
+caso("«soy talla M» no es un nombre", M.extraer("soy talla M").get("nombre"), None)
+
+
+caso("ocasión con el espacio mal puesto: «par aboda»", M.extraer("hola busco un vestido par aboda").get("ocasion"), M.extraer("para una boda").get("ocasion"))
+caso("«te regalo» no es una gala", M.extraer("te regalo algo").get("ocasion"), None)
 
 
 def main() -> int:

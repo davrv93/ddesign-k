@@ -39,6 +39,8 @@ caso("con ```json``` alrededor", S.armar('```json\n{"responde": "Listo."}\n```')
 caso("texto libre (no JSON) → None, se usa como antes", S.armar("Hola, ¿cómo estás?"), None)
 caso("JSON vacío → None", S.armar('{"responde": "", "por_que": ""}', "¿Qué talla?"), None)
 caso("JSON roto no llega con llaves", "{" in S.sin_json('{"responde": "Hola"'), False)
+caso("un decimal no parte la frase", S.armar('{"responde": "El envío es S/ 20.00 por Olva. Llega en 2 días."}'),
+     "El envío es S/ 20.00 por Olva. Llega en 2 días.")
 caso("el formato nombra la pregunta del código", "«¿Qué talla usas?»" in S.formato("¿Qué talla usas?", False), True)
 
 
