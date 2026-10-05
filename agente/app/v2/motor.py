@@ -1,15 +1,15 @@
-"""Motor recursivo (spec §9–10, el planteamiento «Jev style»).
+"""Motor recursivo (spec §9–10, «Jev style»).
 
 Ciclo por turno:
 
-    DECIDE → (¿necesita un hecho?) → TOOL → ACTUALIZA ESTADO → DECIDE DE NUEVO → … → PLAN → VALIDA
+    DECIDE → (¿falta un hecho?) → TOOL → ACTUALIZA ESTADO → DECIDE DE NUEVO → … → PLAN → VALIDA
 
-Cada vuelta gasta pasos del presupuesto (MAX_AGENT_STEPS, MAX_DECISION_CALLS, MAX_TOOL_CALLS). Cuando se agotan, el
-ciclo se corta: nunca hay bucles infinitos. Una herramienta ya consultada no se vuelve a llamar: el hecho queda en el
-estado y el motor decide con él.
+Herramientas (fase 4): `stock` (estado en vivo de un código) y `rag` (códigos del catálogo para una búsqueda). Cada
+vuelta gasta pasos del presupuesto (MAX_AGENT_STEPS, MAX_DECISION_CALLS, MAX_TOOL_CALLS). Al agotarse, el ciclo se
+corta: nunca hay bucles infinitos. Un dato ya consultado no se vuelve a pedir.
 
-El motor no escribe texto ni llama a DeepSeek. Su salida es un plan validado que, en sombra, se compara con lo que
-hizo V1."""
+Una acción que necesita una herramienta no registrada se convierte en «preguntar»: nunca se afirma algo sin
+herramienta. El motor no escribe texto ni llama a ningún modelo generativo."""
 from __future__ import annotations
 
 import copy
@@ -18,11 +18,14 @@ from dataclasses import asdict, dataclass, field
 from typing import Callable
 
 from . import config
-from .interfaces import DecisionEngine
+from .estado import separar
+from .interfaces import Decision, DecisionEngine
 from .plan import ACCIONES_CON_PRODUCTO, Plan, validar
 
 DECISIONES = ["intent", "next_action"]
-ACCION_HERRAMIENTA = {"consultar_stock": "stock"}
+# acción → herramienta que necesita para tener el hecho que falta
+ACCION_TOOL = {"consultar_stock": "stock", "buscar_alternativa": "rag"}
+PREGUNTA_TALLA = {"tipo": "talla", "texto": "¿Qué talla usas normalmente?"}
 
 
 @dataclass
@@ -33,6 +36,7 @@ class Resultado:
     tope: str | None = None
     motor: str = ""
     ms: int = 0
+    herramientas: dict = field(default_factory=dict)
 
     def a_dict(self) -> dict:
         return {
@@ -42,11 +46,17 @@ class Resultado:
             "tope": self.tope,
             "motor": self.motor,
             "ms": self.ms,
+            "herramientas": self.herramientas,
         }
 
 
+def _consulta_rag(estado: dict) -> str:
+    req = estado.get("requirements") or {}
+    return " ".join(str(req[k]) for k in ("prenda", "ocasion", "horario", "color") if req.get(k))
+
+
 class MotorRecursivo:
-    def __init__(self, decision: DecisionEngine, herramientas: dict[str, Callable[[str], object]] | None = None,
+    def __init__(self, decision: DecisionEngine, herramientas: dict[str, Callable] | None = None,
                  limites: config.Limites | None = None):
         self.decision = decision
         self.herramientas = herramientas or {}
@@ -70,40 +80,70 @@ class MotorRecursivo:
                 break
 
             ultima = self.decision.decide(estado, DECISIONES)
+            accion = next((d for d in ultima if d.decision == "next_action"), None)
             paso = {"n": len(pasos) + 1, "decisiones": [asdict(d) for d in ultima], "herramienta": None}
-            accion = next((d.choice for d in ultima if d.decision == "next_action"), "responder")
             pasos.append(paso)
+            nombre_accion = accion.choice if accion else "responder"
+            tool = ACCION_TOOL.get(nombre_accion)
+            if tool and tool not in self.herramientas:
+                # Sin herramienta no hay hecho: se pregunta en vez de afirmar.
+                paso["degradada"] = nombre_accion
+                ultima = [d for d in ultima if d.decision != "next_action"]
+                ultima.append(Decision("next_action", "preguntar", accion.confianza, "regla"))
+                break
+            if not tool:
+                break
 
-            nombre_tool = ACCION_HERRAMIENTA.get(accion)
-            foco = (estado.get("product") or {}).get("focus")
-            if nombre_tool and nombre_tool in self.herramientas and foco:
-                if estado["herramientas"].get(nombre_tool) is None:      # no se repite una consulta ya hecha
-                    try:
-                        pres.gastar("herramienta")
-                    except config.LimiteExcedido as e:
-                        tope = str(e)
-                        break
-                    estado["herramientas"][nombre_tool] = self.herramientas[nombre_tool](foco)
-                    paso["herramienta"] = nombre_tool
-                    paso["resultado"] = estado["herramientas"][nombre_tool]
-                    continue                                              # RECURSIÓN: decide de nuevo con el hecho nuevo
-                continue                                                  # ya lo sabemos: el siguiente paso decide otra cosa
-            break
+            arg = (accion.arg if accion and accion.arg else None) or (
+                (estado.get("product") or {}).get("focus") if tool == "stock" else _consulta_rag(estado))
+            if self._ya_consultado(estado, tool, arg):
+                continue                                              # el dato ya está: que decida otra cosa
+            try:
+                pres.gastar("herramienta")
+            except config.LimiteExcedido as e:
+                tope = str(e)
+                break
+            resultado = self.herramientas[tool](arg)
+            self._guardar(estado, tool, arg, resultado)
+            paso.update(herramienta=tool, argumento=arg, resultado=resultado)
+            # RECURSIÓN: la siguiente vuelta decide de nuevo con el hecho nuevo en el estado.
 
+        # Tope con una acción de herramienta pendiente: no se entrega un plan a medias. Se pasa a una persona.
+        pendiente = next((d for d in ultima if d.decision == "next_action"), None)
+        if tope and pendiente and pendiente.choice in ACCION_TOOL:
+            ultima = [d for d in ultima if d.decision != "next_action"]
+            ultima.append(Decision("next_action", "pedir_asesora", pendiente.confianza, "regla"))
         plan, codigos_ok = self._plan(estado, ultima)
         errores = validar(plan, codigos_ok) if plan else ["sin plan"]
         return Resultado(plan=plan, errores=errores, pasos=pasos, tope=tope, motor=self.decision.nombre,
-                         ms=int((time.perf_counter() - t0) * 1000))
+                         ms=int((time.perf_counter() - t0) * 1000), herramientas=estado["herramientas"])
+
+    @staticmethod
+    def _ya_consultado(estado: dict, tool: str, arg) -> bool:
+        herr = estado["herramientas"]
+        if tool == "stock":
+            return arg in (herr.get("stock") or {})
+        return herr.get("rag") is not None
+
+    @staticmethod
+    def _guardar(estado: dict, tool: str, arg, resultado) -> None:
+        if tool == "stock":
+            estado["herramientas"].setdefault("stock", {})[arg] = resultado
+        else:
+            estado["herramientas"]["rag"] = list(resultado or [])
 
     @staticmethod
     def _plan(estado: dict, decs: list) -> tuple[Plan | None, set[str]]:
-        accion = next((d.choice for d in decs if d.decision == "next_action"), "responder")
+        accion_d = next((d for d in decs if d.decision == "next_action"), None)
+        accion = accion_d.choice if accion_d else "responder"
+        arg = accion_d.arg if accion_d else None
         foco = (estado.get("product") or {}).get("focus")
-        stock = (estado.get("herramientas") or {}).get("stock")
-        codigos_ok = {foco} if (foco and stock == "online") else set()
-        producto = foco if accion in ACCIONES_CON_PRODUCTO and foco else None
+        stock = (estado.get("herramientas") or {}).get("stock") or {}
+        codigos_ok = {c for c, v in stock.items() if v == "online"}
+        producto = (arg or foco) if accion in ACCIONES_CON_PRODUCTO else None
         if accion == "recomendar" and not producto:
             return None, codigos_ok
         hechos = [f"{k}: {v}" for k, v in (estado.get("requirements") or {}).items() if v]
-        return Plan(accion=accion, producto=producto, hechos=hechos,
-                    razon=f"decisión {accion} con stock {stock!r}"), codigos_ok
+        pregunta = PREGUNTA_TALLA if (accion == "recomendar" and "talla" in separar(estado)["desconocidos"]) else None
+        return Plan(accion=accion, producto=producto, hechos=hechos, pregunta=pregunta,
+                    razon=f"decisión {accion} · stock {stock.get(producto) if producto else '—'}"), codigos_ok

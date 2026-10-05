@@ -33,6 +33,8 @@ from .v2 import config as v2cfg
 from .v2.agente import AgentV2
 from .v2.decision import JevStyleDecision, ReglasDecision, juez_llama
 from .v2.motor import MotorRecursivo
+from .v2.calidad import PlantillaGeneracion, ReglasCalidad
+from .v2.metricas import REGISTRO as _METRICAS
 from .modelo import Embedder, EmbedderOnnx, cargar, hay_setfit
 from . import stock as stk
 
@@ -2311,7 +2313,7 @@ def health():
 
 @app.get("/metricas")
 def metricas():
-    return E.metricas
+    return E.metricas | {"versiones": _METRICAS.resumen()}
 
 
 class TextoIn(BaseModel):
@@ -2344,10 +2346,28 @@ def _motor_v2() -> MotorRecursivo:
         decision = JevStyleDecision(juez_llama(url, lim.timeout_decision_ms / 1000))
     else:
         decision = ReglasDecision()
-    return MotorRecursivo(decision, {"stock": _herramienta_stock}, lim)
+    return MotorRecursivo(decision, {"stock": _herramienta_stock, "rag": _herramienta_rag}, lim)
 
 
-_V2 = AgentV2(v1=conversar, motor=_motor_v2())
+def _herramienta_rag(texto: str) -> list[str]:
+    """Herramienta del motor V2: las prendas del catálogo que encajan con la búsqueda (mismo RAG que V1)."""
+    if E is None:
+        raise RuntimeError("agente sin arrancar")
+    qv = E.emb([texto])[0]
+    return [f.codigo for f in recuperar(qv, [], categoria_pedida(texto))][:5]
+
+
+def _nombre_de(codigo: str) -> str | None:
+    with E.lock:
+        i = E.por_codigo.get(codigo)
+        return E.fichas[i].nombre if i is not None else None
+
+
+_V2 = AgentV2(
+    v1=conversar, motor=_motor_v2(),
+    calidad=ReglasCalidad(precios=_precios_reales, nombres=_nombre_de),
+    redactor=PlantillaGeneracion(nombres=_nombre_de),
+)
 
 
 @app.post("/chat")
@@ -2357,6 +2377,7 @@ def ruta_chat(req: ChatIn):
         res = _V2.conversar(req)
     else:
         res = conversar(req) | {"version": "v1"}
+    _METRICAS.turno(res.get("version", "v1"), res.get("ms", res.get("v2", {}).get("ms", 0)), res.get("v2"))
     crm.avisar(req, res, venta.VENTA.get("envio"))   # chat web → Kommo, en segundo plano (app/crm.py)
     return res
 

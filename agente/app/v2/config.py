@@ -2,7 +2,7 @@
 
 AGENT_VERSION      v1 (por defecto) | v2
 MAX_AGENT_STEPS    pasos del agente por turno (1–10)
-MAX_DECISION_CALLS llamadas al motor de decisión por turno (0–10)
+MAX_DECISION_CALLS llamadas al motor de decisión por turno (0–10; 4 = el camino stock→RAG→stock→recomendar)
 MAX_TOOL_CALLS     herramientas (stock, RAG, CRM) por turno (0–10)
 MAX_REGENERATIONS  regeneraciones tras un fallo de calidad (0–3)
 DECISION_TIMEOUT_MS / GENERATION_TIMEOUT_MS  (100–60000)
@@ -37,7 +37,7 @@ def _entero(env, nombre: str, defecto: int, minimo: int, maximo: int) -> int:
 @dataclass(frozen=True)
 class Limites:
     max_pasos: int = 4
-    max_decisiones: int = 3
+    max_decisiones: int = 4
     max_herramientas: int = 4
     max_regeneraciones: int = 1
     timeout_decision_ms: int = 1500
@@ -47,7 +47,7 @@ class Limites:
 def limites_desde_entorno(env=os.environ) -> Limites:
     return Limites(
         max_pasos=_entero(env, "MAX_AGENT_STEPS", 4, 1, 10),
-        max_decisiones=_entero(env, "MAX_DECISION_CALLS", 3, 0, 10),
+        max_decisiones=_entero(env, "MAX_DECISION_CALLS", 4, 0, 10),
         max_herramientas=_entero(env, "MAX_TOOL_CALLS", 4, 0, 10),
         max_regeneraciones=_entero(env, "MAX_REGENERATIONS", 1, 0, 3),
         timeout_decision_ms=_entero(env, "DECISION_TIMEOUT_MS", 1500, 100, 60000),

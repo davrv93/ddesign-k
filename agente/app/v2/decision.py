@@ -1,14 +1,14 @@
 """Motores de decisión (spec §5–8, «Jev style»).
 
 Un motor de decisión recibe el estado estructurado y devuelve decisiones con opciones de un conjunto cerrado. Nunca
-escribe texto para la clienta. Hay tres implementaciones intercambiables:
+escribe texto para la clienta. Implementaciones intercambiables:
 
 - ReglasDecision: determinista, sin modelo. Es la referencia y el respaldo.
-- JevStyleDecision: un juez que responde JSON con enums cerrados. Puede ser un modelo local (llama-server con
-  json_schema) o cualquier función que reciba el prompt y devuelva texto. Si su salida no valida, lanza ValueError y
-  el motor recursivo cae a reglas.
-- (fase 3) implementación con modelo local de Qwen; misma interfaz.
-"""
+- JevStyleDecision: un juez que responde JSON con enums cerrados (llama-server local con json_schema, o cualquier
+  función que reciba el prompt y devuelva texto). Si su salida no valida, lanza ValueError y el motor cae a reglas.
+
+El estado de herramientas que leen las reglas: `herramientas.stock` = {codigo: "online" | "sucursal" | ""} y
+`herramientas.rag` = [codigos] (o no existe si aún no se buscó)."""
 from __future__ import annotations
 
 import json
@@ -17,21 +17,11 @@ from typing import Callable
 
 from .interfaces import Decision
 
-# Conjuntos cerrados. Lo que no esté aquí, el validador lo rechaza.
 OPCIONES = {
-    "next_action": ("consultar_stock", "recomendar", "preguntar", "responder", "pedir_asesora", "derivar"),
+    "next_action": ("consultar_stock", "buscar_alternativa", "recomendar", "preguntar", "responder",
+                    "pedir_asesora", "derivar"),
     "intent": ("purchase", "product_information", "support", "greeting", "other"),
 }
-
-
-def _acotada(x) -> float:
-    try:
-        v = float(x)
-    except (TypeError, ValueError):
-        raise ValueError(f"confianza no numérica: {x!r}")
-    if not 0.0 <= v <= 1.0:
-        raise ValueError(f"confianza fuera de 0–1: {v}")
-    return v
 
 
 class ReglasDecision:
@@ -39,26 +29,38 @@ class ReglasDecision:
 
     def decide(self, estado: dict, decisiones: list[str]) -> list[Decision]:
         foco = (estado.get("product") or {}).get("focus")
-        stock = (estado.get("herramientas") or {}).get("stock")   # None = no consultado; "" = sin stock
-        pendiente = (estado.get("conversation") or {}).get("pending_question")
+        herr = estado.get("herramientas") or {}
+        stock = herr.get("stock") or {}
+        rag = herr.get("rag")                       # None = no buscado; [] = buscado y vacío
         out: list[Decision] = []
         if "intent" in decisiones:
             req = estado.get("requirements") or {}
             compra = bool(req.get("ocasion") or req.get("prenda") or foco)
             out.append(Decision("intent", "purchase" if compra else "other", 0.7))
         if "next_action" in decisiones:
-            if not foco:
-                accion, conf = "preguntar", 0.7                   # no hay prenda en foco: preguntar cuál
-            elif stock is None:
-                accion, conf = "consultar_stock", 0.9             # hecho que falta: consultarlo
-            elif stock == "":
-                accion, conf = "preguntar", 0.8                   # sin stock: no inventar; preguntar si le interesa otra
-            elif stock == "online":
-                accion, conf = "recomendar", 0.9
-            else:                                                 # solo en sucursal
-                accion, conf = "responder", 0.8
-            out.append(Decision("next_action", accion, conf))
+            out.append(self._accion(foco, stock, rag))
         return out
+
+    @staticmethod
+    def _accion(foco, stock: dict, rag) -> Decision:
+        if not foco:
+            return Decision("next_action", "preguntar", 0.7)                 # no hay prenda: preguntar cuál
+        if foco not in stock:
+            return Decision("next_action", "consultar_stock", 0.9, arg=foco)  # hecho que falta: consultarlo
+        if stock[foco] == "online":
+            return Decision("next_action", "recomendar", 0.9, arg=foco)
+        if stock[foco] == "sucursal":
+            return Decision("next_action", "responder", 0.8)                  # solo en tienda física
+        # Sin stock de la prenda en foco: buscar alternativas con stock, sin inventarlas.
+        if rag is None:
+            return Decision("next_action", "buscar_alternativa", 0.8)
+        con_stock = next((c for c in rag if stock.get(c) == "online"), None)
+        if con_stock:                                                          # una alternativa ya tiene stock: basta
+            return Decision("next_action", "recomendar", 0.8, arg=con_stock)
+        por_mirar = next((c for c in rag if c != foco and c not in stock), None)
+        if por_mirar:
+            return Decision("next_action", "consultar_stock", 0.8, arg=por_mirar)
+        return Decision("next_action", "preguntar", 0.8)                      # sin alternativas: preguntar si le interesa otra
 
 
 def _prompt(estado: dict, decisiones: list[str]) -> str:
@@ -94,7 +96,13 @@ def parsear(crudo: str, pedidas: list[str]) -> list[Decision]:
             continue
         if choice not in OPCIONES[nombre]:
             raise ValueError(f"opción fuera de lista en {nombre}: {choice!r}")
-        vistas[nombre] = Decision(nombre, choice, _acotada(it.get("confianza")), fuente="juez")
+        try:
+            conf = float(it.get("confianza"))
+        except (TypeError, ValueError):
+            raise ValueError("confianza no numérica")
+        if not 0.0 <= conf <= 1.0:
+            raise ValueError(f"confianza fuera de 0–1: {conf}")
+        vistas[nombre] = Decision(nombre, choice, conf, fuente="juez")
     faltan = [d for d in pedidas if d in OPCIONES and d not in vistas]
     if faltan:
         raise ValueError(f"faltan decisiones: {faltan}")
@@ -112,7 +120,7 @@ class JevStyleDecision:
 
 
 def juez_llama(url: str, timeout_s: float) -> Callable[[str], str]:
-    """Juez local: un llama-server (OpenAI-compatible) en la misma red. Temperatura 0, JSON pedido al servidor.
+    """Juez local: llama-server (OpenAI-compatible) en la misma red. Temperatura 0 y JSON pedido al servidor.
     No apunta a ningún proveedor externo. Sin probar contra un servidor vivo hasta la fase 3 (benchmark)."""
     import httpx
 

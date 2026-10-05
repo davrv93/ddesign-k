@@ -13,6 +13,7 @@ class Decision:
     choice: str            # la opción elegida, de un conjunto cerrado
     confianza: float       # 0–1
     fuente: str = "regla"  # regla | local | remota | respaldo
+    arg: str | None = None  # código de producto al que se aplica (sale de una herramienta, nunca de un modelo)
 
 
 @runtime_checkable
