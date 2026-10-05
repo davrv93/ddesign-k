@@ -28,7 +28,7 @@ import json
 from contextvars import ContextVar
 
 from . import datos, etapas, jev, memoria, venta
-from . import animo, estructurado, gasto, rerank
+from . import animo, crm, estructurado, gasto, rerank
 from .modelo import Embedder, EmbedderOnnx, cargar, hay_setfit
 from . import stock as stk
 
@@ -2265,6 +2265,9 @@ def health():
             "comercial": (E.metricas.get("comercial") or {}).get("exactitud") if E else None,
             "clasificador": {"embeddings": E.emb_clf.model_name, "comparacion": E.metricas.get("comparacion")} if E else None,
             "jev": {"modo": jev.MODO, "verificar": jev.VERIFICAR, "modelo": jev.MODELO, "configurado": bool(jev.CLAVE)},
+            # Costos de envío (seed/venta.json): el backend los lee de aquí para el precio del lead en Kommo.
+            "envios": {z: e.get("costo") for z, e in (venta.VENTA.get("envio") or {}).items() if isinstance(e, dict)},
+            "crm": crm.activo(),   # avisa los turnos del chat web al backend (CRM_EVENT_URL y CRM_EVENT_SECRET)
             "stock": {"url": stk.STOCK_URL or "(seed)", "ultima_fuente": E.stock.ultima_fuente} if E else None,
             "busqueda_foto": E.img.metricas if E and E.img else None}
 
@@ -2291,7 +2294,9 @@ def ruta_clasificar(req: TextoIn):
 
 @app.post("/chat")
 def ruta_chat(req: ChatIn):
-    return conversar(req)
+    res = conversar(req)
+    crm.avisar(req, res, venta.VENTA.get("envio"))   # chat web → Kommo, en segundo plano (app/crm.py)
+    return res
 
 
 # ---------------------------------------------------------------------------
@@ -2311,6 +2316,8 @@ class FotoIn(BaseModel):
     anuncio: str = ""
     memoria: dict | None = None   # igual que en /chat: llega, se actualiza y vuelve
     perfil: dict | None = None
+    canal: str = ""          # «web» = chat de prueba: su turno se avisa al CRM (app/crm.py)
+    conversacion: str = ""   # sesión del chat web
 
 
 PLANTILLA_FOTO = {
@@ -2442,7 +2449,9 @@ Máximo 3 frases."""
 
 @app.post("/foto")
 def ruta_foto(req: FotoIn):
-    return conversar_foto(req)
+    res = conversar_foto(req)
+    crm.avisar(req, res, venta.VENTA.get("envio"))
+    return res
 
 
 @app.get("/stock")

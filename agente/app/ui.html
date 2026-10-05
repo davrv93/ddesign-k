@@ -302,6 +302,9 @@ let etapa = 'prospeccion', bitacora = [];
 // Memoria de la conversación (lo que ya sabemos de la clienta y la pregunta pendiente): la actualiza el
 // agente; aquí solo se guarda y se devuelve en cada mensaje, igual que la etapa. «Nuevo chat» la borra.
 let memoria = null;
+// Sesión del chat: identifica la conversación en el CRM (Kommo). «Nuevo chat» abre otra.
+const nuevaSesion = () => 'web-' + Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, '0')).join('');
+let sesion = nuevaSesion();
 // «Desde anuncio»: simula que la clienta llegó por el anuncio de clic a WhatsApp.
 let desdeAnuncio = false;
 // Motor elegido: se recuerda en este navegador; si no hay, manda el del servidor.
@@ -370,7 +373,7 @@ async function enviar(texto) {
   let j;
   try {
     const r = await fetch('chat', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, conversacion: 'web', desde_anuncio: desdeAnuncio, memoria }) });
+      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, conversacion: sesion, desde_anuncio: desdeAnuncio, memoria }) });
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
@@ -490,7 +493,7 @@ async function enviarFoto(file) {
   let j;
   try {
     const r = await fetch('foto', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ imagen_b64: dataUrl, mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, desde_anuncio: desdeAnuncio, memoria }) });
+      body: JSON.stringify({ imagen_b64: dataUrl, mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, conversacion: sesion, desde_anuncio: desdeAnuncio, memoria }) });
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
@@ -637,7 +640,7 @@ menu.addEventListener('keydown', ev => {
 });
 function nuevoChat() {
   if (ocupado) { aviso('Espera a que termine de responder'); return; }
-  hist = []; ultimoRol = ''; etapa = 'prospeccion'; bitacora = []; memoria = null;
+  hist = []; ultimoRol = ''; etapa = 'prospeccion'; bitacora = []; memoria = null; sesion = nuevaSesion();
   msgs.innerHTML = INICIO; info.innerHTML = INFO_VACIA; campo.value = ''; alEscribir(); emojis(false);
 }
 menu.onclick = ev => {

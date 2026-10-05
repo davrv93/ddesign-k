@@ -51,7 +51,7 @@ COPY app ./app
 # La máquina de etapas (prospección → seguimiento → cierre) y la memoria de la conversación (pregunta
 # pendiente, extracción, siguiente pregunta) se prueban en cada build: si un cambio las rompe, la imagen no
 # se construye.
-RUN python -m app.prueba_etapas && python -m app.prueba_memoria && python -m app.prueba_estructurado
+RUN python -m app.prueba_etapas && python -m app.prueba_memoria && python -m app.prueba_estructurado && python -m app.prueba_crm
 # El modelo ya está dentro: que nada intente bajarlo de Hugging Face al arrancar.
 ENV HF_HUB_OFFLINE=1
 
