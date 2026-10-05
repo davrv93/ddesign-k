@@ -53,7 +53,8 @@ def _sin_llm(req):
 class AgentV2:
     def __init__(self, v1: Callable, limites: config.Limites | None = None, contexto: ContextBuilder | None = None,
                  motor: MotorRecursivo | None = None, calidad=None, redactor=None, redactor_activo=None,
-                 modo: str | None = None, habla: tuple[str, ...] | None = None):
+                 modo: str | None = None, habla: tuple[str, ...] | None = None, semantica=None,
+                 candidatos_ref: Callable | None = None):
         self.v1 = v1
         self.limites = limites or config.limites_desde_entorno()
         self.contexto = contexto or ContextBuilder()
@@ -63,6 +64,8 @@ class AgentV2:
         self.redactor_activo = redactor_activo or redactor   # activo: puede llevar un modelo local
         self.modo = modo
         self.habla = habla if habla is not None else config.habla_por_defecto()   # en qué acciones puede hablar V2
+        self.semantica = semantica                       # catálogos semánticos (v2/semantica.py); None = sin ellos
+        self.candidatos_ref = candidatos_ref             # códigos mostrados → [{codigo, nombre, color}] para «el otro», «el segundo»
 
     # ------------------------------------------------------------------------------------------------------------
     def conversar(self, req) -> dict:
@@ -77,6 +80,7 @@ class AgentV2:
         else:
             res = dict(self.v1(req))
         res["version"] = "v2"
+        self._leer_catalogos(req, res, traza)
         sombra = self._analizar(req, res, traza, activo)
         if activo:
             motivo = sombra.get("no_habla") if isinstance(sombra, dict) else "sin análisis"
@@ -104,10 +108,29 @@ class AgentV2:
         return res
 
     # ------------------------------------------------------------------------------------------------------------
+    def _leer_catalogos(self, req, res: dict, traza: dict) -> None:
+        """Una lectura semántica del mensaje (v2/semantica.py). Nunca tira el turno."""
+        sem = self.semantica
+        if sem is None or not sem.activa:
+            return
+        try:
+            cand = None
+            if self.candidatos_ref:
+                mem_req = req.memoria if isinstance(getattr(req, "memoria", None), dict) else {}
+                cand = self.candidatos_ref(list(mem_req.get("mostrados") or []))
+            lec = sem.leer(req.mensaje or "", cand)
+            if lec is not None:
+                lec["modo"] = sem.modo
+                traza["catalogos"] = lec
+        except Exception as e:
+            log.warning("v2: catálogos fallaron (%s); el turno sigue igual", type(e).__name__)
+
     def _analizar(self, req, res: dict, traza: dict, activo: bool) -> dict:
         """Contexto → motor → borrador. Todo con lo que V1 acaba de entender. Nunca tira el turno."""
         try:
             ctx = self.contexto.construir(req, res)
+            if traza.get("catalogos"):
+                ctx["conversation"]["catalog"] = traza["catalogos"]       # solo informa; las reglas de decisión todavía no lo leen
             traza["separado"] = separar(ctx)
             traza["ctx_turnos"] = len(ctx["conversation"]["recent_turns"])
         except Exception as e:
@@ -165,6 +188,16 @@ class AgentV2:
             etapa=res.get("etapa") or "", respuesta=res.get("respuesta") or "", flujo_fijo=_flujo_fijo_de_temas(req, res),
             estado_go=getattr(req, "estado", "") or "", primer_mensaje=not (req.historial or []),
             hay_prenda=bool(mem.get("producto") or mem.get("mostrados")), rapida=rapida)
+        cat = traza.get("catalogos") or {}
+        if cat.get("tema"):
+            if cat.get("modo") == "activo":
+                turno.tema_catalogo = cat["tema"]
+            else:         # sombra: solo se mide si el catálogo habría cambiado la lectura
+                sin = T.detectar(turno)
+                turno.tema_catalogo = cat["tema"]
+                con = T.detectar(turno)
+                turno.tema_catalogo = None
+                cat["habria_cambiado"] = (sin["tipo"], sin["tema"]) != (con["tipo"], con["tema"])
         dec = T.evaluar(previo, turno)
         retoma = dec["retoma"]
         # Solo habla V2 activo y con «responder_y_retomar» en V2_HABLA. En cualquier otro caso la pila avanza como si hubiera salido

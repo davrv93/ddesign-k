@@ -297,6 +297,7 @@ class Turno:
     primer_mensaje: bool = False
     hay_prenda: bool = True
     rapida: dict | None = None            # respuesta rápida ya interpretada (interpretar_rapida)
+    tema_catalogo: str | None = None      # tema que apunta un catálogo semántico (v2/semantica.py); solo con V2_CATALOGOS=activo
 
 
 def _tema_de(p: str, intent: str, hay_pregunta: bool) -> str | None:
@@ -343,16 +344,21 @@ def detectar(t: Turno) -> dict:
     hay_pregunta = "?" in t.mensaje or "¿" in t.mensaje
     temas = _temas_en(p)
     tema = _tema_de(p, t.intent, hay_pregunta)
+    # Un catálogo semántico cubre lo que las palabras no ven («¿cede bastante?») y afina el «otro» genérico de V1: solo si las palabras
+    # y V1 no dijeron nada más concreto y, salvo una objeción, solo si es una pregunta.
+    por_catalogo = False
+    if tema in (None, "otro") and t.tema_catalogo and (hay_pregunta or t.tema_catalogo == "objecion"):
+        tema, por_catalogo = t.tema_catalogo, True
     # 3) contestó lo pendiente (y a lo mejor pregunta otra cosa además: se contesta, no hay nada que suspender)
     if pend and t.respondio:
         return dict(ev, tipo="responde", tambien=temas or ([tema] if tema else []), causa="contestó la pregunta pendiente")
     if t.espera:
         return dict(ev, tipo="ninguno", causa="pidió un momento")
     # 4) pregunta otra cosa
-    if tema and (temas or hay_pregunta):
+    if tema and (temas or hay_pregunta or por_catalogo):
         nivel = SOFT if all(x in TEMAS_SOFT for x in (temas or [tema])) else SIDE
         return dict(ev, nivel=nivel, tipo="interrumpe", tema=(temas or [tema])[0], tambien=temas[1:],
-                    causa="pregunta por " + ", ".join(temas or [tema]))
+                    causa=("catálogo: " if por_catalogo else "") + "pregunta por " + ", ".join(temas or [tema]))
     if (RE_DESPEDIDA.search(p) or t.intent == "despedida") and not hay_pregunta:
         return dict(ev, causa="se despide")
     return dict(ev, causa="acuse" if RE_ACUSE.match(p) else "sin relación con lo pendiente")

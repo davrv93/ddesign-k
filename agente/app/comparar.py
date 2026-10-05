@@ -55,6 +55,10 @@ def turnos(url: str, con_temas: bool = False) -> list[dict]:
                 "tema_retoma": (tm.get("retoma") or {}).get("slot"), "tema_retoma_pasa": (tm.get("retoma") or {}).get("pasa_la_compuerta"),
                 "tema_enviada": tm.get("enviada"), "tema_v1_retomo": tm.get("v1_retomo"), "tema_bloqueo": tm.get("bloqueo"),
                 "tema_habla": tm.get("habla"), "tema_error": tm.get("error"),
+                "cat": (v2.get("catalogos") or {}).get("catalogo"), "cat_intent": (v2.get("catalogos") or {}).get("intent"),
+                "cat_score": (v2.get("catalogos") or {}).get("score"), "cat_tema": (v2.get("catalogos") or {}).get("tema"),
+                "cat_cambio": (v2.get("catalogos") or {}).get("habria_cambiado"),
+                "cat_aplicado": str((tm.get("evento") or {}).get("causa") or "").startswith("catálogo"),
                 "tema_pendientes": [f"{x['slot']}:{x['status']}" for x in tm.get("pendientes") or []],
             })
     return filas
@@ -77,6 +81,19 @@ def resumen_temas(filas: list[dict]) -> None:
     print("  por qué no se retomó en las interrupciones sin retoma:",
           dict(Counter((f['tema_bloqueo'] or '—').split(' (')[0][:48] for f in inter if not f.get('tema_retoma')).most_common(5)))
     print(f"  errores de la capa: {sum(1 for f in filas if f.get('tema_error'))}")
+
+
+def resumen_catalogos(filas: list[dict]) -> None:
+    """Catálogos semánticos (app/v2/semantica.py): cuánto leen, qué leen y qué tema cambiaron."""
+    leidos = [f for f in filas if f.get("cat")]
+    if not leidos:
+        return
+    con = [f for f in leidos if f.get("cat_intent")]
+    print("catálogos semánticos:")
+    print(f"  turnos con lectura: {len(con)}/{len(filas)} ({len(con) * 100 // max(len(filas), 1)} %) · por catálogo {dict(Counter(f['cat'] for f in con))}")
+    for f in filas:
+        if f.get("cat_aplicado") or f.get("cat_cambio"):
+            print(f"  → cambió el tema ({'aplicado' if f['cat_aplicado'] else 'solo en sombra'}): «{f['mensaje'][:70]}» = {f['cat']}/{f['cat_intent']} ({f['cat_score']}) → {f['cat_tema']}")
 
 
 def _clase(motivo: str | None) -> str:
@@ -133,6 +150,7 @@ def main() -> int:
         print(f"Jev local: {len(jev)} consultas, p media {sum(j['p'] for j in jev) / len(jev):.2f}; "
               f"propuso {dict(Counter(j['opcion'] for j in jev))}")
     resumen_temas(filas)
+    resumen_catalogos(filas)
     desacuerdos = Counter((f["v1"], f["plan"]) for f in comparables if f["v1"] != f["plan"])
     if desacuerdos:
         print("desacuerdos (V1 → V2), para revisar uno a uno:")

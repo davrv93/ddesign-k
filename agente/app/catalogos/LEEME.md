@@ -3,7 +3,7 @@
 Varios catálogos de intenciones **separados**, no un clasificador gigante. Un catálogo **clasifica** una frase de WhatsApp;
 no contesta ni inventa datos de la prenda. Especificación: `data/catalogos/CATALOGOS_PROPUESTOS.md` y
 `data/catalogos/faq_vestidos.txt`. Todo el contenido de entrenamiento y de prueba es **sintético** (no hay datos de clientas
-reales). Nada de esto está conectado todavía a `main.py`: la integración queda pendiente.
+reales). V2 los lee desde `app/v2/semantica.py` (flag `V2_CATALOGOS`; ver `V2.md`).
 
 ## Qué hay
 

@@ -28,6 +28,7 @@ class Registro:
         self._lat = defaultdict(lambda: deque(maxlen=maximo))
         self._c = defaultdict(lambda: defaultdict(int))
         self._motivos = defaultdict(Counter)       # por qué V2 no habló, por versión
+        self._cat = defaultdict(Counter)           # lecturas semánticas con intención, por catálogo
 
     def turno(self, version: str, ms: int, traza: dict | None = None) -> None:
         with self._lock:
@@ -67,6 +68,16 @@ class Registro:
                 c["temas_v1_retomo"] += bool(tm.get("v1_retomo"))
             elif tm.get("error"):
                 c["temas_error"] += 1
+            cg = traza.get("catalogos")
+            if cg:                                     # catálogos semánticos (v2/semantica.py)
+                c["cat_turnos"] += 1
+                if cg.get("error"):
+                    c["cat_error"] += 1
+                elif cg.get("intent"):
+                    c["cat_con_lectura"] += 1
+                    self._cat[version][cg.get("catalogo")] += 1
+                    c["cat_habria_cambiado"] += bool(cg.get("habria_cambiado"))
+                    c["cat_tema_aplicado"] += bool(cg.get("modo") == "activo" and cg.get("tema") and (tm.get("evento") or {}).get("causa", "").startswith("catálogo"))
             gen = sb.get("generacion") or {}
             if gen.get("intentos"):
                 c["con_borrador"] += 1
@@ -100,6 +111,10 @@ class Registro:
                     "regeneracion": round(c["regeneraciones"] / b, 3),
                     "fallback_codigo": round(c["fallback_codigo"] / b, 3),
                     # Cambios de tema: cuántas interrupciones vio, cuántas retomas planeó/envió y cuántas veces V1 ya había vuelto a preguntar solo
+                    "catalogos": {"turnos": c["cat_turnos"], "con_lectura": c["cat_con_lectura"], "errores": c["cat_error"],
+                                  "cobertura": round(c["cat_con_lectura"] / (c["cat_turnos"] or 1), 3),
+                                  "por_catalogo": dict(self._cat[v].most_common()), "habria_cambiado_el_tema": c["cat_habria_cambiado"],
+                                  "tema_aplicado": c["cat_tema_aplicado"]},
                     "temas": {"interrupciones": c["temas_interrupciones"], "cambios_totales": c["temas_cambios_totales"], "ayuda": c["temas_ayuda"],
                               "retomas_planeadas": c["temas_retomas_planeadas"], "retomas_enviadas": c["temas_retomas_enviadas"],
                               "v1_retomo_solo": c["temas_v1_retomo"], "errores": c["temas_error"]},

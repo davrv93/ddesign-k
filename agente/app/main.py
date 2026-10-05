@@ -34,6 +34,7 @@ from .v2.agente import AgentV2
 from .v2.contexto import ContextBuilder
 from .v2.decision import JevStyleDecision, JevSystemOneDecision, ReglasDecision, juez_llama
 from .v2.factual import CompuertaFactual
+from .v2.semantica import Semantica
 from .v2.generacion import Encadenada, LlmLocalGeneracion
 from .v2 import motivo as v2motivo
 from .v2 import plantillas as v2plantillas
@@ -208,6 +209,8 @@ def _arranque():
     # El catálogo vivo se lee ANTES de atender: si no, los primeros segundos tras un reinicio el agente
     # no conoce las prendas por nombre («pásame la foto del Irla» caía en «mándame tu foto»).
     E.refrescar_seed()
+    if _SEM.activa:                                    # los catálogos semánticos de V2 cargan aparte: no retrasan el arranque
+        threading.Thread(target=_SEM.precargar, daemon=True, name="catalogos-v2").start()
 
     def bucle():
         while True:
@@ -2484,6 +2487,27 @@ def _redactores_v2():
     return base, Encadenada([RedactorSemantico(selector, realizador, compuerta, _semilla_v2), base])
 
 
+class _EmbedAgente:
+    """El embedder del agente (E.emb), que todavía no existe al importar este módulo: los catálogos semánticos lo piden ya en uso."""
+    @property
+    def model_name(self) -> str:
+        return E.emb.model_name
+
+    def __call__(self, textos):
+        return E.emb(textos)
+
+
+def _candidatos_ref(codigos: list) -> list[dict]:
+    """Las prendas mostradas, en orden cronológico, con lo que necesita «el otro / el segundo / el guinda» (catálogos/referencias.py)."""
+    out = []
+    for c in codigos or []:
+        f = _ficha_de(c)
+        if f:
+            out.append({"codigo": c, "nombre": f.get("nombre") or "", "color": f.get("color") or ""})
+    return out
+
+
+_SEM = Semantica(embed=_EmbedAgente(), directorio=os.environ.get("CATALOGOS_DIR") or None)
 _PLANTILLA, _ACTIVO = _redactores_v2()
 _V2 = AgentV2(
     v1=conversar, motor=_motor_v2(),
@@ -2491,6 +2515,7 @@ _V2 = AgentV2(
     calidad=ReglasCalidad(precios=_precios_reales, nombres=_nombre_de, todos_los_nombres=_todos_los_nombres,
                           ficha_texto=_ficha_texto, clave_de=memoria.clave_de, preguntas_en=memoria.preguntas_en, fundamento=False),
     redactor=_PLANTILLA, redactor_activo=_ACTIVO, habla=v2cfg.habla_por_defecto(),
+    semantica=_SEM, candidatos_ref=_candidatos_ref,
 )
 
 
