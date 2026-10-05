@@ -71,6 +71,7 @@ type Lead struct {
 	Campos     map[int64][]Valor
 	Tags       []string
 	Contactos  []int64
+	Creado     int64 // created_at (unix); las pruebas pueden fijarlo
 }
 
 type Contacto struct {
@@ -327,6 +328,12 @@ func (k *Kommo) atender(r *http.Request, cuerpo []byte, caido bool) respuesta {
 		return k.crearContactos(cuerpo)
 	case r.Method == http.MethodGet && p == "/api/v4/contacts":
 		return k.buscarContactos(q)
+	case r.Method == http.MethodGet && len(partes) == 2 && partes[0] == "contacts":
+		id, _ := strconv.ParseInt(partes[1], 10, 64)
+		if c := k.Contactos[id]; c != nil {
+			return respuesta{200, contactoJSON(c)}
+		}
+		return respuesta{204, nil}
 	case r.Method == http.MethodPatch && len(partes) == 2 && partes[0] == "contacts":
 		return k.editarContacto(partes[1], cuerpo)
 	case r.Method == http.MethodPost && p == "/api/v4/leads":
@@ -673,7 +680,7 @@ func (k *Kommo) crearLeads(cuerpo []byte) respuesta {
 		if err != nil {
 			return malo("%v", err)
 		}
-		nl := &Lead{ID: k.id(), Nombre: l.Name, StatusID: l.StatusID, PipelineID: l.PipelineID, Campos: campos}
+		nl := &Lead{ID: k.id(), Nombre: l.Name, StatusID: l.StatusID, PipelineID: l.PipelineID, Campos: campos, Creado: time.Now().Unix()}
 		if l.Price != nil {
 			nl.Precio = *l.Price
 		}
@@ -708,7 +715,7 @@ func leadJSON(l *Lead) map[string]any {
 		cs = append(cs, map[string]any{"id": c})
 	}
 	return map[string]any{"id": l.ID, "name": l.Nombre, "price": l.Precio, "status_id": l.StatusID, "pipeline_id": l.PipelineID,
-		"custom_fields_values": cfs, "_embedded": map[string]any{"tags": tags, "contacts": cs}}
+		"created_at": l.Creado, "custom_fields_values": cfs, "_embedded": map[string]any{"tags": tags, "contacts": cs}}
 }
 
 func (k *Kommo) buscarLeads(q map[string][]string) respuesta {

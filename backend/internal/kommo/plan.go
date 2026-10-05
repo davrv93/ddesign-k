@@ -80,7 +80,11 @@ func (s *Sincronizador) Simular(ctx context.Context, ev Evento) Plan {
 	if ev.Telefono != "" {
 		contacto = "buscar por teléfono +" + enmascarar(ev.Telefono) + " o crear"
 	}
-	return Plan{Clave: ev.Clave, Accion: accion, Lead: s.nombreLead(ev, d), Estado: nombreEstado(st, e), Precio: s.precio(ctx, ev, d, st, e),
+	inicio := prev.Inicio
+	if inicio == 0 {
+		inicio = inicioDe(ev)
+	}
+	return Plan{Clave: ev.Clave, Accion: accion, Lead: nombreLead(ev, d, inicio), Estado: nombreEstado(st, e), Precio: s.precio(ctx, ev, d, st, e),
 		Campos: txt, Tags: s.etiquetas(ev, d), Hitos: s.hitos(ev, d, prev, st, e), Contact: contacto}
 }
 

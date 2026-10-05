@@ -59,3 +59,5 @@ P57,hacen envios a huancayo?,nuevo,consulta_delivery,,"{""ciudad"": ""Huancayo""
 P58,para surco,envio,,,"{""envio"": ""lima""}",,,,,,,flujo_pago,voucher,{total:V41:lima};Yape,,un distrito de Lima responde a ¿Lima o provincia?
 P59,soy de tacna,envio,,,"{""envio"": ""provincia"", ""ciudad"": ""Tacna""}",nombre,,,,,,flujo_pago,,{total:V41:provincia};Yape,,"«soy de Tacna» es la ciudad, no su nombre"
 P60,"ya yapee, ahi va la captura",voucher,,,,,,,responder,0,venta_confirmada,flujo_pago,,comprobante,,dice que ya pagó: se espera el comprobante
+P61,hola busco vestido pa un matri de noche el 24 de octubre,nuevo,,,"{""ocasion"": ""matrimonio"", ""horario"": ""noche""}",,,,responder,1;cat:vestido,prospeccion,,talla,{nombre:foco},,"primer mensaje con la necesidad completa: UNA opción, y el texto la nombra antes de la foto (05-10-2026)"
+P62,tienes faldas?,nuevo,,,,,,,responder,cat:falda,,,,,,"con una sola foto (hay una falda), el texto dice cuál es antes de la foto (regla universal, 05-10-2026)"

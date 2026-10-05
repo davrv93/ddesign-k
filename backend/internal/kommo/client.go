@@ -274,6 +274,7 @@ type LeadLeido struct {
 	Price        int64  `json:"price"`
 	StatusID     int64  `json:"status_id"`
 	PipelineID   int64  `json:"pipeline_id"`
+	CreatedAt    int64  `json:"created_at"` // unix: el primer turno de la conversación
 	CustomFields []struct {
 		FieldID int64 `json:"field_id"`
 		Values  []struct {
@@ -320,6 +321,15 @@ func (c *Client) ActualizarContacto(ctx context.Context, ct Contacto) error {
 	ct.ID = 0
 	_, err := c.do(ctx, http.MethodPatch, fmt.Sprintf("/api/v4/contacts/%d", id), ct, nil)
 	return err
+}
+
+// Contacto: GET /api/v4/contacts/{id}.
+func (c *Client) Contacto(ctx context.Context, id int64) (*Contacto, error) {
+	var ct Contacto
+	if _, err := c.do(ctx, http.MethodGet, fmt.Sprintf("/api/v4/contacts/%d", id), nil, &ct); err != nil {
+		return nil, err
+	}
+	return &ct, nil
 }
 
 // BuscarContactos: GET /api/v4/contacts?query=… (busca en los campos llenos, p. ej. el teléfono).

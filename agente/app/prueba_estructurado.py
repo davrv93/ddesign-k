@@ -43,6 +43,62 @@ caso("un decimal no parte la frase", S.armar('{"responde": "El envío es S/ 20.0
      "El envío es S/ 20.00 por Olva. Llega en 2 días.")
 caso("el formato nombra la pregunta del código", "«¿Qué talla usas?»" in S.formato("¿Qué talla usas?", False), True)
 
+# --- El saludo no gasta las 2 frases, y si se habla de una prenda se la nombra (05-10-2026) ---------------------------
+# Producción, primer mensaje «hola, busco un vestido para un matrimonio de noche el 24 de octubre»: salió
+# «¡Hola, Ana! Soy Rosemary…» → «Es ideal para una boda nocturna…» → foto del Irla → «¿Qué talla usas?». La clienta lee
+# «es ideal» antes de ver la foto y sin saber de qué.
+SALUDO = "¡Hola, Ana! Soy Rosemary, tu asesora de Baruka Design."
+caso("el saludo no se come la frase que nombra la prenda",
+     S.armar('{"responde": "%s Para tu matrimonio de noche te recomiendo el Vestido Irla.", "por_que": "Su tela roma cae muy bien y estiliza."}'
+             % SALUDO, "¿Qué talla usas normalmente?"),
+     SALUDO + "\n\nPara tu matrimonio de noche te recomiendo el Vestido Irla.\n\nSu tela roma cae muy bien y estiliza."
+     "\n\n¿Qué talla usas normalmente?")
+caso("con saludo, responde sigue con su tope de 2 frases",
+     S.armar('{"responde": "¡Hola! Soy Rosemary. Uno. Dos. Tres."}'), "¡Hola! Soy Rosemary.\n\nUno. Dos.")
+caso("solo el saludo también vale", S.armar('{"responde": "%s"}' % SALUDO), SALUDO)
+caso("«¿Cómo estás?» no es saludo que se guarde: es pregunta y se va",
+     S.armar('{"responde": "¡Hola! ¿Cómo estás? Tenemos vestidos de noche."}'), "¡Hola!\n\nTenemos vestidos de noche.")
+caso("el formato pide nombrar la prenda", "NÓMBRALA" in S.formato("", False), True)
+
+IRLA = ["V35", "irla"]
+FRASE = "Para tu matrimonio de noche te recomiendo el *Vestido Irla*."
+PROD = (SALUDO + "\n\nEs ideal para una boda nocturna por su elegancia y tela roma que favorece la figura."
+        "\n\n¿Qué talla usas normalmente?")
+caso("producción: la frase que la nombra va tras el saludo y antes del porqué; la pregunta sigue al final",
+     S.presentar(PROD, FRASE, IRLA),
+     SALUDO + "\n\nPara tu matrimonio de noche te recomiendo el *Vestido Irla*. Es ideal para una boda nocturna por su "
+     "elegancia y tela roma que favorece la figura.\n\n¿Qué talla usas normalmente?")
+caso("producción, de punta a punta: JSON del LLM → armar → presentar",
+     S.presentar(S.armar('{"responde": "%s", "por_que": "Es ideal para una boda nocturna por su elegancia."}' % SALUDO,
+                         "¿Qué talla usas normalmente?"), FRASE, IRLA).split("\n\n"),
+     [SALUDO, FRASE + " Es ideal para una boda nocturna por su elegancia.", "¿Qué talla usas normalmente?"])
+caso("si el LLM ya la nombró, no se duplica",
+     S.presentar("Te recomiendo el vestido Irla, de tela roma.\n\n¿Qué talla usas?", FRASE, IRLA),
+     "Te recomiendo el vestido Irla, de tela roma.\n\n¿Qué talla usas?")
+caso("nombrarla por el código también vale", S.presentar("Mira el *V35* 😊\n\n¿Qué talla usas?", FRASE, IRLA),
+     "Mira el *V35* 😊\n\n¿Qué talla usas?")
+caso("nombrarla solo en la pregunta (después de la foto) no basta",
+     S.presentar("Es ideal para tu boda.\n\n¿Qué talla usas para el Irla?", FRASE, IRLA),
+     FRASE + " Es ideal para tu boda.\n\n¿Qué talla usas para el Irla?")
+caso("«Te va a quedar…» sin nombre: la frase va antes",
+     S.presentar("¡Te va a quedar hermoso para tu boda!\n\n¿Qué talla usas?", FRASE, IRLA),
+     FRASE + " ¡Te va a quedar hermoso para tu boda!\n\n¿Qué talla usas?")
+caso("«Este modelo…» sin nombre: la frase va antes",
+     S.presentar("Este modelo tiene escote corazón.", "Te muestro el *Vestido Irla*.", IRLA),
+     "Te muestro el *Vestido Irla*. Este modelo tiene escote corazón.")
+caso("tras una exclamación de entrada («¡Claro! 😊»), no antes",
+     S.presentar("¡Claro! 😊 Te paso la foto.", "Te muestro el *Vestido Irla*.", IRLA),
+     "¡Claro! 😊 Te muestro el *Vestido Irla*. Te paso la foto.")
+caso("«¡Perfecto!» suelto es de entrada", S.presentar("¡Perfecto! Te va a quedar lindo.", FRASE, IRLA),
+     "¡Perfecto! " + FRASE + " Te va a quedar lindo.")
+caso("solo la pregunta: la frase va antes, en su párrafo (la pregunta, tras la foto)",
+     S.presentar("¿Qué talla usas?", FRASE, IRLA), FRASE + "\n\n¿Qué talla usas?")
+caso("solo el saludo: la frase va en su párrafo", S.presentar(SALUDO, FRASE, IRLA), SALUDO + "\n\n" + FRASE)
+caso("«Irlanda» no es el Irla", S.nombra("Viajo a Irlanda", IRLA), False)
+caso("sin tildes ni mayúsculas", S.nombra("te recomiendo el IRLA", IRLA), True)
+caso("«Es ideal…» no tiene antecedente", S.sin_antecedente("Es ideal para una boda nocturna."), True)
+caso("«Para tu boda…» sí se entiende", S.sin_antecedente("Para tu boda te recomiendo el Irla."), False)
+
 
 def main() -> int:
     for f in fallos:

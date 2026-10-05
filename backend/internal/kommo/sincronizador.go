@@ -137,8 +137,12 @@ type estadoLead struct {
 	PedidoID     int64             `json:"pedido_id,omitempty"`
 	PedidoEstado string            `json:"pedido_estado,omitempty"`
 	Pagado       bool              `json:"pagado,omitempty"`
-	Nombre       string            `json:"nombre,omitempty"`
+	Nombre       string            `json:"nombre,omitempty"` // nombre de la clienta puesto en el contacto
 	Cerrado      bool              `json:"cerrado,omitempty"`
+	// NombreLead es el último nombre automático decidido para el lead (vacío = lead de antes del 05-10-2026: se mira
+	// una vez si conserva el nombre viejo). Inicio es el inicio de la sesión, para el nombre del chat web.
+	NombreLead string `json:"nombre_lead,omitempty"`
+	Inicio     int64  `json:"inicio,omitempty"`
 }
 
 // datos es lo que el evento dice del lead, ya resuelto.
@@ -372,6 +376,10 @@ func (s *Sincronizador) Aplicar(ctx context.Context, ev Evento) error {
 		nuevaVenta := (ev.Sesion > prev.Sesion && ev.Etapa != "" && ev.Etapa != "venta_confirmada") ||
 			(ev.Pedido != nil && ev.Pedido.ID > 0 && ev.Pedido.ID != prev.PedidoID && !confirmados[ev.Pedido.Estado] && ev.Pedido.Estado != "cancelado")
 		if !nuevaVenta {
+			// El lead cerrado no se mueve, pero un nombre automático viejo sí se cambia por el nuevo.
+			if err := s.ponerNombre(ctx, ev, d, v, &prev, s.lector(ctx, v.LeadID, nil), nil); err != nil {
+				return err
+			}
 			if err := s.notas(ctx, v.LeadID, s.hitos(ev, d, prev, prev.Status, e), ev); err != nil {
 				return err
 			}
@@ -393,7 +401,11 @@ func (s *Sincronizador) Aplicar(ctx context.Context, ev Evento) error {
 		v.LeadID, prev = 0, estadoLead{Nombre: prev.Nombre}
 	}
 
-	if err := s.contacto(ctx, ev, d, v, &prev); err != nil {
+	inicio := prev.Inicio
+	if inicio == 0 {
+		inicio = inicioDe(ev)
+	}
+	if err := s.contacto(ctx, ev, d, v, &prev, inicio); err != nil {
 		return err
 	}
 	status := estadoObjetivo(ev, prev, e)
@@ -402,16 +414,21 @@ func (s *Sincronizador) Aplicar(ctx context.Context, ev Evento) error {
 	tags := s.etiquetas(ev, d)
 	hitos := s.hitos(ev, d, prev, status, e)
 
+	var leido *LeadLeido // el lead tal como está en Kommo, si ya se leyó
 	if v.LeadID == 0 {
-		if id, contacto := s.leadPorClave(ctx, ev.Clave, e); id > 0 {
-			v.LeadID = id
-			if v.ContactID == 0 {
-				v.ContactID = contacto
+		if l := s.leadPorClave(ctx, ev.Clave, e); l != nil {
+			v.LeadID, leido = l.ID, l
+			if v.ContactID == 0 && len(l.Embedded.Contacts) > 0 {
+				v.ContactID = l.Embedded.Contacts[0].ID
 			}
 		}
 	}
 	if v.LeadID == 0 {
-		l := Lead{Name: s.nombreLead(ev, d), Price: &precio, StatusID: status, PipelineID: e.PipelineID,
+		prev.NombreLead = nombreLead(ev, d, inicio)
+		if ev.Canal == "web" {
+			prev.Inicio = inicio
+		}
+		l := Lead{Name: prev.NombreLead, Price: &precio, StatusID: status, PipelineID: e.PipelineID,
 			CustomFields: valores(vals, e), Embedded: &Embebidos{Tags: nombres(tags)}}
 		if v.ContactID > 0 {
 			l.Embedded.Contacts = []Ref{{ID: v.ContactID}}
@@ -424,6 +441,11 @@ func (s *Sincronizador) Aplicar(ctx context.Context, ev Evento) error {
 	} else {
 		cambio := Lead{ID: v.LeadID}
 		hay := false
+		leer := s.lector(ctx, v.LeadID, leido)
+		if err := s.ponerNombre(ctx, ev, d, v, &prev, leer, &cambio); err != nil {
+			return err
+		}
+		hay = cambio.Name != ""
 		if status != prev.Status {
 			cambio.StatusID, cambio.PipelineID, hay = status, e.PipelineID, true
 		}
@@ -446,7 +468,7 @@ func (s *Sincronizador) Aplicar(ctx context.Context, ev Evento) error {
 		if !slices.Equal(tags, prev.Tags) {
 			// PATCH con _embedded.tags reemplaza todas: se conservan las que puso una persona en Kommo.
 			final := nombres(tags)
-			if actual, err := s.c.Lead(ctx, v.LeadID); err == nil {
+			if actual, err := leer(); err == nil {
 				for _, t := range actual.Embedded.Tags {
 					if !gestionada(t.Name) && !slices.Contains(tags, t.Name) {
 						final = append(final, Etiqueta{Name: t.Name})
@@ -466,7 +488,7 @@ func (s *Sincronizador) Aplicar(ctx context.Context, ev Evento) error {
 
 	nuevo := estadoLead{Status: status, Precio: precio, Campos: txt, Tags: tags, Sesion: max(ev.Sesion, prev.Sesion),
 		Pagado: prev.Pagado || ev.Pagado, Nombre: prev.Nombre, PedidoID: prev.PedidoID, PedidoEstado: prev.PedidoEstado,
-		Cerrado: status == EstadoGanado || status == EstadoPerdido}
+		Cerrado: status == EstadoGanado || status == EstadoPerdido, NombreLead: prev.NombreLead, Inicio: prev.Inicio}
 	if ev.Pedido != nil && ev.Pedido.ID > 0 {
 		nuevo.PedidoID, nuevo.PedidoEstado = ev.Pedido.ID, ev.Pedido.Estado
 	}
@@ -482,28 +504,24 @@ func (s *Sincronizador) guardar(ctx context.Context, v *store.VinculoKommo, e es
 	return s.st.GuardarVinculoKommo(ctx, v)
 }
 
-func (s *Sincronizador) nombreLead(ev Evento, d datos) string {
-	quien := firstNonEmpty(ev.Nombre, d.mem.s("nombre"))
-	if quien == "" && ev.Telefono != "" {
-		quien = "+" + ev.Telefono
+// ponerNombre: si el nombre automático del lead cambió y el que tiene en Kommo es nuestro (el último automático o el del
+// formato viejo), lo cambia. Con cambio, el nombre viaja en el PATCH que ya se iba a mandar; sin él, va solo. Si el
+// nombre viejo era el de sin nombre, el contacto creado con él también se renombra.
+func (s *Sincronizador) ponerNombre(ctx context.Context, ev Evento, d datos, v *store.VinculoKommo, prev *estadoLead,
+	leer func() (*LeadLeido, error), cambio *Lead) error {
+	nuevo, viejo, err := s.renombrar(ev, d, prev, leer)
+	if err != nil || nuevo == "" {
+		return err
 	}
-	if quien == "" {
-		quien = "Chat web " + corto(ev.Clave)
+	if cambio != nil {
+		cambio.Name = nuevo
+	} else if err := s.c.ActualizarLead(ctx, Lead{ID: v.LeadID, Name: nuevo}); err != nil {
+		return err
 	}
-	canal := map[string]string{"whatsapp": "WhatsApp", "web": "chat web"}[ev.Canal]
-	n := quien + " · " + canal
-	if ev.Demo {
-		n = "DEMO · " + n
+	if viejo && clienta(ev, d) == "" {
+		return s.renombrarContacto(ctx, v.ContactID, contactosViejos(ev), nombreContacto(ev, d, prev.Inicio))
 	}
-	return n
-}
-
-func corto(clave string) string {
-	clave = strings.TrimPrefix(clave, "web:")
-	if len(clave) > 8 {
-		return clave[:8]
-	}
-	return clave
+	return nil
 }
 
 // precio del lead: la prenda (o el total del pedido) y, con la venta confirmada, el envío si se sabe a dónde va.
@@ -526,8 +544,8 @@ func (s *Sincronizador) precio(ctx context.Context, ev Evento, d datos, status i
 
 // contacto crea o reutiliza el contacto de la clienta. WhatsApp: se busca por teléfono antes de crear (una clienta,
 // un contacto, aunque escriba en varias sesiones). Chat web: un contacto por sesión, sin teléfono.
-func (s *Sincronizador) contacto(ctx context.Context, ev Evento, d datos, v *store.VinculoKommo, prev *estadoLead) error {
-	nombre := firstNonEmpty(ev.Nombre, d.mem.s("nombre"))
+func (s *Sincronizador) contacto(ctx context.Context, ev Evento, d datos, v *store.VinculoKommo, prev *estadoLead, inicio int64) error {
+	nombre := clienta(ev, d)
 	if v.ContactID > 0 {
 		if nombre != "" && nombre != prev.Nombre {
 			if err := s.c.ActualizarContacto(ctx, Contacto{ID: v.ContactID, Name: nombre}); err != nil {
@@ -555,16 +573,9 @@ func (s *Sincronizador) contacto(ctx context.Context, ev Evento, d datos, v *sto
 		}
 		return nil
 	}
-	ct := Contacto{Name: nombre, Embedded: &Embebidos{Tags: nombres([]string{"kddesign", ev.Canal})}}
+	ct := Contacto{Name: nombreContacto(ev, d, inicio), Embedded: &Embebidos{Tags: nombres([]string{"kddesign", ev.Canal})}}
 	if ev.Demo {
 		ct.Embedded.Tags = append(ct.Embedded.Tags, Etiqueta{Name: "demo"})
-	}
-	if ct.Name == "" {
-		ct.Name = strings.TrimPrefix(s.nombreLead(ev, d), "DEMO · ")
-		ct.Name = strings.TrimSuffix(strings.TrimSuffix(ct.Name, " · WhatsApp"), " · chat web")
-	}
-	if ev.Demo && !strings.HasPrefix(ct.Name, "DEMO") {
-		ct.Name = "DEMO · " + ct.Name
 	}
 	if ev.Telefono != "" {
 		ct.CustomFields = []CampoValor{{FieldCode: "PHONE", Values: []Valor{{Value: "+" + ev.Telefono, EnumCode: "MOB"}}}}
@@ -604,11 +615,11 @@ func tieneTelefono(c Contacto, tel string) bool {
 
 // leadPorClave: si se perdió el vínculo local (base restaurada, volcado repetido), el lead abierto se encuentra por el
 // campo «ID kddesign» antes de crear otro.
-func (s *Sincronizador) leadPorClave(ctx context.Context, clave string, e *Esquema) (lead, contacto int64) {
+func (s *Sincronizador) leadPorClave(ctx context.Context, clave string, e *Esquema) *LeadLeido {
 	campo := e.Campos[CClave].ID
 	ls, _, err := s.c.BuscarLeads(ctx, clave, e.PipelineID, 1)
 	if err != nil {
-		return 0, 0
+		return nil
 	}
 	for _, l := range ls {
 		if l.StatusID == EstadoGanado || l.StatusID == EstadoPerdido {
@@ -620,15 +631,12 @@ func (s *Sincronizador) leadPorClave(ctx context.Context, clave string, e *Esque
 			}
 			for _, v := range f.Values {
 				if fmt.Sprint(v.Value) == clave {
-					if len(l.Embedded.Contacts) > 0 {
-						contacto = l.Embedded.Contacts[0].ID
-					}
-					return l.ID, contacto
+					return &l
 				}
 			}
 		}
 	}
-	return 0, 0
+	return nil
 }
 
 func nombres(tags []string) []Etiqueta {

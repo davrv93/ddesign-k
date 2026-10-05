@@ -56,7 +56,7 @@ cd $R/frontend && BASE_PATH=/baruka/ npm run build && rm -rf dist # tsc + build 
 cd $R/agente   && python3 -m py_compile app/*.py && python3 -m app.prueba_etapas && python3 -m app.prueba_memoria && python3 -m app.prueba_crm   # sintaxis, etapas, memoria y aviso al CRM
 # Si cambió algo de la conversación (agente/app, agente/data o internal/bot): la prueba de regresión, que no cuesta nada.
 # Necesita el agente de pruebas en 127.0.0.1:18497 (cómo levantarlo: agente/README.md, «Prueba de regresión»).
-cd $R/agente   && python3 -m app.regresion --url http://127.0.0.1:18497      # 60 preguntas, 30 conversaciones, entradas raras y aguante; debe decir «REGRESIÓN OK»
+cd $R/agente   && python3 -m app.regresion --url http://127.0.0.1:18497      # 62 preguntas, 32 conversaciones, entradas raras y aguante; debe decir «REGRESIÓN OK»
 ```
 
 ## 2. Subir el código
@@ -351,6 +351,18 @@ ssh -i $K $H "$KS --desde-base --dry-run | head -80"    # qué subiría de la SQ
 ssh -i $K $H "$KS --desde-base --limite 5"              # primero las 5 conversaciones más recientes
 ssh -i $K $H "$KS --desde-base"                         # todo lo capturado (idempotente: repetirlo no duplica)
 ```
+
+**Renombrar leads con el formato viejo de nombre** (antes del 05-10-2026 salían «Chat web wa:450 · WhatsApp» o «Chat web
+web-prue · chat web»). Solo cambia los que conservan el nombre automático exacto; uno renombrado a mano no se toca:
+
+```bash
+KS='cd ~/kddesign && docker compose exec -T -e KOMMO_SYNC_TRANSCRIPT=0 backend kommo-seed'
+ssh -i $K $H "$KS --renombrar --dry-run"      # lista los leads del chat web que cambiarían (lee Kommo, no escribe)
+ssh -i $K $H "$KS --desde-base --renombrar"   # WhatsApp (al reaplicar) y chat web
+```
+
+`KOMMO_SYNC_TRANSCRIPT=0` va a propósito: con la transcripción activa, cada corrida de `--desde-base` vuelve a mandarla
+como nota.
 
 - La demo usa prendas, nombres y precios **reales** del catálogo (`CATALOG_URL`, por defecto el público de producción,
   solo lectura). Las clientas son inventadas y obvias («Ana Demo», «Hilda Prueba»…), con teléfonos `+51 900 000 0xx`.

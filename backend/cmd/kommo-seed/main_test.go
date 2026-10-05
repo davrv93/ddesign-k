@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -180,3 +181,83 @@ func TestSeedDesdeBase(t *testing.T) {
 		t.Fatalf("volcado: %+v", ls)
 	}
 }
+
+// viejo deja el lead y su contacto como los nombraba el código de antes del 05-10-2026 (y el vínculo local sin el
+// nombre automático guardado).
+func viejo(t *testing.T, k *simulado.Kommo, st *store.Store, clave, lead, contacto string) *simulado.Lead {
+	t.Helper()
+	v, err := st.VinculoKommo(context.Background(), clave)
+	if err != nil {
+		t.Fatal(err)
+	}
+	l := k.Leads[v.LeadID]
+	l.Nombre = lead
+	k.Contactos[v.ContactID].Nombre = contacto
+	var e map[string]any
+	_ = json.Unmarshal([]byte(v.Estado), &e)
+	delete(e, "nombre_lead")
+	delete(e, "inicio")
+	raw, _ := json.Marshal(e)
+	v.Estado = string(raw)
+	if err := st.GuardarVinculoKommo(context.Background(), v); err != nil {
+		t.Fatal(err)
+	}
+	return l
+}
+
+// Tras desplegar: --desde-base renombra los leads de WhatsApp con el nombre viejo y --renombrar los del chat web;
+// los renombrados a mano se quedan como están.
+func TestSeedRenombraLeadsViejos(t *testing.T) {
+	s, k, st := sincPrueba(t)
+	ctx := context.Background()
+	_, conv, err := st.UpsertCustomer(ctx, "51900000078@s.whatsapp.net", "51900000078", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, conv2, err := st.UpsertCustomer(ctx, "51900000079@s.whatsapp.net", "51900000079", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	desdeBase := func() {
+		var evs []kommo.Evento
+		for _, id := range []int64{conv.ID, conv2.ID} {
+			c, _ := st.GetConversation(ctx, id)
+			evs = append(evs, bot.EventoDeConversacion(ctx, st, c))
+		}
+		if err := aplicarTodos(ctx, s, evs, false); err != nil {
+			t.Fatal(err)
+		}
+	}
+	desdeBase()
+	w, err := kommo.EventoWeb{Canal: "web", Conversacion: "web-0123456789abcdef", Etapa: "prospeccion"}.Evento()
+	if err != nil {
+		t.Fatal(err)
+	}
+	w.Cuando = time.Date(2026, 10, 5, 19, 41, 0, 0, time.UTC)
+	if err := s.Aplicar(ctx, w); err != nil {
+		t.Fatal(err)
+	}
+	waViejo := viejo(t, k, st, "wa:"+itoa(conv.ID), "+51900000078 · WhatsApp", "+51900000078")
+	aMano := viejo(t, k, st, "wa:"+itoa(conv2.ID), "Clienta de Arequipa", "+51900000079")
+	webViejo := viejo(t, k, st, w.Clave, "Chat web web-0123 · chat web", "Chat web web-0123")
+	webViejo.Creado = w.Cuando.Unix()
+
+	desdeBase()
+	if err := renombrarWeb(ctx, s, false); err != nil {
+		t.Fatal(err)
+	}
+	if waViejo.Nombre != "WhatsApp +•••078" || k.Contactos[waViejo.Contactos[0]].Nombre != "WhatsApp +•••078" {
+		t.Errorf("WhatsApp viejo: lead %q contacto %q", waViejo.Nombre, k.Contactos[waViejo.Contactos[0]].Nombre)
+	}
+	if aMano.Nombre != "Clienta de Arequipa" {
+		t.Errorf("el renombrado a mano no se toca: %q", aMano.Nombre)
+	}
+	if webViejo.Nombre != "Clienta web · 05/10 14:41" || k.Contactos[webViejo.Contactos[0]].Nombre != "Clienta web · 05/10 14:41" {
+		t.Errorf("web viejo: lead %q contacto %q", webViejo.Nombre, k.Contactos[webViejo.Contactos[0]].Nombre)
+	}
+	if n := len(k.LeadsDe(0)); n != 3 {
+		t.Errorf("renombrar no crea leads: %d", n)
+	}
+}
+
+func itoa(n int64) string { return strconv.FormatInt(n, 10) }

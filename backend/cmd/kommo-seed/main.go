@@ -5,6 +5,10 @@
 //	kommo-seed --limpiar               cierra como «Venta perdida» los leads etiquetados «demo» (la API v4 no borra leads)
 //	kommo-seed --desde-base            vuelca al CRM las conversaciones ya capturadas por el bot (SQLite de DATA_DIR)
 //	kommo-seed --desde-base --dry-run  muestra lo que haría, sin llamar a Kommo (no necesita credenciales)
+//	kommo-seed --renombrar             pone el nombre nuevo a los leads del chat web que conservan el automático viejo
+//	                                   («Chat web web-1a2b3c4d · chat web» → «Clienta web · 05/10 14:41»); con --dry-run
+//	                                   solo los lista (lee Kommo: necesita credenciales). Los de WhatsApp los renombra
+//	                                   --desde-base. Los renombrados a mano no se tocan.
 //
 // Variables: KOMMO_SUBDOMAIN, KOMMO_TOKEN, KOMMO_PIPELINE_NAME, KOMMO_SYNC_TRANSCRIPT, DATA_DIR, PUBLIC_URL y
 // CATALOG_URL (catálogo público de producción, solo lectura, para nombres y precios reales de las prendas). No mira
@@ -42,9 +46,10 @@ func main() {
 	limpiar := flag.Bool("limpiar", false, "cerrar como perdidos los leads etiquetados «demo»")
 	desdeBase := flag.Bool("desde-base", false, "volcar las conversaciones de la SQLite")
 	dry := flag.Bool("dry-run", false, "mostrar lo que haría sin llamar a Kommo")
+	renombrar := flag.Bool("renombrar", false, "renombrar los leads del chat web con el nombre automático viejo")
 	limite := flag.Int("limite", 0, "con --desde-base: solo las N conversaciones más recientes (0 = todas)")
 	flag.Parse()
-	if !*verificar && !*demo && !*limpiar && !*desdeBase {
+	if !*verificar && !*demo && !*limpiar && !*desdeBase && !*renombrar {
 		flag.Usage()
 		os.Exit(2)
 	}
@@ -58,8 +63,8 @@ func main() {
 	defer st.DB.Close()
 
 	sub, tok := env("KOMMO_SUBDOMAIN", ""), env("KOMMO_TOKEN", "")
-	if !*dry && (sub == "" || tok == "") {
-		log.Fatal("faltan KOMMO_SUBDOMAIN o KOMMO_TOKEN (con --dry-run no hacen falta)")
+	if (!*dry || *renombrar) && (sub == "" || tok == "") {
+		log.Fatal("faltan KOMMO_SUBDOMAIN o KOMMO_TOKEN (con --desde-base --dry-run no hacen falta)")
 	}
 	cat := leerCatalogo(ctx, env("CATALOG_URL", "https://proyectopostventa.site/baruka/api/public/catalog"))
 	local := kommo.ProductoDe(st)
@@ -133,6 +138,30 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	if *renombrar {
+		if err := renombrarWeb(ctx, s, *dry); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+// renombrarWeb: los leads del chat web con el nombre automático viejo (sus sesiones no viven en la SQLite, así que
+// --desde-base no los alcanza). Con dry-run, solo los lista.
+func renombrarWeb(ctx context.Context, s *kommo.Sincronizador, dry bool) error {
+	var ver func(viejo, nuevo string)
+	if dry {
+		ver = func(viejo, nuevo string) { fmt.Printf("«%s» → «%s»\n", viejo, nuevo) }
+	}
+	n, err := s.RenombrarWeb(ctx, ver)
+	if err != nil {
+		return fmt.Errorf("renombrar: %w", err)
+	}
+	if dry {
+		fmt.Printf("--renombrar --dry-run: %d leads del chat web cambiarían de nombre\n", n)
+	} else {
+		fmt.Printf("%d leads del chat web renombrados (y sus contactos, si conservaban el nombre viejo)\n", n)
+	}
+	return nil
 }
 
 // aplicarTodos aplica los eventos de uno en uno (el cliente respeta el límite de tasa). Con dry-run, solo los muestra.

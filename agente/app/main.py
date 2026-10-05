@@ -1355,6 +1355,25 @@ def _art(f) -> str:
     return "la" if categoria_de(f) in ("blusa", "falda") else "el"
 
 
+def _claves_prenda(f) -> list[str]:
+    """Con qué se nombra una prenda en un texto: su código y las palabras propias de su nombre («V35», «irla»). Si el
+    nombre no tiene ninguna propia («Vestido Azul Noche»), el nombre entero."""
+    propias = [w for w in re.findall(r"[a-zñ]+", _sin_tildes(f.nombre)) if len(w) >= 4 and w not in _GENERICAS]
+    return [f.codigo] + (propias or [f.nombre])
+
+
+def _frase_presenta(f, mem: dict, recomienda: bool) -> str:
+    """La frase que nombra la prenda antes de su foto: «Para tu matrimonio de noche te recomiendo el *Vestido Irla*.»
+    (la opción del método de venta) o «Te muestro el *Vestido Irla*.» (cualquier otra foto)."""
+    if not recomienda:
+        return f"Te muestro {_art(f)} *{f.nombre}*."
+    sab = mem.get("sabemos") or {}
+    oc = memoria.OCASION_TXT.get(sab.get("ocasion") or "", "")
+    if oc:
+        oc = "tu " + oc.split(" ", 1)[1] + {"noche": " de noche", "dia": " de día"}.get(sab.get("horario") or "", "")
+    return f"{'Para ' + oc + ' te' if oc else 'Te'} recomiendo {_art(f)} *{f.nombre}*."
+
+
 def _y(xs: list[str]) -> str:
     xs = [str(x) for x in xs]
     return (", ".join(xs[:-1]) + " y " + xs[-1]) if len(xs) > 1 else "".join(xs)
@@ -1533,6 +1552,7 @@ def conversar(req: ChatIn) -> dict:
     sin_pedido = cita_turno or (cita_hecha and not compra_explicita)
     forzar = None   # la pregunta que deja el flujo del código (None: la detecta en la respuesta)
     sig = ""        # la siguiente pregunta que elige el código para el LLM
+    una_opcion = None   # la opción que ofrece el método de venta (mejor_opcion), si la hay en este turno
     # Describe la prenda que vio («era fucsia, satinado y largo»): lo que salga son posibles coincidencias, aunque
     # sus palabras coincidan con el nombre de una prenda («Vestido Fucsia Satinado»). Se le pregunta si es esa.
     describiendo = pend in ESPERANDO_CUAL and lectura["describe"] and not datos.codigos_en(req.mensaje)
@@ -1941,8 +1961,10 @@ def conversar(req: ChatIn) -> dict:
                 cuerpo.append((f"Para {oc} te recomiendo" if oc else "Te recomiendo")
                               + f" {_art(una_opcion)} *{una_opcion.codigo}* {una_opcion.nombre} 😊 Te paso la foto.")
             elif sugeridas and (pide or es_catalogo or describiendo or (esperando_cual and lectura.get("describe"))):
+                f0 = sugeridas[0]       # con una sola foto se dice de qué es: la clienta lee esto antes de verla
                 cuerpo.append("Mira, ¿es alguno de estos? Te paso las fotos." if (describiendo or esperando_cual) else
-                              "¡Claro! 😊 Te paso " + ("la foto." if len(sugeridas) == 1 else "las fotos."))
+                              "¡Claro! 😊 Te paso " + (f"la foto de{'l' if _art(f0) == 'el' else ' la'} *{f0.nombre}*."
+                                                       if len(sugeridas) == 1 else "las fotos."))
             elif pide:
                 cuerpo.append("Por ahora no tengo otra más económica en esa línea 😊" if mas_barato else
                               "Por ahora eso es todo lo que tengo en esa línea 😊")
@@ -2033,10 +2055,11 @@ def conversar(req: ChatIn) -> dict:
                         if (esperando_cual or describiendo) and sugeridas else
                         "OJO: todavía no sabemos qué prenda vio. Responde lo que pregunta sin suponer ninguna y recuérdale que "
                         "te pase la foto o el nombre." if esperando_cual else
-                        f"OFRECES UNA SOLA OPCIÓN: {una_opcion.codigo} {una_opcion.nombre}. Preséntala conectándola con lo que te "
-                        f"contó ({memoria.lo_que_sabemos(mem)}): por qué le va bien para eso («para un matrimonio de noche te va "
-                        "perfecto porque…»), solo con datos de su ficha. Dile que le pasas la foto. No menciones otras prendas ni "
-                        "enumeres tallas." if una_opcion is not None else
+                        f"OFRECES UNA SOLA OPCIÓN: {una_opcion.codigo} {una_opcion.nombre}. En \"responde\" NÓMBRALA por su nombre "
+                        f"(«para tu matrimonio de noche te recomiendo {_art(una_opcion)} {una_opcion.nombre}»): la clienta lee el "
+                        "texto ANTES de ver la foto, así que «es ideal…» sin decir cuál no se entiende. Luego conéctala con lo que te "
+                        f"contó ({memoria.lo_que_sabemos(mem)}): por qué le va bien para eso, solo con datos de su ficha. Dile que le "
+                        "pasas la foto. No menciones otras prendas ni enumeres tallas." if una_opcion is not None else
                         "OJO: todavía estás conociendo su necesidad: no le muestras prendas. No nombres ninguna ni prometas fotos."
                         if indagando else "")
                 if pide_tela:   # la tela sale de la ficha; si no figura, se dice que no figura (no se adivina)
@@ -2195,6 +2218,14 @@ def conversar(req: ChatIn) -> dict:
     if accion == "responder" and sugeridas and memoria.no_mostrar(req.mensaje):
         sugeridas = []          # «no me muestres nada todavía»
         respuesta = "\n\n".join(x for x in (RE_PROMESA_FOTOS.sub("", p).strip() for p in respuesta.split("\n\n")) if re.search(r"\w", x)) or respuesta
+    # Si el texto habla de una prenda, la nombra (regla del dueño, 05-10-2026). En producción, al primer mensaje salió
+    # «¡Hola, Ana! Soy Rosemary…» → «Es ideal para una boda nocturna…» → foto del Irla: la clienta lee «es ideal» antes
+    # de ver la foto y sin saber de qué. Con la foto de UNA prenda que nadie ha nombrado aún en la conversación, el texto
+    # de antes de la foto la nombra; si el LLM no lo hizo, lo pone el código (estructurado.presentar).
+    if (accion == "responder" and respuesta and len(sugeridas) == 1 and etapa != "venta_confirmada"
+            and not any(estructurado.nombra(t, _claves_prenda(sugeridas[0])) for t in [req.mensaje] + [t.texto for t in req.historial])):
+        respuesta = estructurado.presentar(respuesta, _frase_presenta(sugeridas[0], mem, recomienda=sugeridas[0] is una_opcion),
+                                           _claves_prenda(sugeridas[0]))
     promesa_pago = next((m for m in RE_PROMETE_PAGO.finditer(respuesta or "")
                          if "¿" not in m.group(0) and not (respuesta or "")[m.end():m.end() + 1] == "?"), None)
     if (etapa == "venta_confirmada" and accion == "responder" and modelo != "flujo_pago" and promesa_pago is not None

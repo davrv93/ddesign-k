@@ -326,7 +326,7 @@ Las fotos de productos y las que manda la clienta están en el mismo volumen (`/
 | Ruta | Qué es | ¿En git? |
 |---|---|---|
 | `agente/data/*.csv` | Entrenamiento y pruebas del clasificador | Sí |
-| `agente/data/regresion_*` | Las 60 preguntas y 30 conversaciones de la prueba de regresión | Sí (no re-entrenan la imagen) |
+| `agente/data/regresion_*` | Las 62 preguntas y 32 conversaciones de la prueba de regresión | Sí (no re-entrenan la imagen) |
 | `agente/seed/tienda.md`, `venta.json` | Showroom, horarios, envíos (Lima S/ 15, provincia S/ 20), asesora | Sí |
 | `agente/seed/producto_demo.json` | Material y lámina del vestido del anuncio (V42) | Sí |
 | `agente/seed/estilo.jsonl` | Banco de estilo para el prompt (apagado, `ESTILO_FEWSHOT=0`) | Sí |
@@ -403,7 +403,7 @@ o va lento, la clienta no lo nota.
 | `prueba_animo`, `prueba_crm`, `prueba_estilo` | A mano / build | Ánimo y urgencia, aviso al CRM, banco de estilo | 0 |
 | Clasificador | Log del build | Intención 98,5 % (65/66) y comercial 98,5 % (67/68) en conjuntos independientes; foto top1 0,976 | 0 |
 | `go test ./...` | Backend | Flujo del bot de punta a punta con agente y Evolution simulados, reservas, pagos, sesión, Kommo simulado, Kommo caído | 0 |
-| **Regresión** (`python -m app.regresion`) | Antes de cada deploy | 60 preguntas + 30 conversaciones (incluidas reales anonimizadas) con afirmaciones por turno, 47 entradas raras (nunca 500) y carga de 20 chats en paralelo | 0 (sin LLM) |
+| **Regresión** (`python -m app.regresion`) | Antes de cada deploy | 62 preguntas + 32 conversaciones (incluidas reales anonimizadas) con afirmaciones por turno, 47 entradas raras (nunca 500) y carga de 20 chats en paralelo | 0 (sin LLM) |
 | `conversaciones.py` | Puntual | 200 conversaciones (50 reservadas), con clienta simulada y juez | Usa LLM |
 | `evaluar_jev.py` | Puntual | Exactitud y calibración de Jev, cascada, verificación | Centavos |
 

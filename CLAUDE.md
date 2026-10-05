@@ -275,6 +275,16 @@ Tablero → PATCH /api/orders/{id} (bot.PedidoCambio) ────────�
   (select), Talla, Prenda en foco («V35 · Vestido Irla»), Ciudad / envío, Cita para probarse (date_time), Canal (select),
   Llegó por anuncio (checkbox), Pedido kddesign, Conversación en kddesign (url al panel), ID kddesign. Solo se manda lo
   que cambió desde el último envío.
+- **Nombres** (`kommo/nombres.go`, 05-10-2026):
+  - WhatsApp con nombre: «David Roncal · WhatsApp».
+  - WhatsApp sin nombre: «WhatsApp +•••692». Nunca el número completo en el nombre; el teléfono va en el campo
+    `PHONE`.
+  - WhatsApp sin nombre ni teléfono (JID LID): «WhatsApp · conversación 450».
+  - Chat web: «Clienta web · 05/10 14:41» (inicio de la sesión, hora de Lima), o «Lucía · Web» si ella dice su nombre
+    (`sabemos.nombre`). La «Ana» fija de la UI de prueba no cuenta como nombre.
+
+  El nombre se actualiza solo si el lead conserva el nombre automático; uno editado a mano en Kommo no se toca nunca.
+  `kommo-seed --renombrar` pasa al formato nuevo los leads con el formato viejo (`DEPLOY.md` §11.4).
 - **Precio:** la prenda en foco o el total del pedido; con la venta confirmada, más el envío (los costos los da el agente
   en `/health` → `envios`, desde `seed/venta.json`: no se copian en Go).
 - **Etiquetas:** `kddesign`, canal (`whatsapp`/`web`), temperatura (`fría`/`tibia`/`caliente`), `anuncio V42`, `demo`.

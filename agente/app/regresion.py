@@ -45,7 +45,7 @@ import time
 import urllib.error
 import urllib.request
 
-from . import memoria
+from . import estructurado, memoria
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 DATOS = os.path.join(AQUI, "..", "data")
@@ -359,8 +359,29 @@ def _valor(esperado, obtenido, cat: Catalogo, mem: dict | None) -> bool:
     return esperado == obtenido
 
 
-def universales(j: dict, antes: dict | None, etapa_antes: str, esp: dict, cat: Catalogo, veces_pregunta: dict) -> list[str]:
-    """Reglas que valen en todos los turnos (las que dictó la tienda), salvo que `espera` diga otra cosa."""
+_GENERICAS = {"vestido", "conjunto", "blusa", "pantalon", "falda", "blazer", "enterizo", "azul", "rojo", "rosa", "palo",
+              "turquesa", "negro", "noche", "fiesta", "gala", "capa", "largo", "corto", "midi", "elegante"}
+
+
+def _claves(cod: str, cat: Catalogo) -> list[str]:
+    """Con qué se nombra una prenda: su código y las palabras propias de su nombre («V35», «irla»)."""
+    nombre = (cat.prod.get(cod) or {}).get("nombre", "")
+    propias = [w for w in re.findall(r"[a-zñ]+", _P(nombre)) if len(w) >= 4 and w not in _GENERICAS]
+    return [cod] + (propias or ([nombre] if nombre else []))
+
+
+def antes_de_la_foto(texto: str, con_foto: bool) -> str:
+    """Lo que la clienta lee ANTES de la foto: con foto, la pregunta final va después (`sendAgentText` en Go)."""
+    partes = [p.strip() for p in (texto or "").split("\n\n") if p.strip()]
+    if con_foto and len(partes) > 1 and "?" in partes[-1]:
+        partes = partes[:-1]
+    return "\n\n".join(partes)
+
+
+def universales(j: dict, antes: dict | None, etapa_antes: str, esp: dict, cat: Catalogo, veces_pregunta: dict,
+                previos: list[str] | None = None) -> list[str]:
+    """Reglas que valen en todos los turnos (las que dictó la tienda), salvo que `espera` diga otra cosa. `previos`: lo
+    que ya se dijo en la conversación (historial y el mensaje de la clienta), para saber si una prenda ya se nombró."""
     f = []
     texto, plano = j.get("respuesta") or "", _P(j.get("respuesta") or "")
     fotos, etapa, accion = fotos_de(j), j.get("etapa") or "", j.get("accion") or ""
@@ -394,6 +415,12 @@ def universales(j: dict, antes: dict | None, etapa_antes: str, esp: dict, cat: C
     # Lo que se dice es lo que se manda.
     if RE_PROMETE_FOTO.search(plano) and not fotos:
         f.append("prometió una foto y no mandó ninguna")
+    # Si el texto habla de una prenda, la nombra: con la foto de UNA prenda que nadie ha nombrado aún en la
+    # conversación, lo que se lee antes de la foto dice cuál es (05-10-2026: «Es ideal para una boda nocturna…» → foto).
+    if (previos is not None and accion == "responder" and len(fotos) == 1 and etapa != "venta_confirmada"
+            and (cl := _claves(fotos[0], cat)) and not any(estructurado.nombra(t, cl) for t in previos)
+            and not estructurado.nombra(antes_de_la_foto(texto, True), cl) and not esp.get("sin_nombrar")):
+        f.append(f"mandó la foto del {fotos[0]} sin nombrarlo antes de la foto")
     if RE_PROMETE_PAGO.search(plano) and not RE_PAGO_DATO.search(texto) and "asesora" not in plano:
         f.append("prometió los datos de pago y no los mandó")
     if RE_PAGO_DATO.search(texto) and etapa != "venta_confirmada":
@@ -679,7 +706,8 @@ def correr_preguntas(url: str, cat: Catalogo, solo: str = "") -> list[dict]:
             if fila["si_no"] in ("si", "no") and pend and not (j.get("lectura") or {}).get("respondio"):
                 fallos.append(f"/chat no lo leyó como respuesta a la pendiente «{pend}»")
             fallos += evaluar(esp, j, antes, cat)
-            fallos += universales(j, antes, ctx["etapa"], esp, cat, {})
+            previos = [h.get("texto", "") for h in ctx["historial"]] + [msg]
+            fallos += universales(j, antes, ctx["etapa"], esp, cat, {}, previos)
         res.append({"id": fila["id"], "mensaje": msg, "contexto": fila["contexto"], "fallos": fallos,
                     "bot": (j.get("respuesta") or "")[:300], "fotos": fotos_de(j), "accion": j.get("accion"),
                     "etapa": j.get("etapa"), "modelo": j.get("modelo_llm"),
@@ -707,7 +735,9 @@ def correr_conversacion(url: str, conv: dict, cat: Catalogo) -> dict:
     fallos, turnos, veces, vistas = [], [], {}, set()
     for k, t in enumerate(conv["turnos"], 1):
         etapa_antes = ch.etapa
-        if t.get("pausa_horas", 0) >= 6:
+        previos = [h.get("texto", "") for h in ch.historial] + [t["cliente"]]
+        if t.get("pausa_horas", 0) >= 6 and ch.estado in ("", "esperando_foto"):
+            previos = [t["cliente"]]      # sesión nueva: el agente no ve lo de antes
             vistas = set()
         est, j, antes = ch.turno(t["cliente"], t.get("llm", ""), t.get("pausa_horas", 0))
         esp = t.get("espera") or {}
@@ -717,7 +747,7 @@ def correr_conversacion(url: str, conv: dict, cat: Catalogo) -> dict:
         elif not j.get("silencio"):
             ft += evaluar(esp, j, antes, cat)
             if not j.get("go") or j["go"] == "confirmar+envio":
-                ft += universales(j, antes, etapa_antes, esp, cat, veces)
+                ft += universales(j, antes, etapa_antes, esp, cat, veces, previos)
             # Una foto ya enviada no se reenvía, salvo que la pida otra vez (`foto_repetida` en el caso).
             if (otra_vez := [c for c in fotos_de(j) if c in vistas]) and not esp.get("foto_repetida"):
                 ft.append(f"reenvió fotos que ya había mandado: {otra_vez}")

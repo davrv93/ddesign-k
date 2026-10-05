@@ -98,8 +98,8 @@ func TestChatWebDePuntaAPunta(t *testing.T) {
 		t.Fatalf("un contacto ligado al lead: %d contactos, lead con %v", len(k.Contactos), l.Contactos)
 	}
 	for _, c := range k.Contactos {
-		if c.Telefono != "" || !strings.Contains(c.Nombre, "Chat web") {
-			t.Fatalf("el contacto web no lleva teléfono y se nombra por la sesión: %+v", c)
+		if c.Telefono != "" || !strings.HasPrefix(c.Nombre, "Clienta web · ") {
+			t.Fatalf("el contacto web no lleva teléfono y se nombra por el inicio de la sesión: %+v", c)
 		}
 	}
 	aplicar(t, s, web(EventoWeb{Etapa: "seguimiento", Intencion: "consulta_material", Sugerencias: []string{"V35"},
