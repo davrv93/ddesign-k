@@ -84,6 +84,8 @@ func (s *Server) Routes() http.Handler {
 	p("GET /api/conversations/{id}/messages", s.listMessages)
 	p("POST /api/conversations/{id}/send", s.sendMessage)
 	p("POST /api/conversations/{id}/bot", s.setBot)
+	p("POST /api/conversations/{id}/agent-version", s.setAgentVersion)
+	p("GET /api/agent/metricas", s.agentMetricas)
 
 	p("GET /api/settings", s.getSettings)
 	p("PUT /api/settings", s.putSettings)
@@ -840,6 +842,52 @@ func (s *Server) setBot(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]bool{"ok": true})
 }
 
+// setAgentVersion fija la versión del agente (v1 | v2) de UNA conversación; "" la devuelve a la política de ajustes.
+func (s *Server) setAgentVersion(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		writeErr(w, 400, "id inválido")
+		return
+	}
+	var in struct {
+		Version string `json:"version"`
+	}
+	if err := readJSON(r, &in); err != nil {
+		writeErr(w, 400, "datos inválidos")
+		return
+	}
+	if in.Version = strings.ToLower(strings.TrimSpace(in.Version)); in.Version != "" && in.Version != "v1" && in.Version != "v2" {
+		writeErr(w, 400, "version debe ser v1, v2 o vacía")
+		return
+	}
+	if err := s.store.SetAgentVersion(r.Context(), id, in.Version); err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			writeErr(w, 404, "conversación no encontrada")
+			return
+		}
+		writeErr(w, 500, err.Error())
+		return
+	}
+	s.hub.Publish("conversations")
+	writeJSON(w, 200, map[string]string{"version": in.Version})
+}
+
+// agentMetricas devuelve las métricas por versión del agente (turnos, latencia, acuerdo de V2 con V1…) para el panel.
+func (s *Server) agentMetricas(w http.ResponseWriter, r *http.Request) {
+	if s.bot == nil || s.bot.Agent == nil {
+		writeJSON(w, 200, map[string]any{"disponible": false})
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
+	defer cancel()
+	v, err := s.bot.Agent.Metricas(ctx)
+	if err != nil {
+		writeJSON(w, 200, map[string]any{"disponible": false, "error": err.Error()})
+		return
+	}
+	writeJSON(w, 200, map[string]any{"disponible": true, "versiones": v})
+}
+
 // ---------------------------------------------------------------------------
 // ajustes
 
@@ -848,6 +896,34 @@ var settingDefaults = map[string]string{
 	"notify_status_changes": "true",
 	"pause_on_manual_reply": "true",
 	"bot_resume_hours":      "12",
+	// Versión del agente (V1 o V2) y cómo se reparte entre las clientas. Ver internal/bot/versionagente.go.
+	bot.AjusteVersion:    bot.VersionPorDefecto, // v1 | v2 | ab
+	bot.AjustePorcentaje: "0",                   // 0–100: con «ab», % de clientas que va a V2
+	bot.AjusteNumeros:    "",                    // números que siempre van a V2 (pruebas)
+	bot.AjusteModoV2:     "sombra",              // sombra | activo
+}
+
+// validarAjuste revisa (y limpia) el valor de los ajustes de versión; el resto pasa tal cual.
+func validarAjuste(k, v string) (string, error) {
+	switch k {
+	case bot.AjusteVersion:
+		if v = strings.ToLower(strings.TrimSpace(v)); v != "v1" && v != "v2" && v != "ab" {
+			return "", errors.New("agent_version debe ser v1, v2 o ab")
+		}
+	case bot.AjusteModoV2:
+		if v = strings.ToLower(strings.TrimSpace(v)); v != "sombra" && v != "activo" {
+			return "", errors.New("agent_v2_modo debe ser sombra o activo")
+		}
+	case bot.AjustePorcentaje:
+		n, err := strconv.Atoi(strings.TrimSpace(v))
+		if err != nil || n < 0 || n > 100 {
+			return "", errors.New("agent_v2_percent debe ser un entero de 0 a 100")
+		}
+		v = strconv.Itoa(n)
+	case bot.AjusteNumeros:
+		v = strings.Join(bot.SoloDigitos(strings.Split(v, ",")), ",")
+	}
+	return v, nil
 }
 
 func (s *Server) getSettings(w http.ResponseWriter, r *http.Request) {
@@ -872,10 +948,20 @@ func (s *Server) putSettings(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "datos inválidos")
 		return
 	}
+	// Primero se valida todo: un valor malo no deja la mitad de los ajustes cambiada.
+	limpios := map[string]string{}
 	for k, v := range in {
 		if _, ok := settingDefaults[k]; !ok {
 			continue
 		}
+		v, err := validarAjuste(k, v)
+		if err != nil {
+			writeErr(w, 400, err.Error())
+			return
+		}
+		limpios[k] = v
+	}
+	for k, v := range limpios {
 		if err := s.store.SetSetting(r.Context(), k, v); err != nil {
 			writeErr(w, 500, err.Error())
 			return

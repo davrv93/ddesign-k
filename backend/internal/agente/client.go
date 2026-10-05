@@ -52,6 +52,10 @@ type Request struct {
 	Memoria json.RawMessage `json:"memoria,omitempty"`
 	// Perfil: lo que sabemos de la clienta por sus pedidos anteriores (clienta que vuelve).
 	Perfil *Perfil `json:"perfil,omitempty"`
+	// Version del agente para este turno ("v1" | "v2") y, con V2, su Modo ("sombra" | "activo"). Los decide el bot por
+	// conversación (ajustes del panel); vacío = lo que arrancó el agente.
+	Version string `json:"version,omitempty"`
+	Modo    string `json:"modo,omitempty"`
 }
 
 // Perfil de una clienta que ya compró: el agente prellena la talla y puede mencionarlo con naturalidad.
@@ -87,6 +91,15 @@ type Reply struct {
 	// Comercial: la intención comercial del turno (consulta_material, objecion_precio…). La usa el CRM (Kommo) para
 	// anotar el hito; no cambia lo que hace el bot.
 	Comercial *Comercial `json:"comercial,omitempty"`
+	// Version con la que contestó el agente y, si fue V2, lo que hizo (agente/app/v2).
+	Version string  `json:"version,omitempty"`
+	V2      *V2Info `json:"v2,omitempty"`
+}
+
+// V2Info es lo mínimo de la traza de V2 que le sirve al bot: en qué modo corrió y quién escribió el texto.
+type V2Info struct {
+	Modo    string `json:"modo"`
+	Enviado string `json:"enviado"` // "v2" = habló V2; "v1" = V2 miró y habló V1
 }
 
 type Comercial struct {
@@ -126,6 +139,32 @@ type PhotoResult struct {
 
 func (c *Client) Chat(ctx context.Context, req Request) (*Reply, error) {
 	return c.post(ctx, "/chat", req)
+}
+
+// Metricas devuelve las métricas por versión del agente (`versiones` de GET /metricas): turnos, latencia, acuerdo con V1…
+func (c *Client) Metricas(ctx context.Context) (json.RawMessage, error) {
+	hreq, err := http.NewRequestWithContext(ctx, http.MethodGet, c.BaseURL+"/metricas", nil)
+	if err != nil {
+		return nil, err
+	}
+	res, err := c.HTTP.Do(hreq)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("agente: HTTP %d", res.StatusCode)
+	}
+	var m struct {
+		Versiones json.RawMessage `json:"versiones"`
+	}
+	if err := json.NewDecoder(res.Body).Decode(&m); err != nil {
+		return nil, fmt.Errorf("agente: %w", err)
+	}
+	if len(m.Versiones) == 0 {
+		return json.RawMessage(`{}`), nil
+	}
+	return m.Versiones, nil
 }
 
 func (c *Client) Photo(ctx context.Context, req PhotoRequest) (*Reply, error) {

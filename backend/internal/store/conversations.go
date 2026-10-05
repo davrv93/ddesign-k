@@ -25,6 +25,10 @@ type Conversation struct {
 	LastMessage   string    `json:"last_message"`
 	LastMessageAt time.Time `json:"last_message_at"`
 	Customer      *Customer `json:"customer,omitempty"`
+	// AgentVersion: la versión del agente que una persona fijó para esta conversación ("v1" | "v2"), o "" si manda la
+	// política de ajustes. AgentLast: qué versión habló en el último turno ("v1", "v2" o "v2→v1").
+	AgentVersion string `json:"agent_version"`
+	AgentLast    string `json:"agent_last"`
 }
 
 type Message struct {
@@ -61,14 +65,14 @@ func (s *Store) UpsertCustomer(ctx context.Context, jid, phone, name string) (*C
 }
 
 const convSelect = `SELECT c.id, c.customer_id, c.state, c.context, c.bot_paused, c.unread, c.last_message, c.last_message_at,
-	cu.id, cu.jid, cu.phone, cu.name, cu.created_at
+	cu.id, cu.jid, cu.phone, cu.name, cu.created_at, c.agent_version, c.agent_last
 	FROM conversations c JOIN customers cu ON cu.id=c.customer_id`
 
 func scanConv(sc interface{ Scan(...any) error }) (*Conversation, error) {
 	c := &Conversation{Customer: &Customer{}}
 	var paused int
 	err := sc.Scan(&c.ID, &c.CustomerID, &c.State, &c.Context, &paused, &c.Unread, &c.LastMessage, &c.LastMessageAt,
-		&c.Customer.ID, &c.Customer.JID, &c.Customer.Phone, &c.Customer.Name, &c.Customer.CreatedAt)
+		&c.Customer.ID, &c.Customer.JID, &c.Customer.Phone, &c.Customer.Name, &c.Customer.CreatedAt, &c.AgentVersion, &c.AgentLast)
 	c.BotPaused = paused == 1
 	return c, err
 }
@@ -109,6 +113,24 @@ func (s *Store) ListConversations(ctx context.Context, limit int) ([]*Conversati
 
 func (s *Store) SetConversationState(ctx context.Context, id int64, state, contextJSON string) error {
 	_, err := s.DB.ExecContext(ctx, `UPDATE conversations SET state=?, context=? WHERE id=?`, state, contextJSON, id)
+	return err
+}
+
+// SetAgentVersion fija la versión del agente de una conversación ("v1" | "v2"); "" devuelve el mando a los ajustes.
+func (s *Store) SetAgentVersion(ctx context.Context, id int64, version string) error {
+	res, err := s.DB.ExecContext(ctx, `UPDATE conversations SET agent_version=? WHERE id=?`, version, id)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// SetAgentLast anota qué versión habló en el último turno.
+func (s *Store) SetAgentLast(ctx context.Context, id int64, last string) error {
+	_, err := s.DB.ExecContext(ctx, `UPDATE conversations SET agent_last=? WHERE id=? AND agent_last<>?`, last, id, last)
 	return err
 }
 

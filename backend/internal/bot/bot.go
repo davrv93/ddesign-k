@@ -1169,6 +1169,13 @@ func (b *Bot) customerName(conv *store.Conversation) string {
 	return ""
 }
 
+func (b *Bot) customerPhone(conv *store.Conversation) string {
+	if conv.Customer != nil {
+		return conv.Customer.Phone
+	}
+	return ""
+}
+
 // askAgent consulta al agente con la etapa comercial y el pedido en curso. nil si no hay agente o no respondió.
 func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) *agente.Reply {
 	if b.Agent == nil || strings.TrimSpace(raw) == "" {
@@ -1186,10 +1193,19 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 			req.Producto = p.Code
 		}
 	}
+	// V1 o V2: lo decide la política de los ajustes del panel, o la persona que fijó la versión de esta conversación.
+	pol := PoliticaAgente(ctx, b.store)
+	req.Version, _ = pol.Resolver(conv.AgentVersion, b.customerPhone(conv), conv.ID)
+	if req.Version == "v2" {
+		req.Modo = pol.Modo
+	}
 	r, err := b.Agent.Chat(actx, req)
 	if err != nil {
 		log.Printf("bot: agente: %v", err)
 		return nil
+	}
+	if err := b.store.SetAgentLast(ctx, conv.ID, etiquetaAgente(r)); err != nil {
+		log.Printf("bot: anotar versión del agente: %v", err)
 	}
 	b.crmRespuesta(ctx, r)
 	b.guardarMemoria(ctx, conv, cc, r)

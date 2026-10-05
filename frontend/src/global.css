@@ -1285,3 +1285,89 @@ textarea {
     font-size: 1.1rem;
   }
 }
+
+/* ---------- versión del agente (V1 / V2 / A-B) ---------- */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.seg button {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.seg button:last-child {
+  border-right: 0;
+}
+.seg button.on {
+  background: var(--brand);
+  color: #fff;
+}
+.seg button:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+.ab-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.ab-range input[type="range"] {
+  width: 150px;
+}
+.ab-range output {
+  min-width: 3ch;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.setting textarea {
+  width: min(280px, 100%);
+  font: inherit;
+  font-size: 0.85rem;
+}
+.ab-stats {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+.ab-stats th,
+.ab-stats td {
+  text-align: right;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+}
+.ab-stats th:first-child,
+.ab-stats td:first-child {
+  text-align: left;
+}
+.ab-stats thead th {
+  color: var(--muted);
+  font-weight: 600;
+}
+.chip.v2 {
+  color: var(--brand);
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+}
+.agent-ver {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.agent-ver .seg button {
+  padding: 3px 10px;
+  font-size: 0.78rem;
+}
+.row.between {
+  justify-content: space-between;
+  align-items: center;
+}

@@ -152,6 +152,14 @@ En `step()` de `backend/internal/bot/bot.go`:
 - **`CATALOGO100=0`** (producción) deja fuera el catálogo ficticio de 100 modelos de BOT.zip: el agente
   solo ofrece y reconoce por foto las prendas de la tienda.
 
+### Agente V2 (05-10-2026, rama `feat/agente-v2`)
+
+Segunda versión del agente, **apagada por defecto**: sin tocar nada todo sigue en V1. Se enciende por conversación, por número,
+por porcentaje (A/B) o para todas desde **Ajustes → Versión del agente** del panel (WhatsApp) y desde el menú del chat de prueba.
+En modo **sombra** decide y se mide pero la clienta recibe el texto de V1; en **activo** habla solo al recomendar, cuando su plan
+coincide con V1 y su texto pasa el control de calidad. Arquitectura, variables, cómo comparar y lo medido, en
+[`agente/V2.md`](agente/V2.md). El bot Go decide la versión (`backend/internal/bot/versionagente.go`) y la manda en cada petición.
+
 ## Producción
 
 | | |

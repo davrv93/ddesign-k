@@ -31,7 +31,9 @@ from . import datos, etapas, jev, memoria, venta
 from . import animo, crm, estructurado, gasto, rerank
 from .v2 import config as v2cfg
 from .v2.agente import AgentV2
-from .v2.decision import JevStyleDecision, ReglasDecision, juez_llama
+from .v2.contexto import ContextBuilder
+from .v2.decision import JevStyleDecision, JevSystemOneDecision, ReglasDecision, juez_llama
+from .v2.generacion import Encadenada, LlmLocalGeneracion
 from .v2.motor import MotorRecursivo
 from .v2.calidad import PlantillaGeneracion, ReglasCalidad
 from .v2.metricas import REGISTRO as _METRICAS
@@ -243,6 +245,8 @@ class ChatIn(BaseModel):
     respuesta_llm: str = ""
     # Versión del agente para este turno: "v1" | "v2". Vacío = AGENT_VERSION del entorno (v1 si no está).
     version: str = ""
+    # Modo de la V2 para este turno: "sombra" (V2 solo observa) | "activo" (V2 puede hablar). Vacío = V2_MODO del entorno.
+    modo: str = ""
 
 
 RE_NO_TEXTO = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\ud800-\udfff]")
@@ -2339,14 +2343,37 @@ def _herramienta_stock(codigo: str) -> str:
 
 
 def _motor_v2() -> MotorRecursivo:
-    # V2_DECISION=jev + V2_JUEZ_URL → juez local (llama-server). Si no, reglas (determinista, sin modelo).
+    """V2_DECISION: reglas (por defecto, determinista) | jev (Jev local por /v1/systemone en V2_JUEZ_URL) |
+    jev-chat (cualquier servidor OpenAI-compatible que conteste JSON, en V2_JUEZ_URL)."""
     lim = v2cfg.limites_desde_entorno()
     url = os.environ.get("V2_JUEZ_URL", "").strip()
-    if os.environ.get("V2_DECISION", "reglas").strip() == "jev" and url:
+    modo = os.environ.get("V2_DECISION", "reglas").strip()
+    if modo == "jev" and url:
+        decision = JevSystemOneDecision(url, os.environ.get("V2_JUEZ_MODELO", "jev-style-0.8b-decision-v3"),
+                                        lim.timeout_decision_ms / 1000, float(os.environ.get("V2_JUEZ_UMBRAL", "0.5")))
+    elif modo == "jev-chat" and url:
         decision = JevStyleDecision(juez_llama(url, lim.timeout_decision_ms / 1000))
     else:
         decision = ReglasDecision()
-    return MotorRecursivo(decision, {"stock": _herramienta_stock, "rag": _herramienta_rag}, lim)
+    return MotorRecursivo(decision, {"stock": _herramienta_stock, "rag": _herramienta_rag, "crm": _herramienta_crm}, lim)
+
+
+TALLAS_VALIDAS = ("XS", "S", "M", "L", "XL", "XXL")
+
+
+def _herramienta_crm(perfil: dict | None) -> dict:
+    """Herramienta del motor V2: lo que sabemos de la clienta por sus pedidos anteriores (el CRM de este sistema son los
+    pedidos del backend; Kommo solo recibe). Se limpia contra el catálogo: una talla o un código que no existen se descartan."""
+    if not isinstance(perfil, dict):
+        return {}
+    tallas = [t.upper() for t in (perfil.get("tallas") or []) if isinstance(t, str) and t.upper() in TALLAS_VALIDAS]
+    with E.lock:
+        codigos = [c for c in (perfil.get("productos") or []) if isinstance(c, str) and c.upper() in E.por_codigo]
+    try:
+        pedidos = max(0, int(perfil.get("pedidos") or 0))
+    except (TypeError, ValueError):
+        pedidos = 0
+    return {"pedidos": pedidos, "tallas": tallas, "productos": [c.upper() for c in codigos]}
 
 
 def _herramienta_rag(texto: str) -> list[str]:
@@ -2363,10 +2390,57 @@ def _nombre_de(codigo: str) -> str | None:
         return E.fichas[i].nombre if i is not None else None
 
 
+def _ficha_de(codigo: str) -> dict:
+    """Los datos de la prenda que el redactor puede usar: los de la ficha del catálogo y nada más."""
+    with E.lock:
+        i = E.por_codigo.get(codigo)
+        f = E.fichas[i] if i is not None else None
+    if f is None:
+        return {}
+    return {"nombre": f.nombre, "categoria": f.categoria, "color": f.color, "detalle": f.detalle, "tejido": f.tejido,
+            "material": venta.extras(codigo).get("material", "")}
+
+
+def _ficha_texto(codigo: str) -> str:
+    f = _ficha_de(codigo)
+    return " ".join(str(v) for v in f.values() if v)
+
+
+def _todos_los_nombres() -> dict[str, str]:
+    with E.lock:
+        return {f.codigo: f.nombre for f in E.fichas if f.fuente == "seed"}
+
+
+def _texto_pregunta(tipo: str, mem: dict, mensaje: str, respuesta: str = "") -> str:
+    """La pregunta de tipo `tipo`: con la respuesta de V1 a mano, la redacción exacta que V1 ya eligió."""
+    for q in reversed(memoria.preguntas_en(respuesta)):
+        if memoria.clave_de(q) == tipo:
+            return q
+    return memoria.texto_pregunta(tipo, mem, mensaje)
+
+
+def _redactores_v2():
+    """Sombra: plantillas de código (sin modelo, sin latencia). Activo: si hay V2_GEN_URL, un modelo local primero (solo en
+    las acciones de V2_GEN_ACCIONES) y la plantilla de código detrás; el control de calidad decide cuál sale."""
+    plantilla = PlantillaGeneracion(nombres=_nombre_de)
+    url = os.environ.get("V2_GEN_URL", "").strip()
+    if not url:
+        return plantilla, plantilla
+    lim = v2cfg.limites_desde_entorno()
+    # V2_GEN_ACCIONES: qué redacta el modelo (recomendar, preguntar). Por defecto solo `recomendar`: medido con
+    # qwen2.5:3b, sus acuses al preguntar eran peores que los de código de V1 («Mucho gusto» a quien no se presentó).
+    acciones = tuple(x.strip() for x in os.environ.get("V2_GEN_ACCIONES", "recomendar").split(",") if x.strip())
+    llm = LlmLocalGeneracion(url, os.environ.get("V2_GEN_MODELO", "qwen2.5:3b"), lim.timeout_generacion_ms / 1000,
+                             nombre_de=_nombre_de, ficha_de=_ficha_de, acciones=acciones)
+    return plantilla, Encadenada([llm, plantilla])
+
+
+_PLANTILLA, _ACTIVO = _redactores_v2()
 _V2 = AgentV2(
-    v1=conversar, motor=_motor_v2(),
-    calidad=ReglasCalidad(precios=_precios_reales, nombres=_nombre_de),
-    redactor=PlantillaGeneracion(nombres=_nombre_de),
+    v1=conversar, motor=_motor_v2(), contexto=ContextBuilder(texto_pregunta=_texto_pregunta, pide_ver=memoria.pide_ver),
+    calidad=ReglasCalidad(precios=_precios_reales, nombres=_nombre_de, todos_los_nombres=_todos_los_nombres,
+                          ficha_texto=_ficha_texto),
+    redactor=_PLANTILLA, redactor_activo=_ACTIVO, habla=v2cfg.habla_por_defecto(),
 )
 
 

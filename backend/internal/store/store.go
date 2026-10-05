@@ -206,7 +206,44 @@ CREATE INDEX IF NOT EXISTS idx_kommo_conv ON kommo_vinculos(conversation_id);
 `
 
 func (s *Store) migrate() error {
-	_, err := s.DB.Exec(schema)
+	if _, err := s.DB.Exec(schema); err != nil {
+		return err
+	}
+	// Columnas que se añadieron después de la primera versión: CREATE TABLE IF NOT EXISTS no las agrega a una base vieja.
+	for _, c := range []struct{ tabla, columna, ddl string }{
+		// agent_version: versión del agente que la asesora fijó para esta conversación ('' = la política de ajustes).
+		{"conversations", "agent_version", "TEXT NOT NULL DEFAULT ''"},
+		// agent_last: qué versión habló en el último turno («v1», «v2», «v2→v1» = V2 miró y habló V1).
+		{"conversations", "agent_last", "TEXT NOT NULL DEFAULT ''"},
+	} {
+		if err := s.addColumn(c.tabla, c.columna, c.ddl); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// addColumn agrega la columna si la tabla todavía no la tiene. Idempotente: se puede llamar en cada arranque.
+func (s *Store) addColumn(tabla, columna, ddl string) error {
+	rows, err := s.DB.Query(`SELECT name FROM pragma_table_info(?)`, tabla)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var n string
+		if err := rows.Scan(&n); err != nil {
+			return err
+		}
+		if n == columna {
+			return nil
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	rows.Close()
+	_, err = s.DB.Exec(fmt.Sprintf(`ALTER TABLE %s ADD COLUMN %s %s`, tabla, columna, ddl))
 	return err
 }
 

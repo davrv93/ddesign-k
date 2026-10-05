@@ -118,6 +118,30 @@ export interface Conversation {
   last_message: string;
   last_message_at: string;
   customer: Customer;
+  /** Versión del agente que una persona fijó en esta conversación ("v1" | "v2"); "" = manda la política de Ajustes. */
+  agent_version?: string;
+  /** Quién habló en el último turno: "v1", "v2", "v2→v1" (V2 miró y habló V1) o "v2 (sombra)". */
+  agent_last?: string;
+}
+
+/** Métricas de una versión del agente (GET /api/agent/metricas → versiones.v1 / versiones.v2). */
+export interface AgentVersionStats {
+  turnos: number;
+  p50_ms: number;
+  p95_ms: number;
+  comparables?: number;
+  acuerdo_v1?: number;
+  activo?: number;
+  habla_v2?: number;
+  calidad_ok?: number;
+  fallback_codigo?: number;
+  motor_error?: number;
+  por_que_no_habla?: Record<string, number>;
+}
+
+export interface AgentMetricas {
+  disponible: boolean;
+  versiones?: Record<string, AgentVersionStats>;
 }
 
 export interface Message {

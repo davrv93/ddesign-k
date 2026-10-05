@@ -1,6 +1,8 @@
 """Configuración de la V2. Todo viene del entorno; nada va fijo en el código.
 
 AGENT_VERSION      v1 (por defecto) | v2
+V2_MODO            sombra (por defecto: V2 solo observa) | activo (V2 puede hablar)
+V2_HABLA           acciones en las que V2 habla en modo activo (por defecto: recomendar)
 MAX_AGENT_STEPS    pasos del agente por turno (1–10)
 MAX_DECISION_CALLS llamadas al motor de decisión por turno (0–10; 4 = el camino stock→RAG→stock→recomendar)
 MAX_TOOL_CALLS     herramientas (stock, RAG, CRM) por turno (0–10)
@@ -24,6 +26,35 @@ def version_pedida(valor: str | None, defecto: str) -> str:
     """La versión que pide la petición; si viene vacía o no existe, la del entorno."""
     v = (valor or "").strip().lower()
     return v if v in VERSIONES else defecto
+
+
+MODOS = ("sombra", "activo")
+
+
+def modo_por_defecto(env=os.environ) -> str:
+    """V2_MODO: sombra (por defecto: V2 solo observa) | activo (V2 puede hablar; ver AgentV2)."""
+    m = (env.get("V2_MODO") or "sombra").strip().lower()
+    return m if m in MODOS else "sombra"
+
+
+ACCIONES_HABLADAS = ("recomendar", "preguntar")
+
+
+def habla_por_defecto(env=os.environ) -> tuple[str, ...]:
+    """V2_HABLA: en qué acciones puede hablar V2 en modo activo. Por defecto solo `recomendar`.
+
+    En `preguntar`, V1 ya dice lo mismo (la pregunta la elige el código) y además suele contestar o reconocer lo que la
+    clienta dijo («¡Sí, tenemos vestidos!», «¡Mucho gusto, Alvaro!»). Una V2 que solo pone la pregunta pierde eso: la
+    regresión lo detectó (2 turnos). Se puede activar con V2_HABLA=recomendar,preguntar, sabiendo ese costo."""
+    pedidas = tuple(x.strip().lower() for x in (env.get("V2_HABLA") or "recomendar").split(",") if x.strip())
+    ok = tuple(x for x in pedidas if x in ACCIONES_HABLADAS)
+    return ok or ("recomendar",)
+
+
+def modo_pedido(valor: str | None, defecto: str) -> str:
+    """El modo que pide la petición; vacío o inválido = el del entorno."""
+    m = (valor or "").strip().lower()
+    return m if m in MODOS else defecto
 
 
 def _entero(env, nombre: str, defecto: int, minimo: int, maximo: int) -> int:

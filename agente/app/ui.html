@@ -244,6 +244,10 @@
       <button type="button" role="menuitemradio" data-motor="actual" aria-checked="false" title="Clasificador + Gemini, el flujo de siempre">Motor: Actual<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
       <button type="button" role="menuitemradio" data-motor="deepseek" aria-checked="false" title="DeepSeek: conversación más humana">Motor: DeepSeek<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
       <hr>
+      <button type="button" role="menuitemradio" data-agente="v1" aria-checked="true" title="El agente de siempre">Agente: V1<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
+      <button type="button" role="menuitemradio" data-agente="v2s" aria-checked="false" title="V2 decide y se mide, pero la respuesta que ves es la de V1">Agente: V2 en sombra<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
+      <button type="button" role="menuitemradio" data-agente="v2a" aria-checked="false" title="V2 contesta cuando su plan coincide con V1 y su texto pasa el control de calidad; si no, contesta V1">Agente: V2 activo<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
+      <hr>
       <button type="button" role="menuitemcheckbox" id="verRapidas" aria-checked="true" title="Muestra u oculta la fila de mensajes de ejemplo">Respuestas rápidas<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
       <button type="button" role="menuitem" id="verInfo" title="Ver cómo entendió el mensaje">Análisis</button>
     </div>
@@ -311,13 +315,23 @@ let desdeAnuncio = false;
 let motor = '';
 try { motor = localStorage.getItem('motor') || ''; } catch (e) {}
 const NOMBRE_MOTOR = { actual: 'Actual', deepseek: 'DeepSeek' };
+// Versión del agente para este navegador: v1 | v2s (V2 en sombra) | v2a (V2 activo). Se manda en cada mensaje.
+let agente = 'v1';
+try { agente = localStorage.getItem('agente') || 'v1'; } catch (e) {}
+if (!['v1', 'v2s', 'v2a'].includes(agente)) agente = 'v1';
+const NOMBRE_AGENTE = { v1: 'V1', v2s: 'V2 en sombra', v2a: 'V2 activo' };
+const versionDe = () => agente === 'v1' ? { version: 'v1' } : { version: 'v2', modo: agente === 'v2a' ? 'activo' : 'sombra' };
+function pintarAgente() {
+  document.querySelectorAll('#menu [data-agente]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.agente === agente)));
+  pintarAjustes();
+}
 function pintarMotor() {
   document.querySelectorAll('#menu [data-motor]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.motor === motor)));
   pintarAjustes();
 }
 // En el cajón de análisis se ve con qué ajustes se está probando, ya que los controles viven en el menú.
 function pintarAjustes() {
-  $('ajustes').innerHTML = `<span>Motor: ${esc(NOMBRE_MOTOR[motor] || motor || 'el del servidor')}</span><span>Desde anuncio: ${desdeAnuncio ? 'sí' : 'no'}</span>`;
+  $('ajustes').innerHTML = `<span>Motor: ${esc(NOMBRE_MOTOR[motor] || motor || 'el del servidor')}</span><span>Agente: ${esc(NOMBRE_AGENTE[agente])}</span><span>Desde anuncio: ${desdeAnuncio ? 'sí' : 'no'}</span>`;
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 // *negrita* y _cursiva_ de WhatsApp
@@ -327,6 +341,7 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
 const bajar = () => { msgs.scrollTop = msgs.scrollHeight; };
 fetch('health').then(r => r.json()).then(h => { if (!motor) { motor = h.motor || 'actual'; pintarMotor(); } }).catch(() => {});
 pintarMotor();
+pintarAgente();
 
 const TICKS = '<svg class="ticks" viewBox="0 0 17 11" role="img" aria-label="Leído"><path d="M1 5.9 4.4 9.5 11 1.5M6.9 8.3 8 9.5 14.9 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const RESPONDER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>';
@@ -373,7 +388,7 @@ async function enviar(texto) {
   let j;
   try {
     const r = await fetch('chat', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, conversacion: sesion, desde_anuncio: desdeAnuncio, memoria }) });
+      body: JSON.stringify({ mensaje: texto, historial: hist, cliente: 'Ana', motor, canal: 'web', etapa, conversacion: sesion, desde_anuncio: desdeAnuncio, memoria, ...versionDe() }) });
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
@@ -506,6 +521,21 @@ async function enviarFoto(file) {
 function bars(list) { return list.map(x => `<div class="row"><div>${esc(x.etiqueta)}<div class="bar"><i style="width:${x.p*100}%"></i></div></div><div>${(x.p*100).toFixed(0)}%</div></div>`).join(''); }
 const ETAPAS = [['prospeccion', 'Prospección'], ['seguimiento', 'Seguimiento'], ['cierre', 'Cierre'], ['venta_confirmada', 'Venta']];
 // Panel de la venta: en qué etapa está, qué entendió el clasificador y por qué decidió así.
+// Lo que hizo la V2 en este turno (solo si el agente corrió en V2): quién habló, el plan y por qué no habló.
+function panelV2(j) {
+  const v = j.v2;
+  if (!v) return j.version === 'v1' ? '<h3>Agente</h3><div class="sub">V1: el agente de siempre.</div>' : '';
+  const sb = v.sombra || {}, g = sb.generacion || {}, plan = sb.plan;
+  const quien = v.enviado === 'v2' ? '<b>habló V2</b>' : v.modo === 'activo' ? '<b>habló V1</b> (V2 miró)' : '<b>habló V1</b> (V2 en sombra)';
+  return `<h3>Agente V2 · ${esc(v.modo || 'sombra')}</h3>
+    <div class="sub">${quien} · ${v.ms} ms${v.llamadas_v1 ? ' · V1 corrió ' + v.llamadas_v1 + ' vez' + (v.llamadas_v1 > 1 ? 'es' : '') : ''}</div>
+    ${plan ? `<div>Plan: <b>${esc(plan.accion)}</b>${plan.producto ? ' · ' + esc(plan.producto) : ''} <span class="sub">(V1 hizo: ${esc(sb.v1_accion || '—')}${sb.v1_flujo_fijo ? ', flujo de código' : ''})</span></div>
+      <div class="sub">${esc(plan.razon || '')}</div>` : '<div class="sub">Sin plan en este turno.</div>'}
+    ${sb.jev ? `<div class="sub">Jev local propuso <b>${esc(sb.jev.opcion)}</b> (${(sb.jev.p * 100).toFixed(0)} %)</div>` : ''}
+    ${v.motivo_v1 ? `<div class="sub">V2 no habló: ${esc(v.motivo_v1)}</div>` : sb.no_habla && v.modo === 'activo' ? `<div class="sub">V2 no habló: ${esc(sb.no_habla)}</div>` : ''}
+    ${g.intentos ? `<div class="sub">Control de calidad: ${g.passed ? 'pasó' : 'no pasó'}${g.motor ? ' · escribió ' + esc(g.motor) : ''}${g.regeneraciones ? ' · ' + g.regeneraciones + ' regeneración(es)' : ''}</div>` : ''}`;
+}
+
 function panelVenta(j) {
   if (j.etapa) etapa = j.etapa;
   if (j.memoria) memoria = j.memoria;
@@ -554,7 +584,7 @@ function pintarInfo(j) {
       <h3>Acción</h3><div>${esc(j.accion)}${j.codigo ? ' · ' + esc(j.codigo) : ''}</div>${panelVenta(j)}`;
     return;
   }
-  info.innerHTML = `${panelVenta(j)}
+  info.innerHTML = `${panelV2(j)}${panelVenta(j)}
     <h3>Intención general</h3>${bars(j.top_intenciones)}
     <div class="sub">motor: <b>${esc(j.motor || '—')}</b> · acción: <b>${esc(j.accion)}</b> · ${esc(j.modelo_llm || 'sin LLM')} · ${j.ms} ms · stock: ${esc(j.stock_fuente || '—')}</div>
     <h3>Prenda</h3><div>${esc(j.categoria_prenda)} (${(j.confianza_categoria*100).toFixed(0)}%)</div>
@@ -654,6 +684,10 @@ menu.onclick = ev => {
     motor = b.dataset.motor; pintarMotor();
     try { localStorage.setItem('motor', motor); } catch (e) {}
     aviso('Motor: ' + NOMBRE_MOTOR[motor]); campo.focus();
+  } else if (b.dataset.agente) {
+    agente = b.dataset.agente; pintarAgente();
+    try { localStorage.setItem('agente', agente); } catch (e) {}
+    aviso('Agente: ' + NOMBRE_AGENTE[agente]); campo.focus();
   } else if (b.id === 'verRapidas') {
     verRapidas = !verRapidas; pintarRapidas();
     try { localStorage.setItem('rapidas', verRapidas ? '1' : '0'); } catch (e) {}

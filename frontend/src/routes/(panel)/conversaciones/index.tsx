@@ -20,6 +20,14 @@ const STATE_LABEL: Record<string, string> = {
   asesora: "Pidió asesora",
 };
 
+// Quién habló en el último turno (agent_last): solo se muestra cuando intervino V2.
+const AGENT_LAST: Record<string, string> = { v2: "V2", "v2→v1": "V2→V1", "v2 (sombra)": "V2 sombra" };
+const AGENT_LAST_HINT: Record<string, string> = {
+  v2: "El último mensaje lo escribió V2",
+  "v2→v1": "V2 miró el turno pero habló V1 (su plan no coincidía o no pasó el control de calidad)",
+  "v2 (sombra)": "V2 corrió en sombra: la clienta recibió el texto de V1",
+};
+
 export default component$(() => {
   const convs = useSignal<Conversation[]>([]);
   const current = useSignal<number | null>(null);
@@ -89,6 +97,14 @@ export default component$(() => {
     await loadList();
   });
 
+  // Fija la versión del agente SOLO para esta conversación: "" = lo que digan los Ajustes.
+  const setAgentVersion = $(async (version: string) => {
+    if (current.value == null) return;
+    await api(`/api/conversations/${current.value}/agent-version`, { method: "POST", json: { version } });
+    await loadThread();
+    await loadList();
+  });
+
   const q = filter.value.trim().toLowerCase();
   const list = q
     ? convs.value.filter((c) => `${c.customer.name} ${c.customer.phone} ${c.last_message}`.toLowerCase().includes(q))
@@ -113,6 +129,11 @@ export default component$(() => {
               </span>
               <span class="conv-last">
                 {c.bot_paused && <span class="chip warn">Asesora</span>}
+                {c.agent_last && AGENT_LAST[c.agent_last] && (
+                  <span class="chip v2" title={AGENT_LAST_HINT[c.agent_last]}>
+                    {AGENT_LAST[c.agent_last]}
+                  </span>
+                )}
                 {!c.bot_paused && STATE_LABEL[c.state] && <span class="chip">{STATE_LABEL[c.state]}</span>}
                 {waText(c.last_message)}
               </span>
@@ -149,6 +170,26 @@ export default component$(() => {
                   Ver en Kommo ↗
                 </a>
               )}
+              <div class="agent-ver" title="Versión del agente solo para esta conversación. «Auto» sigue los Ajustes.">
+                <span class="muted small">Agente</span>
+                <div class="seg" role="group" aria-label="Versión del agente en esta conversación">
+                  {[
+                    { v: "", label: "Auto" },
+                    { v: "v1", label: "V1" },
+                    { v: "v2", label: "V2" },
+                  ].map((o) => (
+                    <button
+                      key={o.v}
+                      type="button"
+                      class={(conv.agent_version ?? "") === o.v && "on"}
+                      aria-pressed={(conv.agent_version ?? "") === o.v}
+                      onClick$={() => setAgentVersion(o.v)}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {conv.bot_paused ? (
                 <button class="btn btn-sm btn-primary" onClick$={() => toggleBot(false)} title="El bot vuelve a responder desde el menú">
                   🤖 Reactivar bot

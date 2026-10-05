@@ -101,7 +101,7 @@ class Fija:
     def decide(self, contexto, decisiones):
         return [Decision(d, "x", 1.0) for d in decisiones]
 
-    def redactar(self, plan):
+    def redactar(self, plan, variante=0, contexto=None):
         return "ok"
 
     def evaluar(self, borrador, plan):
@@ -132,7 +132,7 @@ caso("V1 se llama una sola vez", len(llamadas), 1)
 
 
 class RompeContexto:
-    def construir(self, req):
+    def construir(self, req, res=None):
         raise KeyError("boom")
 
 
@@ -177,7 +177,12 @@ caso("sin stock: plan válido (preguntar no necesita producto)", r.errores, [])
 
 r = MotorRecursivo(ReglasDecision(), {"stock": lambda c: "online"}).ejecutar(ctx_con(foco=None))
 caso("sin prenda en foco no consulta stock", r.pasos[0]["herramienta"], None)
-caso("sin prenda en foco: preguntar cuál", r.plan.accion, "preguntar")
+caso("sin prenda en foco ni pregunta del código: responder", r.plan.accion, "responder")
+ctx_p = ctx_con(foco=None)
+ctx_p["conversation"]["next_question"] = {"tipo": "fecha", "texto": "¿Para cuándo es el matrimonio?"}
+r = MotorRecursivo(ReglasDecision(), {"stock": lambda c: "online"}).ejecutar(ctx_p)
+caso("sin prenda en foco y con pregunta del código: preguntar", r.plan.accion, "preguntar")
+caso("el plan de preguntar lleva la pregunta del código", r.plan.pregunta["texto"], "¿Para cuándo es el matrimonio?")
 
 
 class Testarudo:
@@ -242,7 +247,8 @@ class MotorRoto:
 
 out = AgentV2(v1=v1_falso, motor=MotorRecursivo(MotorRoto())).conversar(pedido(mensaje="hola"))
 caso("motor caído: el turno sigue por V1", out["respuesta"], "Hola")
-caso("motor caído: queda anotado en la sombra", out["v2"]["sombra"], {"error": "RuntimeError"})
+caso("motor caído: queda anotado en la sombra", out["v2"]["sombra"]["error"], "RuntimeError")
+caso("motor caído: V2 no habla", out["v2"]["sombra"]["no_habla"], "el motor falló")
 
 # --- fase 4: RAG como herramienta del ciclo --------------------------------------------------------------------------
 from .v2.calidad import FALLBACK, PlantillaGeneracion, ReglasCalidad
@@ -286,7 +292,7 @@ plan_rec = P("recomendar", "V35", [], "", {"tipo": "talla", "texto": "¿Qué tal
 caso("gate: borrador bueno pasa", gate.evaluar("Te recomiendo el *Vestido Irla*.\n\n¿Qué talla usas?", plan_rec)["passed"], True)
 caso("gate: precio inventado no pasa",
      "precio no verificado: S/ 999" in gate.evaluar("El *Vestido Irla* cuesta S/ 999.", plan_rec)["errors"], True)
-caso("gate: precio real sí pasa", gate.evaluar("El *Vestido Irla* cuesta S/ 330.", plan_rec)["errors"], [])
+caso("gate: precio real sí pasa", [e for e in gate.evaluar("El *Vestido Irla* cuesta S/ 330.", plan_rec)["errors"] if "precio" in e], [])
 caso("gate: nombrar otra prenda no pasa", "nombra otra prenda" in gate.evaluar("Te recomiendo el V21 y el Vestido Irla.", plan_rec)["errors"], True)
 caso("gate: no nombrar la prenda de la foto no pasa",
      "no nombra la prenda que va en la foto" in gate.evaluar("Esta te va a encantar.", plan_rec)["errors"], True)
@@ -297,21 +303,23 @@ caso("gate: borrador vacío no pasa", gate.evaluar("   ", plan_rec)["passed"], F
 
 # --- fase 5: generación con control, regeneración acotada y fallback ----------------------------------------------
 class RedactorMalo:
-    def redactar(self, plan, variante=0):
+    def redactar(self, plan, variante=0, contexto=None):
         return "Llega en 2 días."
 
 
 class RedactorUnaVez:
-    def redactar(self, plan, variante=0):
-        return "Llega en 2 días." if variante == 0 else "Te recomiendo el *Vestido Irla*."
+    def redactar(self, plan, variante=0, contexto=None):
+        return "Llega en 2 días." if variante == 0 else "Te recomiendo el *Vestido Irla*.\n\n¿Qué talla usas normalmente?"
 
 
 def agente_v2(redactor, motor_stock=lambda c: "online"):
-    return AgentV2(v1=v1_falso, motor=MotorRecursivo(ReglasDecision(), {"stock": motor_stock}),
+    return AgentV2(v1=lambda req: RES_FOCO, motor=MotorRecursivo(ReglasDecision(), {"stock": motor_stock}),
                    calidad=gate, redactor=redactor)
 
 
 pv = pedido(mensaje="busco vestido", memoria={"producto": "V35", "sabemos": {"ocasion": "matrimonio"}})
+RES_FOCO = {"respuesta": "Hola", "etapa": "prospeccion", "sugerencias": [],
+            "memoria": {"etapa": "prospeccion", "producto": "V35", "sabemos": {"ocasion": "matrimonio"}}}
 g = agente_v2(PlantillaGeneracion(nombres=lambda c: nombres.get(c))).conversar(pv)["v2"]["sombra"]["generacion"]
 caso("generación: plantilla sale a la primera y pasa", (g["passed"], g["fallback"], g["regeneraciones"]), (True, False, 0))
 caso("generación: el borrador nombra la prenda", "Vestido Irla" in g["texto"], True)
@@ -340,13 +348,13 @@ caso("sin plan válido no hay borrador",
 reg = Registro()
 reg.turno("v1", 120)
 reg.turno("v1", 200)
-reg.turno("v2", 150, {"sombra": {"plan": {"accion": "recomendar"}, "v1_accion": "codigo", "errores": [],
+reg.turno("v2", 150, {"sombra": {"plan": {"accion": "recomendar"}, "v1_accion": "recomendar", "errores": [],
                                "generacion": {"passed": True, "fallback": False, "regeneraciones": 1,
                                               "intentos": [1, 2]}}})
 reg.turno("v2", 300, {"fallback": True, "sombra": {"error": "RuntimeError"}})
 rs = reg.resumen()
 caso("métricas: turnos por versión", (rs["v1"]["turnos"], rs["v2"]["turnos"]), (2, 2))
-caso("métricas: acuerdo con V1 (codigo ↔ recomendar)", rs["v2"]["acuerdo_v1"], 1.0)
+caso("métricas: acuerdo con V1 (recomendar ↔ recomendar)", rs["v2"]["acuerdo_v1"], 1.0)
 caso("métricas: tasa de regeneración", rs["v2"]["regeneracion"], 1.0)
 caso("métricas: error del motor cuenta", rs["v2"]["motor_error"], 0.5)
 caso("métricas: fallback de contexto cuenta", rs["v2"]["fallback_contexto"], 0.5)

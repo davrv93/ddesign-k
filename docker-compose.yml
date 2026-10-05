@@ -143,6 +143,18 @@ services:
       # (app/crm.py). Sin CRM_EVENT_SECRET no avisa. El backend solo lo lleva a Kommo con KOMMO_ENABLED=1.
       CRM_EVENT_URL: ${CRM_EVENT_URL:-http://backend:8080/api/internal/crm/evento}
       CRM_EVENT_SECRET: ${CRM_EVENT_SECRET:-}
+      # Agente V2 (agente/V2.md). Todo apagado por defecto: sin tocar nada, el comportamiento es el de siempre (V1).
+      # La versión de cada conversación la decide el bot Go (Ajustes → «Versión del agente»); AGENT_VERSION solo manda
+      # para quien llame al agente sin decirla (por ejemplo, la prueba de regresión).
+      AGENT_VERSION: ${KD_AGENT_VERSION:-v1}
+      V2_MODO: ${KD_V2_MODO:-sombra}
+      V2_HABLA: ${KD_V2_HABLA:-recomendar}
+      # Decisión: reglas (por defecto) | jev (Jev local por /v1/systemone en V2_JUEZ_URL) | jev-chat.
+      V2_DECISION: ${KD_V2_DECISION:-reglas}
+      V2_JUEZ_URL: ${KD_V2_JUEZ_URL:-}
+      # Generación con un modelo local OpenAI-compatible (Ollama, llama-server). Vacío = solo plantillas de código.
+      V2_GEN_URL: ${KD_V2_GEN_URL:-}
+      V2_GEN_MODELO: ${KD_V2_GEN_MODELO:-qwen2.5:3b}
       TZ: America/Lima
     volumes:
       - agente_data:/data
