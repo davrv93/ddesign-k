@@ -103,6 +103,9 @@ PREGUNTAS = {
     "lima_o_provincia": "¿El envío sería para Lima o para provincia?",
     "pago": "¿Te paso los datos para el pago?",
     "voucher": "Cuando hagas el pago, ¿me mandas la foto del comprobante?",
+    # Solo saludó o escribe de otra cosa y ya se le preguntó dos veces la ocasión: una pregunta abierta, no «¿para
+    # cuándo lo necesitas?» (un «lo» sin prenda, a quien no dijo que necesitara nada).
+    "que_busca": "¿Qué estás buscando? Cuéntame y te ayudo 😊",
 }
 # Qué está esperando el bot, en palabras (para el prompt y el panel).
 ESPERA = {
@@ -116,7 +119,7 @@ ESPERA = {
     "confirmar": "que confirme el pedido", "lima_o_provincia": "si el envío es a Lima o a provincia",
     "pago": "si le pasas los datos de pago", "voucher": "la foto del comprobante de pago",
     "direccion": "su dirección de envío", "otras_opciones": "si quiere ver otras opciones",
-    "foto": "la foto del modelo",
+    "foto": "la foto del modelo", "que_busca": "que te cuente qué está buscando",
 }
 PENDIENTES = set(ESPERA)
 # Pendientes que se resuelven con un dato de `sabemos`.
@@ -154,7 +157,9 @@ ORDEN = {
 
 def _plano(s: str) -> str:
     s = unicodedata.normalize("NFD", (s or "").lower())
-    return "".join(c for c in s if unicodedata.category(c) != "Mn").strip()
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn").strip()
+    # «es este finde» no se leía como fecha y el bot volvía a preguntar «¿para cuándo es?» (prueba con conversaciones)
+    return re.sub(r"\bfinde\b", "fin de semana", s)
 
 
 # Qué pregunta hizo el bot, por su texto. Se mira solo la parte con «?» (las frases que preguntan).
@@ -176,12 +181,13 @@ DETECTOR = [
     ("separar", re.compile(r"\b(separ|reserv|apart)\w*")),
     ("horario", re.compile(r"de dia o de noche|de noche o de dia|\bde dia\b|\bde noche\b|a que hora")),
     ("que_le_gusto", re.compile(r"(lo que )?mas te gust|que te gusto|que te llamo la atencion|que te enamoro")),
-    ("fecha", re.compile(r"para cuando|que fecha|cuando (es|sera|seria) (el|la|tu)|cuando lo necesitas|para que fecha")),
+    ("fecha", re.compile(r"para cuando|que fecha|cuando (es|sera|seria) (el|la|tu)|cuando lo necesitas|para que fecha|tienes fecha")),
     ("ocasion", re.compile(r"ocasion|para que (evento|es|lo (buscas|quieres|necesitas))|que evento|que celebr")),
     ("estatura", re.compile(r"cuanto mides|tu (estatura|altura)|que estatura")),
     ("talla", re.compile(r"\btalla\b|\btallas\b")),
     ("color", re.compile(r"que colou?r|algun colou?r|colou?r tienes en mente|colou?r prefieres")),
     ("foto", re.compile(r"mandame la foto|enviame la foto|la foto del modelo")),
+    ("que_busca", re.compile(r"que (estas|andas) buscando|en que te (puedo )?ayud|que te gustaria (ver|encontrar)")),
 ]
 RE_PREGUNTA = re.compile(r"[^.!?\n¿]*¿[^?]*\?|[^.!?\n]*\?")
 
@@ -233,7 +239,7 @@ RE_FECHA_PARA = re.compile(r"\b(?:para|es|sera|seria)\s+(pasado manana|manana|ho
 # Prenda que busca (para elegir la opción que se le ofrece). El orden importa: «conjunto de blusa y falda» es conjunto.
 PRENDAS = [("conjunto", r"conjunt|\bset\b|dos piezas"), ("enterizo", r"enteriz|jumpsuit|\bmono\b"),
            ("blazer", r"blazer|\bsaco\b"), ("falda", r"\bfalda"), ("jeans", r"\bjean"), ("pantalon", r"pantal|palazzo"),
-           ("polo", r"\bpolo\b|polera"), ("blusa", r"\bblus|\btop\b"), ("vestido", r"\bvestid")]
+           ("polo", r"\bpolo\b|polera"), ("blusa", r"\bblus|\btop\b"), ("vestido", r"\b[vb]estid")]   # «bestido» también
 RE_PRENDA = [(k, re.compile(rx)) for k, rx in PRENDAS]
 RE_ESTATURA = re.compile(r"\b(1[.,]\s?[4-9]\d?|1\s[4-9]\d)\b(?:\s*m\b|\s*mts?\b|\s*metros?\b)?|\bmido\s+(1[4-9]\d)\b|\b(1[4-9]\d)\s*cm\b")
 PROVINCIAS = ("arequipa", "cusco", "cuzco", "trujillo", "piura", "chiclayo", "iquitos", "huancayo", "tacna", "puno", "ica",
@@ -649,18 +655,40 @@ def es_cita(mem: dict, texto: str) -> bool:
     return bool(pend == "cita" or RE_CITA.search(t) or (pend == "probar" and RE_AFIRMA.match(t)))
 
 
-def leer_cita(mem: dict, texto: str, ahora: _dt.datetime) -> dict:
+def _ultima(texto: str, leer, *args):
+    """Lo que `leer` saca de la ÚLTIMA frase que lo trae: «el 25 es la entrevista, no puedo; ¿podría ser el 24 a las
+    7:30?» propone el 24, no el 25 (antes se tomaba la primera fecha del mensaje)."""
+    for frase in reversed([f for f in re.split(r"[.?!;\n]+|,\s*(?=(?:o|y|pero|mejor)\b)", texto) if f.strip()]):
+        if (v := leer(frase, *args)) is not None:
+            return v
+    return None
+
+
+def leer_cita(mem: dict, texto: str, ahora: _dt.datetime, sin_dia: bool = False) -> dict:
     """Día y hora de la cita que dice el mensaje, sumados a los que ya había dado. Si los dos valen, la cita queda en
-    `sabemos.cita` («AAAA-MM-DDTHH:MM», hora de Lima). Devuelve {dia, hora, dato, ok, error}."""
+    `sabemos.cita` («AAAA-MM-DDTHH:MM», hora de Lima). Devuelve {dia, hora, dato, ok, error}.
+    `sin_dia`: la fecha del mensaje es la del evento («tengo la entrevista el 25, ¿puedo agendar una cita?»), no la de
+    la cita."""
     hoy = ahora.date()
     tent = mem["cita_tentativa"]
-    dia, hora = fecha_iso(texto, hoy), hora_en(texto)
+    dia, hora = (None if sin_dia else _ultima(texto, fecha_iso, hoy)), _ultima(texto, hora_en)
     if dia and len(dia) != 10:
         dia = None     # «en noviembre» no es un día de cita
-    if dia:
-        tent["dia"] = dia
+    # «el sábado 23» cuando el 23 es viernes: no se elige por ella (antes se confirmaba «viernes 23» sin avisar).
+    alterno = None
+    if dia and (dm := list(re.finditer(rf"\b({_DIAS})\s+(\d{{1,2}})\b", _plano(texto)))):
+        nombrado, num = DIA_SEMANA[dm[-1].group(1)], int(dm[-1].group(2))
+        d = _desde_iso(dia)
+        if d and d.day == num and d.weekday() != nombrado:
+            cerca = [d + _dt.timedelta(days=k) for k in (-3, -2, -1, 1, 2, 3)]
+            alterno = next((x for x in sorted(cerca, key=lambda x: abs((x - d).days)) if x.weekday() == nombrado and x >= hoy), None)
     if hora:
         tent["hora"] = hora
+    if alterno:
+        return {"dia": dia, "hora": tent["hora"], "dato": True, "ok": False, "error": "dia_no_coincide",
+                "alterno": alterno.isoformat()}
+    if dia:
+        tent["dia"] = dia
     res = {"dia": tent["dia"], "hora": tent["hora"], "dato": bool(dia or hora), "ok": False, "error": ""}
     if tent["dia"] and tent["hora"]:
         err = validar_cita(tent["dia"], tent["hora"], ahora, mem["sabemos"].get("fecha_iso"))
@@ -690,7 +718,12 @@ def leer(mem: dict, texto: str, jev: dict | None = None, ahora: _dt.datetime | N
     ahora = ahora or ahora_lima()
     datos = extraer(texto, pend)
     cita = es_cita(mem, texto)
-    if cita:
+    # Pide la cita Y cuenta su evento en el mismo mensaje («busco vestido para una entrevista que tengo el 25 de octubre,
+    # ¿puedo agendar una cita para probármelo?»): la fecha es la del evento. Antes se tomaba como el día de la cita.
+    evento_y_cita = bool(cita and pend != "cita" and "fecha" in datos
+                         and (datos.get("ocasion") or RE_NECESIDAD.search(t) or re.search(r"\b(evento|tengo|sera|es)\b", t))
+                         and not re.search(r"\b(ir|pasar|venir|acercarme|cita)\b[^.?!]{0,40}\b(" + _DIAS + r"|manana|hoy|el \d)", t))
+    if cita and not evento_y_cita:
         datos.pop("fecha", None)     # el día que diga es el de la cita, no el del evento
     elif "fecha" in datos:
         datos["fecha_iso"] = fecha_iso(datos["fecha"], ahora.date())
@@ -715,7 +748,8 @@ def leer(mem: dict, texto: str, jev: dict | None = None, ahora: _dt.datetime | N
             continue
         mem["sabemos"][k] = v
     res = {"pendiente": pend, "respondio": False, "espera": False, "sin_dato": False, "describe": False,
-           "datos": datos, "fuente": fuente, "es_cita": cita, "cita": leer_cita(mem, texto, ahora) if cita else None}
+           "datos": datos, "fuente": fuente, "es_cita": cita,
+           "cita": leer_cita(mem, texto, ahora, sin_dia=evento_y_cita) if cita else None}
     if not pend:
         return res
     if pend == "cita":
@@ -746,7 +780,9 @@ def registrar_respuesta(mem: dict, respuesta: str, forzar: str | None = None, pr
     sueltan solas); el resto se limpia. Devuelve la pendiente nueva."""
     clave = forzar if forzar is not None else pregunta_de(respuesta)
     if clave:
-        repite = clave == (prev or {}).get("pendiente", mem.get("pendiente")) and clave in INDAGAR
+        # Cada vez que pregunta una de indagar, cuenta (hasta VECES_INDAGAR). Antes solo contaba si seguía pendiente: si
+        # entre medio se soltaba, la tercera y la cuarta «¿para cuándo lo necesitas?» no se contaban y se repetía sin fin.
+        repite = clave in INDAGAR
         mem["pendiente"] = clave
         if clave not in mem["preguntado"] or (repite and veces(mem, clave) < VECES_INDAGAR):
             mem["preguntado"].append(clave)
@@ -770,6 +806,13 @@ def siguiente(mem: dict, etapa: str, hay_prenda: bool | None = None) -> str:
         orden.remove("probar")
     if hay_prenda is None:
         hay_prenda = bool(mem.get("mostrados") or mem.get("producto"))
+    if etapa == "prospeccion" and not (sab.get("ocasion") or sab.get("prenda") or sab.get("fecha") or hay_prenda
+                                       or mem.get("pidio_ver")):
+        # No contó ninguna necesidad (saludó, mandó un emoji, escribe de otra cosa): no hay «para cuándo» ni «de día o de
+        # noche» de nada. La ocasión, dos veces; luego una pregunta abierta, una vez; luego, ninguna.
+        if not ya_hecha(mem, "ocasion"):
+            return "ocasion"
+        return "" if ya_hecha(mem, "que_busca") else "que_busca"
     for k in orden:
         if k in DATO_DE and sab.get(DATO_DE[k]):
             continue
@@ -804,12 +847,18 @@ def texto_pregunta(k: str, mem: dict, mensaje: str = "") -> str:
         if prenda:
             return f"¿Para qué ocasión buscas {'la' if prenda in ('blusa', 'falda') else 'el'} {prenda}?"
         return "¿Es para alguna ocasión especial?"
+    if k in ("fecha", "horario") and veces(mem, k) >= 1:
+        # Segunda vez, con otras palabras: la misma pregunta dos veces seguidas suena a formulario.
+        return ("Y cuéntame, ¿ya tienes fecha? Así veo que lo tengas a tiempo 😊" if k == "fecha"
+                else "¿Y sería de día o de noche? Así te digo qué te va mejor 😊")
     if k == "fecha" and (oc := OCASION_TXT.get(mem["sabemos"].get("ocasion") or "")):
         return f"¿Para cuándo es {oc}?"
+    if k == "fecha" and not (mem["sabemos"].get("prenda") or mem.get("producto") or mem.get("mostrados")):
+        return "¿Para cuándo sería?"   # sin prenda ni ocasión, «¿para cuándo lo necesitas?» deja un «lo» huérfano
     return PREGUNTAS.get(k, "")
 
 
-def quitar_repetidas(texto: str, mem: dict, permitida: str = "") -> str:
+def quitar_repetidas(texto: str, mem: dict, permitida: str = "", vaciar: bool = False) -> str:
     """Quita del texto del LLM las preguntas que ya se hicieron o cuya respuesta ya sabemos (salvo `permitida`).
     Si un párrafo se queda vacío, se va entero; si todo se iría, se deja como estaba."""
     sab, hechas = mem["sabemos"], set(mem["preguntado"])
@@ -831,7 +880,7 @@ def quitar_repetidas(texto: str, mem: dict, permitida: str = "") -> str:
         nuevo = re.sub(r"\s{2,}", " ", nuevo).strip()
         if re.search(r"\w", nuevo):
             partes.append(nuevo)
-    return "\n\n".join(partes) if partes else texto
+    return "\n\n".join(partes) if partes else ("" if vaciar else texto)
 
 
 def lo_que_sabemos(mem: dict) -> str:

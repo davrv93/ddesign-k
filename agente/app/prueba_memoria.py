@@ -148,8 +148,17 @@ caso("prospección empieza por la ocasión", M.siguiente(M.nueva(), "prospeccion
 caso("sabida la ocasión, para cuándo (la urgencia)", M.siguiente(con(ocasion="matrimonio"), "prospeccion"), "fecha")
 m = M.nueva(); m["preguntado"] = ["ocasion"]
 caso("preguntada una vez sin respuesta: se repite (indagar)", M.siguiente(m, "prospeccion"), "ocasion")
-m = M.nueva(); m["preguntado"] = ["ocasion", "ocasion"]
+# Ajustado (04-10-2026, prueba con conversaciones): el caso pedía pasar a la fecha tras dos intentos, pero sin ninguna
+# necesidad contada el bot terminaba preguntando «¿para cuándo lo necesitas?» a quien solo saludó. Con la prenda dicha
+# se sigue con la fecha como antes; sin nada, una pregunta abierta.
+m = con(prenda="vestido"); m["preguntado"] = ["ocasion", "ocasion"]
 caso("preguntada dos veces sin respuesta: no se insiste más", M.siguiente(m, "prospeccion"), "fecha")
+m = M.nueva(); m["preguntado"] = ["ocasion", "ocasion"]
+caso("solo saludó y no contestó la ocasión dos veces: pregunta abierta", M.siguiente(m, "prospeccion"), "que_busca")
+m["preguntado"].append("que_busca")
+caso("la pregunta abierta, una sola vez", M.siguiente(m, "prospeccion"), "")
+caso("sin prenda ni ocasión, «¿para cuándo sería?» (sin «lo»)", M.texto_pregunta("fecha", M.nueva()), "¿Para cuándo sería?")
+caso("«es este finde» es la fecha", M.extraer("es este finde", "fecha").get("fecha"), "este fin de semana")
 caso("sabidas ocasión y fecha: día/noche", M.siguiente(con(ocasion="boda", fecha="el sabado"), "prospeccion"), "horario")
 caso("talla del perfil: no se pregunta",
      M.siguiente(M.con_perfil(con(ocasion="boda", horario="noche", fecha="el 17"), {"tallas": ["M"]}), "prospeccion", True), "")
@@ -346,12 +355,52 @@ q = M.texto_pregunta("ocasion", m, "busco un vestido")
 caso("la segunda vez, con otras palabras", (M.clave_de(q), q.startswith("Cuéntame")), ("ocasion", True))
 M.registrar_respuesta(m, q)
 caso("se cuentan los dos intentos", M.veces(m, "ocasion"), 2)
+m["sabemos"]["prenda"] = "vestido"   # dijo «busco un vestido»: hay necesidad, se sigue con la fecha
 caso("tras dos intentos sin respuesta, sigue con la fecha", M.siguiente(m, "prospeccion"), "fecha")
 caso("pide ver: «me gustaría ver los modelos»", M.pide_ver("me gustaria ver los modelos"), True)
 caso("pide ver: «muéstrame el catálogo»", M.pide_ver("muéstrame el catálogo"), True)
 m = con(ocasion="matrimonio"); m["pidio_ver"] = True
 caso("pidió ver y ya dijo la ocasión: se le muestra", M.necesidad_conocida(m), True)
 caso("pidio_ver sobrevive al viaje", M.normalizar(json.loads(json.dumps(m)))["pidio_ver"], True)
+
+# Prueba con conversaciones (04-10-2026): «¿qué tela es?» del Pandora, cuya ficha no dice la tela, recibía «satín»
+# inventado; Jev lo quitaba y la clienta se quedaba sin respuesta. La tela sale de la ficha o se dice que no figura.
+from . import venta as V  # noqa: E402
+caso("tela: «Tipo de tela Roma»", V.tela("V35", "Hecho de nuestra increíble tela roma. Detalles: Tipo de tela Roma"), "tela Roma")
+caso("tela: «hecha de GASA»", V.tela("V39", "La blusa hecha de GASA color verde oscuro."), "gasa")
+caso("tela: «tejido de lino prada»", V.tela("V28", "la ligereza que le dota el tejido de lino prada en el que está"), "lino prada")
+caso("tela: solo las mangas no son la tela", V.tela("V27", "Su manga en organza francesa la convierte en ideal"), "")
+caso("tela: la ficha no la dice", V.tela("V31", "Clásico atemporal con escote corazón y cremallera."), "")
+caso("tela que no figura: deriva, no inventa", "asesora" in V.respuesta_tela("V31", "Vestido Pandora", "Clásico con cremallera."), True)
+caso("tela que figura: la dice", V.respuesta_tela("V35", "Vestido Irla", "Tipo de tela Roma"), "El *V35* Vestido Irla es de tela Roma 😊")
+
+
+# Cita (prueba con conversaciones, 04-10-2026): la fecha del evento dicha junto con el pedido de cita no es el día de la
+# cita; de dos fechas en un mensaje manda la última («el 25 no puedo, ¿el 24?»); y «el sábado 23» cuando el 23 es
+# viernes se pregunta, no se elige.
+import datetime as _dt  # noqa: E402
+_ah = _dt.datetime(2026, 10, 4, 10, 0)
+m = M.nueva()
+r = M.leer(m, "busco un vestido para una entrevista que tengo el 25 de octubre. me gustaría ir a probármelo antes, ¿puedo agendar una cita?", None, _ah)
+caso("evento y cita en un mensaje: la fecha es del evento", (m["sabemos"]["fecha_iso"], r["cita"]["dia"]), ("2026-10-25", None))
+m["pendiente"] = "cita"
+r = M.leer(m, "el 25 es la entrevista, ese dia no puedo. ¿podria ser el 24 a las 11?", None, _ah)
+caso("dos fechas: manda la última", (r["cita"]["dia"], r["cita"]["ok"]), ("2026-10-24", True))
+m = M.nueva(); m["pendiente"] = "cita"
+r = M.leer(m, "y el sabado 23 a las 11 am?", None, _ah)
+caso("«sábado 23» y el 23 es viernes: se pregunta", (r["cita"]["error"], r["cita"].get("alterno"), m["sabemos"].get("cita")),
+     ("dia_no_coincide", "2026-10-24", None))
+caso("el texto lo explica", "viernes 23 o el sábado 24" in V.cita_invalida("dia_no_coincide", "2026-10-23", "11:00", _ah.date(), None, "2026-10-24"), True)
+m = M.nueva(); r = M.leer(m, "quiero ir a probármelo el sábado a las 4", None, _ah)
+caso("cita sin evento: el día es de la cita", (m["sabemos"].get("cita"), m["sabemos"].get("fecha")), ("2026-10-10T16:00", None))
+
+# La segunda vez que se pregunta la fecha o el día/noche va con otras palabras, y se sigue reconociendo.
+m = con(ocasion="matrimonio"); M.registrar_respuesta(m, "¿Para cuándo es el matrimonio?")
+q = M.texto_pregunta("fecha", m)
+caso("fecha, segunda vez: otras palabras", (M.clave_de(q), q != "¿Para cuándo es el matrimonio?"), ("fecha", True))
+m = con(ocasion="matrimonio"); M.registrar_respuesta(m, "¿El evento es de día o de noche?")
+q = M.texto_pregunta("horario", m)
+caso("día/noche, segunda vez: otras palabras", (M.clave_de(q), q != M.PREGUNTAS["horario"]), ("horario", True))
 
 
 def main() -> int:

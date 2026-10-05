@@ -84,7 +84,15 @@ def main() -> int:
         fallos += d["etapa"] != e_esp
         if d["etapa"] != e_esp:
             print(f"   ✗ {nombre}: → {d['etapa']} (esperado {e_esp}) [{d['motivo']}]")
-    total = len(CASOS) + len(CITA) + 3
+    # Prueba con conversaciones (04-10-2026): «¿me lo apartas?» es compra aunque el clasificador lo lea como consulta.
+    for nombre, etapa, intent, conf, msg, e_esp in [
+            ("«me lo puedes apartar?» cierra", "seguimiento", "consulta_producto", 0.68, "me encantó, me lo puedes apartar?", "cierre"),
+            ("«me lo apartas para el sábado?» cierra", "seguimiento", "consulta_disponibilidad", 0.7, "me lo apartas para el sabado?", "cierre")]:
+        d = decidir(etapa, intent, conf, msg, "")
+        fallos += d["etapa"] != e_esp
+        if d["etapa"] != e_esp:
+            print(f"   ✗ {nombre}: → {d['etapa']} (esperado {e_esp}) [{d['motivo']}]")
+    total = len(CASOS) + len(CITA) + 3 + 2
     print(f"etapas     máquina de estados: {total - fallos}/{total} casos")
     return 1 if fallos else 0
 

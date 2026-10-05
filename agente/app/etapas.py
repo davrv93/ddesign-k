@@ -50,7 +50,9 @@ RE_COMPRA = re.compile(
     r"|como (hago para |puedo )?(comprar|pagar|lo compro|te pago|hago (el|mi) pedido)\w*"
     r"|donde (deposito|te deposito|pago|te yapeo)|a (que numero|donde) te (yapeo|deposito)"
     r"|(reserva|separa|aparta|guarda|envia)melo|pasame (el|tu) yape"
-    r"|quisiera (apartar|separar|reservar|comprar)\w*|deseo comprar\w*)")
+    r"|quisiera (apartar|separar|reservar|comprar)\w*|deseo comprar\w*"
+    # «¿me lo apartas?», «me lo puedes separar para el sábado?» (prueba con conversaciones, 04-10-2026)
+    r"|me l[oa] (puedes |podrias |pueden |podrian )?(apart|separ|reserv|guard)\w*)")
 # El botón de talla de las tarjetas de la web: elegir talla es querer esa prenda.
 RE_BOTON_TALLA = re.compile(r"^talla\s+\w+\s+del\s+[a-z]{1,3}-?\d+")
 def pide_confirmar(ultimo_bot: str) -> bool:

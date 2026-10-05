@@ -55,6 +55,54 @@ def pregunta_material(mensaje: str, intent: str) -> bool:
     return intent == "consulta_material" or bool(RE_MATERIAL.search(mensaje or ""))
 
 
+# La tela que dice la ficha. «¿qué tela es?» del Pandora, cuya ficha no la dice, hacía que el LLM inventara «satín»; la
+# verificación de Jev lo quitaba (bien) y la clienta se quedaba sin respuesta. Ahora la tela sale de la ficha y, si no
+# figura, se dice que no figura.
+_TELA = (r"roma|lino prada|prada|gasa|denim(?: delgado)?|seda(?: de rayas)?|jackard|jacquard|catania|podesu[aá]|crepe|"
+         r"sat[eé]n|satinad[oa]|tul|chif[oó]n|organza(?: francesa)?|algod[oó]n|licra|terciopelo|lino")
+RE_TELA = [re.compile(rx, re.I) for rx in (
+    rf"tipo de tela:?\s*(?:vestido\s+)?({_TELA})\b",
+    rf"tejido de\s+({_TELA})\b",
+    rf"(?:hech[oa]|elaborad[oa]|confeccionad[oa])\s+(?:de|en)\s+(?:nuestra\s+)?(?:incre[ií]ble\s+)?(?:tela\s+)?({_TELA})\b",
+    rf"\btela\s+({_TELA})\b",
+    rf"\b(?:blusa|vestido|falda|pantal[oó]n|conjunto|set|blazer)\s+de\s+({_TELA})\b",
+)]
+_NOMBRE_DE_TELA = {"roma", "prada", "catania", "jackard", "jacquard", "podesua", "podesuá"}
+
+
+def tela(codigo: str, descripcion: str) -> str:
+    """«tela Roma», «gasa», «lino prada»… según la ficha; el material de la lámina si la tienda lo dio; '' si no figura."""
+    x = extras(codigo).get("material")
+    if x:
+        return x
+    for rx in RE_TELA:
+        m = rx.search(descripcion or "")
+        if m:
+            t = re.sub(r"\b[A-ZÁÉÍÓÚ]{3,}\b", lambda w: w.group(0).lower(), m.group(1))
+            return f"tela {t}" if t.lower() in _NOMBRE_DE_TELA else t
+    return ""
+
+
+def nota_tela(codigo: str, nombre: str, descripcion: str) -> str:
+    """Lo que el LLM recibe cuando preguntan por la tela."""
+    t = tela(codigo, descripcion)
+    if t:
+        return f"TELA DEL {codigo} (de su ficha; dila tal cual, sin adornarla con otras telas): {t}."
+    return (f"TELA DEL {codigo}: su ficha NO dice la tela. No la adivines ni digas «satín», «crepe» ni ninguna otra: di con "
+            "naturalidad que ese dato no lo tienes a la mano y que una asesora te lo confirma (*4*); puedes contar lo que sí dice "
+            "la ficha del diseño.")
+
+
+def respuesta_tela(codigo: str, nombre: str, descripcion: str) -> str:
+    """Si el LLM no contestó la tela (o se la quitó la verificación), la frase la pone el código."""
+    t = tela(codigo, descripcion)
+    if t and len(t) > 40:
+        return f"Sobre la tela del *{codigo}* {nombre}: {t[0].lower() + t[1:]}"
+    if t:
+        return f"El *{codigo}* {nombre} es de {t} 😊"
+    return f"La tela exacta del *{codigo}* {nombre} no la tengo a la mano 🙈 Si quieres, una asesora te la confirma escribiendo *4*."
+
+
 def info_pago() -> str:
     """Datos de pago: archivo privado (no va al repositorio). Sin él, el pago lo coordina una asesora."""
     try:
@@ -188,10 +236,15 @@ def cita_pide(dia: str | None, hora: str | None, hoy, primera: bool = True) -> s
             f"solo con cita, {SHOWROOM.get('horario', '')}.\n\n¿Qué día y a qué hora te acomoda venir a probártelo?")
 
 
-def cita_invalida(error: str, dia: str | None, hora: str | None, hoy, evento: str | None = None) -> str:
+def cita_invalida(error: str, dia: str | None, hora: str | None, hoy, evento: str | None = None, alterno: str | None = None) -> str:
     """Por qué esa cita no vale y qué proponerle (sin inventar horarios: los del showroom)."""
     cuando = dia_humano(dia, hoy) if dia else ""
     h = hora_humana(hora) if hora else "esa hora"
+    if error == "dia_no_coincide" and dia and alterno:
+        import datetime as dt
+        d, a = dt.date.fromisoformat(dia), dt.date.fromisoformat(alterno)
+        return (f"Ojo, el {d.day} de {_MESES[d.month - 1]} cae {_DIAS[d.weekday()]} 😅\n\n"
+                f"¿Vienes el {_DIAS[d.weekday()]} {d.day} o el {_DIAS[a.weekday()]} {a.day}?")
     if error == "refrigerio":
         return (f"A la {h} justo estamos en refrigerio (de 1:00 a 2:00 p. m.) 😅\n\n"
                 f"¿Te acomoda a las 12:30 p. m. o desde las 2:00 p. m.{' ' + cuando if cuando else ''}?")
@@ -250,6 +303,11 @@ REGLAS DE VENTA
 - El stock está solo en la línea «AHORA:». Solo afirma las tallas que ahí figuren como disponibles.
 - Datos de la tienda (showroom, horario, envíos, cambios): solo los de TIENDA. Lo que no figure, no lo sabes: dile
   que lo confirma una asesora (*4*).
+- Descuentos, rebajas, precio por cantidad, promociones, contraentrega y medios de pago concretos (Yape, bancos, tarjeta)
+  NO figuran en TIENDA: no los niegues ni los prometas; di que eso te lo confirma una asesora (*4*). Lo que sí sabes: se
+  paga antes del envío y se manda el comprobante (CÓMO SE COMPRA en TIENDA).
+- Nunca digas que una prenda «se agota rápido», «es muy pedida», «no suele durar» o que «quedan pocas»: del stock solo vale
+  lo que diga «AHORA:».
 - Si pregunta por otra prenda, respóndele por esa. No sustituyas una prenda por otra.
 - Cada foto lleva su propio pie: no escribas listas de códigos, precios ni tallas.
 
