@@ -1,0 +1,73 @@
+# Prueba aparte de referencias contextuales. Nunca entra al entrenamiento. SINTÉTICO.
+catalogo: referencias_contextuales
+intenciones:
+  este_ese:
+    ejemplos:
+      - "me refiero a esa prenda"
+      - "justamente ese que acabas de mandar"
+      - "esta es la que quiero"
+      - "ese nomas q esta en la foto de arriba"
+      - "sobre esa te preguntaba"
+  el_otro:
+    ejemplos:
+      - "la otra opcion mejor"
+      - "no mejor pasame datos del otro"
+      - "del otro vestido, tienes talla?"
+      - "ese no, quiero ver el otro de nuevo"
+      - "me convence mas la otra"
+  ordinal:
+    ejemplos:
+      - "me quedo con el primer vestido"
+      - "la segunda foto me encanto"
+      - "el ultimo de los que mandaste"
+      - "el numero 3"
+      - "cuanto sale el segundo?"
+  arriba_abajo:
+    ejemplos:
+      - "me gusto el de mas arriba de todos"
+      - "el que quedo abajo del chat"
+      - "el que esta al medio de los tres"
+      - "ese de abajo cuanto sale?"
+      - "pasame talla del de arriba"
+  por_color:
+    ejemplos:
+      - "me quedo con el color vino"
+      - "ese de negro"
+      - "el que es azul noche"
+      - "la prenda en rojo"
+      - "el champagne, tienes en M?"
+  el_de_la_foto:
+    ejemplos:
+      - "el modelo de la foto que envie"
+      - "el de la imagen que te pasé"
+      - "ese de mi captura"
+      - "igualito al q sale en la fotografia"
+      - "quiero uno como el de mi foto"
+  el_anterior:
+    ejemplos:
+      - "el que me enseñaste antes de ese"
+      - "regresemos al que me mostraste hace rato"
+      - "aquel vestido que viste ahorita"
+      - "el anterior a este"
+      - "el que me pasaste antes"
+  por_codigo_nombre:
+    ejemplos:
+      - "el vestido V19"
+      - "dame el V07 en M"
+      - "me gusta el Kendall"
+      - "el que se llama Irla"
+      - "el codigo V28 tiene stock?"
+  plural_todos:
+    ejemplos:
+      - "los dos juntos"
+      - "me gustan ambos vestidos"
+      - "esos dos me encantan"
+      - "los tres que me enseñaste"
+      - "dame precio de todos"
+  por_atributo:
+    ejemplos:
+      - "el de manga larga"
+      - "el que tiene encaje"
+      - "el que sea mas barato"
+      - "el de espalda abierta"
+      - "el que lleva brillos"

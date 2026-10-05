@@ -1,0 +1,66 @@
+# Prueba aparte de rechazo. Nunca entra al entrenamiento. SINTÉTICO.
+catalogo: rechazo
+intenciones:
+  no_me_gusta:
+    ejemplos:
+      - "ese modelo no me atrae"
+      - "uy no, no me agrada para nada"
+      - "no me parece bonito"
+      - "ese esta horrible, no gracias"
+      - "la verdad ese no me cayo bien"
+  no_es_mi_estilo:
+    ejemplos:
+      - "esa onda no es la mia"
+      - "ese diseño no me representa"
+      - "yo no uso ese tipo de ropa"
+      - "ese corte no es para mi"
+      - "no me identifico con ese"
+  muy_largo:
+    ejemplos:
+      - "esta muy largo"
+      - "se pasa de largo para mi gusto"
+      - "uno mas cortito por favor, ese es largo"
+      - "tan largo no me gusta"
+      - "muy largo, me voy a tropezar"
+  muy_corto:
+    ejemplos:
+      - "esta muy corto"
+      - "demasiado cortito para mi"
+      - "quiero uno mas largo, ese es corto"
+      - "tan corto no lo uso"
+      - "muy cortito, no"
+  muy_serio:
+    ejemplos:
+      - "se ve rigido y apagado"
+      - "muy de ceremonia para lo q busco"
+      - "parece vestido de abuela"
+      - "me parece aburrido"
+      - "quiero algo con mas color, ese se ve triste"
+  demasiado_llamativo:
+    ejemplos:
+      - "se nota demasiado, me da pena"
+      - "muy vistoso para mi"
+      - "con tanto brillito no me animo, no"
+      - "no quiero algo tan exagerado"
+      - "es demasiado raro y exagerado para mi"
+  no_quiero_ese_color:
+    ejemplos:
+      - "el color no me convence nada, otro tono"
+      - "ese colorcito no va conmigo"
+      - "no uso el color rojo"
+      - "otro color, ese no me gusta"
+      - "el verde me cae mal, hay otro?"
+  no_me_convence:
+    ejemplos:
+      - "hmm, no sé, no me termina de latir ese"
+      - "no acaba de agradarme"
+      - "no me llama la atencion del todo"
+      - "no se, no me convence ese"
+      - "algo le falta, no me termina de convencer"
+  muestrame_otro:
+    ejemplos:
+      - "muestrame otro modelo"
+      - "ese no, pasame otro"
+      - "otro diferente por favor"
+      - "q otros tienes?"
+      - "enseñame algo distinto"

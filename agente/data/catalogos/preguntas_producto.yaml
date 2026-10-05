@@ -1,0 +1,600 @@
+# Catálogo 0: preguntas de producto (25 intenciones, A–Y). Los 250 ejemplos originales viven en faq_vestidos.txt y se
+# fusionan al cargar; aquí van las metas de cada intención y las AMPLIACIONES (paráfrasis, jerga de WhatsApp, abreviaturas
+# y errores de tipeo). Todo es SINTÉTICO: no hay mensajes de clientas reales. Un catálogo clasifica, no responde.
+catalogo: preguntas_producto
+version: 1
+descripcion: "Preguntas sobre el producto (tela, ajuste, cuidado, uso). Clasifica el tema; la respuesta sale de la ficha, nunca de aquí."
+fuente_txt: faq_vestidos.txt
+minimo_ejemplos: 20
+intenciones:
+  material:
+    descripcion: Material y composición
+    slots: {producto: opcional}
+    hechos_requeridos: [tela, composicion]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "de q tela es?"
+      - "q material tiene este vestido"
+      - "es de algodon o de q"
+      - "de que esta hecho?"
+      - "tela?"
+      - "me dices la composicion porfa"
+      - "tiene licra o es pura tela"
+      - "es 100% poliester?"
+      - "viene con algo de seda o es sintético"
+      - "con que tela lo hacen"
+      - "esa tela como se llama"
+      - "es de crepe, satin o que"
+      - "dime de q material es pe"
+      - "la tela es natural o sintetica?"
+      - "q fibra lleva el vestido?"
+      - "es tela sintetica?"
+      - "cual es el porcentaje de algodon?"
+      - "es de gasa, tul o q?"
+      - "con q composicion viene"
+      - "q tipo de tejido usaron para el vestido?"
+      - "es de satin esta tela?"
+      - "materia prima del vestido?"
+  textura:
+    descripcion: Textura y sensación al tacto
+    slots: {producto: opcional}
+    hechos_requeridos: [textura]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "q tal se siente la tela?"
+      - "es suavecito?"
+      - "pica la tela?"
+      - "se siente áspera o suave"
+      - "es rico al tacto?"
+      - "la tela es dura?"
+      - "me da comezon?"
+      - "cómo se siente en la piel"
+      - "irrita la piel?"
+      - "es grueso o fino el tejido"
+      - "es sedoso?"
+      - "se siente rugoso?"
+      - "no es tela que raspe, verdad?"
+      - "es mullido o liso al tocarlo"
+      - "se siente como seda o es mas tosca"
+      - "la tela raspa en la piel?"
+      - "tiene un tacto agradable?"
+      - "q sensacion da al ponerselo?"
+      - "es fina o gruesita al tacto"
+      - "pica en el cuello o la espalda?"
+      - "suave como algodon?"
+      - "se siente plastica la tela?"
+  elasticidad:
+    descripcion: Elasticidad
+    slots: {producto: opcional}
+    hechos_requeridos: [elasticidad]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "la tela da de si o es firme?"
+      - "cede?"
+      - "tiene licra?"
+      - "es flexible?"
+      - "la tela cede?"
+      - "estira harto?"
+      - "es elasticado?"
+      - "tiene elastano?"
+      - "da de si la tela?"
+      - "es stretch?"
+      - "estira o es tela rigida"
+      - "si subo de peso me sigue entrando? la tela da?"
+      - "tiene algo de elastico la tela?"
+      - "se ajusta al cuerpo estirando?"
+      - "cede un poquito o nada?"
+  encogimiento:
+    descripcion: Encogimiento
+    slots: {producto: opcional}
+    hechos_requeridos: [encogimiento]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "encoge?"
+      - "x cuanto encoge"
+      - "se achica al lavarlo?"
+      - "se encoje?"
+      - "despues de lavar queda mas chiquito?"
+      - "se acorta cuando lo lavas"
+      - "al lavarlo se hace pequeño?"
+      - "viene preencogido?"
+      - "cuanto se encoge, 1 talla?"
+      - "si lo lavo en la lavadora se encoge?"
+      - "la tela se contrae con el agua"
+      - "se encoge con la plancha o el calor?"
+      - "pierde medida despues de lavarlo"
+      - "mi talla se me achica luego del lavado?"
+      - "se me achica en la primera lavada?"
+      - "si lo meto a la lavadora encoge?"
+      - "queda mas corto despues de lavar?"
+      - "reduce una talla luego del lavado?"
+      - "viene ya pre lavado o encoge?"
+  color:
+    descripcion: Color, tono y brillo
+    slots: {producto: opcional}
+    hechos_requeridos: [color]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "el color es igual a la foto?"
+      - "en la foto se ve diferente, como es en real"
+      - "q tono es exactamente"
+      - "es mas oscuro en persona?"
+      - "en q colores lo tienen"
+      - "hay en otros colores?"
+      - "ese color es opaco o brillante"
+      - "los colores de la foto son reales?"
+      - "tiene brillito?"
+      - "se ve igualito al de la pantalla?"
+      - "es satinado?"
+      - "con flash se ve de otro color?"
+      - "q color es, vino o rojo?"
+      - "el color real se parece al de la foto o es retocada"
+  despintado:
+    descripcion: Despintado y transferencia de color
+    slots: {producto: opcional}
+    hechos_requeridos: [solidez_color, lavado]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "se destiñe?"
+      - "destine?"
+      - "se va el color con el agua?"
+      - "pierde el color al lavar"
+      - "mancha otra ropa si lo lavo junto?"
+      - "suelta tinte?"
+      - "se destiñe con el sudor?"
+      - "el color se va con los lavados?"
+      - "se destiñe fácil?"
+      - "se desvanece el color con el tiempo?"
+      - "le sale color al agua?"
+      - "puedo lavarlo con ropa blanca o destiñe?"
+      - "se destiñe al sol?"
+      - "suelta color en la primera lavada?"
+      - "puede desteñir la ropa blanca?"
+      - "destiñe con el calor?"
+      - "los colores oscuros destiñen?"
+      - "se va el color con el roce?"
+  resistencia_superficie:
+    descripcion: Rayones, enganches y resistencia superficial
+    slots: {producto: opcional}
+    hechos_requeridos: [resistencia_superficie]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "se jala facil?"
+      - "se engancha con todo?"
+      - "es delicada la tela, se rompe facil?"
+      - "se raspa?"
+      - "si me roza algo se estropea?"
+      - "se le salen los hilitos?"
+      - "aguanta roces?"
+      - "con una pulsera se jala la tela"
+      - "es una tela q se rompe con las uñas?"
+      - "se daña facilmente?"
+      - "la tela es fuerte?"
+      - "se enganchan los hilos con el aro o anillos"
+      - "marca con el cinturon de la cartera?"
+      - "se arruina rápido con el uso diario?"
+      - "se rompe si lo jalo sin querer?"
+      - "es de tela q se rasga facil?"
+      - "aguanta el roce con el asiento del carro?"
+      - "se le suelta algun hilo si lo engancho?"
+      - "la tela es resistente a los rasguños?"
+      - "se arruina si se frota con algo aspero?"
+      - "si me engancho en una silla se hace un hueco?"
+      - "se arana el tejido?"
+  desgaste:
+    descripcion: Motas y desgaste
+    slots: {producto: opcional}
+    hechos_requeridos: [pilling, durabilidad_tela]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "saca bolitas?"
+      - "hace bolitas la tela?"
+      - "le salen motas con el uso"
+      - "se pelusea?"
+      - "se gasta rapido?"
+      - "con los lavados se desgasta?"
+      - "se ve viejo rapido?"
+      - "se adelgaza la tela con el tiempo"
+      - "se pone feo con el uso"
+      - "se rompe por las axilas?"
+      - "se ve gastado a los pocos usos"
+      - "las motitas salen mucho?"
+      - "con el roce se deshilacha?"
+      - "luego de varias lavadas se ve opaco o desgastado?"
+  transparencia:
+    descripcion: Transparencia
+    slots: {producto: opcional}
+    hechos_requeridos: [transparencia, forro]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "se transparenta?"
+      - "se ve a traves?"
+      - "se trasparenta con la luz?"
+      - "se nota lo de abajo?"
+      - "hay q ponerse otra cosa debajo?"
+      - "trae forro por dentro?"
+      - "tiene fondo?"
+      - "se ve la ropa interior?"
+      - "es transparente?"
+      - "se ve piel a contraluz?"
+      - "con flash se transparenta?"
+      - "necesito slip o fondo para usarlo?"
+      - "es opaco o se ve a traves"
+      - "se ve el color de la ropa interior?"
+  caida_peso:
+    descripcion: Grosor, peso y caída
+    slots: {producto: opcional}
+    hechos_requeridos: [peso_tela, caida]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "pesa mucho?"
+      - "es liviano o pesado"
+      - "la tela cae bien?"
+      - "como cae la falda?"
+      - "tiene caida?"
+      - "es una tela con cuerpo?"
+      - "es ligero?"
+      - "es voluminoso?"
+      - "la falda tiene vuelo?"
+      - "la tela es fluida o rigida"
+      - "se me va a pegar a las piernas?"
+      - "se siente pesado al usarlo?"
+      - "tiene cuerpo o es muy suelto?"
+      - "q tan pesado es?"
+      - "la tela tiene peso o es ligera?"
+      - "cae derechito o se queda parado?"
+      - "es una tela con movimiento?"
+      - "es muy voluminoso de falda?"
+      - "cuanto pesa mas o menos?"
+      - "es una tela con caida elegante?"
+      - "se infla la falda o cae pegada?"
+      - "la tela es gruesa y con cuerpo?"
+  tallas:
+    descripcion: Tallas y medidas
+    slots: {producto: opcional, talla: opcional}
+    hechos_requeridos: [tallas, tabla_medidas]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "q tallas hay?"
+      - "en q tallas lo tienen"
+      - "la talla es normal o viene chica"
+      - "pasame la tabla de medidas"
+      - "tienen talla extra?"
+      - "viene mas pequeño de lo normal?"
+      - "es true to size?"
+      - "si soy M me queda M?"
+      - "me recomiendas S o M?"
+      - "cuales son las medidas de la talla M"
+      - "la L cuanto de busto es"
+      - "tienen medidas?"
+      - "y si estoy entre M y L?"
+      - "q talla es 90-70-100"
+      - "mides de cadera de la talla S?"
+  ajuste_cuerpo:
+    descripcion: Ajuste al cuerpo
+    slots: {producto: opcional}
+    hechos_requeridos: [horma, ajuste]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "queda ajustado?"
+      - "marca mucho?"
+      - "es pegadito o suelto"
+      - "se nota la panza?"
+      - "me marca la cintura o es rectito?"
+      - "es entallado?"
+      - "queda holgado?"
+      - "me va a quedar apretado?"
+      - "aprieta?"
+      - "como queda en el cuerpo"
+      - "marca las caderas"
+      - "es de corte recto o entallado"
+      - "se pega al cuerpo o cae suelto?"
+      - "estiliza?"
+      - "disimula la barriga?"
+      - "aprieta en la cintura?"
+      - "es de esos q se pegan a la barriga?"
+      - "cae suelto desde el busto?"
+      - "se ve ajustado en los brazos?"
+      - "marca las caderas o cae recto?"
+  largo:
+    descripcion: Largo
+    slots: {producto: opcional, altura: opcional}
+    hechos_requeridos: [largo_cm]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "q medida tiene de largo en cm"
+      - "hasta donde llega?"
+      - "llega a la rodilla?"
+      - "es largo o midi"
+      - "q largo tiene?"
+      - "si mido 1.65 hasta donde me llega"
+      - "soy bajita, me arrastra?"
+      - "es muy corto?"
+      - "mido <ALTURA>, como me queda de largo"
+      - "se puede usar con zapatillas o necesita taco?"
+      - "tiene largo hasta el piso?"
+      - "le puedo hacer el dobladillo?"
+      - "queda sobre la rodilla o debajo?"
+      - "el largo es para taco alto o plano"
+  busto_escote:
+    descripcion: Busto y escote
+    slots: {producto: opcional}
+    hechos_requeridos: [escote, soporte_busto]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "como es el escote?"
+      - "q escote tiene"
+      - "es muy escotado?"
+      - "tiene escote en V?"
+      - "se puede usar con brasier?"
+      - "viene con copas?"
+      - "las copas salen?"
+      - "para busto grande queda bien?"
+      - "tengo poco busto, me queda?"
+      - "necesito sosten especial?"
+      - "tapa bien el pecho?"
+      - "es strapless?"
+      - "sostiene el busto?"
+      - "q tan escotado es?"
+  espalda_tirantes_mangas:
+    descripcion: Espalda, tirantes y mangas
+    slots: {producto: opcional}
+    hechos_requeridos: [espalda, tirantes, mangas]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "como es la espalda?"
+      - "la espalda va descubierta?"
+      - "tiene tirantes?"
+      - "los tirantes se ajustan?"
+      - "se pueden regular los tirantes"
+      - "es sin mangas?"
+      - "q manga lleva?"
+      - "tiene manga larga o corta?"
+      - "son tirantes finitos o anchos"
+      - "se me caen los tirantes?"
+      - "es de hombros descubiertos?"
+      - "mis brazos son anchos, la manga aprieta?"
+      - "tiene mangas o es sin mangas"
+      - "la manga es holgada?"
+  cierre_colocacion:
+    descripcion: Cierre y colocación
+    slots: {producto: opcional}
+    hechos_requeridos: [cierre, colocacion]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "lleva cierre?"
+      - "el cierre va al costado o atras?"
+      - "como se pone?"
+      - "se cierra solo o necesito ayuda?"
+      - "trae zipper?"
+      - "es facil de poner?"
+      - "viene con botoncitos?"
+      - "se abrocha atras?"
+      - "puedo ponerme yo sola el vestido"
+      - "el cierre es invisible?"
+      - "se atasca el cierre?"
+      - "se mete por la cabeza o por los pies"
+      - "es con cierre o elastico en la cintura"
+      - "tiene broche?"
+      - "se cierra con zipper atras?"
+      - "puedo cerrarlo yo sola?"
+      - "como se abrocha?"
+      - "el cierre es largo o corto?"
+      - "se pone por arriba o por abajo?"
+  costuras:
+    descripcion: Costuras y confección
+    slots: {producto: opcional}
+    hechos_requeridos: [confeccion, acabados]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "como es el acabado?"
+      - "esta bien cosido?"
+      - "los acabados son finos?"
+      - "las costuras son fuertes?"
+      - "viene con hilitos sueltos?"
+      - "la confeccion es buena?"
+      - "es hecho a mano?"
+      - "las costuras se ven?"
+      - "esta bien terminado por dentro?"
+      - "tiene costuras reforzadas?"
+      - "la costura raspa?"
+      - "es de buena confeccion?"
+      - "esta bien armado?"
+      - "viene bien rematado?"
+  lavado:
+    descripcion: Lavado
+    slots: {producto: opcional}
+    hechos_requeridos: [instrucciones_lavado]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "como lo lavo?"
+      - "se lava a maquina?"
+      - "lavar a mano o en lavadora"
+      - "con agua fria o tibia?"
+      - "puedo usarle lejia?"
+      - "se puede lavar con cualquier detergente"
+      - "cada cuanto se lava?"
+      - "lo lavo con ropa de color?"
+      - "q cuidados de lavado tiene"
+      - "lo puedo meter a la lavadora?"
+      - "se lava seguido?"
+      - "con suavizante se daña?"
+      - "tiene etiqueta de lavado?"
+      - "se tiene q lavar en seco o normal"
+  secado_planchado:
+    descripcion: Secado y planchado
+    slots: {producto: opcional}
+    hechos_requeridos: [instrucciones_secado, instrucciones_planchado]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "se plancha?"
+      - "con q temperatura se plancha"
+      - "puedo secarlo al sol?"
+      - "va en secadora?"
+      - "se seca colgado o tendido"
+      - "se quema con la plancha?"
+      - "puedo usar vaporera?"
+      - "lo plancho por dentro o por fuera?"
+      - "se seca rapido?"
+      - "plancha o vapor?"
+      - "no se plancha?"
+      - "q hago para secarlo, lo cuelgo o lo tiendo?"
+      - "con la plancha se brilla la tela?"
+      - "es mejor secarlo a la sombra o al sol"
+  arrugas:
+    descripcion: Arrugas
+    slots: {producto: opcional}
+    hechos_requeridos: [arrugas]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "se arruga?"
+      - "se arruga facil?"
+      - "se marca al sentarme?"
+      - "es antiarrugas?"
+      - "en la maleta se arruga?"
+      - "hay q plancharlo siempre?"
+      - "si lo guardo doblado se arruga"
+      - "se arruga durante la fiesta?"
+      - "las arrugas salen rapido?"
+      - "es tela q no se arruga?"
+      - "q tan arrugable es"
+      - "para viajar se arruga mucho?"
+      - "queda marcado si lo doblo?"
+      - "se ve arrugado despues de sentarme un rato"
+      - "queda lleno de arrugas despues de usarlo?"
+      - "necesito plancharlo antes de ponermelo?"
+      - "la tela se amarruga con facilidad?"
+      - "se marcan las dobleces de la bolsa?"
+      - "si lo guardo en el closet colgado se arruga?"
+  comodidad_movimiento:
+    descripcion: Comodidad y movimiento
+    slots: {producto: opcional}
+    hechos_requeridos: [comodidad, abertura, frescura]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "es comodo?"
+      - "se puede bailar con el?"
+      - "puedo caminar bien?"
+      - "se siente calurosa la tela?"
+      - "es fresquito?"
+      - "tiene abertura?"
+      - "la abertura es alta?"
+      - "puedo sentarme comoda?"
+      - "me deja moverme?"
+      - "respira la tela?"
+      - "me da calor?"
+      - "para estar horas parada es comodo?"
+      - "se puede dar pasos largos?"
+      - "no aprieta al sentarme?"
+      - "puedo agacharme sin problema?"
+      - "se pueden subir escaleras con el?"
+      - "te deja mover los brazos?"
+      - "es incomodo para manejar?"
+      - "puedo estar sentada mucho rato sin q apriete?"
+      - "da calor al bailar?"
+      - "los pasos se pueden dar normal o es estrecho?"
+      - "deja respirar al comer, no aprieta la barriga?"
+  ocasion_uso:
+    descripcion: Ocasión de uso (¿sirve para…?, ¿es demasiado formal?)
+    slots: {producto: opcional, ocasion: opcional}
+    hechos_requeridos: [dress_code]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "sirve para una boda?"
+      - "puedo ir con este vestido a un matrimonio"
+      - "va para graduacion?"
+      - "es para fiesta o para algo mas formal"
+      - "queda bien para ir de dia?"
+      - "es de noche o tambien de dia"
+      - "es muy formal para una cena?"
+      - "se puede usar para un cumple?"
+      - "lo puedo volver a usar despues?"
+      - "es para evento o casual"
+      - "sirve para cena de gala?"
+      - "va bien para una reunion de trabajo?"
+      - "para el bautizo de mi sobrina sirve?"
+      - "es muy de noche para un matri de dia?"
+  clima_temporada:
+    descripcion: Clima y temporada
+    slots: {producto: opcional}
+    hechos_requeridos: [clima]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "sirve para verano?"
+      - "es muy abrigador?"
+      - "va bien con calor?"
+      - "se usa en epoca de frio?"
+      - "para el frio es bueno?"
+      - "voy a una fiesta en la playa, sirve?"
+      - "en clima humedo como se porta?"
+      - "se me marca el sudor?"
+      - "seca rapido si me da sudor"
+      - "para evento al aire libre sirve"
+      - "con viento se levanta?"
+      - "es fresco para temporada de calor?"
+      - "necesito chalina o abriga?"
+      - "para lima en verano esta bien?"
+      - "es abrigador o liviano para el clima?"
+      - "en lugares calurosos se siente pesado?"
+      - "es de tela fresca o termica?"
+      - "sirve para ir a la sierra donde hace frio?"
+      - "para el invierno limeño sirve?"
+      - "y con la humedad de la costa?"
+      - "voy a una boda en la selva, hace calor, sirve?"
+      - "me abrigo con este o necesito chaqueta?"
+  calidad_durabilidad:
+    descripcion: Calidad y durabilidad
+    slots: {producto: opcional}
+    hechos_requeridos: [calidad, durabilidad]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "es buena la calidad?"
+      - "dura?"
+      - "cuanto tiempo dura el vestido"
+      - "es de buena calidad o se malogra rapido"
+      - "aguanta lavadas?"
+      - "se deforma con el uso?"
+      - "se malogra facil?"
+      - "vale lo q cuesta?"
+      - "las costuras aguantan?"
+      - "se cae la pedreria?"
+      - "es resistente?"
+      - "aguanta varias puestas?"
+      - "q tan duradero es?"
+      - "es calidad buena o es de los baratos q se rompen"
+      - "es un vestido resistente al uso?"
+      - "con el tiempo se desgasta o se mantiene igual?"
+      - "es de buena marca o calidad regular?"
+      - "la tela es de las buenas?"
+      - "se mantiene bien despues de muchas puestas?"
+      - "es duradero o de un solo uso?"
+      - "vale la pena la inversion?"
+      - "he comprado ropa asi y a los 3 meses se malogro, este como es?"
+  detalles_modificaciones:
+    descripcion: Detalles, modificaciones y cuidado especial
+    slots: {producto: opcional}
+    hechos_requeridos: [adornos, modificaciones, cuidado_especial]
+    accion: responder_atributo_producto
+    ejemplos:
+      - "tiene brillos?"
+      - "lleva pedreria o lentejuelas"
+      - "los brillos se caen?"
+      - "se puede arreglar en la cintura?"
+      - "le puedo hacer ajustes?"
+      - "se puede achicar o ensanchar?"
+      - "dejan costura para arreglarlo?"
+      - "me lo pueden acortar?"
+      - "lo puedo llevar a la modista?"
+      - "se lava en seco?"
+      - "lleva algun cuidado aparte?"
+      - "las lentejuelas incomodan?"
+      - "se puede entallar con modista?"
+      - "tiene aplicaciones o adornos?"
+      - "tiene apliques o bordados?"
+      - "se le pueden hacer arreglos o ya no?"
+      - "la modista puede ajustarlo?"
+      - "viene con tela de sobra para alargarlo?"
+      - "tiene bordado a mano?"
+      - "se puede cambiar el cierre o los botones?"
+      - "le puedo quitar las mangas?"
+      - "lleva perlas o cristales?"

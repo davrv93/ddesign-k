@@ -1,0 +1,305 @@
+# Catálogo semántico — 250 preguntas frecuentes sobre vestidos (fuente: el dueño, 05-10-2026).
+# Formato:   «## LETRA | intención | descripción»  abre un grupo;  «NNN slug pregunta»  es un ejemplo de esa intención.
+# <PRODUCTO> = el vestido de la conversación; <ALTURA> = la estatura que diga la clienta. Se sustituyen al entrenar.
+# Las 250 NO son 250 intenciones: son ejemplos de 25 intenciones. Que «¿cede?», «¿estira?», «¿tiene lycra?» y «¿es flexible?» caigan
+# en el mismo flujo es el objetivo.
+
+## A | material | Material y composición
+001 material_principal ¿De qué material es <PRODUCTO>?
+002 tipo_tela ¿Qué tipo de tela tiene?
+003 composicion_tela ¿Cuál es la composición de la tela?
+004 tiene_algodon ¿Tiene algodón?
+005 tiene_poliester ¿Es poliéster?
+006 tiene_lycra ¿Tiene lycra?
+007 tiene_spandex ¿Tiene spandex?
+008 tiene_viscosa ¿Tiene viscosa?
+009 tiene_lino ¿Es de lino?
+010 tiene_seda ¿Tiene seda?
+
+## B | textura | Textura y sensación
+011 tela_suave ¿La tela es suave?
+012 tela_aspera ¿Es áspero?
+013 causa_picazon ¿La tela pica?
+014 tela_comoda ¿Es cómodo al contacto con la piel?
+015 tela_rigida ¿La tela es rígida?
+016 tela_flexible ¿La tela es flexible?
+017 textura_lisa ¿La tela es lisa?
+018 textura_rugosa ¿Tiene una textura rugosa?
+019 tela_gruesa ¿La tela es gruesa?
+020 tela_delgada ¿Es una tela delgada?
+
+## C | elasticidad | Elasticidad
+021 se_estira ¿Se estira?
+022 elasticidad_alta ¿Estira bastante?
+023 elasticidad_baja ¿Estira poco?
+024 elasticidad_cintura ¿La cintura se estira?
+025 elasticidad_busto ¿Estira en la parte del busto?
+026 elasticidad_cadera ¿Estira en la cadera?
+027 tela_elastica ¿La tela es elástica?
+028 recupera_forma ¿Después de estirarse vuelve a su forma?
+029 se_deforma_estirar ¿Se deforma si se estira mucho?
+030 cede_con_uso ¿La tela cede con el uso?
+
+## D | encogimiento | Encogimiento
+031 se_encoge ¿Se encoge?
+032 encoge_lavar ¿Se encoge después de lavarlo?
+033 encoge_primera_lavada ¿Encoge en la primera lavada?
+034 encoge_agua_caliente ¿Se encoge con agua caliente?
+035 encoge_secadora ¿Se encoge si uso secadora?
+036 encoge_largo ¿Puede encogerse de largo?
+037 encoge_ancho ¿Puede encogerse de ancho?
+038 prelavado ¿La tela viene prelavada?
+039 porcentaje_encogimiento ¿Cuánto puede encogerse aproximadamente?
+040 mantiene_medidas ¿Mantiene sus medidas después del lavado?
+
+## E | color | Color
+041 color_real ¿El color es igual al de la foto?
+042 tono_claro_oscuro ¿En persona es más claro o más oscuro?
+043 colores_disponibles ¿Qué colores tienen disponibles?
+044 color_intenso ¿El color es fuerte o apagado?
+045 color_brillante ¿Tiene brillo?
+046 color_mate ¿El acabado es mate?
+047 color_cambia_luz ¿El color cambia dependiendo de la luz?
+048 color_fotografia ¿La cámara cambia mucho el color?
+049 mismo_color_todo_vestido ¿Todo el vestido es del mismo tono?
+050 combinacion_colores ¿Tiene más de un color?
+
+## F | despintado | Despintado y transferencia de color
+051 se_despinta ¿Se despinta?
+052 pierde_color_lavado ¿Pierde color al lavarlo?
+053 mancha_otras_prendas ¿Puede manchar otras prendas al lavarlo?
+054 destine_agua ¿Suelta color en el agua?
+055 color_resistente ¿El color es resistente?
+056 pierde_color_sol ¿Pierde color con el sol?
+057 destine_sudor ¿Puede desteñir con el sudor?
+058 destine_roce ¿El color se transfiere al rozar?
+059 color_durable ¿El color se mantiene con el tiempo?
+060 cuidados_color ¿Qué cuidados necesita para que no se despinte?
+
+## G | resistencia_superficie | Rayones, enganches y resistencia superficial
+061 se_raya ¿La tela se raya fácilmente?
+062 se_engancha ¿Se engancha fácilmente?
+063 se_jala_hilo ¿Se le jalan los hilos?
+064 resistente_unas ¿Se puede dañar con las uñas?
+065 resistente_accesorios ¿Se engancha con pulseras o accesorios?
+066 resistente_cartera ¿El roce de una cartera puede dañarlo?
+067 resistente_roce ¿Soporta bien el roce?
+068 se_marca ¿La tela se marca fácilmente?
+069 se_pela ¿La superficie se pela?
+070 delicado_superficie ¿Es una tela delicada?
+
+## H | desgaste | Motas y desgaste
+071 hace_motas ¿Hace motitas?
+072 hace_pelusas ¿Le salen pelusas?
+073 desgaste_rapido ¿Se desgasta rápido?
+074 desgaste_axilas ¿Se desgasta en las axilas?
+075 desgaste_cintura ¿Se desgasta en la cintura?
+076 desgaste_roce ¿Se nota el desgaste por roce?
+077 pierde_textura ¿La tela pierde su textura con el tiempo?
+078 pierde_suavidad ¿Deja de sentirse suave después de lavarlo?
+079 apariencia_uso ¿Se nota mucho el uso después de varias puestas?
+080 durabilidad_tela ¿La tela es durable?
+
+## I | transparencia | Transparencia
+081 transparenta ¿Transparenta?
+082 transparenta_luz ¿Se transparenta con la luz?
+083 transparenta_sol ¿Se transparenta al sol?
+084 necesita_forro ¿Necesita usar algo debajo?
+085 tiene_forro ¿Tiene forro?
+086 forro_completo ¿El forro cubre todo el vestido?
+087 transparencia_falda ¿La falda transparenta?
+088 transparencia_busto ¿La parte del busto transparenta?
+089 ropa_interior_visible ¿Se nota la ropa interior?
+090 color_interior_recomendado ¿Qué color de ropa interior recomiendan usar?
+
+## J | caida_peso | Grosor, peso y caída
+091 peso_vestido ¿El vestido pesa mucho?
+092 vestido_liviano ¿Es liviano?
+093 tela_pesada ¿La tela es pesada?
+094 caida_tela ¿Tiene buena caída?
+095 tela_armada ¿La tela queda armada?
+096 se_pega_cuerpo ¿La tela se pega al cuerpo?
+097 tela_fluida ¿La tela es fluida?
+098 movimiento_falda ¿La falda tiene bastante movimiento?
+099 volumen_vestido ¿Da mucho volumen?
+100 tela_estructurada ¿Es una tela estructurada?
+
+## K | tallas | Tallas
+101 tallas_disponibles ¿Qué tallas tienen?
+102 talla_pequena ¿La talla viene pequeña?
+103 talla_grande ¿La talla viene grande?
+104 talla_normal ¿La talla es normal?
+105 talla_entre_dos Si estoy entre dos tallas, ¿cuál me recomiendan?
+106 talla_busto ¿Qué medida de busto corresponde a esta talla?
+107 talla_cintura ¿Qué medida de cintura corresponde?
+108 talla_cadera ¿Qué medida de cadera corresponde?
+109 tabla_medidas ¿Tienen tabla de medidas?
+110 equivalencia_talla ¿A qué talla peruana equivale?
+
+## L | ajuste_cuerpo | Ajuste al cuerpo
+111 queda_pegado ¿Queda pegado al cuerpo?
+112 queda_suelto ¿Queda suelto?
+113 marca_cuerpo ¿Marca mucho el cuerpo?
+114 marca_abdomen ¿Marca la barriga?
+115 marca_cadera ¿Marca mucho la cadera?
+116 ajuste_busto ¿Es ajustado en el busto?
+117 ajuste_cintura ¿Marca la cintura?
+118 ajuste_espalda ¿Es ajustado en la espalda?
+119 horma ¿Cómo es la horma?
+120 estiliza ¿El modelo estiliza la figura?
+
+## M | largo | Largo
+121 largo_total ¿Cuánto mide de largo?
+122 llega_rodilla ¿Llega hasta la rodilla?
+123 llega_tobillo ¿Llega hasta el tobillo?
+124 vestido_largo ¿Es realmente largo?
+125 vestido_midi ¿Es midi?
+126 vestido_corto ¿Qué tan corto queda?
+127 largo_según_altura ¿Cómo me quedaría si mido <ALTURA>?
+128 arrastra_piso ¿Arrastra en el piso?
+129 largo_tacos ¿Se puede usar con tacos altos?
+130 ajustar_largo ¿Se puede hacer basta o ajustar el largo?
+
+## N | busto_escote | Busto y escote
+131 tipo_escote ¿Qué tipo de escote tiene?
+132 escote_profundo ¿El escote es muy profundo?
+133 cubre_busto ¿Cubre bien el busto?
+134 busto_grande ¿Queda bien para busto grande?
+135 busto_pequeno ¿Queda bien para busto pequeño?
+136 tiene_copas ¿Tiene copas?
+137 copas_removibles ¿Las copas se pueden retirar?
+138 necesita_sosten ¿Necesito usar sostén?
+139 permite_sosten_normal ¿Se puede usar con sostén normal?
+140 soporte_busto ¿Tiene buen soporte en el busto?
+
+## O | espalda_tirantes_mangas | Espalda, tirantes y mangas
+141 espalda_abierta ¿Tiene la espalda abierta?
+142 espalda_cubierta ¿Cubre toda la espalda?
+143 tirantes_regulables ¿Los tirantes son regulables?
+144 tirantes_delgados ¿Los tirantes son delgados?
+145 tirantes_resistentes ¿Los tirantes son resistentes?
+146 tiene_mangas ¿Tiene mangas?
+147 tipo_manga ¿Qué tipo de manga tiene?
+148 manga_apretada ¿La manga queda ajustada?
+149 brazo_ancho ¿Queda bien si tengo los brazos gruesos?
+150 se_caen_tirantes ¿Los tirantes se caen del hombro?
+
+## P | cierre_colocacion | Cierre y colocación
+151 tiene_cierre ¿Tiene cierre?
+152 ubicacion_cierre ¿Dónde está el cierre?
+153 cierre_resistente ¿El cierre es resistente?
+154 dificil_poner ¿Es difícil de ponerse?
+155 requiere_ayuda ¿Necesito que alguien me ayude a cerrarlo?
+156 tiene_botones ¿Tiene botones?
+157 botones_decorativos ¿Los botones funcionan o son decorativos?
+158 tiene_elastico ¿Tiene elástico?
+159 abertura_facil ¿Es fácil de poner y quitar?
+160 cierre_se_traba ¿El cierre suele trabarse?
+
+## Q | costuras | Costuras y confección
+161 calidad_costuras ¿Cómo son las costuras?
+162 costuras_reforzadas ¿Las costuras están reforzadas?
+163 hilos_sueltos ¿Suele venir con hilos sueltos?
+164 costura_interior ¿Cómo está terminado por dentro?
+165 costuras_visibles ¿Se notan mucho las costuras?
+166 costura_incomoda ¿Las costuras molestan en la piel?
+167 acabado_calidad ¿Tiene buenos acabados?
+168 confección_artesanal ¿Es confeccionado a mano?
+169 simetria_prenda ¿La confección es simétrica?
+170 resistencia_costuras ¿Las costuras soportan bastante movimiento?
+
+## R | lavado | Lavado
+171 como_lavar ¿Cómo se lava?
+172 lavado_maquina ¿Se puede lavar en lavadora?
+173 lavado_mano ¿Tiene que lavarse a mano?
+174 agua_fria ¿Debe lavarse con agua fría?
+175 agua_caliente ¿Se puede lavar con agua caliente?
+176 detergente_normal ¿Puedo usar detergente normal?
+177 usar_suavizante ¿Se puede usar suavizante?
+178 usar_lejia ¿Se puede usar lejía?
+179 lavar_separado ¿Hay que lavarlo por separado?
+180 frecuencia_lavado ¿Se puede lavar seguido sin dañarlo?
+
+## S | secado_planchado | Secado y planchado
+181 usar_secadora ¿Se puede meter a la secadora?
+182 secado_sombra ¿Debe secarse a la sombra?
+183 secado_colgado ¿Se puede secar colgado?
+184 secado_horizontal ¿Debe secarse extendido?
+185 se_puede_planchar ¿Se puede planchar?
+186 temperatura_plancha ¿A qué temperatura se plancha?
+187 plancha_vapor ¿Se puede usar vapor?
+188 se_quema_facil ¿La tela se quema fácilmente con la plancha?
+189 necesita_plancharse ¿Se arruga tanto que hay que plancharlo?
+190 vaporizador ¿Puedo usar vaporizador de ropa?
+
+## T | arrugas | Arrugas
+191 se_arruga ¿Se arruga mucho?
+192 arruga_sentarse ¿Se arruga al sentarse?
+193 arruga_viaje ¿Se arruga si lo llevo en una maleta?
+194 recupera_arrugas ¿Las arrugas se quitan fácilmente?
+195 necesita_vapor ¿Necesita vapor antes de usarlo?
+196 tela_antiarrugas ¿La tela es resistente a las arrugas?
+197 marca_doblez ¿Se le quedan marcados los dobleces?
+198 guardar_colgado ¿Es mejor guardarlo colgado?
+199 doblar_vestido ¿Se puede guardar doblado?
+200 arruga_durante_evento ¿Se va a arrugar mucho durante el evento?
+
+## U | comodidad_movimiento | Comodidad y movimiento
+201 permite_caminar ¿Se puede caminar cómodamente?
+202 permite_bailar ¿Es cómodo para bailar?
+203 permite_sentarse ¿Es cómodo para sentarse?
+204 limita_pasos ¿Limita mucho el movimiento de las piernas?
+205 abertura_falda ¿Tiene abertura en la falda?
+206 abertura_alta ¿La abertura es muy alta?
+207 vestido_caluroso ¿Es caluroso?
+208 vestido_fresco ¿Es fresco?
+209 transpirable ¿La tela deja respirar bien la piel?
+210 usar_horas ¿Es cómodo para usarlo varias horas?
+
+## V | ocasion_uso | Ocasión de uso
+211 sirve_matrimonio ¿Sirve para un matrimonio?
+212 sirve_graduacion ¿Sirve para una graduación?
+213 sirve_fiesta ¿Queda bien para una fiesta?
+214 sirve_cena ¿Sirve para una cena elegante?
+215 sirve_dia ¿Queda bien para un evento de día?
+216 sirve_noche ¿Queda bien para un evento de noche?
+217 demasiado_formal ¿Es demasiado formal?
+218 demasiado_casual ¿Es muy casual?
+219 dress_code ¿Para qué tipo de dress code funciona?
+220 reutilizable ¿Es un vestido que puedo volver a usar en otras ocasiones?
+
+## W | clima_temporada | Clima y temporada
+221 clima_caluroso ¿Sirve para clima caluroso?
+222 clima_frio ¿Sirve para clima frío?
+223 verano ¿Es bueno para verano?
+224 invierno ¿Se puede usar en invierno?
+225 humedad ¿Cómo se comporta con humedad?
+226 sudor ¿Se marca el sudor?
+227 seca_rapido ¿La tela seca rápido?
+228 absorbe_sudor ¿Absorbe mucho el sudor?
+229 viento ¿La falda se levanta fácilmente con el viento?
+230 exterior ¿Es cómodo para un evento al aire libre?
+
+## X | calidad_durabilidad | Calidad y durabilidad
+231 calidad_general ¿Qué tal es la calidad?
+232 dura_varios_usos ¿Dura varios usos?
+233 resistente_lavadas ¿Resiste varias lavadas?
+234 pierde_forma ¿Pierde la forma con el tiempo?
+235 elastico_se_vence ¿El elástico se vence?
+236 costuras_se_abren ¿Las costuras se abren con facilidad?
+237 cierre_duradero ¿El cierre dura bastante?
+238 adornos_resistentes ¿Los adornos están bien sujetos?
+239 pedreria_se_cae ¿La pedrería se cae?
+240 calidad_precio ¿La calidad corresponde al precio?
+
+## Y | detalles_modificaciones | Detalles, modificaciones y cuidado especial
+241 tiene_pedreria ¿Tiene pedrería?
+242 tiene_lentejuelas ¿Tiene lentejuelas?
+243 adornos_incomodan ¿Los adornos incomodan?
+244 adornos_enganchan ¿Los adornos se enganchan con otras prendas?
+245 se_puede_entallar ¿Se puede entallar?
+246 se_puede_ensanchar ¿Se puede ensanchar?
+247 se_puede_acortar ¿Se puede acortar?
+248 margen_costura ¿Tiene margen de costura para hacer ajustes?
+249 necesita_lavado_seco ¿Necesita lavado en seco?
+250 cuidado_especial ¿Tiene algún cuidado especial que debería saber antes de comprarlo?

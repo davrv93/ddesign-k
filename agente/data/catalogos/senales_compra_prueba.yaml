@@ -1,0 +1,80 @@
+# Prueba aparte de señales de compra. Nunca entra al entrenamiento. SINTÉTICO.
+catalogo: senales_compra
+intenciones:
+  solo_mirando:
+    ejemplos:
+      - "nomas miraba la vitrina virtual"
+      - "por ahora nomas miro"
+      - "estoy mirando opciones nada mas"
+      - "solo averiguo, no compro hoy"
+      - "estoy de paso, curioseando"
+  pide_opciones:
+    ejemplos:
+      - "q modelos de vestidos tienen?"
+      - "mandame tu catálogo"
+      - "q me sugieres?"
+      - "quiero ver vestidos"
+      - "mandame imagenes de tus vestidos disponibles"
+  interes_gusto:
+    ejemplos:
+      - "me gusta bastante ese diseño"
+      - "q lindo esta"
+      - "me encanto ese vestido"
+      - "ese esta hermoso"
+      - "uy me fascina"
+  pregunta_precio:
+    ejemplos:
+      - "de cuanto es el precio de ese?"
+      - "y el costo del vestido cual es"
+      - "cuanto hay q pagar por ese?"
+      - "q valor tiene?"
+      - "precio porfa"
+  pregunta_disponibilidad_talla:
+    ejemplos:
+      - "quedara una M?"
+      - "hay mi talla?"
+      - "queda disponible ese modelo?"
+      - "en q tallas lo tienen?"
+      - "todavía tienen stock de ese?"
+  pregunta_envio:
+    ejemplos:
+      - "hacen envios a provincia?"
+      - "cuanto cobran por delivery?"
+      - "cuanto demora el envío?"
+      - "lo paso a buscar yo misma o solo envian?"
+      - "envian a mi casa?"
+  pide_probarse:
+    ejemplos:
+      - "se puede pasar por la tienda a probarme el vestido?"
+      - "quiero medirmelo antes"
+      - "donde queda su showroom para ir a probar?"
+      - "me puedo pasar a probarlo mañana?"
+      - "hay donde probarse alli?"
+  quiere_separar:
+    ejemplos:
+      - "me lo separas por favor"
+      - "reservame ese"
+      - "guardamelo hasta el viernes"
+      - "puedes apartarmelo?"
+      - "separa uno en talla M para mi"
+  quiere_comprar:
+    ejemplos:
+      - "quiero ese vestido"
+      - "entonces este va a ser mio"
+      - "lo voy a comprar"
+      - "bueno, yo me quedo con ese entonces"
+      - "ya decidi, lo quiero"
+  pregunta_pago:
+    ejemplos:
+      - "como puedo pagar?"
+      - "mandame el celular al q yapear"
+      - "pasame tu cuenta para depositar"
+      - "aceptan tarjeta?"
+      - "dame el yape"
+  pago_realizado:
+    ejemplos:
+      - "ya hice el pago"
+      - "ya te yapee"
+      - "te envio el comprobante de la transferencia"
+      - "listo ya pague"
+      - "acabo de depositar, revisa"

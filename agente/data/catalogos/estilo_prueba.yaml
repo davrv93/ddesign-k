@@ -1,0 +1,115 @@
+# Prueba aparte de estilo. Nunca entra al entrenamiento. SINTÉTICO.
+catalogo: estilo
+intenciones:
+  elegante:
+    ejemplos:
+      - "quiero verme elegante"
+      - "algo con mucha clase y fino"
+      - "un vestido elegante para destacar por buen gusto"
+      - "q se vea sofisticado"
+      - "que luzca distinguido"
+  casual:
+    ejemplos:
+      - "algo casual para el dia a dia"
+      - "quiero ropa relajada"
+      - "un vestido informal y comodo"
+      - "no tan formal, para pasear"
+      - "para usar a diario sin arreglarme mucho"
+  sexy:
+    ejemplos:
+      - "quiero lucir sensual esta noche"
+      - "algo bien sensual y ajustado"
+      - "quiero uno atrevido que marque mis curvas"
+      - "q sea provocador"
+      - "seductor pero con estilo"
+  sobrio:
+    ejemplos:
+      - "algo sobrio y serio"
+      - "nada llamativo, mas bien sobrio"
+      - "sobrio con lineas rectas"
+      - "quiero un look reservado y sobrio"
+      - "que sea mesurado, sin adornos fuertes"
+  romantico:
+    ejemplos:
+      - "algo romantico con vuelo"
+      - "tipo cuento de hadas"
+      - "quiero uno dulce con encajes"
+      - "con detalles de flores y lazos, romantico"
+      - "estilo princesa suave"
+  juvenil:
+    ejemplos:
+      - "algo para una chica joven"
+      - "q se vea juvenil y fresco"
+      - "no quiero verme mayor, algo joven"
+      - "es para mi hija de 17"
+      - "estilo adolescente divertido"
+  clasico:
+    ejemplos:
+      - "un vestido clasico"
+      - "que no pase de moda nunca"
+      - "algo atemporal y tradicional"
+      - "de esos q siempre sirven, clásico"
+      - "un diseño tradicional, de los que nunca fallan"
+  moderno:
+    ejemplos:
+      - "algo moderno y de moda"
+      - "q sea tendencia"
+      - "quiero un diseño actual"
+      - "un corte contemporaneo"
+      - "lo mas nuevo de la temporada"
+  minimalista:
+    ejemplos:
+      - "estilo minimalista"
+      - "algo simple, sin detalles"
+      - "lineas rectas y limpias, nada recargado"
+      - "un diseño basico y sencillo"
+      - "menos es mas, sin adornos"
+  llamativo:
+    ejemplos:
+      - "quiero que se me note harto en la fiesta"
+      - "quiero que me vean al entrar"
+      - "algo vistoso y brillante"
+      - "que destaque sobre todas"
+      - "colores intensos y que resalte"
+  delicado:
+    ejemplos:
+      - "algo delicado y suave"
+      - "tonos pastel y tela ligera"
+      - "un vestido sutil y fino"
+      - "que sea etereo y liviano"
+      - "con detalles delicados"
+  formal:
+    ejemplos:
+      - "algo muy formal"
+      - "vestimenta formal de etiqueta"
+      - "necesito un vestido de vestir formal"
+      - "para un ambiente protocolar, formal"
+      - "de ceremonia y bien arreglado"
+  vintage:
+    ejemplos:
+      - "quisiera algo en plan vintage, con onda de epoca"
+      - "estilo retro de los años 50"
+      - "tipo antiguo con falda de campana"
+      - "q tenga aire de otra epoca"
+      - "retro como de los 70"
+  boho:
+    ejemplos:
+      - "un vestido de aire boho para el verano"
+      - "estilo bohemio y libre"
+      - "tipo hippie chic con flecos"
+      - "campestre con tela suelta"
+      - "para un matri en el campo, con aire hippie"
+  femenino:
+    ejemplos:
+      - "que sea bien de chica, delicado y con cintura"
+      - "q resalte mi feminidad"
+      - "con cinturita y vuelo, bien de mujer"
+      - "me gustaria verme super mujer con ese diseño"
+      - "un diseño femenino con siluetas suaves"
+  discreto:
+    ejemplos:
+      - "mas bien discretito, sin mucho vuelo ni brillo"
+      - "que pase piola, sin que se fijen en mi"
+      - "bajo perfil, nada llamativo"
+      - "quiero pasar desapercibida"
+      - "uno reservado que no destaque"

@@ -1,0 +1,86 @@
+{
+  "estilo": {
+    "score": 0.8853,
+    "margen": 0.0002,
+    "metodo": "hibrido",
+    "k": 3,
+    "cobertura_prueba": 0.9375,
+    "precision_prueba": 0.96,
+    "falsos_positivos_ruido": 0.082,
+    "cumple_objetivo": true,
+    "calibrado_con": "estilo_prueba.yaml + ruido_prueba.yaml (fuera_de_giro)",
+    "embedder": "Xenova/multilingual-e5-small"
+  },
+  "objeciones": {
+    "score": 0.905,
+    "margen": 0.0,
+    "metodo": "hibrido",
+    "k": 3,
+    "cobertura_prueba": 0.9636,
+    "precision_prueba": 0.9623,
+    "falsos_positivos_ruido": 0.0492,
+    "cumple_objetivo": true,
+    "calibrado_con": "objeciones_prueba.yaml + ruido_prueba.yaml (fuera_de_giro)",
+    "embedder": "Xenova/multilingual-e5-small"
+  },
+  "ocasion": {
+    "score": 0.8887,
+    "margen": 0.0,
+    "metodo": "hibrido",
+    "k": 3,
+    "cobertura_prueba": 1.0,
+    "precision_prueba": 0.9733,
+    "falsos_positivos_ruido": 0.0,
+    "cumple_objetivo": true,
+    "calibrado_con": "ocasion_prueba.yaml + ruido_prueba.yaml (fuera_de_giro)",
+    "embedder": "Xenova/multilingual-e5-small"
+  },
+  "preguntas_producto": {
+    "score": 0.8847,
+    "margen": 0.0056,
+    "metodo": "hibrido",
+    "k": 3,
+    "cobertura_prueba": 0.7969,
+    "precision_prueba": 0.951,
+    "falsos_positivos_ruido": 0.0164,
+    "cumple_objetivo": true,
+    "calibrado_con": "preguntas_producto_prueba.yaml + ruido_prueba.yaml (fuera_de_giro)",
+    "embedder": "Xenova/multilingual-e5-small"
+  },
+  "rechazo": {
+    "score": 0.9015,
+    "margen": 0.0085,
+    "metodo": "hibrido",
+    "k": 3,
+    "cobertura_prueba": 0.7333,
+    "precision_prueba": 0.9697,
+    "falsos_positivos_ruido": 0.0,
+    "cumple_objetivo": true,
+    "calibrado_con": "rechazo_prueba.yaml + ruido_prueba.yaml (fuera_de_giro)",
+    "embedder": "Xenova/multilingual-e5-small"
+  },
+  "referencias_contextuales": {
+    "score": 0.8702,
+    "margen": 0.0021,
+    "metodo": "hibrido",
+    "k": 3,
+    "cobertura_prueba": 0.88,
+    "precision_prueba": 0.9545,
+    "falsos_positivos_ruido": 0.082,
+    "cumple_objetivo": true,
+    "calibrado_con": "referencias_contextuales_prueba.yaml + ruido_prueba.yaml (fuera_de_giro)",
+    "embedder": "Xenova/multilingual-e5-small"
+  },
+  "senales_compra": {
+    "score": 0.8934,
+    "margen": 0.0032,
+    "metodo": "hibrido",
+    "k": 3,
+    "cobertura_prueba": 0.9455,
+    "precision_prueba": 0.9615,
+    "falsos_positivos_ruido": 0.0656,
+    "cumple_objetivo": true,
+    "calibrado_con": "senales_compra_prueba.yaml + ruido_prueba.yaml (fuera_de_giro)",
+    "embedder": "Xenova/multilingual-e5-small"
+  }
+}

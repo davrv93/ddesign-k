@@ -1,0 +1,2403 @@
+{
+ "estilo": {
+  "catalogo": "estilo",
+  "intenciones": 16,
+  "ejemplos": 460,
+  "metodo": "hibrido",
+  "por_intencion": {
+   "elegante": 30,
+   "casual": 30,
+   "sexy": 30,
+   "sobrio": 30,
+   "romantico": 30,
+   "juvenil": 30,
+   "clasico": 26,
+   "moderno": 26,
+   "minimalista": 26,
+   "llamativo": 30,
+   "delicado": 30,
+   "formal": 26,
+   "vintage": 30,
+   "boho": 30,
+   "femenino": 26,
+   "discreto": 30
+  },
+  "loo": {
+   "top1": 0.6826,
+   "top3": 0.8913,
+   "n": 460,
+   "confusiones": [
+    [
+     "discreto",
+     "sobrio",
+     10,
+     4,
+     6
+    ],
+    [
+     "elegante",
+     "sexy",
+     9,
+     5,
+     4
+    ],
+    [
+     "boho",
+     "romantico",
+     8,
+     6,
+     2
+    ],
+    [
+     "elegante",
+     "llamativo",
+     5,
+     2,
+     3
+    ],
+    [
+     "discreto",
+     "llamativo",
+     5,
+     2,
+     3
+    ],
+    [
+     "elegante",
+     "sobrio",
+     4,
+     2,
+     2
+    ],
+    [
+     "elegante",
+     "romantico",
+     4,
+     1,
+     3
+    ],
+    [
+     "elegante",
+     "juvenil",
+     4,
+     1,
+     3
+    ],
+    [
+     "llamativo",
+     "sexy",
+     4,
+     2,
+     2
+    ],
+    [
+     "formal",
+     "sobrio",
+     3,
+     2,
+     1
+    ]
+   ]
+  },
+  "prueba": {
+   "n": 80,
+   "top1": 0.9125,
+   "top3": 0.9625,
+   "confusiones": [
+    [
+     "delicado",
+     "romantico",
+     2,
+     0,
+     2
+    ],
+    [
+     "delicado",
+     "elegante",
+     1,
+     0,
+     1
+    ],
+    [
+     "casual",
+     "sexy",
+     1,
+     1,
+     0
+    ],
+    [
+     "casual",
+     "formal",
+     1,
+     1,
+     0
+    ],
+    [
+     "discreto",
+     "sexy",
+     1,
+     0,
+     1
+    ],
+    [
+     "elegante",
+     "sexy",
+     1,
+     0,
+     1
+    ]
+   ],
+   "fallos": [
+    [
+     "algo con mucha clase y fino",
+     "elegante",
+     "delicado",
+     0.926
+    ],
+    [
+     "quiero ropa relajada",
+     "casual",
+     "sexy",
+     0.909
+    ],
+    [
+     "un vestido informal y comodo",
+     "casual",
+     "formal",
+     0.917
+    ],
+    [
+     "q sea provocador",
+     "sexy",
+     "discreto",
+     0.879
+    ],
+    [
+     "seductor pero con estilo",
+     "sexy",
+     "elegante",
+     0.918
+    ],
+    [
+     "tipo cuento de hadas",
+     "romantico",
+     "delicado",
+     0.885
+    ],
+    [
+     "estilo princesa suave",
+     "romantico",
+     "delicado",
+     0.899
+    ]
+   ],
+   "tomadas_por_ninguno": 0,
+   "por_intencion": {
+    "elegante": 0.8,
+    "casual": 0.6,
+    "sexy": 0.6,
+    "sobrio": 1.0,
+    "romantico": 0.6,
+    "juvenil": 1.0,
+    "clasico": 1.0,
+    "moderno": 1.0,
+    "minimalista": 1.0,
+    "llamativo": 1.0,
+    "delicado": 1.0,
+    "formal": 1.0,
+    "vintage": 1.0,
+    "boho": 1.0,
+    "femenino": 1.0,
+    "discreto": 1.0
+   },
+   "abstiene": 0.0625
+  },
+  "curva_score": [
+   [
+    0.74,
+    1.0,
+    0.9125
+   ],
+   [
+    0.76,
+    1.0,
+    0.9125
+   ],
+   [
+    0.78,
+    1.0,
+    0.9125
+   ],
+   [
+    0.8,
+    1.0,
+    0.9125
+   ],
+   [
+    0.82,
+    1.0,
+    0.9125
+   ],
+   [
+    0.84,
+    1.0,
+    0.9125
+   ],
+   [
+    0.86,
+    1.0,
+    0.9125
+   ],
+   [
+    0.88,
+    0.975,
+    0.9230769230769231
+   ],
+   [
+    0.9,
+    0.8875,
+    0.9436619718309859
+   ],
+   [
+    0.92,
+    0.6125,
+    0.9795918367346939
+   ],
+   [
+    0.94,
+    0.125,
+    1.0
+   ],
+   [
+    0.96,
+    0.0,
+    NaN
+   ]
+  ],
+  "curva_margen": [
+   [
+    0.0,
+    1.0,
+    0.9125
+   ],
+   [
+    0.005,
+    0.825,
+    0.9696969696969697
+   ],
+   [
+    0.01,
+    0.675,
+    1.0
+   ],
+   [
+    0.015,
+    0.5375,
+    1.0
+   ],
+   [
+    0.02,
+    0.3875,
+    1.0
+   ],
+   [
+    0.03,
+    0.15,
+    1.0
+   ],
+   [
+    0.04,
+    0.05,
+    1.0
+   ],
+   [
+    0.05,
+    0.0125,
+    1.0
+   ]
+  ],
+  "calibracion": {
+   "score": 0.8853,
+   "margen": 0.0002,
+   "cobertura": 0.9375,
+   "precision": 0.96,
+   "falsos_positivos": 0.082,
+   "cumple": true
+  },
+  "calibracion_cruzada": {
+   "cobertura": 0.8958333333333333,
+   "precision": 0.953125,
+   "falsos_positivos": 0.08459051724137931
+  },
+  "con_umbrales": {
+   "score": 0.8853,
+   "margen": 0.0002,
+   "cobertura": 0.9375,
+   "precision": 0.96
+  },
+  "ruido": {
+   "fuera_de_giro": {
+    "n": 61,
+    "falsos_positivos": 0.082,
+    "se_lleva_ninguno": 0.8689
+   },
+   "otros_catalogos_no_construidos": {
+    "n": 40,
+    "falsos_positivos": 0.05,
+    "se_lleva_ninguno": 0.95
+   },
+   "frases_de_otros_catalogos_construidos": {
+    "n": 81,
+    "falsos_positivos": 0.3086,
+    "se_lleva_ninguno": 0.5802
+   }
+  }
+ },
+ "objeciones": {
+  "catalogo": "objeciones",
+  "intenciones": 11,
+  "ejemplos": 260,
+  "metodo": "hibrido",
+  "por_intencion": {
+   "caro": 28,
+   "lo_voy_a_pensar": 22,
+   "no_estoy_segura": 28,
+   "duda_talla": 22,
+   "duda_color": 22,
+   "miedo_no_llegue": 22,
+   "muy_corto": 22,
+   "muy_escotado": 22,
+   "quiero_ver_otros": 22,
+   "mas_barato_otra_tienda": 22,
+   "no_confio_internet": 28
+  },
+  "loo": {
+   "top1": 0.8615,
+   "top3": 0.9654,
+   "n": 260,
+   "confusiones": [
+    [
+     "no_confio_internet",
+     "no_estoy_segura",
+     4,
+     3,
+     1
+    ],
+    [
+     "duda_talla",
+     "no_estoy_segura",
+     3,
+     0,
+     3
+    ],
+    [
+     "duda_talla",
+     "miedo_no_llegue",
+     3,
+     0,
+     3
+    ],
+    [
+     "caro",
+     "no_estoy_segura",
+     2,
+     2,
+     0
+    ],
+    [
+     "caro",
+     "mas_barato_otra_tienda",
+     2,
+     1,
+     1
+    ],
+    [
+     "duda_talla",
+     "no_confio_internet",
+     2,
+     1,
+     1
+    ],
+    [
+     "duda_color",
+     "duda_talla",
+     2,
+     2,
+     0
+    ],
+    [
+     "miedo_no_llegue",
+     "no_confio_internet",
+     2,
+     1,
+     1
+    ],
+    [
+     "duda_talla",
+     "muy_corto",
+     2,
+     0,
+     2
+    ],
+    [
+     "muy_escotado",
+     "no_estoy_segura",
+     2,
+     2,
+     0
+    ]
+   ]
+  },
+  "prueba": {
+   "n": 55,
+   "top1": 0.9455,
+   "top3": 0.9818,
+   "confusiones": [
+    [
+     "caro",
+     "muy_corto",
+     1,
+     1,
+     0
+    ],
+    [
+     "caro",
+     "no_estoy_segura",
+     1,
+     1,
+     0
+    ],
+    [
+     "duda_talla",
+     "no_confio_internet",
+     1,
+     0,
+     1
+    ]
+   ],
+   "fallos": [
+    [
+     "no se si me alcance, es bastante",
+     "caro",
+     "muy_corto",
+     0.921
+    ],
+    [
+     "me haces un descuentito?",
+     "caro",
+     "no_estoy_segura",
+     0.899
+    ],
+    [
+     "como se q no me van a robar?",
+     "no_confio_internet",
+     "duda_talla",
+     0.922
+    ]
+   ],
+   "tomadas_por_ninguno": 2,
+   "por_intencion": {
+    "caro": 0.6,
+    "lo_voy_a_pensar": 1.0,
+    "no_estoy_segura": 1.0,
+    "duda_talla": 1.0,
+    "duda_color": 1.0,
+    "miedo_no_llegue": 1.0,
+    "muy_corto": 1.0,
+    "muy_escotado": 1.0,
+    "quiero_ver_otros": 1.0,
+    "mas_barato_otra_tienda": 1.0,
+    "no_confio_internet": 0.8
+   },
+   "abstiene": 0.0364
+  },
+  "curva_score": [
+   [
+    0.74,
+    0.9636363636363636,
+    0.9622641509433962
+   ],
+   [
+    0.76,
+    0.9636363636363636,
+    0.9622641509433962
+   ],
+   [
+    0.78,
+    0.9636363636363636,
+    0.9622641509433962
+   ],
+   [
+    0.8,
+    0.9636363636363636,
+    0.9622641509433962
+   ],
+   [
+    0.82,
+    0.9636363636363636,
+    0.9622641509433962
+   ],
+   [
+    0.84,
+    0.9636363636363636,
+    0.9622641509433962
+   ],
+   [
+    0.86,
+    0.9636363636363636,
+    0.9622641509433962
+   ],
+   [
+    0.88,
+    0.9636363636363636,
+    0.9622641509433962
+   ],
+   [
+    0.9,
+    0.9636363636363636,
+    0.9622641509433962
+   ],
+   [
+    0.92,
+    0.8727272727272727,
+    0.9583333333333334
+   ],
+   [
+    0.94,
+    0.2909090909090909,
+    1.0
+   ],
+   [
+    0.96,
+    0.0,
+    NaN
+   ]
+  ],
+  "curva_margen": [
+   [
+    0.0,
+    0.9636363636363636,
+    0.9622641509433962
+   ],
+   [
+    0.005,
+    0.9090909090909091,
+    1.0
+   ],
+   [
+    0.01,
+    0.8909090909090909,
+    1.0
+   ],
+   [
+    0.015,
+    0.7636363636363637,
+    1.0
+   ],
+   [
+    0.02,
+    0.6909090909090909,
+    1.0
+   ],
+   [
+    0.03,
+    0.4,
+    1.0
+   ],
+   [
+    0.04,
+    0.12727272727272726,
+    1.0
+   ],
+   [
+    0.05,
+    0.05454545454545454,
+    1.0
+   ]
+  ],
+  "calibracion": {
+   "score": 0.905,
+   "margen": 0.0,
+   "cobertura": 0.9636,
+   "precision": 0.9623,
+   "falsos_positivos": 0.0492,
+   "cumple": true
+  },
+  "calibracion_cruzada": {
+   "cobertura": 0.9166666666666667,
+   "precision": 0.9589490968801313,
+   "falsos_positivos": 0.03225806451612903
+  },
+  "con_umbrales": {
+   "score": 0.905,
+   "margen": 0.0,
+   "cobertura": 0.9636,
+   "precision": 0.9623
+  },
+  "ruido": {
+   "fuera_de_giro": {
+    "n": 61,
+    "falsos_positivos": 0.0492,
+    "se_lleva_ninguno": 0.7049
+   },
+   "otros_catalogos_no_construidos": {
+    "n": 40,
+    "falsos_positivos": 0.175,
+    "se_lleva_ninguno": 0.725
+   },
+   "frases_de_otros_catalogos_construidos": {
+    "n": 86,
+    "falsos_positivos": 0.0581,
+    "se_lleva_ninguno": 0.8256
+   }
+  }
+ },
+ "ocasion": {
+  "catalogo": "ocasion",
+  "intenciones": 15,
+  "ejemplos": 331,
+  "metodo": "hibrido",
+  "por_intencion": {
+   "matrimonio": 23,
+   "graduacion": 22,
+   "quinceanos": 22,
+   "cumpleanos": 22,
+   "bautizo": 22,
+   "cena": 22,
+   "fiesta": 22,
+   "gala": 22,
+   "evento_corporativo": 22,
+   "iglesia": 22,
+   "playa": 22,
+   "sesion_fotos": 22,
+   "civil": 22,
+   "recepcion": 22,
+   "fiesta_promocion": 22
+  },
+  "loo": {
+   "top1": 0.8852,
+   "top3": 0.9668,
+   "n": 331,
+   "confusiones": [
+    [
+     "matrimonio",
+     "quinceanos",
+     2,
+     2,
+     0
+    ],
+    [
+     "civil",
+     "matrimonio",
+     2,
+     1,
+     1
+    ],
+    [
+     "fiesta",
+     "matrimonio",
+     2,
+     1,
+     1
+    ],
+    [
+     "cumpleanos",
+     "fiesta",
+     2,
+     1,
+     1
+    ],
+    [
+     "cena",
+     "evento_corporativo",
+     2,
+     0,
+     2
+    ],
+    [
+     "evento_corporativo",
+     "graduacion",
+     2,
+     2,
+     0
+    ],
+    [
+     "bautizo",
+     "iglesia",
+     2,
+     0,
+     2
+    ],
+    [
+     "fiesta",
+     "playa",
+     2,
+     0,
+     2
+    ],
+    [
+     "graduacion",
+     "recepcion",
+     1,
+     1,
+     0
+    ],
+    [
+     "graduacion",
+     "quinceanos",
+     1,
+     0,
+     1
+    ]
+   ]
+  },
+  "prueba": {
+   "n": 75,
+   "top1": 0.9733,
+   "top3": 1.0,
+   "confusiones": [
+    [
+     "cena",
+     "evento_corporativo",
+     1,
+     0,
+     1
+    ],
+    [
+     "cena",
+     "fiesta_promocion",
+     1,
+     0,
+     1
+    ]
+   ],
+   "fallos": [
+    [
+     "cena de fin de año de la compañia",
+     "evento_corporativo",
+     "cena",
+     0.921
+    ],
+    [
+     "la cena de los egresados de mi aula",
+     "fiesta_promocion",
+     "cena",
+     0.924
+    ]
+   ],
+   "tomadas_por_ninguno": 0,
+   "por_intencion": {
+    "matrimonio": 1.0,
+    "graduacion": 1.0,
+    "quinceanos": 1.0,
+    "cumpleanos": 1.0,
+    "bautizo": 1.0,
+    "cena": 1.0,
+    "fiesta": 1.0,
+    "gala": 1.0,
+    "evento_corporativo": 0.8,
+    "iglesia": 1.0,
+    "playa": 1.0,
+    "sesion_fotos": 1.0,
+    "civil": 1.0,
+    "recepcion": 1.0,
+    "fiesta_promocion": 0.8
+   },
+   "abstiene": 0.0
+  },
+  "curva_score": [
+   [
+    0.74,
+    1.0,
+    0.9733333333333334
+   ],
+   [
+    0.76,
+    1.0,
+    0.9733333333333334
+   ],
+   [
+    0.78,
+    1.0,
+    0.9733333333333334
+   ],
+   [
+    0.8,
+    1.0,
+    0.9733333333333334
+   ],
+   [
+    0.82,
+    1.0,
+    0.9733333333333334
+   ],
+   [
+    0.84,
+    1.0,
+    0.9733333333333334
+   ],
+   [
+    0.86,
+    1.0,
+    0.9733333333333334
+   ],
+   [
+    0.88,
+    1.0,
+    0.9733333333333334
+   ],
+   [
+    0.9,
+    0.9733333333333334,
+    0.9726027397260274
+   ],
+   [
+    0.92,
+    0.7333333333333333,
+    0.9636363636363636
+   ],
+   [
+    0.94,
+    0.18666666666666668,
+    1.0
+   ],
+   [
+    0.96,
+    0.0,
+    NaN
+   ]
+  ],
+  "curva_margen": [
+   [
+    0.0,
+    1.0,
+    0.9733333333333334
+   ],
+   [
+    0.005,
+    0.9466666666666667,
+    0.971830985915493
+   ],
+   [
+    0.01,
+    0.88,
+    0.9848484848484849
+   ],
+   [
+    0.015,
+    0.8266666666666667,
+    0.9838709677419355
+   ],
+   [
+    0.02,
+    0.7733333333333333,
+    0.9827586206896551
+   ],
+   [
+    0.03,
+    0.6,
+    1.0
+   ],
+   [
+    0.04,
+    0.21333333333333335,
+    1.0
+   ],
+   [
+    0.05,
+    0.02666666666666667,
+    1.0
+   ]
+  ],
+  "calibracion": {
+   "score": 0.8887,
+   "margen": 0.0,
+   "cobertura": 1.0,
+   "precision": 0.9733,
+   "falsos_positivos": 0.0,
+   "cumple": true
+  },
+  "calibracion_cruzada": {
+   "cobertura": 0.9444444444444444,
+   "precision": 0.9708333333333333,
+   "falsos_positivos": 0.0
+  },
+  "con_umbrales": {
+   "score": 0.8887,
+   "margen": 0.0,
+   "cobertura": 1.0,
+   "precision": 0.9733
+  },
+  "ruido": {
+   "fuera_de_giro": {
+    "n": 61,
+    "falsos_positivos": 0.0,
+    "se_lleva_ninguno": 0.9508
+   },
+   "otros_catalogos_no_construidos": {
+    "n": 40,
+    "falsos_positivos": 0.075,
+    "se_lleva_ninguno": 0.925
+   },
+   "frases_de_otros_catalogos_construidos": {
+    "n": 82,
+    "falsos_positivos": 0.0122,
+    "se_lleva_ninguno": 0.9878
+   }
+  }
+ },
+ "preguntas_producto": {
+  "catalogo": "preguntas_producto",
+  "intenciones": 25,
+  "ejemplos": 691,
+  "metodo": "hibrido",
+  "por_intencion": {
+   "material": 32,
+   "textura": 32,
+   "elasticidad": 25,
+   "encogimiento": 29,
+   "color": 24,
+   "despintado": 28,
+   "resistencia_superficie": 32,
+   "desgaste": 24,
+   "transparencia": 24,
+   "caida_peso": 32,
+   "tallas": 25,
+   "ajuste_cuerpo": 30,
+   "largo": 24,
+   "busto_escote": 24,
+   "espalda_tirantes_mangas": 24,
+   "cierre_colocacion": 29,
+   "costuras": 24,
+   "lavado": 24,
+   "secado_planchado": 24,
+   "arrugas": 29,
+   "comodidad_movimiento": 32,
+   "ocasion_uso": 24,
+   "clima_temporada": 32,
+   "calidad_durabilidad": 32,
+   "detalles_modificaciones": 32
+  },
+  "loo": {
+   "top1": 0.7583,
+   "top3": 0.9276,
+   "n": 691,
+   "top1_originales_faq": 0.752,
+   "top1_ampliados": 0.7619,
+   "confusiones": [
+    [
+     "caida_peso",
+     "textura",
+     7,
+     4,
+     3
+    ],
+    [
+     "calidad_durabilidad",
+     "desgaste",
+     7,
+     5,
+     2
+    ],
+    [
+     "elasticidad",
+     "textura",
+     6,
+     3,
+     3
+    ],
+    [
+     "clima_temporada",
+     "comodidad_movimiento",
+     6,
+     3,
+     3
+    ],
+    [
+     "comodidad_movimiento",
+     "textura",
+     5,
+     3,
+     2
+    ],
+    [
+     "arrugas",
+     "secado_planchado",
+     5,
+     4,
+     1
+    ],
+    [
+     "elasticidad",
+     "material",
+     4,
+     1,
+     3
+    ],
+    [
+     "resistencia_superficie",
+     "textura",
+     4,
+     3,
+     1
+    ],
+    [
+     "ajuste_cuerpo",
+     "elasticidad",
+     4,
+     2,
+     2
+    ],
+    [
+     "color",
+     "detalles_modificaciones",
+     4,
+     2,
+     2
+    ]
+   ]
+  },
+  "prueba": {
+   "n": 128,
+   "top1": 0.8438,
+   "top3": 0.9453,
+   "confusiones": [
+    [
+     "elasticidad",
+     "material",
+     1,
+     1,
+     0
+    ],
+    [
+     "elasticidad",
+     "resistencia_superficie",
+     1,
+     1,
+     0
+    ],
+    [
+     "encogimiento",
+     "lavado",
+     1,
+     1,
+     0
+    ],
+    [
+     "caida_peso",
+     "color",
+     1,
+     0,
+     1
+    ],
+    [
+     "despintado",
+     "lavado",
+     1,
+     1,
+     0
+    ],
+    [
+     "desgaste",
+     "textura",
+     1,
+     1,
+     0
+    ],
+    [
+     "costuras",
+     "desgaste",
+     1,
+     0,
+     1
+    ],
+    [
+     "textura",
+     "transparencia",
+     1,
+     0,
+     1
+    ],
+    [
+     "ajuste_cuerpo",
+     "transparencia",
+     1,
+     0,
+     1
+    ],
+    [
+     "ajuste_cuerpo",
+     "tallas",
+     1,
+     1,
+     0
+    ]
+   ],
+   "fallos": [
+    [
+     "tiene spandex para q ceda un poco",
+     "elasticidad",
+     "material",
+     0.897
+    ],
+    [
+     "se ensancha un poco al usarlo?",
+     "elasticidad",
+     "resistencia_superficie",
+     0.915
+    ],
+    [
+     "cuanto se achica si lo meto al agua caliente",
+     "encogimiento",
+     "lavado",
+     0.892
+    ],
+    [
+     "la tela brilla o es mate?",
+     "color",
+     "caida_peso",
+     0.922
+    ],
+    [
+     "puede manchar mis otras prendas en la lavadora",
+     "despintado",
+     "lavado",
+     0.908
+    ],
+    [
+     "la superficie de la tela va soltando fibras?",
+     "desgaste",
+     "textura",
+     0.909
+    ],
+    [
+     "hace pelusa en las costuras?",
+     "desgaste",
+     "costuras",
+     0.912
+    ],
+    [
+     "es tela transparente o gruesa?",
+     "transparencia",
+     "textura",
+     0.918
+    ],
+    [
+     "se nota el brasier y el calzon?",
+     "transparencia",
+     "ajuste_cuerpo",
+     0.881
+    ],
+    [
+     "es holgado o a la medida?",
+     "ajuste_cuerpo",
+     "tallas",
+     0.897
+    ],
+    [
+     "a q altura de la pierna termina?",
+     "largo",
+     "tallas",
+     0.9
+    ],
+    [
+     "puedo acortar o alargar las tiras de los hombros?",
+     "espalda_tirantes_mangas",
+     "detalles_modificaciones",
+     0.906
+    ],
+    [
+     "tiene hilos colgando?",
+     "costuras",
+     "resistencia_superficie",
+     0.897
+    ],
+    [
+     "se puede usar cloro?",
+     "lavado",
+     "secado_planchado",
+     0.873
+    ],
+    [
+     "es de esas telas q no se planchan?",
+     "arrugas",
+     "textura",
+     0.919
+    ],
+    [
+     "se siente calor con esa tela?",
+     "comodidad_movimiento",
+     "textura",
+     0.936
+    ],
+    [
+     "lo puedo usar en varias ocasiones?",
+     "ocasion_uso",
+     "calidad_durabilidad",
+     0.918
+    ],
+    [
+     "aguanta muchos lavados sin malograrse?",
+     "calidad_durabilidad",
+     "lavado",
+     0.911
+    ],
+    [
+     "tiene margen de tela para ensancharlo?",
+     "detalles_modificaciones",
+     "material",
+     0.906
+    ],
+    [
+     "requiere lavado en seco?",
+     "detalles_modificaciones",
+     "lavado",
+     0.92
+    ]
+   ],
+   "tomadas_por_ninguno": 0,
+   "por_intencion": {
+    "material": 1.0,
+    "textura": 1.0,
+    "elasticidad": 0.67,
+    "encogimiento": 0.8,
+    "color": 0.8,
+    "despintado": 0.8,
+    "resistencia_superficie": 1.0,
+    "desgaste": 0.6,
+    "transparencia": 0.6,
+    "caida_peso": 1.0,
+    "tallas": 1.0,
+    "ajuste_cuerpo": 0.8,
+    "largo": 0.8,
+    "busto_escote": 1.0,
+    "espalda_tirantes_mangas": 0.8,
+    "cierre_colocacion": 1.0,
+    "costuras": 0.8,
+    "lavado": 0.8,
+    "secado_planchado": 1.0,
+    "arrugas": 0.8,
+    "comodidad_movimiento": 0.8,
+    "ocasion_uso": 0.8,
+    "clima_temporada": 1.0,
+    "calidad_durabilidad": 0.8,
+    "detalles_modificaciones": 0.6
+   },
+   "abstiene": 0.2031
+  },
+  "curva_score": [
+   [
+    0.74,
+    1.0,
+    0.84375
+   ],
+   [
+    0.76,
+    1.0,
+    0.84375
+   ],
+   [
+    0.78,
+    1.0,
+    0.84375
+   ],
+   [
+    0.8,
+    1.0,
+    0.84375
+   ],
+   [
+    0.82,
+    1.0,
+    0.84375
+   ],
+   [
+    0.84,
+    1.0,
+    0.84375
+   ],
+   [
+    0.86,
+    1.0,
+    0.84375
+   ],
+   [
+    0.88,
+    0.9921875,
+    0.8503937007874016
+   ],
+   [
+    0.9,
+    0.875,
+    0.875
+   ],
+   [
+    0.92,
+    0.4609375,
+    0.9661016949152542
+   ],
+   [
+    0.94,
+    0.1015625,
+    1.0
+   ],
+   [
+    0.96,
+    0.0,
+    NaN
+   ]
+  ],
+  "curva_margen": [
+   [
+    0.0,
+    1.0,
+    0.84375
+   ],
+   [
+    0.005,
+    0.8203125,
+    0.9238095238095239
+   ],
+   [
+    0.01,
+    0.6953125,
+    0.9887640449438202
+   ],
+   [
+    0.015,
+    0.59375,
+    0.9868421052631579
+   ],
+   [
+    0.02,
+    0.453125,
+    0.9827586206896551
+   ],
+   [
+    0.03,
+    0.25,
+    1.0
+   ],
+   [
+    0.04,
+    0.109375,
+    1.0
+   ],
+   [
+    0.05,
+    0.03125,
+    1.0
+   ]
+  ],
+  "calibracion": {
+   "score": 0.8847,
+   "margen": 0.0056,
+   "cobertura": 0.7969,
+   "precision": 0.951,
+   "falsos_positivos": 0.0164,
+   "cumple": true
+  },
+  "calibracion_cruzada": {
+   "cobertura": 0.8422641509433962,
+   "precision": 0.9124597207303974,
+   "falsos_positivos": 0.050865800865800864
+  },
+  "con_umbrales": {
+   "score": 0.8847,
+   "margen": 0.0056,
+   "cobertura": 0.7969,
+   "precision": 0.951
+  },
+  "ruido": {
+   "fuera_de_giro": {
+    "n": 61,
+    "falsos_positivos": 0.0164,
+    "se_lleva_ninguno": 0.8525
+   },
+   "otros_catalogos_no_construidos": {
+    "n": 40,
+    "falsos_positivos": 0.15,
+    "se_lleva_ninguno": 0.775
+   },
+   "frases_de_otros_catalogos_construidos": {
+    "n": 72,
+    "falsos_positivos": 0.1389,
+    "se_lleva_ninguno": 0.7917
+   }
+  }
+ },
+ "rechazo": {
+  "catalogo": "rechazo",
+  "intenciones": 9,
+  "ejemplos": 246,
+  "metodo": "hibrido",
+  "por_intencion": {
+   "no_me_gusta": 30,
+   "no_es_mi_estilo": 26,
+   "muy_largo": 30,
+   "muy_corto": 30,
+   "muy_serio": 26,
+   "demasiado_llamativo": 30,
+   "no_quiero_ese_color": 22,
+   "no_me_convence": 30,
+   "muestrame_otro": 22
+  },
+  "loo": {
+   "top1": 0.7236,
+   "top3": 0.9756,
+   "n": 246,
+   "confusiones": [
+    [
+     "muy_corto",
+     "muy_largo",
+     15,
+     10,
+     5
+    ],
+    [
+     "no_me_convence",
+     "no_me_gusta",
+     14,
+     10,
+     4
+    ],
+    [
+     "demasiado_llamativo",
+     "muy_serio",
+     12,
+     5,
+     7
+    ],
+    [
+     "no_es_mi_estilo",
+     "no_me_gusta",
+     6,
+     3,
+     3
+    ],
+    [
+     "no_es_mi_estilo",
+     "no_me_convence",
+     3,
+     2,
+     1
+    ],
+    [
+     "muy_serio",
+     "no_me_gusta",
+     2,
+     1,
+     1
+    ],
+    [
+     "muy_corto",
+     "no_me_gusta",
+     2,
+     1,
+     1
+    ],
+    [
+     "no_es_mi_estilo",
+     "no_quiero_ese_color",
+     2,
+     1,
+     1
+    ],
+    [
+     "demasiado_llamativo",
+     "muy_corto",
+     2,
+     1,
+     1
+    ],
+    [
+     "no_me_gusta",
+     "no_quiero_ese_color",
+     2,
+     0,
+     2
+    ]
+   ]
+  },
+  "prueba": {
+   "n": 45,
+   "top1": 0.8667,
+   "top3": 0.9778,
+   "confusiones": [
+    [
+     "no_me_convence",
+     "no_me_gusta",
+     2,
+     1,
+     1
+    ],
+    [
+     "no_es_mi_estilo",
+     "no_me_gusta",
+     1,
+     0,
+     1
+    ],
+    [
+     "muy_corto",
+     "no_me_gusta",
+     1,
+     0,
+     1
+    ],
+    [
+     "muy_corto",
+     "muy_largo",
+     1,
+     1,
+     0
+    ],
+    [
+     "muy_serio",
+     "no_me_gusta",
+     1,
+     1,
+     0
+    ]
+   ],
+   "fallos": [
+    [
+     "ese modelo no me atrae",
+     "no_me_gusta",
+     "no_es_mi_estilo",
+     0.937
+    ],
+    [
+     "ese esta horrible, no gracias",
+     "no_me_gusta",
+     "muy_corto",
+     0.923
+    ],
+    [
+     "la verdad ese no me cayo bien",
+     "no_me_gusta",
+     "no_me_convence",
+     0.925
+    ],
+    [
+     "quiero uno mas largo, ese es corto",
+     "muy_corto",
+     "muy_largo",
+     0.955
+    ],
+    [
+     "me parece aburrido",
+     "muy_serio",
+     "no_me_gusta",
+     0.922
+    ],
+    [
+     "no acaba de agradarme",
+     "no_me_convence",
+     "no_me_gusta",
+     0.939
+    ]
+   ],
+   "tomadas_por_ninguno": 0,
+   "por_intencion": {
+    "no_me_gusta": 0.4,
+    "no_es_mi_estilo": 1.0,
+    "muy_largo": 1.0,
+    "muy_corto": 0.8,
+    "muy_serio": 0.8,
+    "demasiado_llamativo": 1.0,
+    "no_quiero_ese_color": 1.0,
+    "no_me_convence": 0.8,
+    "muestrame_otro": 1.0
+   },
+   "abstiene": 0.2667
+  },
+  "curva_score": [
+   [
+    0.74,
+    1.0,
+    0.8666666666666667
+   ],
+   [
+    0.76,
+    1.0,
+    0.8666666666666667
+   ],
+   [
+    0.78,
+    1.0,
+    0.8666666666666667
+   ],
+   [
+    0.8,
+    1.0,
+    0.8666666666666667
+   ],
+   [
+    0.82,
+    1.0,
+    0.8666666666666667
+   ],
+   [
+    0.84,
+    1.0,
+    0.8666666666666667
+   ],
+   [
+    0.86,
+    1.0,
+    0.8666666666666667
+   ],
+   [
+    0.88,
+    1.0,
+    0.8666666666666667
+   ],
+   [
+    0.9,
+    0.9777777777777777,
+    0.8636363636363636
+   ],
+   [
+    0.92,
+    0.8444444444444444,
+    0.8421052631578947
+   ],
+   [
+    0.94,
+    0.4,
+    0.9444444444444444
+   ],
+   [
+    0.96,
+    0.0,
+    NaN
+   ]
+  ],
+  "curva_margen": [
+   [
+    0.0,
+    1.0,
+    0.8666666666666667
+   ],
+   [
+    0.005,
+    0.8444444444444444,
+    0.9473684210526315
+   ],
+   [
+    0.01,
+    0.6888888888888889,
+    0.967741935483871
+   ],
+   [
+    0.015,
+    0.5111111111111111,
+    1.0
+   ],
+   [
+    0.02,
+    0.37777777777777777,
+    1.0
+   ],
+   [
+    0.03,
+    0.17777777777777778,
+    1.0
+   ],
+   [
+    0.04,
+    0.06666666666666667,
+    1.0
+   ],
+   [
+    0.05,
+    0.044444444444444446,
+    1.0
+   ]
+  ],
+  "calibracion": {
+   "score": 0.9015,
+   "margen": 0.0085,
+   "cobertura": 0.7333,
+   "precision": 0.9697,
+   "falsos_positivos": 0.0,
+   "cumple": true
+  },
+  "calibracion_cruzada": {
+   "cobertura": 0.8240740740740741,
+   "precision": 0.914860681114551,
+   "falsos_positivos": 0.0
+  },
+  "con_umbrales": {
+   "score": 0.9015,
+   "margen": 0.0085,
+   "cobertura": 0.7333,
+   "precision": 0.9697
+  },
+  "ruido": {
+   "fuera_de_giro": {
+    "n": 61,
+    "falsos_positivos": 0.0,
+    "se_lleva_ninguno": 0.9508
+   },
+   "otros_catalogos_no_construidos": {
+    "n": 40,
+    "falsos_positivos": 0.05,
+    "se_lleva_ninguno": 0.9
+   },
+   "frases_de_otros_catalogos_construidos": {
+    "n": 88,
+    "falsos_positivos": 0.0341,
+    "se_lleva_ninguno": 0.8409
+   }
+  }
+ },
+ "referencias_contextuales": {
+  "catalogo": "referencias_contextuales",
+  "intenciones": 10,
+  "ejemplos": 249,
+  "metodo": "hibrido",
+  "por_intencion": {
+   "este_ese": 26,
+   "el_otro": 22,
+   "ordinal": 29,
+   "arriba_abajo": 22,
+   "por_color": 28,
+   "el_de_la_foto": 22,
+   "el_anterior": 22,
+   "por_codigo_nombre": 22,
+   "plural_todos": 26,
+   "por_atributo": 30
+  },
+  "loo": {
+   "top1": 0.8675,
+   "top3": 0.9799,
+   "n": 249,
+   "confusiones": [
+    [
+     "ordinal",
+     "plural_todos",
+     7,
+     4,
+     3
+    ],
+    [
+     "el_anterior",
+     "ordinal",
+     4,
+     2,
+     2
+    ],
+    [
+     "por_atributo",
+     "por_color",
+     3,
+     1,
+     2
+    ],
+    [
+     "arriba_abajo",
+     "por_atributo",
+     3,
+     0,
+     3
+    ],
+    [
+     "el_otro",
+     "ordinal",
+     2,
+     2,
+     0
+    ],
+    [
+     "este_ese",
+     "por_color",
+     2,
+     0,
+     2
+    ],
+    [
+     "el_de_la_foto",
+     "por_atributo",
+     2,
+     1,
+     1
+    ],
+    [
+     "por_codigo_nombre",
+     "por_color",
+     2,
+     2,
+     0
+    ],
+    [
+     "este_ese",
+     "por_atributo",
+     1,
+     1,
+     0
+    ],
+    [
+     "el_anterior",
+     "este_ese",
+     1,
+     0,
+     1
+    ]
+   ]
+  },
+  "prueba": {
+   "n": 50,
+   "top1": 0.84,
+   "top3": 0.98,
+   "confusiones": [
+    [
+     "el_de_la_foto",
+     "este_ese",
+     2,
+     1,
+     1
+    ],
+    [
+     "el_otro",
+     "ordinal",
+     1,
+     1,
+     0
+    ],
+    [
+     "este_ese",
+     "por_color",
+     1,
+     0,
+     1
+    ],
+    [
+     "ordinal",
+     "por_color",
+     1,
+     0,
+     1
+    ],
+    [
+     "el_anterior",
+     "este_ese",
+     1,
+     1,
+     0
+    ],
+    [
+     "el_anterior",
+     "plural_todos",
+     1,
+     0,
+     1
+    ],
+    [
+     "el_otro",
+     "plural_todos",
+     1,
+     0,
+     1
+    ]
+   ],
+   "fallos": [
+    [
+     "ese nomas q esta en la foto de arriba",
+     "este_ese",
+     "el_de_la_foto",
+     0.921
+    ],
+    [
+     "la otra opcion mejor",
+     "el_otro",
+     "ordinal",
+     0.929
+    ],
+    [
+     "ese de negro",
+     "por_color",
+     "este_ese",
+     0.93
+    ],
+    [
+     "el champagne, tienes en M?",
+     "por_color",
+     "ordinal",
+     0.875
+    ],
+    [
+     "ese de mi captura",
+     "el_de_la_foto",
+     "este_ese",
+     0.92
+    ],
+    [
+     "aquel vestido que viste ahorita",
+     "el_anterior",
+     "este_ese",
+     0.914
+    ],
+    [
+     "los tres que me enseñaste",
+     "plural_todos",
+     "el_anterior",
+     0.914
+    ],
+    [
+     "dame precio de todos",
+     "plural_todos",
+     "el_otro",
+     0.873
+    ]
+   ],
+   "tomadas_por_ninguno": 2,
+   "por_intencion": {
+    "este_ese": 0.8,
+    "el_otro": 0.8,
+    "ordinal": 1.0,
+    "arriba_abajo": 1.0,
+    "por_color": 0.6,
+    "el_de_la_foto": 0.8,
+    "el_anterior": 0.8,
+    "por_codigo_nombre": 1.0,
+    "plural_todos": 0.6,
+    "por_atributo": 1.0
+   },
+   "abstiene": 0.12
+  },
+  "curva_score": [
+   [
+    0.74,
+    0.96,
+    0.875
+   ],
+   [
+    0.76,
+    0.96,
+    0.875
+   ],
+   [
+    0.78,
+    0.96,
+    0.875
+   ],
+   [
+    0.8,
+    0.96,
+    0.875
+   ],
+   [
+    0.82,
+    0.96,
+    0.875
+   ],
+   [
+    0.84,
+    0.96,
+    0.875
+   ],
+   [
+    0.86,
+    0.96,
+    0.875
+   ],
+   [
+    0.88,
+    0.96,
+    0.875
+   ],
+   [
+    0.9,
+    0.94,
+    0.8723404255319149
+   ],
+   [
+    0.92,
+    0.58,
+    0.8620689655172413
+   ],
+   [
+    0.94,
+    0.14,
+    1.0
+   ],
+   [
+    0.96,
+    0.0,
+    NaN
+   ]
+  ],
+  "curva_margen": [
+   [
+    0.0,
+    0.96,
+    0.875
+   ],
+   [
+    0.005,
+    0.86,
+    0.9534883720930233
+   ],
+   [
+    0.01,
+    0.82,
+    0.975609756097561
+   ],
+   [
+    0.015,
+    0.72,
+    1.0
+   ],
+   [
+    0.02,
+    0.62,
+    1.0
+   ],
+   [
+    0.03,
+    0.38,
+    1.0
+   ],
+   [
+    0.04,
+    0.1,
+    1.0
+   ],
+   [
+    0.05,
+    0.04,
+    1.0
+   ]
+  ],
+  "calibracion": {
+   "score": 0.8702,
+   "margen": 0.0021,
+   "cobertura": 0.88,
+   "precision": 0.9545,
+   "falsos_positivos": 0.082,
+   "cumple": true
+  },
+  "calibracion_cruzada": {
+   "cobertura": 0.875,
+   "precision": 0.9265350877192983,
+   "falsos_positivos": 0.06734913793103448
+  },
+  "con_umbrales": {
+   "score": 0.8702,
+   "margen": 0.0021,
+   "cobertura": 0.88,
+   "precision": 0.9545
+  },
+  "ruido": {
+   "fuera_de_giro": {
+    "n": 61,
+    "falsos_positivos": 0.082,
+    "se_lleva_ninguno": 0.9016
+   },
+   "otros_catalogos_no_construidos": {
+    "n": 40,
+    "falsos_positivos": 0.025,
+    "se_lleva_ninguno": 0.975
+   },
+   "frases_de_otros_catalogos_construidos": {
+    "n": 87,
+    "falsos_positivos": 0.1839,
+    "se_lleva_ninguno": 0.7701
+   }
+  }
+ },
+ "senales_compra": {
+  "catalogo": "senales_compra",
+  "intenciones": 11,
+  "ejemplos": 278,
+  "metodo": "hibrido",
+  "por_intencion": {
+   "solo_mirando": 28,
+   "pide_opciones": 26,
+   "interes_gusto": 26,
+   "pregunta_precio": 22,
+   "pregunta_disponibilidad_talla": 22,
+   "pregunta_envio": 22,
+   "pide_probarse": 26,
+   "quiere_separar": 30,
+   "quiere_comprar": 28,
+   "pregunta_pago": 26,
+   "pago_realizado": 22
+  },
+  "loo": {
+   "top1": 0.8885,
+   "top3": 0.9928,
+   "n": 278,
+   "confusiones": [
+    [
+     "quiere_comprar",
+     "quiere_separar",
+     6,
+     1,
+     5
+    ],
+    [
+     "pago_realizado",
+     "quiere_separar",
+     4,
+     1,
+     3
+    ],
+    [
+     "pide_opciones",
+     "pregunta_disponibilidad_talla",
+     3,
+     2,
+     1
+    ],
+    [
+     "quiere_comprar",
+     "solo_mirando",
+     2,
+     0,
+     2
+    ],
+    [
+     "pide_probarse",
+     "solo_mirando",
+     2,
+     0,
+     2
+    ],
+    [
+     "interes_gusto",
+     "quiere_comprar",
+     2,
+     2,
+     0
+    ],
+    [
+     "pide_opciones",
+     "quiere_comprar",
+     1,
+     1,
+     0
+    ],
+    [
+     "interes_gusto",
+     "pide_opciones",
+     1,
+     0,
+     1
+    ],
+    [
+     "interes_gusto",
+     "solo_mirando",
+     1,
+     1,
+     0
+    ],
+    [
+     "pregunta_precio",
+     "quiere_separar",
+     1,
+     1,
+     0
+    ]
+   ]
+  },
+  "prueba": {
+   "n": 55,
+   "top1": 0.9455,
+   "top3": 1.0,
+   "confusiones": [
+    [
+     "pago_realizado",
+     "pregunta_pago",
+     2,
+     0,
+     2
+    ],
+    [
+     "pregunta_envio",
+     "solo_mirando",
+     1,
+     1,
+     0
+    ]
+   ],
+   "fallos": [
+    [
+     "lo paso a buscar yo misma o solo envian?",
+     "pregunta_envio",
+     "solo_mirando",
+     0.903
+    ],
+    [
+     "mandame el celular al q yapear",
+     "pregunta_pago",
+     "pago_realizado",
+     0.907
+    ],
+    [
+     "dame el yape",
+     "pregunta_pago",
+     "pago_realizado",
+     0.918
+    ]
+   ],
+   "tomadas_por_ninguno": 1,
+   "por_intencion": {
+    "solo_mirando": 1.0,
+    "pide_opciones": 1.0,
+    "interes_gusto": 1.0,
+    "pregunta_precio": 1.0,
+    "pregunta_disponibilidad_talla": 1.0,
+    "pregunta_envio": 0.8,
+    "pide_probarse": 1.0,
+    "quiere_separar": 1.0,
+    "quiere_comprar": 1.0,
+    "pregunta_pago": 0.6,
+    "pago_realizado": 1.0
+   },
+   "abstiene": 0.0545
+  },
+  "curva_score": [
+   [
+    0.74,
+    0.9818181818181818,
+    0.9444444444444444
+   ],
+   [
+    0.76,
+    0.9818181818181818,
+    0.9444444444444444
+   ],
+   [
+    0.78,
+    0.9818181818181818,
+    0.9444444444444444
+   ],
+   [
+    0.8,
+    0.9818181818181818,
+    0.9444444444444444
+   ],
+   [
+    0.82,
+    0.9818181818181818,
+    0.9444444444444444
+   ],
+   [
+    0.84,
+    0.9818181818181818,
+    0.9444444444444444
+   ],
+   [
+    0.86,
+    0.9818181818181818,
+    0.9444444444444444
+   ],
+   [
+    0.88,
+    0.9818181818181818,
+    0.9444444444444444
+   ],
+   [
+    0.9,
+    0.9454545454545454,
+    0.9423076923076923
+   ],
+   [
+    0.92,
+    0.7636363636363637,
+    1.0
+   ],
+   [
+    0.94,
+    0.2727272727272727,
+    1.0
+   ],
+   [
+    0.96,
+    0.01818181818181818,
+    1.0
+   ]
+  ],
+  "curva_margen": [
+   [
+    0.0,
+    0.9818181818181818,
+    0.9444444444444444
+   ],
+   [
+    0.005,
+    0.9454545454545454,
+    0.9807692307692307
+   ],
+   [
+    0.01,
+    0.8727272727272727,
+    1.0
+   ],
+   [
+    0.015,
+    0.7636363636363637,
+    1.0
+   ],
+   [
+    0.02,
+    0.6363636363636364,
+    1.0
+   ],
+   [
+    0.03,
+    0.45454545454545453,
+    1.0
+   ],
+   [
+    0.04,
+    0.16363636363636364,
+    1.0
+   ],
+   [
+    0.05,
+    0.09090909090909091,
+    1.0
+   ]
+  ],
+  "calibracion": {
+   "score": 0.8934,
+   "margen": 0.0032,
+   "cobertura": 0.9455,
+   "precision": 0.9615,
+   "falsos_positivos": 0.0656,
+   "cumple": true
+  },
+  "calibracion_cruzada": {
+   "cobertura": 0.946969696969697,
+   "precision": 0.967741935483871,
+   "falsos_positivos": 0.11666666666666667
+  },
+  "con_umbrales": {
+   "score": 0.8934,
+   "margen": 0.0032,
+   "cobertura": 0.9455,
+   "precision": 0.9615
+  },
+  "ruido": {
+   "fuera_de_giro": {
+    "n": 61,
+    "falsos_positivos": 0.0656,
+    "se_lleva_ninguno": 0.6885
+   },
+   "otros_catalogos_no_construidos": {
+    "n": 40,
+    "falsos_positivos": 0.225,
+    "se_lleva_ninguno": 0.75
+   },
+   "frases_de_otros_catalogos_construidos": {
+    "n": 86,
+    "falsos_positivos": 0.0233,
+    "se_lleva_ninguno": 0.8837
+   }
+  }
+ }
+}

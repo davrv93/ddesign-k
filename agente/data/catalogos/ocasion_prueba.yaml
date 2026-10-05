@@ -1,0 +1,108 @@
+# Prueba aparte de ocasión. Nunca entra al entrenamiento. SINTÉTICO.
+catalogo: ocasion
+intenciones:
+  matrimonio:
+    ejemplos:
+      - "me casan a una amiga y soy invitada, q uso"
+      - "tengo boda este fin de semana"
+      - "matrimonio en una playa de mi tío"
+      - "voy a ser madrina del matri de mi hermana"
+      - "invitada a boda de noche"
+  graduacion:
+    ejemplos:
+      - "q me pongo para mi graduación"
+      - "mi hija se gradúa de la universidad"
+      - "ceremonia de grado en agosto"
+      - "voy a la gradu de mi primo"
+      - "me gradúo y quiero vestido para la foto"
+  quinceanos:
+    ejemplos:
+      - "quiero algo para unos quince años"
+      - "mi prima cumple 15 y me invito"
+      - "quinceañera en el salon de eventos"
+      - "para mis xv, q me recomiendan"
+      - "los 15 de mi ahijada son en octubre"
+  cumpleanos:
+    ejemplos:
+      - "voy al cumple de mi cuñada"
+      - "mi cumpleaños es la proxima semana"
+      - "festejo mi cumple con mis amigas"
+      - "cumple de mi esposo, celebramos en restaurante"
+      - "es para mi cumple numero 35"
+  bautizo:
+    ejemplos:
+      - "mi ahijadito se bautiza en dos semanas"
+      - "me eligieron madrina para bautizar a la bebe"
+      - "mi hijito se bautiza el domingo"
+      - "voy a un bautizo en iglesia y luego almuerzo"
+      - "algo para el bautizo de mi nietecito"
+  cena:
+    ejemplos:
+      - "cena con mi novio en un restaurante"
+      - "salimos a cenar por nuestro aniversario"
+      - "cena romantica de pareja"
+      - "una cena formal con la familia de mi esposo"
+      - "voy a cenar con amigas el viernes"
+  fiesta:
+    ejemplos:
+      - "voy a una fiesta el sabado en la noche"
+      - "salgo de fiesta con mis amigas"
+      - "es la despedida de soltera de mi prima"
+      - "para ir a bailar a una discoteca"
+      - "fiesta de año nuevo con amigos"
+  gala:
+    ejemplos:
+      - "me invitaron a una gala"
+      - "gala anual de mi club"
+      - "cena de gala y baile"
+      - "me van a premiar en una ceremonia con tapete rojo"
+      - "es una noche de gala en el teatro"
+  evento_corporativo:
+    ejemplos:
+      - "es una actividad de la empresa donde trabajo"
+      - "tengo un evento de mi oficina"
+      - "reunion corporativa con clientes"
+      - "para una conferencia de trabajo"
+      - "cena de fin de año de la compañia"
+  iglesia:
+    ejemplos:
+      - "voy a la iglesia el domingo"
+      - "para una misa"
+      - "comunion de mi hijita en la parroquia"
+      - "ceremonia religiosa en la parroquia"
+      - "algo para ir a misa de un difunto"
+  playa:
+    ejemplos:
+      - "me voy a la playa"
+      - "viaje a Máncora con mi familia"
+      - "vacaciones en un balneario"
+      - "para ir a la piscina de un hotel"
+      - "una pool party en verano"
+  sesion_fotos:
+    ejemplos:
+      - "tengo una sesion fotografica"
+      - "voy a hacerme fotos con un fotografo"
+      - "sesion de pareja con fotos"
+      - "quiero algo para unas fotos para redes"
+      - "un photoshoot el sabado"
+  civil:
+    ejemplos:
+      - "voy a casarme en el registro, solo civil"
+      - "mi boda civil es en la municipalidad"
+      - "mi hermano firma el acta y yo soy su testigo"
+      - "matrimonio civil con pocos invitados"
+      - "quiero vestido para el civil"
+  recepcion:
+    ejemplos:
+      - "solo voy a la recepción"
+      - "hay recepción luego de la misa"
+      - "recepcion con cóctel y brindis"
+      - "para una recepción en la tarde"
+      - "evento de recepción en un hotel"
+  fiesta_promocion:
+    ejemplos:
+      - "es la fiesta de los de 5to, nuestra promo"
+      - "el cierre de mi promo va a ser en noviembre, necesito vestido"
+      - "la cena de los egresados de mi aula"
+      - "el baile de los que terminamos el cole"
+      - "fiesta de egresados de 5to año"

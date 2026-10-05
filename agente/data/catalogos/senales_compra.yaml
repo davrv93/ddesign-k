@@ -1,0 +1,376 @@
+# Catálogos 8 (señales de interés / de compra) y 20 (etapa comercial) de CATALOGOS_PROPUESTOS.md, en uno: cada intención
+# trae `strength` (0–1: qué tan cerca de comprar) y `stage` (etapa comercial del documento: DISCOVERY → NEED_IDENTIFIED →
+# RECOMMENDATION → EVALUATION → OBJECTION → PURCHASE_INTENT → CHECKOUT → POSTSALE) y `etapa_bot` (las etapas del agente:
+# prospeccion | seguimiento | cierre | venta_confirmada). Los valores de `strength` son una PROPUESTA ordinal para decidir cuándo
+# dejar de preguntar y cerrar, no una probabilidad medida. Frases SINTÉTICAS.
+catalogo: senales_compra
+version: 1
+descripcion: "Señales de interés y de compra con fuerza y etapa. Nunca confirma un pedido: eso lo decide la máquina de etapas."
+minimo_ejemplos: 20
+intenciones:
+  solo_mirando:
+    descripcion: Solo está mirando / explorando
+    slots: {}
+    stage: DISCOVERY
+    strength: 0.05
+    etapa_bot: prospeccion
+    accion: no_presionar
+    ejemplos:
+      - "solo estoy mirando"
+      - "solo veo nomas"
+      - "estoy dando una vuelta por aca"
+      - "solo curioseando"
+      - "por ahora solo miro"
+      - "solo quería ver q tienen"
+      - "no voy a comprar todavia, solo miro"
+      - "estoy viendo opciones nomas"
+      - "solo averiguando"
+      - "gracias, solo estoy viendo"
+      - "recien estoy empezando a buscar"
+      - "veo y despues veo si compro"
+      - "solo para tener una idea de precios"
+      - "estoy cotizando nomas"
+      - "nada, solo mirando"
+      - "todavía no tengo apuro, solo veo"
+      - "me llego un anuncio y quise ver"
+      - "estoy comparando precios, solo veo"
+      - "no estoy comprando ahora, solo mirando vestidos"
+      - "solo entre a ver"
+      - "solo de paso, miro"
+      - "por curiosidad nomas"
+      - "nada, miraba nomas"
+      - "solo veia las fotos"
+      - "estoy revisando, no se si compre"
+      - "de momento solo observo"
+      - "solo curiosidad, gracias"
+      - "veo opciones y luego decido"
+  pide_opciones:
+    descripcion: Quiere catálogo / recomendación / ver modelos
+    slots: {}
+    stage: DISCOVERY
+    strength: 0.25
+    etapa_bot: prospeccion
+    accion: mostrar_opciones
+    ejemplos:
+      - "q vestidos tienes?"
+      - "me muestras tu catalogo?"
+      - "quiero ver modelos"
+      - "q me recomiendas?"
+      - "pasame fotos de lo q tienes"
+      - "tienes vestidos de fiesta?"
+      - "q hay de nuevo?"
+      - "me mandas opciones?"
+      - "que modelos manejan"
+      - "quiero ver los vestidos largos"
+      - "mandame lo mas vendido"
+      - "q tienen disponible?"
+      - "ensename lo que hay"
+      - "tienes algo para mi?"
+      - "recomiendame un vestido"
+      - "hola, q vestidos tienen?"
+      - "dame ideas de vestidos"
+      - "catalogo pls"
+      - "me puedes mostrar las novedades?"
+      - "q opciones hay en color negro?"
+      - "quiero ver todo lo q tengas en vestidos"
+      - "aconsejame algo"
+      - "q tienen en vestidos largos negros?"
+      - "muestrame lo mas bonito q tengas"
+      - "tienes modelos para fiesta?"
+      - "me ayudas a elegir un vestido?"
+  interes_gusto:
+    descripcion: Le gusta / le encanta (interés sin pedir nada más)
+    slots: {producto: opcional}
+    stage: EVALUATION
+    strength: 0.45
+    etapa_bot: seguimiento
+    accion: reforzar_interes
+    ejemplos:
+      - "me gusta"
+      - "q lindo"
+      - "me encanta"
+      - "ese si me gusta"
+      - "esta precioso"
+      - "ay q bonito"
+      - "me gustó mucho"
+      - "uy q hermoso"
+      - "me parece lindisimo"
+      - "esta divino"
+      - "ese me llamo la atencion"
+      - "me quede enamorada de ese"
+      - "esta bellisimo"
+      - "me fascino"
+      - "q bello el vestido"
+      - "wow, q lindo diseño"
+      - "me gusta ese modelo"
+      - "ese esta bacan"
+      - "me gusta mas ese q el otro"
+      - "esta chevere, me gusta"
+      - "justo lo q buscaba, esta lindo"
+      - "ese si esta bonito"
+      - "me gusto el diseño"
+      - "esta lindo ese modelo"
+      - "uy me encanta como se ve"
+      - "ese es el q mas me gusto"
+  pregunta_precio:
+    descripcion: Pregunta cuánto cuesta
+    slots: {producto: opcional}
+    stage: EVALUATION
+    strength: 0.50
+    etapa_bot: seguimiento
+    accion: informar_precio
+    ejemplos:
+      - "cuanto cuesta?"
+      - "q precio tiene?"
+      - "a cuanto esta?"
+      - "precio?"
+      - "cuanto vale ese vestido"
+      - "me dices el precio porfa"
+      - "cuanto sale?"
+      - "en cuanto me lo dejas?"
+      - "cuanto es ese?"
+      - "q costo tiene el de la foto?"
+      - "precio del V42"
+      - "a cuanto el vestido negro"
+      - "cuanto cuesta el largo?"
+      - "me pasas precios?"
+      - "cuanto por el conjunto"
+      - "valor del vestido?"
+      - "cuanto seria?"
+      - "pregunto el precio nomas"
+      - "cuanto cuestan los vestidos?"
+      - "q tal de precio?"
+      - "y de precio como esta?"
+      - "cuánto te debo por ese?"
+  pregunta_disponibilidad_talla:
+    descripcion: Pregunta si hay su talla / stock
+    slots: {producto: opcional, talla: opcional}
+    stage: EVALUATION
+    strength: 0.65
+    etapa_bot: seguimiento
+    accion: consultar_stock_talla
+    ejemplos:
+      - "tienes mi talla?"
+      - "hay en M?"
+      - "queda en talla S?"
+      - "tienen en talla L?"
+      - "hay stock del vestido?"
+      - "lo tienen disponible?"
+      - "todavia hay de ese?"
+      - "en q tallas queda?"
+      - "tienen la talla 38?"
+      - "me queda alguna talla en ese?"
+      - "hay en mi talla, la M?"
+      - "ese esta disponible en talla S?"
+      - "q tallas te quedan del negro?"
+      - "queda en stock?"
+      - "ya no hay de ese modelo?"
+      - "hay talla M del azul?"
+      - "tienes en XL?"
+      - "esta agotado o aun hay?"
+      - "disponible en M?"
+      - "tendras en talla grande?"
+      - "alguna talla S o M q quede?"
+      - "ese lo tienes todavia?"
+  pregunta_envio:
+    descripcion: Pregunta por envío / delivery
+    slots: {ciudad: opcional}
+    stage: PURCHASE_INTENT
+    strength: 0.70
+    etapa_bot: cierre
+    accion: informar_envio
+    ejemplos:
+      - "hacen envio?"
+      - "hacen delivery?"
+      - "envian a provincia?"
+      - "cuanto cuesta el envio?"
+      - "llega a Arequipa?"
+      - "en cuanto tiempo llega?"
+      - "puedo recogerlo en tienda?"
+      - "hacen envios a todo el Peru?"
+      - "cuanto demora en llegar a mi casa?"
+      - "mandan por olva?"
+      - "el envio a Trujillo cuanto es?"
+      - "llegara antes del sabado?"
+      - "me lo pueden mandar a mi trabajo?"
+      - "hacen entregas en San Borja?"
+      - "como es el envio?"
+      - "delivery a Surco cuanto cuesta?"
+      - "puedo ir a recogerlo?"
+      - "envian por shalom?"
+      - "tienen servicio a domicilio?"
+      - "cuando llegaria si compro hoy?"
+      - "el envio esta incluido?"
+      - "a q hora entregan?"
+  pide_probarse:
+    descripcion: Quiere probárselo / ir al showroom
+    slots: {producto: opcional}
+    stage: PURCHASE_INTENT
+    strength: 0.80
+    etapa_bot: cierre
+    accion: agendar_cita
+    ejemplos:
+      - "puedo ir a probarmelo?"
+      - "me lo puedo medir antes?"
+      - "quiero probarmelo"
+      - "tienen showroom?"
+      - "puedo pasar a verlo?"
+      - "a q hora puedo ir a probarmelo?"
+      - "puedo ir hoy a medirmelo?"
+      - "tienen probador?"
+      - "quiero ir a verlo en persona"
+      - "se puede probar antes de comprar?"
+      - "agendame una cita para probarlo"
+      - "puedo pasar mañana a probarmelo?"
+      - "dónde queda para ir a medirme el vestido?"
+      - "voy a ir a probarmelo este sabado"
+      - "me puedo probar 2 o 3?"
+      - "quiero verlo y probarlo, a q hora atienden?"
+      - "reservame cita para probarmelo"
+      - "puedo ir con mi mamá a probarme?"
+      - "necesito probarmelo antes de decidir"
+      - "tienen espejo y probador para ir?"
+      - "hoy salgo temprano, puedo pasar a probarmelo?"
+      - "separame una hora para ir a medirmelo"
+      - "cuando puedo pasar a medirme?"
+      - "me dan cita para probarme?"
+      - "a q hora atienden en el showroom?"
+      - "quiero ir a la tienda a ver como me queda"
+  quiere_separar:
+    descripcion: Quiere que se lo separen / reserven
+    slots: {producto: opcional, talla: opcional}
+    stage: PURCHASE_INTENT
+    strength: 0.90
+    etapa_bot: cierre
+    accion: reservar_prenda
+    ejemplos:
+      - "me lo separas?"
+      - "separamelo por favor"
+      - "reservame ese vestido"
+      - "me lo guardas?"
+      - "puedes separarme el de talla M?"
+      - "separa el negro para mi"
+      - "guardamelo hasta el sabado"
+      - "me lo reservas hoy?"
+      - "ya, separamelo"
+      - "q no se lo lleve otra, separamelo"
+      - "apartame ese"
+      - "puedes guardarmelo mientras voy?"
+      - "reservamelo q paso mañana"
+      - "dejalo separado a mi nombre"
+      - "me lo dejas apartado hasta el viernes?"
+      - "sepárame uno en M"
+      - "quiero q me lo guardes"
+      - "reservalo, voy a pasar a recogerlo"
+      - "necesito q me lo separes ya"
+      - "me lo puedes apartar hasta q cobre?"
+      - "aparta el vestido q ya voy"
+      - "guardame ese q lo llevo esta semana"
+      - "puedes guardarme el vestido unos dias?"
+      - "separa ese hasta q te haga el pago"
+      - "quiero q lo reserves a mi nombre"
+      - "dejame ese apartado, mañana lo recojo"
+      - "anotame ese y no lo vendas"
+      - "mantenmelo guardado"
+      - "apartamelo hasta el fin de semana"
+      - "me lo retienes unos dias?"
+  quiere_comprar:
+    descripcion: Quiere comprar / se lo lleva
+    slots: {producto: opcional, talla: opcional}
+    stage: PURCHASE_INTENT
+    strength: 0.93
+    etapa_bot: cierre
+    accion: iniciar_pedido
+    ejemplos:
+      - "quiero ese"
+      - "me lo llevo"
+      - "lo compro"
+      - "dame ese"
+      - "ese me lo quedo"
+      - "quiero comprarlo"
+      - "voy a llevar ese vestido"
+      - "listo, me quedo con el negro"
+      - "ya, lo quiero en talla M"
+      - "quiero el V42"
+      - "me lo llevo en la M"
+      - "decidido, ese es"
+      - "ya me decidi, lo compro"
+      - "ese mismo, como hago el pedido?"
+      - "me lo quedo, q hago ahora?"
+      - "perfecto, lo quiero"
+      - "armame el pedido de ese"
+      - "ok lo llevo"
+      - "anotame uno en talla S"
+      - "vamos con ese entonces"
+      - "ya pues, ese lo compro"
+      - "va, me lo llevo"
+      - "ya, ese quiero"
+      - "lo quiero ya, como lo pido?"
+      - "ok va ese, hagamos el pedido"
+      - "quiero llevarme ese vestido"
+      - "me animo, lo llevo"
+      - "perfecto, hazme el pedido"
+  pregunta_pago:
+    descripcion: Pregunta cómo pagar / dónde yapear
+    slots: {}
+    stage: CHECKOUT
+    strength: 0.95
+    etapa_bot: cierre
+    accion: informar_pago
+    ejemplos:
+      - "como pago?"
+      - "donde yapeo?"
+      - "me pasas tu yape?"
+      - "numero de cuenta?"
+      - "aceptan plin?"
+      - "puedo pagar con tarjeta?"
+      - "como hago el pago?"
+      - "a q numero te yapeo"
+      - "a q cuenta transfiero?"
+      - "pasame los datos para depositar"
+      - "puedo pagar en cuotas?"
+      - "cual es el yape?"
+      - "hay pago contra entrega?"
+      - "aceptan transferencia interbancaria?"
+      - "quiero pagar, dime como"
+      - "dame tu numero de yape"
+      - "puedo dejar un adelanto y pagar el resto despues?"
+      - "q medios de pago manejan?"
+      - "paso el pago ahorita, a donde?"
+      - "me das el qr para pagar?"
+      - "voy a depositar, dame la cuenta"
+      - "se puede pagar en efectivo al recoger?"
+      - "q numero de cuenta me das?"
+      - "se paga antes o al recibir?"
+      - "tienes pagolink o yape?"
+      - "como se hace el deposito?"
+  pago_realizado:
+    descripcion: Avisa que ya pagó / manda comprobante
+    slots: {}
+    stage: CHECKOUT
+    strength: 0.99
+    etapa_bot: venta_confirmada
+    accion: verificar_pago
+    ejemplos:
+      - "ya pague"
+      - "ya yapee"
+      - "te acabo de yapear"
+      - "ya hice la transferencia"
+      - "te mando el comprobante"
+      - "listo, ya deposite"
+      - "ya esta el pago, te envio la captura"
+      - "ya te hice el yape"
+      - "pago realizado, revisa por favor"
+      - "ahi te mande la constancia de pago"
+      - "ya cancele el vestido"
+      - "acabo de transferir, confirmame"
+      - "listo, pagado"
+      - "te pase el voucher"
+      - "ya esta pagado, cuando me lo envian?"
+      - "ya deposite el adelanto"
+      - "hice el yape de 150, revisa"
+      - "te envié la captura del pago"
+      - "ya estoy pagando, confirmame cuando te llegue"
+      - "ya hice el plin"
+      - "ya esta la plata, te mando la foto"
+      - "pague por transferencia, ya debe estar"

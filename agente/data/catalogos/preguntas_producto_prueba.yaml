@@ -1,0 +1,182 @@
+# Conjunto de PRUEBA aparte (nunca entra al entrenamiento ni se copia de él; `evaluar --solapes` lo verifica).
+# Redactado después de las ampliaciones, con otras palabras. SINTÉTICO: no hay mensajes de clientas reales.
+catalogo: preguntas_producto
+intenciones:
+  material:
+    ejemplos:
+      - "q tela usan para este?"
+      - "es de poliester o algodon??"
+      - "cual es el tejido"
+      - "me puedes decir qué fibras lleva"
+      - "tela natural o artificial?"
+      - "con q esta fabricado el vestido"
+  textura:
+    ejemplos:
+      - "la tela es agradable al contacto?"
+      - "se siente como lija o es blandita"
+      - "da picazon en la piel sensible?"
+      - "tiene textura suave o rugosa?"
+      - "es muy fresca y suave al tocarla?"
+  elasticidad:
+    ejemplos:
+      - "da de si?"
+      - "tela con elasticidad?"
+      - "es de esas telas q se estiran?"
+      - "tiene spandex para q ceda un poco"
+      - "se ensancha un poco al usarlo?"
+      - "q tan elastica es la tela?"
+  encogimiento:
+    ejemplos:
+      - "se me va a encoger cuando lo lave?"
+      - "reduce de tamaño con los lavados?"
+      - "ya viene encogido de fabrica?"
+      - "cuanto se achica si lo meto al agua caliente"
+      - "mmm y si encoge en la secadora?"
+  color:
+    ejemplos:
+      - "el tono de la foto es el verdadero?"
+      - "en la vida real se ve mas claro o mas oscuro?"
+      - "q otras tonalidades manejan de este modelo"
+      - "la tela brilla o es mate?"
+      - "cambia de color con la luz del dia?"
+  despintado:
+    ejemplos:
+      - "al lavarlo suelta color?"
+      - "puede manchar mis otras prendas en la lavadora"
+      - "el tinte aguanta o se va?"
+      - "se destiñe con el sudor o el calor del cuerpo?"
+      - "con las lavadas va perdiendo color?"
+  resistencia_superficie:
+    ejemplos:
+      - "si me roza la correa de la cartera, se estropea la tela?"
+      - "tiene tendencia a engancharse?"
+      - "se puede rasgar con facilidad?"
+      - "la superficie aguanta el roce con el cinturon del carro"
+      - "si me engancho con un anillo se arruina?"
+  desgaste:
+    ejemplos:
+      - "con el tiempo le salen bolitas?"
+      - "la superficie de la tela va soltando fibras?"
+      - "se ve gastado a la tercera puesta?"
+      - "hace pelusa en las costuras?"
+      - "las axilas se desgastan rapido?"
+  transparencia:
+    ejemplos:
+      - "se ve a traves con la luz?"
+      - "es tela transparente o gruesa?"
+      - "se nota el brasier y el calzon?"
+      - "viene con forro o hay q ponerle algo debajo"
+      - "al sol se trasluce?"
+  caida_peso:
+    ejemplos:
+      - "es pesadito el vestido?"
+      - "como es el peso de la tela?"
+      - "la falda se mueve bien y cae suave?"
+      - "es una tela con volumen o fluida?"
+      - "se siente ligera al llevarla puesta?"
+  tallas:
+    ejemplos:
+      - "q numeros de talla manejan?"
+      - "viene como las tallas normales o mas pequeña?"
+      - "tienen cuadro de medidas?"
+      - "si uso 38 q talla debo pedir"
+      - "cuanto mide la talla S de cintura?"
+      - "estoy entre S y M, cual escojo"
+  ajuste_cuerpo:
+    ejemplos:
+      - "es muy ceñido?"
+      - "me va a marcar las llantitas?"
+      - "queda pegadito en la cadera?"
+      - "es holgado o a la medida?"
+      - "q tan entallado viene?"
+  largo:
+    ejemplos:
+      - "q tan largo es el vestido?"
+      - "con mi altura de 1.58 me llegara al piso?"
+      - "llega al piso o es a media pierna"
+      - "a q altura de la pierna termina?"
+      - "es largo hasta el tobillo o mas corto"
+  busto_escote:
+    ejemplos:
+      - "q forma tiene el escote?"
+      - "con busto amplio me queda comodo?"
+      - "el escote es discreto o bajo?"
+      - "viene con relleno en el busto?"
+      - "puedo usar brasier debajo?"
+  espalda_tirantes_mangas:
+    ejemplos:
+      - "la espalda queda al aire?"
+      - "puedo acortar o alargar las tiras de los hombros?"
+      - "las mangas como son, anchas o ceñidas?"
+      - "tiene hombreras o mangas largas"
+      - "los tirantes se resbalan?"
+  cierre_colocacion:
+    ejemplos:
+      - "como se cierra, con cierre o botones?"
+      - "el cierre esta atras? me costara cerrarlo sola"
+      - "es facil quitarselo y ponerselo?"
+      - "tiene cierre invisible en el costado?"
+      - "se mete por la cabeza?"
+  costuras:
+    ejemplos:
+      - "los acabados se ven prolijos?"
+      - "viene bien cosido por dentro?"
+      - "las costuras estan hechas con cuidado?"
+      - "tiene hilos colgando?"
+      - "como esta la confeccion?"
+  lavado:
+    ejemplos:
+      - "puedo lavarlo en la lavadora?"
+      - "como se debe lavar?"
+      - "agua fria o caliente para lavarlo"
+      - "lo lavo a mano o a maquina?"
+      - "se puede usar cloro?"
+  secado_planchado:
+    ejemplos:
+      - "se puede planchar directamente?"
+      - "va a la secadora o se tiende?"
+      - "a q grado se plancha"
+      - "hay que secarlo en la sombra?"
+      - "lo puedo vaporizar?"
+  arrugas:
+    ejemplos:
+      - "se arruga rapido?"
+      - "al sentarme se me marcan arrugas?"
+      - "si lo llevo en la maleta llega arrugado?"
+      - "es de esas telas q no se planchan?"
+      - "q tanto se amarruga?"
+  comodidad_movimiento:
+    ejemplos:
+      - "puedo bailar toda la noche con el?"
+      - "es incomodo para caminar?"
+      - "tiene abertura en la falda para caminar?"
+      - "se siente calor con esa tela?"
+      - "es comodo para llevarlo todo el dia?"
+  ocasion_uso:
+    ejemplos:
+      - "va bien para un matrimonio?"
+      - "se puede ir con el a un cumple?"
+      - "es muy elegante para una cena casual?"
+      - "sirve para graduacion de noche?"
+      - "lo puedo usar en varias ocasiones?"
+  clima_temporada:
+    ejemplos:
+      - "es calurosa la tela para el verano?"
+      - "abriga lo suficiente para el invierno?"
+      - "sirve para ir a la playa?"
+      - "la tela es transpirable en climas calidos?"
+      - "va a levantarse con el viento?"
+  calidad_durabilidad:
+    ejemplos:
+      - "q tan buena es la calidad?"
+      - "cuanto me va a durar?"
+      - "aguanta muchos lavados sin malograrse?"
+      - "se deforma con el tiempo?"
+      - "la calidad esta a la altura del precio?"
+  detalles_modificaciones:
+    ejemplos:
+      - "trae apliques brillantes en el pecho?"
+      - "se le puede hacer arreglos en la cintura?"
+      - "tiene margen de tela para ensancharlo?"
+      - "puedo acortarlo con una modista?"
+      - "requiere lavado en seco?"

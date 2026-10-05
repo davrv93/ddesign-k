@@ -1,0 +1,413 @@
+# Catálogo 2 de CATALOGOS_PROPUESTOS.md: ocasión (15 intenciones). Frases SINTÉTICAS, redactadas para el entrenamiento;
+# no hay mensajes de clientas reales. Clasifica la ocasión que nombra la clienta; no la pregunta ni la inventa.
+catalogo: ocasion
+version: 1
+descripcion: "Ocasión o evento para el que busca el vestido (matrimonio, graduación, 15 años, promo...)."
+minimo_ejemplos: 20
+intenciones:
+  matrimonio:
+    descripcion: Matrimonio / boda (como invitada, madrina, familiar)
+    slots: {fecha: opcional, dia_noche: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para un matri"
+      - "busco vestido para una boda"
+      - "voy a un matrimonio en diciembre"
+      - "me invitaron a la boda de mi prima"
+      - "necesito algo para un matrimonio de noche"
+      - "soy madrina de boda"
+      - "tengo una boda el 15 y no tengo q ponerme"
+      - "es para el matri de mi mejor amiga"
+      - "para casamiento de mi hermano"
+      - "una boda de dia en el campo"
+      - "voy de invitada a un matrimonio religioso"
+      - "boda de mi tia en provincia"
+      - "me caso en marzo"
+      - "para la boda de un compañero del trabajo"
+      - "tengo matri este sabado, q me recomiendas"
+      - "vestido de invitada a boda"
+      - "es el matrimonio de mi ex jaja q ponerme"
+      - "para ir a un matrimonio elegante"
+      - "mi hermana se casa y soy dama"
+      - "algo para la boda de mis primos"
+      - "van a ser 2 matris este mes"
+      - "para el casorio de una amiga"
+      - "matrimonio de tarde en una hacienda"
+  graduacion:
+    descripcion: Graduación / ceremonia de grado / titulación
+    slots: {fecha: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para mi graduacion"
+      - "me gradúo en julio"
+      - "ceremonia de graduación de la universidad"
+      - "mi hermana se gradua y quiero estar bonita"
+      - "es para la colacion de grados"
+      - "voy a una graduacion de mi hijo"
+      - "termino la carrera y tengo la ceremonia de grado"
+      - "para recibir mi titulo"
+      - "necesito algo para mi gradu"
+      - "graduacion de mi maestria"
+      - "fin de carrera, es mi ceremonia"
+      - "es mi graduación y quiero algo lindo para las fotos con la toga"
+      - "voy a la graduación de mi sobrina"
+      - "sustentacion de tesis y despues la ceremonia"
+      - "me titulo la proxima semana"
+      - "gradu de mi enamorado, voy de invitada"
+      - "se gradua mi mejor amiga"
+      - "graduacion de la universidad en el auditorio"
+      - "tengo q ir a mi graduacion y no se q usar bajo la toga"
+      - "para la cena de graduacion"
+      - "egreso de la universidad"
+      - "ceremonia de graduacion de mi academia"
+  quinceanos:
+    descripcion: Quinceañero / quince años (la quinceañera o invitada)
+    slots: {fecha: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para mis 15"
+      - "mis quince años son en agosto"
+      - "para los 15 de mi sobrina"
+      - "vestido de quinceañera"
+      - "voy a unos quinceaños"
+      - "los quinces de mi prima"
+      - "mi fiesta de 15 años"
+      - "busco algo para mis XV"
+      - "cumplo 15 y quiero un vestido lindo"
+      - "mi hija cumple 15, es para ella"
+      - "vals de 15, q me recomiendas"
+      - "soy dama de los 15 de mi amiga"
+      - "me invitaron a unos 15 años"
+      - "quinceañera de mi ahijada"
+      - "mis 15 en un salon de eventos"
+      - "para mi quinceañero, algo tipo princesa"
+      - "es mi fiesta de quince, q colores estan de moda"
+      - "15 años de mi hermana menor"
+      - "quince años en provincia, hace calor"
+      - "tengo q ir a unos 15 y no quiero repetir vestido"
+      - "para el baile de los quince"
+      - "mi 15 es en 3 meses"
+  cumpleanos:
+    descripcion: Cumpleaños
+    slots: {fecha: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para mi cumple"
+      - "cumpleaños de mi mamá"
+      - "voy a un cumple este fin de semana"
+      - "quiero algo para mi cumpleaños"
+      - "mi cumple es el 20"
+      - "cumplo 30 y quiero celebrarlo"
+      - "voy a festejar mis 40"
+      - "cumple de mi mejor amiga"
+      - "para el cumple de mi enamorado, cena con su familia"
+      - "mi cumpleaños es en febrero"
+      - "para una fiesta de cumpleaños de noche"
+      - "estoy de cumple y quiero estrenar"
+      - "me invitaron a un cumple de adultos"
+      - "cumpleaños de mi suegra"
+      - "celebro mi cumple en un restobar"
+      - "mi cumple 25 es el sábado"
+      - "para el onomastico de mi tía"
+      - "festejo de cumpleaños de mi hermana"
+      - "q me pongo para mi cumple?"
+      - "aniversario de mi cumpleaños jaja, es mi cumple"
+      - "en mi cumple quiero lucir lindisima"
+      - "tengo cumple de una compañera de la u"
+  bautizo:
+    descripcion: Bautizo / bautismo
+    slots: {fecha: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para un bautizo"
+      - "bautizo de mi sobrino"
+      - "soy madrina de bautizo"
+      - "voy al bautizo de mi ahijado"
+      - "bautismo de mi hijo"
+      - "busco algo para el bautizo de mi bebe"
+      - "me invitaron a un bautizo el domingo"
+      - "para la ceremonia del bautizo"
+      - "el bautizo es de dia, en la iglesia y luego almuerzo"
+      - "mi bebe se bautiza en mayo"
+      - "madrina del bautizo de la hija de mi prima"
+      - "para el bautizo de mi nieta"
+      - "bautizo en familia, algo elegante pero sencillo"
+      - "tengo bautizo y no se q ponerme"
+      - "voy a bautizar a mi hijo, soy la mamá"
+      - "bautizo de mi sobrinita este sabado"
+      - "q uso para ir de invitada a un bautizo"
+      - "bautizo en la parroquia del barrio"
+      - "para el bauitzo de mi ahijada"
+      - "el bautizo de mi bebé es en junio, me ayudas con el vestido?"
+      - "para la fiesta despues del bautizo"
+      - "bautizo y almuerzo familiar"
+  cena:
+    descripcion: Cena (elegante, romántica, de aniversario)
+    slots: {fecha: opcional, dia_noche: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para una cena"
+      - "cena elegante con mi pareja"
+      - "tengo una cena de aniversario"
+      - "salimos a cenar a un restaurante fino"
+      - "cena romántica el sabado"
+      - "cena con mis suegros"
+      - "una cena en un hotel"
+      - "cenita con amigas"
+      - "voy a cenar por mi cumpleaños de pareja"
+      - "algo para una cena formal"
+      - "me invitaron a cenar a un lugar elegante"
+      - "cena familiar de fin de año"
+      - "cena de navidad en casa de mi tia"
+      - "para una cena en rooftop"
+      - "cena de San Valentin"
+      - "cena de reencuentro con mis amigas del cole"
+      - "necesito un vestido para salir a cenar"
+      - "cena de compromiso"
+      - "cena en casa de los padres de mi novio"
+      - "salida a cenar con mi esposo, quiero verme bien"
+      - "cena de pareja en un restaurante con vista"
+      - "una cena tranquila, nada de fiesta"
+  fiesta:
+    descripcion: Fiesta (salir a bailar, reunión de amigas, despedida de soltera)
+    slots: {fecha: opcional, dia_noche: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para una fiesta"
+      - "tengo fiesta este sabado"
+      - "voy a salir a bailar"
+      - "fiesta con mis amigas"
+      - "despedida de soltera de mi amiga"
+      - "una pachanga en casa de un amigo"
+      - "salgo a una disco el viernes"
+      - "para una fiesta de noche"
+      - "vamos a un after office y luego a bailar"
+      - "me invitaron a una fiesta de disfraces, algo elegante?"
+      - "fiesta de año nuevo"
+      - "algo para ir de fiesta que no sea muy formal"
+      - "party con mis primas"
+      - "fiestón en una discoteca"
+      - "pre y despues salimos a bailar"
+      - "tengo una reunion de amigas con baile"
+      - "fiesta de fin de año con amigos"
+      - "fiesta en un club"
+      - "me invitaron a una fiesta tematica"
+      - "para ir a un karaoke con las chicas, algo para fiesta"
+      - "salida de chicas, a bailar toda la noche"
+      - "una juerga el finde"
+  gala:
+    descripcion: Gala / evento de etiqueta
+    slots: {fecha: opcional, dia_noche: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para una gala"
+      - "voy a una cena de gala"
+      - "evento de etiqueta"
+      - "tengo una gala benefica"
+      - "premiacion con alfombra roja"
+      - "es un baile de gala"
+      - "evento de gala, dress code black tie"
+      - "ceremonia de premios, necesito un vestido largo"
+      - "me invitaron a una gala en un teatro"
+      - "gala de aniversario de la universidad"
+      - "cena de gala del club"
+      - "para una gala de fin de año"
+      - "evento de etiqueta rigurosa"
+      - "gala de la camara de comercio"
+      - "tengo que ir a una gala y soy la primera vez"
+      - "gala de premiación de mi empresa, vestido largo"
+      - "noche de gala en el hotel"
+      - "baile de gala de mi institucion"
+      - "algo fino para una gala de noche"
+      - "una gala con el embajador"
+      - "para recibir un premio en una gala"
+      - "gala de ópera"
+  evento_corporativo:
+    descripcion: Evento corporativo / de la empresa
+    slots: {fecha: opcional, dia_noche: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para un evento de mi trabajo"
+      - "aniversario de la empresa"
+      - "tengo una conferencia"
+      - "evento corporativo"
+      - "cena de la chamba"
+      - "fiesta de fin de año de la oficina"
+      - "una presentacion con clientes"
+      - "congreso de mi rubro"
+      - "lanzamiento de un producto de la empresa"
+      - "reunion con directivos, algo profesional"
+      - "para un evento de networking"
+      - "cóctel de negocios"
+      - "una feria donde voy a representar a mi empresa"
+      - "actividad de integracion con la gerencia"
+      - "tengo q exponer en un evento de la compañía"
+      - "premiacion de mi empresa y debo ir elegante"
+      - "inauguracion de la nueva oficina"
+      - "evento de la municipalidad donde trabajo"
+      - "almuerzo ejecutivo con socios"
+      - "convencion anual de ventas"
+      - "para una reunion importante de trabajo"
+      - "cena de directorio"
+  iglesia:
+    descripcion: Iglesia / misa / ceremonia religiosa
+    slots: {fecha: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para ir a la iglesia"
+      - "voy a misa los domingos"
+      - "algo para una misa"
+      - "primera comunion de mi sobrina"
+      - "una ceremonia religiosa"
+      - "para la parroquia"
+      - "confirmacion de mi hijo"
+      - "misa de aniversario de mi abuelo"
+      - "q me pongo para ir a la iglesia"
+      - "para el culto del domingo"
+      - "voy a una misa de difuntos"
+      - "es para la capilla, quiero verme recatada"
+      - "para la misa de gallo"
+      - "semana santa, procesion y misa"
+      - "ceremonia en la catedral"
+      - "mi comunion"
+      - "asistir a una misa de matrimonio de mi amiga"
+      - "algo apropiado para entrar a la iglesia"
+      - "novena de la virgen, voy toda la semana"
+      - "retiro espiritual"
+      - "misa de acción de gracias"
+      - "para la ceremonia en el templo"
+  playa:
+    descripcion: Playa / piscina / verano
+    slots: {fecha: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para la playa"
+      - "viajo a Máncora"
+      - "vacaciones en la playa"
+      - "una fiesta frente al mar"
+      - "pool party"
+      - "para la piscina del club"
+      - "paseo a Paracas"
+      - "voy a una playa en verano"
+      - "luna de miel en el caribe"
+      - "para un viaje a Punta Sal"
+      - "quiero algo fresco para la playa"
+      - "una tarde de playa con amigas"
+      - "salida a una playa del sur"
+      - "club de playa, almuerzo y tragos"
+      - "viaje de verano con mi familia al mar"
+      - "para un hotel en la playa"
+      - "atardecer en la playa"
+      - "vacaciones en Cancún"
+      - "voy a la playa y luego a cenar, algo versatil"
+      - "algo para la orilla del mar"
+      - "fin de semana largo en Asia"
+      - "party en piscina de un hotel"
+  sesion_fotos:
+    descripcion: Sesión de fotos
+    slots: {fecha: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para una sesion de fotos"
+      - "voy a hacerme un book"
+      - "tengo un shooting el sabado"
+      - "fotos de pareja"
+      - "sesion pre boda"
+      - "sesión de fotos para mi cumple"
+      - "es para unas fotos para instagram"
+      - "producción fotográfica"
+      - "sesion de fotos de graduación"
+      - "quiero un vestido que salga lindo en fotos"
+      - "fotos en el campo con un fotografo"
+      - "sesion de fotos familiar"
+      - "fotos de embarazo"
+      - "photoshoot"
+      - "unas fotos de egresadas"
+      - "campaña de mi emprendimiento, necesito vestir bien en fotos"
+      - "sesión de fotos en la playa"
+      - "algo fotogenico para una sesion"
+      - "voy a tomarme fotos profesionales"
+      - "sesion de compromiso"
+      - "quiero algo q resalte en fotos"
+      - "fotos de mi quinceañero con fotógrafo"
+  civil:
+    descripcion: Matrimonio civil / ceremonia civil
+    slots: {fecha: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para mi matrimonio civil"
+      - "me caso por civil"
+      - "boda civil"
+      - "mi civil es en la muni"
+      - "voy a firmar el acta de matrimonio"
+      - "ceremonia civil el viernes"
+      - "me caso en la municipalidad"
+      - "mi matri civil con poca gente"
+      - "civil de mi hermana, soy testigo"
+      - "algo para casarme por lo civil"
+      - "para el civil de mi mejor amiga"
+      - "me caso por civil este mes, quiero un vestido blanco o crema"
+      - "somos pocos invitados, es el civil"
+      - "matrimonio civil en el registro civil"
+      - "vestido de novia para civil"
+      - "es mi boda civil y luego almuerzo"
+      - "voy de testigo a un civil"
+      - "civil en el distrito, algo sencillo"
+      - "matrimonio por civil de mi prima"
+      - "casarme por civil nomas, algo elegante pero simple"
+      - "el civil es a las 11 de la mañana"
+      - "ceremonia civil y fotos en el parque"
+  recepcion:
+    descripcion: Recepción (después de la ceremonia, cóctel de bienvenida)
+    slots: {fecha: opcional, dia_noche: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para una recepción"
+      - "la recepción de la boda"
+      - "hay una recepcion despues de la ceremonia"
+      - "cóctel de recepción"
+      - "recepcion en un hotel"
+      - "es una recepcion de tarde"
+      - "me invitaron a la recepcion, no a la ceremonia"
+      - "recepción de bienvenida para invitados"
+      - "para la fiesta de recepcion"
+      - "recepción posterior a la misa"
+      - "solo voy a la recepcion del matrimonio de mi tío"
+      - "recepcion con brindis y bocaditos"
+      - "recepcion en un salon de eventos"
+      - "es la recepcion luego del civil"
+      - "recepción en un club"
+      - "evento de recepcion para los familiares"
+      - "voy a la recepcion pero no a la ceremonia religiosa"
+      - "algo para la recepcion que no sea muy de novia"
+      - "recepcion en jardin"
+      - "tengo una recepcion el sábado a las 6"
+      - "cocktail de bienvenida del matrimonio"
+      - "a la hora de la recepcion hace frio?"
+  fiesta_promocion:
+    descripcion: Fiesta de promoción (colegio, egresados)
+    slots: {fecha: opcional}
+    accion: registrar_ocasion
+    ejemplos:
+      - "es para mi fiesta de promo"
+      - "mi promo es en diciembre"
+      - "cena de promoción"
+      - "fiesta de promocion del colegio"
+      - "baile de promo"
+      - "fiesta de egresados del cole"
+      - "promoción de 5to de secundaria"
+      - "pre promo con mis compañeras"
+      - "para la fiesta de mi promocion 2026"
+      - "mi hija termina el colegio y va a su promo"
+      - "chacota y fiesta de promo"
+      - "vestido para el prom"
+      - "fiesta de fin de año del colegio, es la promo"
+      - "cena de promo de mi hija"
+      - "mi promoción hace una fiesta de gala"
+      - "reencuentro de promoción, 10 años"
+      - "para la promo de mi hermano, voy de invitada"
+      - "la fiesta de la promo es en un salón de eventos"
+      - "es el baile de graduación del colegio"
+      - "fiesta de promo y el dress code es elegante"
+      - "algo para la fiesta de mi promo, soy de 5to"
+      - "promo de la academia"

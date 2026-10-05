@@ -1,0 +1,80 @@
+# Prueba aparte de objeciones. Nunca entra al entrenamiento. SINTÉTICO.
+catalogo: objeciones
+intenciones:
+  caro:
+    ejemplos:
+      - "uy esta carito"
+      - "no se si me alcance, es bastante"
+      - "tienes algo con menor precio?"
+      - "el precio me parece alto"
+      - "me haces un descuentito?"
+  lo_voy_a_pensar:
+    ejemplos:
+      - "lo voy a meditar y te aviso"
+      - "dejame consultarlo con la almohada"
+      - "te escribo despues de pensarlo"
+      - "voy a hablarlo con mi esposo primero"
+      - "aun no, necesito pensarlo"
+  no_estoy_segura:
+    ejemplos:
+      - "la verdad aun tengo mis reservas"
+      - "tengo dudas todavia"
+      - "no me decido"
+      - "no se si realmente lo quiero"
+      - "estoy medio indecisa con eso"
+  duda_talla:
+    ejemplos:
+      - "y si me queda pequeño?"
+      - "no se si mi talla sera la correcta"
+      - "y si no me cierra el cierre por la talla?"
+      - "temo q me quede grande"
+      - "dudo si me ira bien la M"
+  duda_color:
+    ejemplos:
+      - "no se si ese color me quede bien"
+      - "dudo si el verde me favorece"
+      - "me preocupa si el tono va con mi piel"
+      - "sera que ese color me queda lindo?"
+      - "no estoy segura si el color me sienta"
+  miedo_no_llegue:
+    ejemplos:
+      - "me da miedo q no me llegue a tiempo"
+      - "y si el paquete se demora?"
+      - "tengo el evento pronto, llegara?"
+      - "q pasa si me lo mandan tarde"
+      - "temo q se pierda en el envio"
+  muy_corto:
+    ejemplos:
+      - "creo q es cortito"
+      - "no sera demasiado corto?"
+      - "me parece q el largo es poco"
+      - "me da dudas lo corto que se ve"
+      - "es corto para mi estatura, o no?"
+  muy_escotado:
+    ejemplos:
+      - "me parece q tiene mucho escote"
+      - "el escote me parece bajisimo, uf"
+      - "el escote me da algo de miedo"
+      - "tiene escote bajo? es q no quisiera mostrar tanto"
+      - "hay uno con el escote mas cerrado?"
+  quiero_ver_otros:
+    ejemplos:
+      - "quiero ver mas opciones antes de decidir"
+      - "me enseñas otros modelos para comparar?"
+      - "veamos que otros tienes"
+      - "antes de elegir quiero mirar otros"
+      - "mandame mas fotos y decido"
+  mas_barato_otra_tienda:
+    ejemplos:
+      - "vi el mismo diseño en otra tienda por menos plata"
+      - "uno igual cuesta menos en otro lado"
+      - "en otra pagina esta a menor precio"
+      - "la competencia lo tiene mas economico"
+      - "por q aqui cuesta mas q en otros lugares?"
+  no_confio_internet:
+    ejemplos:
+      - "ay no, comprar ropa por redes me da desconfianza"
+      - "me da miedo q sea estafa"
+      - "como se q no me van a robar?"
+      - "prefiero verlo en persona antes de pagar"
+      - "ya me estafaron antes por whatsapp"
