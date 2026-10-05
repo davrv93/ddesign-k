@@ -50,7 +50,10 @@ def nueva() -> dict:
             # Temperatura de la clienta (reglas, no LLM) y las señales que la explican, en orden.
             "temperatura": "frio", "temperatura_motivo": SIN_DATOS, "senales": [],
             # Cita para probarse que se está armando: día y hora sueltos hasta que los dos valen.
-            "cita_tentativa": {"dia": None, "hora": None}}
+            "cita_tentativa": {"dia": None, "hora": None},
+            # Pidió ver modelos antes de contar su necesidad: se le preguntó la ocasión una vez; con la respuesta, se
+            # le muestra ya (sin esperar fecha y día/noche). Si insiste sin contestar, se le muestra igual.
+            "pidio_ver": False}
 
 
 def normalizar(m: dict | None) -> dict:
@@ -61,6 +64,7 @@ def normalizar(m: dict | None) -> dict:
     for k in ("etapa", "producto", "pendiente", "llego_por", "temperatura_motivo"):
         if isinstance(m.get(k), str):
             base[k] = m[k]
+    base["pidio_ver"] = bool(m.get("pidio_ver"))
     if m.get("temperatura") in TEMPERATURAS:
         base["temperatura"] = m["temperatura"]
     for k in ("mostrados", "objeciones", "preguntado", "senales"):
@@ -127,6 +131,19 @@ PERSISTENTES = {"cual_prenda", "describir_prenda", "confirmar", "voucher", "dire
 # cuando ya se le mostró una prenda; y el cierre ofrece separarlo o pasar a probárselo (`probar`). La temperatura
 # cambia el seguimiento: caliente va al cierre antes que a la talla; fría no lo empuja (ver `siguiente`).
 INDAGAR = ("ocasion", "fecha", "horario")
+# Las preguntas para indagar la necesidad se repiten UNA vez si no se contestaron («hola» → «¿para qué ocasión?» →
+# «busco un vestido» → se vuelve a preguntar, con otras palabras). Antes se daban por hechas al primer intento y el
+# bot saltaba a la siguiente sin saber la ocasión.
+VECES_INDAGAR = 2
+
+
+def veces(mem: dict, k: str) -> int:
+    return mem["preguntado"].count(k)
+
+
+def ya_hecha(mem: dict, k: str) -> bool:
+    """Se hizo y no toca repetirla: las de indagar, tras dos intentos; el resto, tras uno."""
+    return veces(mem, k) >= (VECES_INDAGAR if k in INDAGAR else 1)
 ORDEN = {
     "prospeccion": ["ocasion", "fecha", "horario", "talla"],
     "seguimiento": ["fecha", "horario", "talla", "probar"],
@@ -520,7 +537,7 @@ RE_NECESIDAD = re.compile(r"\bevento\b|\b(busco|necesito|quiero)\s+(un|una|algo)
                           r"(evento|boda|matrimonio|fiesta|graduacion|cena|reunion|quinceanero|compromiso)\b")
 # Pide ver prendas: entonces se le muestra una opción aunque falte saber algo de la necesidad.
 RE_PIDE_VER = re.compile(r"\b(muestr\w*|ensen\w*|que (modelos|vestidos|opciones) (tienes|tienen|hay)|quiero ver|"
-                         r"ver (modelos|opciones|vestidos|fotos|algo)|pas\w* (fotos|opciones|modelos)|"
+                         r"ver (los |las |unos |unas |algunos |algunas |tus |sus )?(modelos|opciones|vestidos|fotos|algo|catalogo)|catalogo|pas\w* (fotos|opciones|modelos)|"
                          r"tienes? (fotos|modelos|opciones|algo)|recomiend\w*|sugie\w*|que me (recomiendas|sugieres))\b")
 
 
@@ -533,8 +550,10 @@ def en_necesidad(mem: dict, texto: str) -> bool:
 
 def necesidad_conocida(mem: dict) -> bool:
     """Ya se puede ofrecer: ocasión, fecha y día/noche se saben o ya se preguntaron (no se insiste si no lo sabe)."""
-    sab, hechas = mem["sabemos"], set(mem["preguntado"])
-    return all(sab.get(DATO_DE[k]) or k in hechas for k in INDAGAR) and bool(sab.get("ocasion") or sab.get("fecha"))
+    sab = mem["sabemos"]
+    if mem.get("pidio_ver") and sab.get("ocasion"):
+        return True   # pidió ver y ya dijo la ocasión: se le muestra sin esperar fecha y día/noche
+    return all(sab.get(DATO_DE[k]) or ya_hecha(mem, k) for k in INDAGAR) and bool(sab.get("ocasion") or sab.get("fecha"))
 
 
 def pide_ver(texto: str) -> bool:
@@ -727,8 +746,9 @@ def registrar_respuesta(mem: dict, respuesta: str, forzar: str | None = None, pr
     sueltan solas); el resto se limpia. Devuelve la pendiente nueva."""
     clave = forzar if forzar is not None else pregunta_de(respuesta)
     if clave:
+        repite = clave == (prev or {}).get("pendiente", mem.get("pendiente")) and clave in INDAGAR
         mem["pendiente"] = clave
-        if clave not in mem["preguntado"]:
+        if clave not in mem["preguntado"] or (repite and veces(mem, clave) < VECES_INDAGAR):
             mem["preguntado"].append(clave)
     elif mem.get("pendiente") not in PERSISTENTES:
         mem["pendiente"] = ""
@@ -741,7 +761,7 @@ def siguiente(mem: dict, etapa: str, hay_prenda: bool | None = None) -> str:
     - La talla (fuera del cierre) solo cuando ya se le mostró una prenda (`hay_prenda`; por defecto, la memoria).
     - `probar` (¿probártelo o te lo separo?) solo con la talla sabida, o si está caliente; nunca con cita ya hecha.
     - Temperatura en seguimiento: caliente pregunta `probar` antes que la talla; fría no lo pregunta (no se empuja)."""
-    sab, hechas = mem["sabemos"], set(mem["preguntado"])
+    sab = mem["sabemos"]
     temp = mem.get("temperatura") or ""
     orden = list(ORDEN.get(etapa, []))
     if etapa == "seguimiento" and temp == "caliente":
@@ -753,7 +773,7 @@ def siguiente(mem: dict, etapa: str, hay_prenda: bool | None = None) -> str:
     for k in orden:
         if k in DATO_DE and sab.get(DATO_DE[k]):
             continue
-        if k in hechas:
+        if ya_hecha(mem, k):
             continue
         if k == "talla" and etapa != "cierre" and not hay_prenda:
             continue
@@ -775,6 +795,15 @@ def texto_pregunta(k: str, mem: dict, mensaje: str = "") -> str:
     variante se reconoce con DETECTOR igual que la de PREGUNTAS (lo comprueba la prueba)."""
     if k == "ocasion" and re.search(r"\bevento\b", _plano(mensaje)):
         return "¿Qué evento es?"
+    if k == "ocasion":
+        prenda = mem["sabemos"].get("prenda") or ""
+        if veces(mem, "ocasion") >= 1:   # segunda vez: con otras palabras y diciendo para qué
+            return "Cuéntame, ¿para qué ocasión sería? Así te muestro lo que mejor te va 😊"
+        if mem.get("producto") or mem.get("mostrados"):
+            return "¿Para qué ocasión lo buscas?"
+        if prenda:
+            return f"¿Para qué ocasión buscas {'la' if prenda in ('blusa', 'falda') else 'el'} {prenda}?"
+        return "¿Es para alguna ocasión especial?"
     if k == "fecha" and (oc := OCASION_TXT.get(mem["sabemos"].get("ocasion") or "")):
         return f"¿Para cuándo es {oc}?"
     return PREGUNTAS.get(k, "")

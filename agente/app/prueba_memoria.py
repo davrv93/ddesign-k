@@ -8,6 +8,8 @@ no se repitan preguntas y que la memoria se reconstruya del historial cuando qui
 """
 from __future__ import annotations
 
+import json
+
 import sys
 
 from . import memoria as M
@@ -145,7 +147,9 @@ caso("el código fuerza la pendiente", m["pendiente"], "confirmar")
 caso("prospección empieza por la ocasión", M.siguiente(M.nueva(), "prospeccion"), "ocasion")
 caso("sabida la ocasión, para cuándo (la urgencia)", M.siguiente(con(ocasion="matrimonio"), "prospeccion"), "fecha")
 m = M.nueva(); m["preguntado"] = ["ocasion"]
-caso("preguntada (aunque sin respuesta) no se repite", M.siguiente(m, "prospeccion"), "fecha")
+caso("preguntada una vez sin respuesta: se repite (indagar)", M.siguiente(m, "prospeccion"), "ocasion")
+m = M.nueva(); m["preguntado"] = ["ocasion", "ocasion"]
+caso("preguntada dos veces sin respuesta: no se insiste más", M.siguiente(m, "prospeccion"), "fecha")
 caso("sabidas ocasión y fecha: día/noche", M.siguiente(con(ocasion="boda", fecha="el sabado"), "prospeccion"), "horario")
 caso("talla del perfil: no se pregunta",
      M.siguiente(M.con_perfil(con(ocasion="boda", horario="noche", fecha="el 17"), {"tallas": ["M"]}), "prospeccion", True), "")
@@ -317,7 +321,9 @@ caso("«¿tienen blazers?» no es contar una necesidad", M.en_necesidad(M.nueva(
 caso("solo la ocasión no basta para ofrecer", M.necesidad_conocida(con(ocasion="matrimonio")), False)
 caso("ocasión, fecha y día/noche: se ofrece", M.necesidad_conocida(con(ocasion="matrimonio", fecha="el 17", horario="noche")), True)
 m = con(ocasion="matrimonio"); m["preguntado"] = ["ocasion", "fecha", "horario"]
-caso("lo preguntado y no sabido no frena la oferta", M.necesidad_conocida(m), True)
+caso("fecha y día/noche preguntados una sola vez: todavía se insiste", M.necesidad_conocida(m), False)
+m = con(ocasion="matrimonio"); m["preguntado"] = ["ocasion", "fecha", "fecha", "horario", "horario"]
+caso("lo preguntado dos veces y no sabido no frena la oferta", M.necesidad_conocida(m), True)
 m = M.nueva(); m["preguntado"] = ["ocasion", "fecha", "horario"]
 caso("sin ocasión ni fecha no hay qué ofrecer", M.necesidad_conocida(m), False)
 caso("pide ver: «muéstrame opciones»", M.pide_ver("muéstrame opciones"), True)
@@ -327,6 +333,25 @@ caso("«tengo un evento» → ¿Qué evento es?", (M.texto_pregunta("ocasion", M
 q = M.texto_pregunta("fecha", con(ocasion="matrimonio"))
 caso("¿Para cuándo es el matrimonio?", (q, M.clave_de(q)), ("¿Para cuándo es el matrimonio?", "fecha"))
 caso("la prenda que busca se guarda", M.extraer("busco un conjunto para la oficina").get("prenda"), "conjunto")
+
+# Saludo, «busco un vestido», «quiero ver los modelos» (04-10-2026, chat real): el bot preguntaba por un «lo» que no
+# existía, daba la ocasión por preguntada sin respuesta y mostraba tres vestidos sin saber para qué.
+q = M.texto_pregunta("ocasion", M.nueva(), "hoola")
+caso("saludo: la ocasión sin «lo» huérfano", (q, M.clave_de(q)), ("¿Es para alguna ocasión especial?", "ocasion"))
+q = M.texto_pregunta("ocasion", con(prenda="vestido"), "busco un vestido")
+caso("con prenda: ¿para qué ocasión buscas el vestido?", (q, M.clave_de(q)), ("¿Para qué ocasión buscas el vestido?", "ocasion"))
+m = M.nueva(); M.registrar_respuesta(m, "¿Es para alguna ocasión especial?")
+caso("ocasión sin contestar: se vuelve a preguntar una vez", M.siguiente(m, "prospeccion"), "ocasion")
+q = M.texto_pregunta("ocasion", m, "busco un vestido")
+caso("la segunda vez, con otras palabras", (M.clave_de(q), q.startswith("Cuéntame")), ("ocasion", True))
+M.registrar_respuesta(m, q)
+caso("se cuentan los dos intentos", M.veces(m, "ocasion"), 2)
+caso("tras dos intentos sin respuesta, sigue con la fecha", M.siguiente(m, "prospeccion"), "fecha")
+caso("pide ver: «me gustaría ver los modelos»", M.pide_ver("me gustaria ver los modelos"), True)
+caso("pide ver: «muéstrame el catálogo»", M.pide_ver("muéstrame el catálogo"), True)
+m = con(ocasion="matrimonio"); m["pidio_ver"] = True
+caso("pidió ver y ya dijo la ocasión: se le muestra", M.necesidad_conocida(m), True)
+caso("pidio_ver sobrevive al viaje", M.normalizar(json.loads(json.dumps(m)))["pidio_ver"], True)
 
 
 def main() -> int:

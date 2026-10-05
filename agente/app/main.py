@@ -28,7 +28,7 @@ import json
 from contextvars import ContextVar
 
 from . import datos, etapas, jev, memoria, venta
-from . import animo
+from . import animo, rerank
 from .modelo import Embedder, EmbedderOnnx, cargar, hay_setfit
 from . import stock as stk
 
@@ -880,6 +880,7 @@ def otras_opciones(req: ChatIn, qv: np.ndarray) -> list:
     pool = [fichas[i] for i in orden if fichas[i].fuente == "seed" and fichas[i].codigo not in vistos and _imagen(fichas[i])]
     st = E.stock.consultar([f.codigo for f in pool])
     pool = [f for f in pool if disponible(f, st.get(f.codigo, {}))]
+    pool = rerank.ordenar(req.mensaje, pool[:24])   # cross-encoder: relevancia real con lo que pidió
     if cat:
         pool.sort(key=lambda f: categoria_de(f) != cat)  # estable: misma categoría primero
     return pool[:MAX_SUGERENCIAS]
@@ -975,6 +976,13 @@ def quiere_opciones(req: ChatIn, cl: dict) -> bool:
     return bool(_palabras_ropa(req.mensaje) - antes)
 
 
+def categoria_distinta(texto: str) -> bool:
+    """Pide ver una categoría concreta que no es vestido («¿tienen blazers?»): eso se contesta con la vitrina de esa
+    categoría, que ya es una búsqueda acotada."""
+    c = categoria_pedida(texto)
+    return bool(c and c != "vestido")
+
+
 def mejor_opcion(mem: dict, req: ChatIn):
     """Método de venta: la UNA prenda que una vendedora ofrecería para la necesidad que contó (ocasión, día/noche,
     color, presupuesto): el RAG propone y el stock de ahora decide. None si no hay ninguna con stock."""
@@ -995,6 +1003,7 @@ def mejor_opcion(mem: dict, req: ChatIn):
     st = E.stock.consultar([f.codigo for f in cands])
     cands = [f for f in cands if disponible(f, st.get(f.codigo, {}))]
     tope = float(sab["presupuesto"]) if str(sab.get("presupuesto") or "").isdigit() else None
+    cands = rerank.ordenar(" ".join(partes), cands)   # cross-encoder: la que mejor encaja con su necesidad
     rango = {"online": 0, "sucursal": 1}
     # estable: conserva el orden del RAG; primero lo que se pide ya y lo que entra en su presupuesto
     cands.sort(key=lambda f: (rango[disponible(f, st.get(f.codigo, {}))],
@@ -1023,6 +1032,7 @@ def sugerir(req: ChatIn, cl: dict, fichas: list) -> list:
     # RAG propone; el stock de ahora decide: lo que se pide ya primero, luego sucursal, nunca lo que no hay.
     orden = {"online": 0, "sucursal": 1}
     con_stock = [f for f in resto if disponible(f, st.get(f.codigo, {}))]
+    con_stock = rerank.ordenar(req.mensaje, con_stock)   # cross-encoder: relevancia dentro del mismo stock
     con_stock.sort(key=lambda f: orden[disponible(f, st.get(f.codigo, {}))])  # estable: conserva el orden del RAG
     return con_stock[:MAX_SUGERENCIAS]
 
@@ -1066,6 +1076,7 @@ def vitrina(req: ChatIn, qv: np.ndarray) -> list:
     st = E.stock.consultar([f.codigo for f in pool])
     rango = {"online": 0, "sucursal": 1}
     pool = [f for f in pool if disponible(f, st.get(f.codigo, {}))]
+    pool = rerank.ordenar(req.mensaje, pool)   # cross-encoder: relevancia dentro del mismo stock
     pool.sort(key=lambda f: rango[disponible(f, st.get(f.codigo, {}))])  # estable: lo que se pide ya, primero
     return pool[:MAX_VITRINA]
 
@@ -1154,6 +1165,21 @@ def conversar(req: ChatIn) -> dict:
     necesidad = (foco is None and not anuncio and sin_mostrar and not nombrados(req.mensaje)
                  and memoria.en_necesidad(mem, req.mensaje))
     indagando = necesidad and not memoria.necesidad_conocida(mem) and not memoria.pide_ver(req.mensaje) and not pide_mas(req)
+    # Pide ver modelos («me gustaría ver los modelos», «muéstrame el catálogo») sin haber contado para qué: una
+    # vendedora no saca prendas al azar; pregunta la ocasión UNA vez y muestra en cuanto la sepa. Si insiste sin
+    # contestar, se le muestra igual (pidio_ver ya está marcado).
+    pide_ver_ya = memoria.pide_ver(req.mensaje) or (cl["intencion"] == "catalogo" and cl["confianza"] >= UMBRAL_ACCION)
+    indaga_antes_de_ver = bool(foco is None and not anuncio and sin_mostrar and not nombrados(req.mensaje)
+                               and pide_ver_ya and not mem["sabemos"].get("ocasion") and not mem.get("pidio_ver")
+                               and not categoria_distinta(req.mensaje))
+    if indaga_antes_de_ver:
+        mem["pidio_ver"] = True
+        necesidad, indagando = True, True
+    # Contestar una pregunta de indagación («el 24 de octubre», «de noche») no es una objeción ni nada que mueva la
+    # etapa: el clasificador leía las fechas como «objeción» y saltaba a seguimiento.
+    if (lectura.get("respondio") and pend in memoria.INDAGAR and com["intent"] in ("objecion", "objecion_precio")
+            and not memoria.RE_FRIO.search(memoria._plano(req.mensaje))):
+        com = dict(com, intent="otro", confianza=0.5, fuente=com.get("fuente", "local") + "+respuesta")
     dec = etapas.decidir(etapa_in, com["intent"], com["confianza"], req.mensaje, ultimo_bot,
                          primer_mensaje=not any(t.rol != "cliente" for t in req.historial), pendiente=pend, indagando=indagando)
     etapa = dec["etapa"]
@@ -1300,6 +1326,12 @@ def conversar(req: ChatIn) -> dict:
         cl = dict(cl, intencion=opcion)
         accion, respuesta, modelo = opcion, TEXTO_ACCION[opcion], "menu"
         forzar = "foto" if opcion == "foto" else ""
+    elif not respuesta and indaga_antes_de_ver:
+        prenda = mem["sabemos"].get("prenda") or categoria_pedida(req.mensaje) or ""
+        cuales = {"vestido": "los vestidos", "conjunto": "los conjuntos", "blusa": "las blusas", "falda": "las faldas",
+                  "pantalon": "los pantalones", "blazer": "los blazers", "enterizo": "los enterizos"}.get(prenda, "los modelos")
+        respuesta = (f"¡Claro! 😊 Para mostrarte {cuales} que mejor te van, cuéntame: ¿para qué ocasión es?")
+        modelo, forzar = "indaga_antes_de_ver", "ocasion"
     elif not respuesta and not foto_pedida and not pide and (opcion == "catalogo" or catalogo_generico(req, cl)):
         categorias = categorias_con_stock()
         if len(categorias) < 2:
@@ -1416,6 +1448,10 @@ def conversar(req: ChatIn) -> dict:
                 respuesta = _sin_pies(_sin_resaludo(_whatsapp(respuesta), req))
                 # Lo ya preguntado (o ya sabido) no se vuelve a preguntar, aunque el LLM lo intente.
                 respuesta = memoria.quitar_repetidas(respuesta, mem, permitida=sig)
+                # Indagar la necesidad no es opcional: si el LLM no hizo la pregunta (respondió «tenemos vestidos para
+                # toda ocasión» y nada más), la pone el código. Sin eso el hilo se corta.
+                if sig in memoria.INDAGAR and etapa == "prospeccion" and memoria.pregunta_de(respuesta) != sig:
+                    respuesta = respuesta.rstrip() + "\n\n" + memoria.texto_pregunta(sig, mem, req.mensaje)
             except Exception as e:
                 log.warning("DeepSeek no respondió, sigo con el motor actual: %s", e)
         if req.usar_llm and not respuesta:
