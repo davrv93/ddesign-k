@@ -112,6 +112,8 @@ services:
       MOTOR: ${MOTOR:-actual}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-${OPENROUTER_API_KEY:-}}
       DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek/deepseek-chat-v3.1,deepseek/deepseek-v4-flash}
+      # Respuestas con más criterio de venta (350 → 500). Sube algo el costo por mensaje.
+      DEEPSEEK_MAX_TOKENS: ${DEEPSEEK_MAX_TOKENS:-500}
       CATALOG_URL: http://backend:8080/api/public/catalog
       # Stock como herramienta: disponibilidad real (físico - reservas) y sucursales, consultada al responder.
       STOCK_URL: http://backend:8080/api/public/stock
@@ -122,8 +124,8 @@ services:
       # Jev (TypeSafe, por OpenRouter con la misma clave): off | sombra | cascada. En cascada, si el
       # clasificador local duda (< 0,80), Jev decide la intención con toda la conversación. JEV_VERIFICAR=1
       # quita de la respuesta del LLM lo que afirme de la prenda sin estar en la ficha. Ver agente/README.md.
-      JEV_MODO: ${KD_JEV_MODO:-off}
-      JEV_VERIFICAR: ${KD_JEV_VERIFICAR:-0}
+      JEV_MODO: ${KD_JEV_MODO:-cascada}
+      JEV_VERIFICAR: ${KD_JEV_VERIFICAR:-1}
       JEV_API_KEY: ${JEV_API_KEY:-}
       JEV_URL: ${JEV_URL:-https://openrouter.ai/api/v1/systemone}
       PUBLIC_URL: ${PUBLIC_URL:-https://kddesign.pjgfactsalud.com.pe}
@@ -136,7 +138,7 @@ services:
       - agente_data:/data
     ports:
       - "127.0.0.1:${KD_AGENT_PORT:-18482}:8000"
-    mem_limit: 1800m  # texto (e5-small) + imagen (Unicom) en ONNX: ~1,13 GiB medidos el 04-10-2026 (con jina eran 1,48)
+    mem_limit: 3g  # EC2 de 8 GiB: deja aire para el reranker del RAG y los embeddings. Antes 1800m con 3,8 GiB.
     networks: [kddesign]
 
   frontend:

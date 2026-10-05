@@ -76,6 +76,10 @@ En `step()` de `backend/internal/bot/bot.go`:
   (< 0,80), decide la intención con toda la conversación; con `JEV_VERIFICAR=1` quita de la respuesta del LLM
   lo que afirme de la prenda sin estar en su ficha. **Propone; la etapa la siguen decidiendo las reglas.**
   Cuesta ~0,3 s más por mensaje. Medido: cascada 98,5 % en la prueba comercial; verificación 9/9.
+- **Reranker del RAG** (`agente/app/rerank.py`): cross-encoder multilingüe que reordena los candidatos por
+  relevancia real con la consulta, dentro del mismo stock. **Apagado** (`RERANK=0`): hay que validarlo en un
+  build (descarga el modelo) antes de encenderlo; si no carga, se desactiva solo y no rompe nada. Lo habilita
+  la RAM de 8 GiB.
 - **SetFit** (`agente/app/setfit.py`): ajuste contrastivo de e5 en una etapa del build con PyTorch. **No ganó**
   (97,0 / 95,6 % frente a 98,5 / 97,1 % del e5 sin ajustar) y en producción va apagado (`KD_SETFIT_PASOS=0`).
   Forzado suma ~300 MB de RAM. Detalle y cifras en [`agente/README.md`](agente/README.md).
