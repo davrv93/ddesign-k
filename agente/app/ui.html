@@ -533,7 +533,7 @@ function panelV2(j) {
       <div class="sub">${esc(plan.razon || '')}</div>` : '<div class="sub">Sin plan en este turno.</div>'}
     ${sb.jev ? `<div class="sub">Jev local propuso <b>${esc(sb.jev.opcion)}</b> (${(sb.jev.p * 100).toFixed(0)} %)</div>` : ''}
     ${v.motivo_v1 ? `<div class="sub">V2 no habló: ${esc(v.motivo_v1)}</div>` : sb.no_habla && v.modo === 'activo' ? `<div class="sub">V2 no habló: ${esc(sb.no_habla)}</div>` : ''}
-    ${g.intentos ? `<div class="sub">Control de calidad: ${g.passed ? 'pasó' : 'no pasó'}${g.motor ? ' · escribió ' + esc(g.motor) : ''}${g.regeneraciones ? ' · ' + g.regeneraciones + ' regeneración(es)' : ''}</div>` : ''}`;
+    ${g.intentos ? `<div class="sub">Control de calidad: ${g.passed ? 'pasó' : 'no pasó'}${g.motor ? ' · realizó ' + esc(g.motor) : ''}${g.plantillas ? ' · plantillas ' + g.plantillas.map(esc).join(' + ') : ''}${g.regeneraciones ? ' · ' + g.regeneraciones + ' regeneración(es)' : ''}</div>` : ''}`;
 }
 
 function panelVenta(j) {

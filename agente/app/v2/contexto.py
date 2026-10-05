@@ -17,11 +17,14 @@ REQUERIDOS = ("ocasion", "horario", "fecha", "prenda", "talla")
 class ContextBuilder:
     def __init__(self, max_turnos: int = 4, max_chars: int = 200,
                  texto_pregunta: Callable[..., str] | None = None,
-                 pide_ver: Callable[[str], bool] | None = None):
+                 pide_ver: Callable[[str], bool] | None = None,
+                 categoria_pedida: Callable[[str], str | None] | None = None):
         self.max_turnos = max_turnos
         self.max_chars = max_chars
         # mensaje → ¿pide ver prendas u otras opciones? La regla es de V1 (memoria.pide_ver): no se duplica.
         self.pide_ver = pide_ver
+        # mensaje → la categoría de prenda que nombra («vestido»), con la regla de V1 (main.categoria_pedida).
+        self.categoria_pedida = categoria_pedida
         # (tipo, memoria, mensaje, respuesta_de_v1) → el texto con el que V1 hace esa pregunta. La V2 no escribe sus
         # propias preguntas; con la respuesta de V1 a mano usa la redacción exacta que V1 ya eligió (una pregunta que V1
         # acaba de registrar como hecha cambia de redacción si se vuelve a pedir: «Y cuéntame, ¿ya tienes fecha?»).
@@ -57,6 +60,17 @@ class ContextBuilder:
                 conv["wants_to_see"] = bool(self.pide_ver and self.pide_ver(req.mensaje or "")) or conv["intent"] == "comparacion"
             except Exception:
                 conv["wants_to_see"] = False
+            # Lo que V1 sacó de ESTE mensaje (nombre, ocasión, fecha…) y si respondió a la pregunta pendiente: es lo que se reconoce.
+            lect = res.get("lectura") or {}
+            conv["captured"] = {k: v for k, v in (lect.get("datos") or {}).items() if v}
+            conv["responded"] = bool(lect.get("respondio")) and not lect.get("no_sabe")
+            # «¿Tienes vestidos?»: pregunta por una categoría sin tener todavía una prenda en la conversación.
+            conv["category_asked"] = None
+            if self.categoria_pedida and "?" in (req.mensaje or "") and not (req.memoria or {}).get("producto") and not req.producto:
+                try:
+                    conv["category_asked"] = self.categoria_pedida(req.mensaje or "")
+                except Exception:
+                    pass
         perfil = getattr(req, "perfil", None)
         shown_antes = list((req.memoria or {}).get("mostrados") or []) if res is not None else list(mem.get("mostrados") or [])
         talla = self._pregunta("talla", mem, req.mensaje or "", (res or {}).get("respuesta") or "")
@@ -66,6 +80,7 @@ class ContextBuilder:
             "customer": {
                 "name": sab.get("nombre") or None,
                 "temperature": mem.get("temperatura") or None,
+                "talla_perfil": mem.get("talla_perfil") or None,
                 "history": perfil if isinstance(perfil, dict) and (perfil.get("pedidos") or perfil.get("productos")) else None,
             },
             "requirements": {k: sab.get(k) or None for k in ("ocasion", "fecha", "horario", "prenda", "talla", "presupuesto", "color")},

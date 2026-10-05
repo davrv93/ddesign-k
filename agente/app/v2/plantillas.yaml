@@ -1,0 +1,570 @@
+# Plantillas semánticas de la V2 (Baruka). El modelo NO escribe ventas: elige o reescribe entre estas piezas.
+#
+# Cómo se usa una plantilla (app/v2/plantillas.py y realizador.py):
+#   1. El código decide QUÉ decir (acción del plan, pregunta que toca, qué dijo ella en este turno) y elige las plantillas.
+#   2. Cada {{SLOT}} se llena con un dato del backend estructurado (precio, stock, tallas, nombre de la prenda…) y se cambia por
+#      un token opaco §SLOT_xxxx§. El modelo nunca ve el valor real.
+#   3. El realizador (Qwen3-1.7B) solo cambia la forma de hablar: elige entre las variantes de cada parte, o reescribe el texto
+#      conservando los tokens. Un modelo que no esté disponible, o que no pase la compuerta factual, deja el texto base.
+#   4. La compuerta factual (factual.py) rechaza cualquier dato nuevo, y recién entonces el código rellena los datos reales.
+#
+# Campos:
+#   tipo         acuse (reconoce lo que dijo ella) | pregunta (una por clave de V1) | mensaje (completo)
+#   activa       true = el selector puede usarla en esta etapa del A/B. false = definida y probada, pero V1 sigue hablando.
+#   acciones     acciones del plan en las que aplica (preguntar | recomendar | responder | pedir_asesora | seguimiento)
+#   clave        solo en `pregunta`: la clave con la que V1 reconoce esa pregunta (memoria.DETECTOR). Una prueba comprueba que
+#                CADA variante se reconoce con esa clave: si no, la memoria de V1 se desordenaría.
+#   protegidos   slots que deben salir como token y volver intactos
+#   prohibido    lo que el modelo no puede introducir (cada etiqueta tiene su regla en factual.py; una prueba lo comprueba)
+#   max_frases   tope de frases de esa plantilla
+#   forma        cómo se arma: {parte} se cambia por la variante elegida de esa parte
+#   partes       variantes de cada parte; una variante con {{SLOT}} solo es elegible si ese dato existe
+#   sin_modelo   true = ningún modelo la toca (es una decisión de código)
+#   fijas        parte → índice de la variante que NO se elige ni por hash ni por el modelo. En las preguntas, la variante 0 es
+#                {{PREGUNTA_V1}}: el texto con el que V1 ya hace esa pregunta (memoria.texto_pregunta). Es lógica de negocio con casos
+#                («¿Qué evento es?» si ella dijo «evento», otra redacción la segunda vez, la talla del pedido anterior): V2 la conserva.
+#                Las demás variantes quedan como respaldo si V1 no trajo su texto.
+#
+# Regla del dueño (05-10-2026): no se pregunta «¿Es para alguna ocasión especial?». La pregunta de ocasión usa otras palabras.
+
+version: 1
+
+config:
+  max_emojis: 1
+  max_chars: 360
+
+plantillas:
+
+  # ------------------------------------------------------------------------------------------------------------------------
+  # ACUSES: lo primero que se dice cuando ella acaba de darnos un dato. Sin pregunta.
+  # ------------------------------------------------------------------------------------------------------------------------
+  ACK_NAME:
+    tipo: acuse
+    activa: true
+    acciones: [preguntar]
+    objetivo: reconocer_su_nombre
+    semantica: [saludar_por_su_nombre]
+    protegidos: [NOMBRE]
+    prohibido: [inventar_nombre_cliente]
+    max_frases: 1
+    forma: "{cuerpo} {emoji}"
+    partes:
+      cuerpo: ["¡Mucho gusto, {{NOMBRE}}!", "¡Qué gusto, {{NOMBRE}}!", "¡Encantada, {{NOMBRE}}!"]
+      emoji: ["😊", "🙌", ""]
+
+  CATEGORY_AVAILABLE:
+    id_spec: 3
+    tipo: acuse
+    activa: true
+    acciones: [preguntar]
+    objetivo: confirmar_categoria
+    semantica: [confirmar_que_existe_CATEGORIA]
+    protegidos: [CATEGORIA]
+    prohibido: [inventar_producto, inventar_talla, inventar_precio, inventar_stock]
+    max_frases: 1
+    forma: "{cuerpo} {emoji}"
+    partes:
+      cuerpo: ["¡Sí, tenemos {{CATEGORIA}}!", "¡Claro que sí, tenemos {{CATEGORIA}}!", "¡Sí, hay {{CATEGORIA}}!"]
+      emoji: ["😊", "🙌", ""]
+
+  OCCASION_CAPTURED:
+    id_spec: 4
+    tipo: acuse
+    activa: true
+    acciones: [preguntar]
+    objetivo: reconocer_ocasion
+    semantica: [reconocer_OCASION]
+    protegidos: [OCASION_ART]
+    prohibido: [inventar_fecha, asumir_dia_noche, recomendar_producto_sin_validacion]
+    max_frases: 1
+    forma: "{cuerpo} {emoji}"
+    partes:
+      cuerpo: ["¡Qué bonito, para {{OCASION_ART}}!", "¡Perfecto, para {{OCASION_ART}}!", "¡Qué lindo, para {{OCASION_ART}}!", "¡Qué bonito!"]
+      emoji: ["😊", "💙", ""]
+
+  ACK_NOTED:
+    tipo: acuse
+    activa: true
+    acciones: [preguntar]
+    objetivo: acusar_recibo_de_un_dato
+    semantica: [acusar_recibo]
+    protegidos: []
+    prohibido: [inventar_fecha, asumir_dia_noche, inferir_talla]
+    max_frases: 1
+    forma: "{cuerpo} {emoji}"
+    partes:
+      cuerpo: ["¡Anotado!", "¡Listo, anotado!", "¡Perfecto!"]
+      emoji: ["😊", "🙌", ""]
+
+  # ------------------------------------------------------------------------------------------------------------------------
+  # PREGUNTAS: una por clave de V1 (memoria.siguiente). La clave la elige el código; aquí solo cambian las palabras.
+  # ------------------------------------------------------------------------------------------------------------------------
+  ASK_OCCASION:
+    tipo: pregunta
+    clave: ocasion
+    activa: true
+    acciones: [preguntar, recomendar]
+    objetivo: conocer_la_ocasion
+    semantica: [preguntar_OCASION, mantener_respuesta_breve]
+    protegidos: [PREGUNTA_V1]
+    prohibido: [inventar_producto, inventar_talla, inventar_precio, inventar_stock, hacer_multiples_preguntas]
+    max_frases: 1
+    fijas: {pregunta: 0}        # la pregunta la redacta V1 (memoria.texto_pregunta)
+    forma: "{pregunta}"
+    partes:
+      pregunta: ["{{PREGUNTA_V1}}", "¿Para qué ocasión sería?", "¿Para qué ocasión lo buscas?", "Cuéntame, ¿para qué ocasión sería?"]
+
+  ASK_DAY_NIGHT:
+    id_spec: 5
+    tipo: pregunta
+    clave: horario
+    activa: true
+    acciones: [preguntar, recomendar]
+    objetivo: completar_contexto_ocasion
+    semantica: [mencionar_OCASION_si_aporta_contexto, preguntar_si_evento_es_DIA_o_NOCHE]
+    protegidos: [OCASION_NOM, PREGUNTA_V1]
+    prohibido: [asumir_dia_noche, hacer_multiples_preguntas]
+    max_frases: 1
+    fijas: {pregunta: 0}        # la pregunta la redacta V1 (memoria.texto_pregunta)
+    forma: "{pregunta}"
+    partes:
+      pregunta: ["{{PREGUNTA_V1}}", "¿El evento es de día o de noche?", "¿Tu {{OCASION_NOM}} será de día o de noche?", "¿Sería de día o de noche?"]
+
+  ASK_DATE:
+    id_spec: 6
+    tipo: pregunta
+    clave: fecha
+    activa: true
+    acciones: [preguntar, recomendar]
+    objetivo: obtener_fecha_evento
+    semantica: [preguntar_fecha, explicar_brevemente_que_ayuda_a_validar_disponibilidad]
+    protegidos: [OCASION_ART, PREGUNTA_V1]
+    prohibido: [prometer_reserva, asumir_fecha, hacer_multiples_preguntas]
+    max_frases: 1
+    fijas: {pregunta: 0}        # la pregunta la redacta V1 (memoria.texto_pregunta)
+    forma: "{pregunta}"
+    partes:
+      pregunta: ["{{PREGUNTA_V1}}", "¿Para cuándo es {{OCASION_ART}}?", "¿Para qué fecha lo necesitas?", "¿Para cuándo lo necesitas?", "¿Ya tienes fecha?"]
+
+  ASK_SIZE:
+    id_spec: 7
+    tipo: pregunta
+    clave: talla
+    activa: true
+    acciones: [preguntar, recomendar]
+    objetivo: obtener_talla
+    semantica: [preguntar_TALLA, no_sugerir_talla]
+    protegidos: [PREGUNTA_V1]
+    prohibido: [inferir_talla, decir_que_talla_le_quedara, hacer_multiples_preguntas]
+    max_frases: 1
+    fijas: {pregunta: 0}        # la pregunta la redacta V1 (memoria.texto_pregunta)
+    forma: "{pregunta}"
+    partes:
+      pregunta: ["{{PREGUNTA_V1}}", "¿Qué talla usas normalmente?", "¿Qué talla usas?", "¿Cuál es tu talla?"]
+
+  CONFIRM_KNOWN_SIZE:
+    id_spec: 8
+    tipo: pregunta
+    clave: talla
+    activa: true
+    acciones: [preguntar, recomendar]
+    objetivo: confirmar_dato_historico
+    semantica: [indicar_que_hay_una_TALLA_PREVIA_registrada, pedir_confirmacion, no_asumir_que_sigue_siendo_valida]
+    protegidos: [TALLA_PREVIA, PREGUNTA_V1]
+    prohibido: [afirmar_talla_como_actual_sin_confirmacion, hacer_multiples_preguntas]
+    max_frases: 1
+    fijas: {pregunta: 0}        # la pregunta la redacta V1 (memoria.texto_pregunta)
+    forma: "{pregunta}"
+    partes:
+      pregunta: ["{{PREGUNTA_V1}}", "¿Usas talla {{TALLA_PREVIA}}, como en tu pedido anterior, o prefieres otra talla?",
+                 "En tu pedido anterior fue talla {{TALLA_PREVIA}}. ¿Sigues usando esa talla?"]
+
+  ASK_HEIGHT:
+    tipo: pregunta
+    clave: estatura
+    activa: true
+    acciones: [preguntar, recomendar]
+    objetivo: obtener_estatura
+    semantica: [preguntar_estatura]
+    protegidos: [PREGUNTA_V1]
+    prohibido: [inferir_talla, hacer_multiples_preguntas]
+    max_frases: 2
+    fijas: {pregunta: 0}        # la pregunta la redacta V1 (memoria.texto_pregunta)
+    forma: "{pregunta}"
+    partes:
+      pregunta: ["{{PREGUNTA_V1}}", "¿Cuánto mides? Así te digo cómo te quedaría el largo."]
+
+  ASK_COLOR:
+    tipo: pregunta
+    clave: color
+    activa: true
+    acciones: [preguntar, recomendar]
+    objetivo: obtener_color_preferido
+    semantica: [preguntar_color]
+    protegidos: [PREGUNTA_V1]
+    prohibido: [asumir_color, agregar_colores, hacer_multiples_preguntas]
+    max_frases: 1
+    fijas: {pregunta: 0}        # la pregunta la redacta V1 (memoria.texto_pregunta)
+    forma: "{pregunta}"
+    partes:
+      pregunta: ["{{PREGUNTA_V1}}", "¿Qué color tienes en mente?", "¿Qué color te gustaría?"]
+
+  ASK_WHAT_LOOKING_FOR:
+    id_spec: 1
+    tipo: pregunta
+    clave: que_busca
+    activa: true
+    acciones: [preguntar]
+    objetivo: descubrir_que_busca
+    semantica: [preguntar_que_busca, no_asumir_que_producto_busca]
+    protegidos: [PREGUNTA_V1]
+    prohibido: [inventar_producto, inventar_promocion, hacer_multiples_preguntas]
+    max_frases: 1
+    fijas: {pregunta: 0}        # la pregunta la redacta V1 (memoria.texto_pregunta)
+    forma: "{pregunta}"
+    partes:
+      pregunta: ["{{PREGUNTA_V1}}", "¿Qué estás buscando hoy?", "Cuéntame, ¿qué estás buscando?", "¿En qué te puedo ayudar?"]
+
+  ASK_WHAT_LIKED:
+    tipo: pregunta
+    clave: que_le_gusto
+    activa: true
+    acciones: [preguntar]
+    objetivo: saber_que_le_gusto
+    semantica: [preguntar_que_le_gusto_del_modelo]
+    protegidos: [PREGUNTA_V1]
+    prohibido: [inventar_producto, hacer_multiples_preguntas]
+    max_frases: 1
+    fijas: {pregunta: 0}        # la pregunta la redacta V1 (memoria.texto_pregunta)
+    forma: "{pregunta}"
+    partes:
+      pregunta: ["{{PREGUNTA_V1}}", "¿Qué es lo que más te gustó del modelo?", "¿Qué fue lo que más te gustó?"]
+
+  # ------------------------------------------------------------------------------------------------------------------------
+  # RECOMENDACIÓN: la prenda la eligió el código (RAG + stock); el motivo sale de su ficha. La foto la manda el backend.
+  # ------------------------------------------------------------------------------------------------------------------------
+  RECOMMEND_ONE_PRODUCT:
+    id_spec: 9
+    tipo: mensaje
+    activa: true
+    acciones: [recomendar]
+    objetivo: recomendar_una_opcion_grounded
+    semantica: [recomendar_PRODUCTO, explicar_MOTIVO, mencionar_MAXIMO_UN_ATRIBUTO_RELEVANTE, avisar_que_va_la_foto]
+    protegidos: [PRODUCTO, MOTIVO, OCASION_ART]
+    prohibido: [inventar_talla, inventar_colores, inventar_precio, inventar_stock, inventar_descuentos]
+    max_frases: 3
+    forma: "{cuerpo} {emoji}\n{motivo} {cierre}"
+    partes:
+      cuerpo: ["Creo que {{PRODUCTO}} puede ir muy bien para {{OCASION_ART}}",
+               "Para {{OCASION_ART}} te recomiendo {{PRODUCTO}}",
+               "Creo que {{PRODUCTO}} puede ir muy bien para lo que buscas",
+               "Te recomiendo {{PRODUCTO}}"]
+      motivo: ["{{MOTIVO}}."]
+      cierre: ["Te paso la foto.", "Te muestro la foto."]
+      emoji: ["😊", "✨", ""]
+
+  SEND_PRODUCT_PHOTOS:
+    id_spec: 14
+    tipo: mensaje
+    activa: true
+    acciones: [recomendar]
+    objetivo: presentar_fotos
+    semantica: [anunciar_que_se_mostraran_fotos_de_PRODUCTO, no_agregar_descripcion_no_validada]
+    protegidos: [PRODUCTO, PRODUCTO_DE]
+    prohibido: [inventar_producto, inventar_talla, inventar_color, inventar_precio]
+    max_frases: 1
+    forma: "{cuerpo} {emoji}"
+    partes:
+      cuerpo: ["Claro, te muestro la foto {{PRODUCTO_DE}}.", "¡Claro! Te paso la foto {{PRODUCTO_DE}}.", "Con gusto, aquí está {{PRODUCTO}}."]
+      emoji: ["😊", "🙌", ""]
+
+  # ------------------------------------------------------------------------------------------------------------------------
+  # Definidas y probadas, todavía NO activas: V1 sigue hablando en estos casos (datos de la tienda, cierre, derivación).
+  # Se activan una a una cuando el A/B de preguntas y recomendaciones lo respalde.
+  # ------------------------------------------------------------------------------------------------------------------------
+  GREETING_INITIAL:
+    id_spec: 1
+    tipo: mensaje
+    activa: false
+    acciones: [preguntar]
+    objetivo: saludar_y_abrir_conversacion
+    semantica: [saludar_amablemente, indicar_disponibilidad_para_ayudar, no_asumir_que_producto_busca]
+    protegidos: []
+    prohibido: [inventar_nombre_cliente, inventar_producto, inventar_promocion]
+    max_frases: 2
+    forma: "{inicio} {emoji} {cuerpo}\n\n{pregunta}"
+    partes:
+      inicio: ["¡Hola!"]
+      cuerpo: ["Claro, te ayudo."]
+      pregunta: ["¿Qué tipo de prenda estás buscando?"]
+      emoji: ["😊"]
+
+  CATALOG_REQUEST:
+    id_spec: 2
+    tipo: mensaje
+    activa: false
+    acciones: [responder]
+    objetivo: entregar_catalogo_y_descubrir_necesidad
+    semantica: [confirmar_que_hay_catalogo, mencionar_LINK_CATALOGO, preguntar_ocasion_o_estilo]
+    protegidos: [LINK_CATALOGO]
+    prohibido: [inventar_producto, inventar_stock, inventar_descuentos]
+    max_frases: 3
+    forma: "{inicio} {emoji} {cuerpo}\n{cierre}"
+    partes:
+      inicio: ["¡Claro que sí!"]
+      cuerpo: ["Puedes ver nuestro catálogo aquí: {{LINK_CATALOGO}}."]
+      cierre: ["Si quieres, también te ayudo a encontrar algo para una ocasión especial o para uso más casual."]
+      emoji: ["😊"]
+
+  RECOMMEND_WITH_PRICE:
+    id_spec: 10
+    tipo: mensaje
+    activa: false
+    acciones: [recomendar]
+    objetivo: recomendar_con_precio_validado
+    semantica: [recomendar_PRODUCTO, mencionar_PRECIO, dar_MOTIVO, preguntar_si_desea_verlo]
+    protegidos: [PRODUCTO, PRECIO, MOTIVO]
+    prohibido: [modificar_precio, inventar_descuento, inventar_stock]
+    max_frases: 3
+    forma: "{cuerpo} {emoji}\n{motivo}\n{cierre}"
+    partes:
+      cuerpo: ["Te recomendaría {{PRODUCTO}}"]
+      motivo: ["Está en {{PRECIO}} y {{MOTIVO}}."]
+      cierre: ["¿Quieres que te muestre cómo se ve?"]
+      emoji: ["😊"]
+
+  STOCK_AVAILABLE:
+    id_spec: 11
+    tipo: mensaje
+    activa: false
+    acciones: [responder]
+    objetivo: confirmar_disponibilidad
+    semantica: [confirmar_que_PRODUCTO_esta_disponible, mencionar_TALLAS_DISPONIBLES_solo_si_existen, invitar_a_continuar]
+    protegidos: [PRODUCTO, TALLAS_DISPONIBLES]
+    prohibido: [agregar_tallas, asumir_color, prometer_reserva]
+    max_frases: 2
+    forma: "{cuerpo} {emoji}\n{pregunta}"
+    partes:
+      cuerpo: ["Sí, {{PRODUCTO}} está disponible"]
+      pregunta: ["Ahora tenemos {{TALLAS_DISPONIBLES}}. ¿Qué talla necesitas?"]
+      emoji: ["😊"]
+
+  SIZE_UNAVAILABLE:
+    id_spec: 12
+    tipo: mensaje
+    activa: false
+    acciones: [responder]
+    objetivo: informar_sin_perder_venta
+    semantica: [indicar_que_TALLA_SOLICITADA_no_esta_disponible, mencionar_TALLAS_DISPONIBLES, ofrecer_BUSCAR_ALTERNATIVA]
+    protegidos: [TALLA_SOLICITADA, TALLAS_DISPONIBLES]
+    prohibido: [prometer_reposicion, inventar_fecha_reposicion]
+    max_frases: 2
+    forma: "{cuerpo}\n{cierre}"
+    partes:
+      cuerpo: ["En {{TALLA_SOLICITADA}} no lo tenemos disponible por ahora."]
+      cierre: ["Sí tenemos {{TALLAS_DISPONIBLES}}; si quieres, también te busco una opción parecida."]
+
+  PRODUCT_OUT_OF_STOCK:
+    id_spec: 13
+    tipo: mensaje
+    activa: false
+    acciones: [responder, preguntar]
+    objetivo: informar_y_recuperar_venta
+    semantica: [indicar_que_PRODUCTO_no_esta_disponible, no_dar_fecha_de_reposicion, ofrecer_ALTERNATIVAS]
+    protegidos: [PRODUCTO]
+    prohibido: [prometer_restock, inventar_stock, inventar_fecha]
+    max_frases: 2
+    forma: "{cuerpo} {emoji}\n{cierre}"
+    partes:
+      cuerpo: ["{{PRODUCTO}} ya no está disponible por ahora"]
+      cierre: ["Si quieres, te muestro opciones parecidas."]
+      emoji: ["😕"]
+
+  CONFIRM_PREVIOUS_OFFER:
+    id_spec: 15
+    tipo: mensaje
+    activa: false
+    sin_modelo: true          # «sí» a «¿quieres ver fotos?» lo resuelve el código (última oferta pendiente), no un modelo
+    acciones: [responder]
+    objetivo: continuar_ultimo_acto_pendiente
+    semantica: [resolver_ULTIMA_OFERTA, no_hacer_pregunta_nueva_si_hay_accion_pendiente]
+    protegidos: []
+    prohibido: [cambiar_de_tema]
+    max_frases: 1
+    forma: "{cuerpo}"
+    partes:
+      cuerpo: ["¡Claro!"]
+
+  ANSWER_PRICE:
+    id_spec: 16
+    tipo: mensaje
+    activa: false
+    acciones: [responder]
+    objetivo: responder_precio
+    semantica: [indicar_PRECIO_de_PRODUCTO, opcionalmente_preguntar_si_quiere_verlo]
+    protegidos: [PRODUCTO, PRECIO]
+    prohibido: [cambiar_precio, inventar_descuento, inventar_cuotas]
+    max_frases: 2
+    forma: "{cuerpo}\n{cierre}"
+    partes:
+      cuerpo: ["{{PRODUCTO}} está en {{PRECIO}}."]
+      cierre: ["Si quieres, te muestro fotos o revisamos las tallas disponibles."]
+
+  ANSWER_COLORS:
+    id_spec: 17
+    tipo: mensaje
+    activa: false
+    acciones: [responder]
+    objetivo: responder_colores
+    semantica: [mencionar_solo_COLORES_DISPONIBLES, preguntar_preferencia_si_hay_varios]
+    protegidos: [COLORES_DISPONIBLES]
+    prohibido: [agregar_colores]
+    max_frases: 2
+    forma: "{cuerpo} {emoji}\n{pregunta}"
+    partes:
+      cuerpo: ["Lo tenemos en {{COLORES_DISPONIBLES}}"]
+      pregunta: ["¿Cuál de esos colores te gusta más?"]
+      emoji: ["😊"]
+
+  CLARIFY_UNKNOWN:
+    id_spec: 18
+    tipo: mensaje
+    activa: false
+    acciones: [preguntar]
+    objetivo: aclarar_sin_frustrar
+    semantica: [reconocer_que_falta_contexto, hacer_una_sola_pregunta_concreta]
+    protegidos: []
+    prohibido: [inventar_intencion, hacer_multiples_preguntas]
+    max_frases: 2
+    forma: "{cuerpo} {emoji}\n{pregunta}"
+    partes:
+      cuerpo: ["Quiero asegurarme de entenderte bien"]
+      pregunta: ["¿Te refieres a la talla, al precio o a otro modelo?"]
+      emoji: ["😊"]
+
+  PRODUCT_SWITCH:
+    id_spec: 19
+    tipo: mensaje
+    activa: false
+    acciones: [recomendar, responder]
+    objetivo: cambiar_contexto_producto
+    semantica: [reconocer_PRODUCTO_NUEVO, abandonar_referencia_al_producto_anterior]
+    protegidos: [PRODUCTO_NUEVO]
+    prohibido: [mezclar_atributos_del_producto_anterior]
+    max_frases: 2
+    forma: "{cuerpo} {emoji}"
+    partes:
+      cuerpo: ["Claro, vamos con {{PRODUCTO_NUEVO}}."]
+      emoji: ["😊"]
+
+  PRODUCT_NOT_FOUND:
+    id_spec: 20
+    tipo: mensaje
+    activa: false
+    acciones: [responder, preguntar]
+    objetivo: evitar_invencion_y_recuperar_consulta
+    semantica: [indicar_que_no_se_identifico_PRODUCTO_MENCIONADO, pedir_codigo_foto_o_nombre_mas_preciso]
+    protegidos: [PRODUCTO_MENCIONADO]
+    prohibido: [asociarlo_a_otro_producto_sin_confirmacion]
+    max_frases: 2
+    forma: "{cuerpo}\n{pregunta}"
+    partes:
+      cuerpo: ["No logro identificar {{PRODUCTO_MENCIONADO}} con seguridad."]
+      pregunta: ["¿Me puedes enviar el código o una foto para revisarlo?"]
+
+  ASK_BUDGET:
+    id_spec: 21
+    tipo: pregunta
+    clave: presupuesto        # V1 todavía no pregunta presupuesto: sin clave en memoria.DETECTOR, no se usa
+    activa: false
+    acciones: [preguntar]
+    objetivo: obtener_presupuesto
+    semantica: [preguntar_RANGO_PRESUPUESTO, explicar_que_ayuda_a_filtrar]
+    protegidos: []
+    prohibido: [inventar_precio, hacer_multiples_preguntas]
+    max_frases: 1
+    forma: "{pregunta}"
+    partes:
+      pregunta: ["¿Tienes algún rango de presupuesto para ayudarte a filtrar mejor las opciones?"]
+
+  RECOMMEND_WITHIN_BUDGET:
+    id_spec: 22
+    tipo: mensaje
+    activa: false
+    acciones: [recomendar]
+    objetivo: recomendar_producto_compatible
+    semantica: [mencionar_PRODUCTO, mencionar_PRECIO, indicar_que_entra_en_PRESUPUESTO, explicar_MOTIVO]
+    protegidos: [PRODUCTO, PRECIO, PRESUPUESTO, MOTIVO]
+    prohibido: [inventar_descuento, modificar_precio]
+    max_frases: 3
+    forma: "{cuerpo} {emoji}\n{motivo}"
+    partes:
+      cuerpo: ["Te recomiendo {{PRODUCTO}}, que entra en tu presupuesto de {{PRESUPUESTO}}"]
+      motivo: ["Está en {{PRECIO}} y {{MOTIVO}}."]
+      emoji: ["😊"]
+
+  PURCHASE_INTENT:
+    id_spec: 23
+    tipo: mensaje
+    activa: false
+    sin_modelo: true          # el cierre (talla → resumen → SÍ → pago) son flujos fijos de código
+    acciones: [responder]
+    objetivo: iniciar_cierre
+    semantica: [confirmar_PRODUCTO, preguntar_solo_dato_faltante_para_continuar_compra]
+    protegidos: [PRODUCTO]
+    prohibido: [inventar_talla, inventar_metodo_pago, inventar_direccion]
+    max_frases: 2
+    forma: "{cuerpo} {emoji}\n{pregunta}"
+    partes:
+      cuerpo: ["Perfecto, vamos con {{PRODUCTO}}."]
+      pregunta: ["Solo necesito confirmar tu talla para continuar."]
+      emoji: ["😊"]
+
+  ORDER_SUMMARY_CONFIRM:
+    id_spec: 24
+    tipo: mensaje
+    activa: false
+    sin_modelo: true
+    acciones: [responder]
+    objetivo: confirmar_datos_antes_de_pago
+    semantica: [resumir_PRODUCTO, resumir_TALLA, resumir_PRECIO, pedir_confirmacion]
+    protegidos: [PRODUCTO, TALLA, PRECIO]
+    prohibido: [agregar_cargos, inventar_delivery, inventar_promociones]
+    max_frases: 3
+    forma: "{cuerpo}\n{pregunta}"
+    partes:
+      cuerpo: ["Entonces sería {{PRODUCTO}}, talla {{TALLA}}, por {{PRECIO}}."]
+      pregunta: ["¿Está correcto para continuar?"]
+
+  SOFT_FOLLOWUP:
+    id_spec: 25
+    tipo: mensaje
+    activa: false
+    acciones: [seguimiento]
+    objetivo: retomar_conversacion_sin_presionar
+    semantica: [mencionar_ULTIMO_PRODUCTO_si_existe, preguntar_si_aun_necesita_ayuda, evitar_presion]
+    protegidos: [ULTIMO_PRODUCTO]
+    prohibido: [inventar_escasez, falsa_urgencia, falso_descuento]
+    max_frases: 2
+    forma: "{inicio} {emoji} {cuerpo}\n{cierre}"
+    partes:
+      inicio: ["Hola"]
+      cuerpo: ["Quería saber si todavía estás viendo opciones de {{ULTIMO_PRODUCTO}}."]
+      cierre: ["Si quieres, te ayudo a revisar otras alternativas."]
+      emoji: ["😊"]
+
+  HUMAN_HANDOFF:
+    id_spec: 26
+    tipo: mensaje
+    activa: false
+    sin_modelo: true          # la derivación la hace el bot Go (accion «asesora»): es un flujo de código
+    acciones: [pedir_asesora]
+    objetivo: derivar_sin_generar_expectativas_falsas
+    semantica: [informar_que_una_asesora_continuara, resumir_brevemente_contexto_si_corresponde]
+    protegidos: []
+    prohibido: [prometer_tiempo_de_respuesta]
+    max_frases: 2
+    forma: "{cuerpo}\n{cierre}"
+    partes:
+      cuerpo: ["Voy a dejar esta consulta con una asesora para que pueda ayudarte mejor."]
+      cierre: ["Ya le paso el contexto de lo que estamos viendo."]

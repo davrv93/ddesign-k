@@ -27,12 +27,13 @@ import time
 from typing import Callable
 
 from . import config
-from .accion import accion_v1, es_flujo_fijo
+from .accion import accion_v1, es_flujo_fijo, tarjetas_de_prenda
 from .calidad import FALLBACK
 from .contexto import ContextBuilder
 from .estado import separar
 from .generacion import Encadenada
 from .motor import MotorRecursivo, Resultado
+from .plantillas import SinPlantilla
 
 log = logging.getLogger("agente.v2")
 
@@ -84,7 +85,8 @@ class AgentV2:
                 res["modelo_llm"] = f"v2:{gen.get('motor') or 'plantilla'}"
                 traza["enviado"] = "v2"
             else:
-                traza["motivo_v1"] = motivo or ("el borrador no pasó el control de calidad" if gen else "sin borrador")
+                traza["motivo_v1"] = motivo or (f"sin plantilla segura ({gen['sin_plantilla']})" if gen.get("sin_plantilla") else
+                                                 "el borrador no pasó el control de calidad" if gen else "sin borrador")
                 if getattr(req, "usar_llm", True):      # V2 no habló: el turno lo contesta V1 completo, con su LLM
                     previo_ms = res.get("ms")
                     res = dict(self.v1(req))
@@ -149,9 +151,17 @@ class AgentV2:
         if r.plan.accion == "preguntar" and not r.plan.pregunta:
             return "sin pregunta del código"
         if r.plan.accion == "recomendar":
-            sug = res_v1.get("sugerencias") or []
-            if not sug or sug[0].get("codigo") != r.plan.producto:
+            sug = tarjetas_de_prenda(res_v1)
+            if len(sug) != 1 or sug[0].get("codigo") != r.plan.producto:
                 return "la foto que manda V1 no es la del plan"
+        # Con plantillas semánticas: si el código no tiene una plantilla segura para este turno (un dato que falta, una pregunta sin
+        # plantilla, una categoría sin stock), V2 no inventa: habla V1.
+        elegir = getattr(self.redactor_activo, "elegir", None)
+        if elegir is not None:
+            try:
+                elegir(r.plan.a_dict(), ctx)
+            except SinPlantilla as e:
+                return f"sin plantilla segura ({e})"
         return None
 
     def _redactar(self, r: Resultado, res_v1: dict, ctx: dict, redactor) -> dict:
@@ -166,19 +176,33 @@ class AgentV2:
         for motor, variante in orden:
             t = time.perf_counter()
             nombre = getattr(motor, "nombre", "?")
+            if getattr(motor, "nombre_realizador", None):
+                nombre = f"{nombre}/{motor.nombre_realizador}"
             try:
                 borrador = motor.redactar(plan_d, variante, ctx)
+            except SinPlantilla as e:                       # el código no tiene una plantilla segura: no se inventa nada
+                return {"texto": None, "passed": None, "fallback": False, "motor": None, "sin_plantilla": str(e),
+                        "regeneraciones": 0, "intentos": _sin_texto(intentos), "v1_texto": res_v1.get("respuesta")}
             except Exception as e:
-                intentos.append({"motor": nombre, "variante": variante, "error": type(e).__name__,
-                                 "ms": int((time.perf_counter() - t) * 1000)})
+                intento = {"motor": nombre, "variante": variante, "error": type(e).__name__, "ms": int((time.perf_counter() - t) * 1000)}
+                if getattr(e, "errores", None):
+                    intento["errors"] = e.errores            # lo que rechazó la compuerta factual
+                if getattr(motor, "traza", None):
+                    intento["traza"] = motor.traza
+                intentos.append(intento)
                 continue
             q = self.calidad.evaluar(borrador, r.plan, ctx)
-            intentos.append({"motor": nombre, "variante": variante, "passed": q["passed"], "score": q["score"],
-                             "errors": q["errors"], "texto": borrador, "ms": int((time.perf_counter() - t) * 1000)})
+            intento = {"motor": nombre, "variante": variante, "passed": q["passed"], "score": q["score"], "errors": q["errors"],
+                       "texto": borrador, "ms": int((time.perf_counter() - t) * 1000)}
+            if getattr(motor, "traza", None):
+                intento["traza"] = motor.traza
+            intentos.append(intento)
             if q["passed"]:
-                return {"texto": borrador, "passed": True, "fallback": False, "motor": nombre,
-                        "regeneraciones": len(intentos) - 1, "intentos": _sin_texto(intentos),
-                        "v1_texto": res_v1.get("respuesta")}
+                out = {"texto": borrador, "passed": True, "fallback": False, "motor": nombre,
+                       "regeneraciones": len(intentos) - 1, "intentos": _sin_texto(intentos), "v1_texto": res_v1.get("respuesta")}
+                if intento.get("traza"):
+                    out["plantillas"] = intento["traza"].get("plantillas")
+                return out
         return {"texto": FALLBACK, "passed": False, "fallback": True, "motor": None,
                 "regeneraciones": max(0, len(intentos) - 1), "intentos": _sin_texto(intentos),
                 "v1_texto": res_v1.get("respuesta")}

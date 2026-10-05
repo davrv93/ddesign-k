@@ -127,10 +127,20 @@ class Encadenada:
         self.motores = motores
         self.intentos = intentos
 
+    def elegir(self, plan: dict, contexto: dict | None):
+        """Si algún redactor de la cadena elige plantillas (semántico), pregunta por él: así se sabe ANTES de redactar si hay una
+        plantilla segura para este turno (si no la hay, lanza SinPlantilla y habla V1)."""
+        for m in self.motores:
+            if hasattr(m, "elegir") and (not hasattr(m, "atiende") or m.atiende(plan)):
+                return m.elegir(plan, contexto)
+        return None
+
     def intentos_en_orden(self, plan: dict | None = None):
         for m in self.motores:
             if plan is not None and hasattr(m, "atiende") and not m.atiende(plan):
                 continue
-            n = self.intentos if getattr(m, "nombre", "") != "plantilla" else 1
+            # Un redactor sin modelo (plantilla, o el semántico con realizador base) se intenta una sola vez: repetirlo da lo mismo.
+            usa_modelo = getattr(m, "usa_modelo", getattr(m, "nombre", "") != "plantilla")
+            n = self.intentos if usa_modelo else 1
             for variante in range(n):
                 yield m, variante

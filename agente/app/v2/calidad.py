@@ -58,7 +58,13 @@ class ReglasCalidad:
 
     def __init__(self, precios: Callable[[], set[int]], nombres: Callable[[str], str | None] | None = None,
                  todos_los_nombres: Callable[[], dict[str, str]] | None = None,
-                 ficha_texto: Callable[[str], str] | None = None):
+                 ficha_texto: Callable[[str], str] | None = None,
+                 clave_de: Callable[[str], str] | None = None, preguntas_en: Callable[[str], list[str]] | None = None,
+                 fundamento: bool = True):
+        # Con `clave_de` y `preguntas_en` (los de V1) la pregunta se comprueba por su CLAVE, no por su texto: una plantilla puede
+        # preguntar lo mismo con otras palabras. Con `fundamento=False` no se exige que cada palabra salga de la ficha: ese
+        # trabajo lo hace la compuerta factual de las plantillas.
+        self.clave_de, self.preguntas_en, self.fundamento = clave_de, preguntas_en, fundamento
         self.precios = precios
         self.nombres = nombres or (lambda c: None)
         self.todos = todos_los_nombres or (lambda: {})
@@ -100,7 +106,14 @@ class ReglasCalidad:
             errores.append("más de una pregunta")
         if plan.accion == "preguntar" and "?" not in b:
             errores.append("el plan pide preguntar y no hay pregunta")
-        if preguntas:
+        tipo = (plan.pregunta or {}).get("tipo")
+        if preguntas and self.clave_de and self.preguntas_en and tipo:
+            qs = self.preguntas_en(b)
+            if not qs or self.clave_de(qs[-1]) != tipo:
+                errores.append("no hace la pregunta que eligió el código")
+            elif len(qs) > 1:
+                errores.append("más de una pregunta")
+        elif preguntas:
             if _plano(_sin_asteriscos(preguntas)).strip(" ¿?") not in plano_b:
                 errores.append("no hace la pregunta que eligió el código")
             elif b.count("?") > 1:
@@ -115,10 +128,10 @@ class ReglasCalidad:
         if NOMBRE_BOT_RE.search(b):
             errores.append("nombra a la asesora (o llama así a la clienta)")
         apertura = b.replace(preguntas, "").strip() if preguntas else b
-        if len(re.findall(r"\w+", apertura)) > MAX_PALABRAS_APERTURA:
+        if self.fundamento and len(re.findall(r"\w+", apertura)) > MAX_PALABRAS_APERTURA:
             errores.append(f"apertura demasiado larga (más de {MAX_PALABRAS_APERTURA} palabras)")
         errores += self._inventos(b, plan, contexto, preguntas)
-        if plan.accion == "recomendar" and plan.producto:
+        if self.fundamento and plan.accion == "recomendar" and plan.producto:
             errores += self._sin_fundamento(apertura, plan, contexto, preguntas)
         return {"passed": not errores, "score": round(max(0.0, 1.0 - 0.25 * len(errores)), 2), "errors": errores}
 

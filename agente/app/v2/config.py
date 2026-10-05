@@ -2,7 +2,7 @@
 
 AGENT_VERSION      v1 (por defecto) | v2
 V2_MODO            sombra (por defecto: V2 solo observa) | activo (V2 puede hablar)
-V2_HABLA           acciones en las que V2 habla en modo activo (por defecto: recomendar)
+V2_HABLA           acciones en las que V2 habla en modo activo (por defecto: recomendar,preguntar)
 MAX_AGENT_STEPS    pasos del agente por turno (1–10)
 MAX_DECISION_CALLS llamadas al motor de decisión por turno (0–10; 4 = el camino stock→RAG→stock→recomendar)
 MAX_TOOL_CALLS     herramientas (stock, RAG, CRM) por turno (0–10)
@@ -41,14 +41,14 @@ ACCIONES_HABLADAS = ("recomendar", "preguntar")
 
 
 def habla_por_defecto(env=os.environ) -> tuple[str, ...]:
-    """V2_HABLA: en qué acciones puede hablar V2 en modo activo. Por defecto solo `recomendar`.
+    """V2_HABLA: en qué acciones puede hablar V2 en modo activo. Por defecto `recomendar` y `preguntar`.
 
-    En `preguntar`, V1 ya dice lo mismo (la pregunta la elige el código) y además suele contestar o reconocer lo que la
-    clienta dijo («¡Sí, tenemos vestidos!», «¡Mucho gusto, Alvaro!»). Una V2 que solo pone la pregunta pierde eso: la
-    regresión lo detectó (2 turnos). Se puede activar con V2_HABLA=recomendar,preguntar, sabiendo ese costo."""
-    pedidas = tuple(x.strip().lower() for x in (env.get("V2_HABLA") or "recomendar").split(",") if x.strip())
+    En `preguntar`, V1 reconoce lo que la clienta acaba de decir («¡Sí, tenemos vestidos!», «¡Mucho gusto, Alvaro!»). Con
+    las plantillas semánticas V2 también lo reconoce (acuses con datos de V1), así que el A/B arranca con preguntas y
+    recomendaciones. Antes de las plantillas, una V2 que solo ponía la pregunta perdía esos acuses y la regresión lo detectó."""
+    pedidas = tuple(x.strip().lower() for x in (env.get("V2_HABLA") or "recomendar,preguntar").split(",") if x.strip())
     ok = tuple(x for x in pedidas if x in ACCIONES_HABLADAS)
-    return ok or ("recomendar",)
+    return ok or ("recomendar", "preguntar")
 
 
 def modo_pedido(valor: str | None, defecto: str) -> str:

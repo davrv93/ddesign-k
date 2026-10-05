@@ -471,17 +471,17 @@ out = v2(RES_REC, redactor=TodoMalo()).conversar(pedido(historial=H, memoria={"m
 caso("nada pasa el gate → habla V1 completo", (out["v2"]["enviado"], out["respuesta"], llamadas_v1), ("v1", "Texto de V1", [False, True]))
 caso("nada pasa el gate: el motivo es el control de calidad", out["v2"]["motivo_v1"], "el borrador no pasó el control de calidad")
 
-# Por defecto V2 solo habla al recomendar: en preguntar conserva lo que V1 contesta y reconoce.
-caso("V2_HABLA por defecto: solo recomendar", C.habla_por_defecto({}), ("recomendar",))
-caso("V2_HABLA=recomendar,preguntar", C.habla_por_defecto({"V2_HABLA": "Recomendar, preguntar"}), ("recomendar", "preguntar"))
-caso("V2_HABLA con basura → recomendar", C.habla_por_defecto({"V2_HABLA": "gritar"}), ("recomendar",))
+# Por defecto V2 habla al recomendar y al preguntar (con plantillas semánticas reconoce lo que ella dijo). Se puede limitar.
+caso("V2_HABLA por defecto: recomendar y preguntar", C.habla_por_defecto({}), ("recomendar", "preguntar"))
+caso("V2_HABLA=recomendar", C.habla_por_defecto({"V2_HABLA": "Recomendar"}), ("recomendar",))
+caso("V2_HABLA con basura → el defecto", C.habla_por_defecto({"V2_HABLA": "gritar"}), ("recomendar", "preguntar"))
 llamadas_v1.clear()
-out = v2(RES_PREG, habla=None).conversar(pedido(historial=H, modo="activo", mensaje="tengo una boda"))
-caso("por defecto, en preguntar habla V1 (conserva su acuse y su respuesta)",
+out = v2(RES_PREG, habla=("recomendar",)).conversar(pedido(historial=H, modo="activo", mensaje="tengo una boda"))
+caso("limitada a recomendar, en preguntar habla V1 (conserva su acuse y su respuesta)",
      (out["v2"]["enviado"], out["respuesta"], out["v2"]["motivo_v1"]),
      ("v1", "Qué lindo. ¿Para cuándo es?", "V2 coincide con V1 en preguntar: el texto es el de V1"))
-out = v2(RES_REC, habla=None).conversar(pedido(historial=H, memoria={"mostrados": []}, modo="activo", mensaje="x"))
-caso("por defecto, en recomendar sí habla V2", out["v2"]["enviado"], "v2")
+out = v2(RES_REC, habla=("recomendar",)).conversar(pedido(historial=H, memoria={"mostrados": []}, modo="activo", mensaje="x"))
+caso("limitada a recomendar, en recomendar sí habla V2", out["v2"]["enviado"], "v2")
 
 # --- métricas del modo activo ---------------------------------------------------------------------------------------------
 reg = Registro()

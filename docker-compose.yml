@@ -148,13 +148,15 @@ services:
       # para quien llame al agente sin decirla (por ejemplo, la prueba de regresión).
       AGENT_VERSION: ${KD_AGENT_VERSION:-v1}
       V2_MODO: ${KD_V2_MODO:-sombra}
-      V2_HABLA: ${KD_V2_HABLA:-recomendar}
+      V2_HABLA: ${KD_V2_HABLA:-recomendar,preguntar}
       # Decisión: reglas (por defecto) | jev (Jev local por /v1/systemone en V2_JUEZ_URL) | jev-chat.
       V2_DECISION: ${KD_V2_DECISION:-reglas}
       V2_JUEZ_URL: ${KD_V2_JUEZ_URL:-}
-      # Generación con un modelo local OpenAI-compatible (Ollama, llama-server). Vacío = solo plantillas de código.
+      # Realizador con un modelo local OpenAI-compatible (Ollama, llama-server). Vacío = solo el texto base de las plantillas.
+      # V2_REALIZADOR: variantes (el modelo ELIGE entre variantes escritas; por defecto) | reescritura | base.
       V2_GEN_URL: ${KD_V2_GEN_URL:-}
-      V2_GEN_MODELO: ${KD_V2_GEN_MODELO:-qwen2.5:3b}
+      V2_GEN_MODELO: ${KD_V2_GEN_MODELO:-qwen3:1.7b}
+      V2_REALIZADOR: ${KD_V2_REALIZADOR:-variantes}
       TZ: America/Lima
     volumes:
       - agente_data:/data

@@ -33,7 +33,11 @@ from .v2 import config as v2cfg
 from .v2.agente import AgentV2
 from .v2.contexto import ContextBuilder
 from .v2.decision import JevStyleDecision, JevSystemOneDecision, ReglasDecision, juez_llama
+from .v2.factual import CompuertaFactual
 from .v2.generacion import Encadenada, LlmLocalGeneracion
+from .v2 import motivo as v2motivo
+from .v2 import plantillas as v2plantillas
+from .v2.realizador import (ClienteLLM, RealizadorBase, RealizadorReescritura, RealizadorVariantes, RedactorSemantico)
 from .v2.motor import MotorRecursivo
 from .v2.calidad import PlantillaGeneracion, ReglasCalidad
 from .v2.metricas import REGISTRO as _METRICAS
@@ -2419,27 +2423,70 @@ def _texto_pregunta(tipo: str, mem: dict, mensaje: str, respuesta: str = "") -> 
     return memoria.texto_pregunta(tipo, mem, mensaje)
 
 
+def _motivo_de(f) -> str | None:
+    """Una frase corta y completa de la ficha de la prenda (v2/motivo.py): texto del backend, no de un modelo."""
+    return v2motivo.motivo(f.nombre, f.detalle)
+
+
+class _HechosBackend:
+    """Los datos que usan las plantillas de V2. SOLO del backend estructurado: el catálogo y el stock que el agente lee del backend,
+    y la ficha de V1. Nada sale de un modelo."""
+
+    def producto(self, codigo: str) -> dict | None:
+        with E.lock:
+            i = E.por_codigo.get(codigo)
+            f = E.fichas[i] if i is not None else None
+        if f is None:
+            return None
+        art = _art(f)
+        return {"PRODUCTO": f"{art} *{f.codigo}* {f.nombre}", "PRODUCTO_DE": f"{'del' if art == 'el' else 'de la'} *{f.codigo}* {f.nombre}",
+                "MOTIVO": _motivo_de(f)}
+
+    def categoria(self, clave: str) -> str | None:
+        hay = {c["clave"] for c in categorias_con_stock()}
+        return PLURAL.get(clave, clave) if clave in hay else None
+
+    def enlace_catalogo(self) -> str | None:
+        base = os.environ.get("PUBLIC_URL", "").rstrip("/")
+        return f"{base}/catalogo" if base else None
+
+
+def _semilla_v2(ctx: dict) -> str:
+    c = ctx.get("conversation") or {}
+    return f"{c.get('turns_total', 0)}|{c.get('last_user_message', '')}"
+
+
 def _redactores_v2():
-    """Sombra: plantillas de código (sin modelo, sin latencia). Activo: si hay V2_GEN_URL, un modelo local primero (solo en
-    las acciones de V2_GEN_ACCIONES) y la plantilla de código detrás; el control de calidad decide cuál sale."""
-    plantilla = PlantillaGeneracion(nombres=_nombre_de)
-    url = os.environ.get("V2_GEN_URL", "").strip()
-    if not url:
-        return plantilla, plantilla
+    """Redacción de V2 con plantillas semánticas (app/v2/plantillas.yaml).
+
+    El selector decide QUÉ se dice con código y datos del backend; los datos viajan como tokens; el modelo (Qwen3-1.7B) solo
+    cambia la forma de hablar; una compuerta factual determinista decide si lo que escribió sale; y el código rellena los datos reales.
+    - Sombra: realizador BASE (sin modelo: el texto base). No suma latencia al turno.
+    - Activo: V2_REALIZADOR=variantes (por defecto: el modelo ELIGE entre variantes ya escritas) | reescritura (reescribe conservando
+      tokens) | base. Sin V2_GEN_URL, o si el modelo falla, o si la compuerta rechaza: el texto base."""
+    cat = v2plantillas.cargar()
+    errores = v2plantillas.validar(cat)
+    if errores:
+        raise RuntimeError("plantillas.yaml inválido: " + "; ".join(errores))
     lim = v2cfg.limites_desde_entorno()
-    # V2_GEN_ACCIONES: qué redacta el modelo (recomendar, preguntar). Por defecto solo `recomendar`: medido con
-    # qwen2.5:3b, sus acuses al preguntar eran peores que los de código de V1 («Mucho gusto» a quien no se presentó).
-    acciones = tuple(x.strip() for x in os.environ.get("V2_GEN_ACCIONES", "recomendar").split(",") if x.strip())
-    llm = LlmLocalGeneracion(url, os.environ.get("V2_GEN_MODELO", "qwen2.5:3b"), lim.timeout_generacion_ms / 1000,
-                             nombre_de=_nombre_de, ficha_de=_ficha_de, acciones=acciones)
-    return plantilla, Encadenada([llm, plantilla])
+    selector = v2plantillas.Selector(cat, _HechosBackend(), memoria.OCASION_TXT, habla=v2cfg.habla_por_defecto())
+    compuerta = CompuertaFactual(clave_de=memoria.clave_de)
+    base = RedactorSemantico(selector, RealizadorBase(), compuerta, _semilla_v2)
+    url = os.environ.get("V2_GEN_URL", "").strip()
+    modo = os.environ.get("V2_REALIZADOR", "variantes").strip().lower()
+    if not url or modo not in ("variantes", "reescritura"):
+        return base, base
+    llm = ClienteLLM(url, os.environ.get("V2_GEN_MODELO", "qwen3:1.7b"), lim.timeout_generacion_ms / 1000)
+    realizador = RealizadorVariantes(llm, semilla="") if modo == "variantes" else RealizadorReescritura(llm)
+    return base, Encadenada([RedactorSemantico(selector, realizador, compuerta, _semilla_v2), base])
 
 
 _PLANTILLA, _ACTIVO = _redactores_v2()
 _V2 = AgentV2(
-    v1=conversar, motor=_motor_v2(), contexto=ContextBuilder(texto_pregunta=_texto_pregunta, pide_ver=memoria.pide_ver),
+    v1=conversar, motor=_motor_v2(),
+    contexto=ContextBuilder(texto_pregunta=_texto_pregunta, pide_ver=memoria.pide_ver, categoria_pedida=categoria_pedida),
     calidad=ReglasCalidad(precios=_precios_reales, nombres=_nombre_de, todos_los_nombres=_todos_los_nombres,
-                          ficha_texto=_ficha_texto),
+                          ficha_texto=_ficha_texto, clave_de=memoria.clave_de, preguntas_en=memoria.preguntas_en, fundamento=False),
     redactor=_PLANTILLA, redactor_activo=_ACTIVO, habla=v2cfg.habla_por_defecto(),
 )
 
