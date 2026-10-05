@@ -138,6 +138,7 @@ func (b *Bot) perfil(ctx context.Context, conv *store.Conversation, cc *convCont
 // memVenta: lo que Go lee de la memoria para avisar a la asesora (cita y temperatura de la clienta).
 type memVenta struct {
 	Cita, Producto, Talla, Temperatura, Motivo string
+	Envio, Ciudad                              string // «lima» | «provincia» y la ciudad, si ya lo dijo
 }
 
 func leerMemVenta(raw json.RawMessage) memVenta {
@@ -151,7 +152,8 @@ func leerMemVenta(raw json.RawMessage) memVenta {
 		_ = json.Unmarshal(raw, &m)
 	}
 	s := func(k string) string { v, _ := m.Sabemos[k].(string); return v }
-	return memVenta{Cita: s("cita"), Producto: m.Producto, Talla: s("talla"), Temperatura: m.Temperatura, Motivo: m.Motivo}
+	return memVenta{Cita: s("cita"), Producto: m.Producto, Talla: s("talla"), Temperatura: m.Temperatura, Motivo: m.Motivo,
+		Envio: s("envio"), Ciudad: s("ciudad")}
 }
 
 var (

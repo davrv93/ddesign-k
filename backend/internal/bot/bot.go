@@ -840,6 +840,15 @@ func (b *Bot) confirmOrder(ctx context.Context, conv *store.Conversation, cc *co
 		cc.Etapa = "venta_confirmada"
 		b.setState(ctx, conv, stPayment, *cc)
 		b.reply(ctx, conv, fmt.Sprintf("✅ ¡Pedido *#%d* confirmado! 🎉 Ya quedó separado para ti.", cc.OrderID))
+		// Si ya dijo a dónde va («soy de Arequipa») no se le vuelve a preguntar: el agente arma el total y los datos
+		// de pago con lo que ya sabemos. Si el agente no contesta, se pregunta como siempre.
+		if v := leerMemVenta(memoriaActual(conv, cc)); v.Envio == "lima" || v.Envio == "provincia" {
+			if r := b.askAgent(ctx, conv, cc, "para "+firstNonEmpty(v.Ciudad, v.Envio)); r != nil && r.Accion == "responder" &&
+				r.Etapa == "venta_confirmada" && strings.TrimSpace(r.Respuesta) != "" {
+				b.sendAgentText(ctx, conv, r)
+				return
+			}
+		}
 		b.reply(ctx, conv, "¿El envío sería para *Lima* o para *provincia*? 🚚")
 		return
 	}
