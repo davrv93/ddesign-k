@@ -316,9 +316,9 @@ let motor = '';
 try { motor = localStorage.getItem('motor') || ''; } catch (e) {}
 const NOMBRE_MOTOR = { actual: 'Actual', deepseek: 'DeepSeek' };
 // Versión del agente para este navegador: v1 | v2s (V2 en sombra) | v2a (V2 activo). Se manda en cada mensaje.
-let agente = 'v1';
-try { agente = localStorage.getItem('agente') || 'v1'; } catch (e) {}
-if (!['v1', 'v2s', 'v2a'].includes(agente)) agente = 'v1';
+let agente = 'v2a';
+try { agente = localStorage.getItem('agente') || 'v2a'; } catch (e) {}
+if (!['v1', 'v2s', 'v2a'].includes(agente)) agente = 'v2a';
 const NOMBRE_AGENTE = { v1: 'V1', v2s: 'V2 en sombra', v2a: 'V2 activo' };
 const versionDe = () => agente === 'v1' ? { version: 'v1' } : { version: 'v2', modo: agente === 'v2a' ? 'activo' : 'sombra' };
 function pintarAgente() {
