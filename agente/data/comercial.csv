@@ -528,3 +528,111 @@ otro,hablaste con el sobre el tema de las boletas
 otro,oye y el tema de la camioneta?
 otro,ya le pasaste el reporte al jefe?
 otro,jaja ya ya, despues hablamos de eso
+consulta_producto,"hola buenas, estoy buscando un vestido"
+consulta_producto,"Hola, buenas tardes. Estoy buscando un vestido."
+consulta_producto,ola buenas toy buscando un bestido
+consulta_producto,hola busco algo para mi mama ke sea bonito
+consulta_producto,"Hola, busco algo bonito para mi mamá."
+consulta_producto,hola ps busco algo pa mi mami
+consulta_producto,"oe hola, busco algo pa una cena de noche"
+consulta_producto,"Hola, busco algo para una cena de noche."
+consulta_producto,ola busco algo pa una sena d noche
+consulta_producto,es pa un matri
+consulta_producto,Es para un matrimonio.
+consulta_producto,es pa un matrimonio pe
+consulta_producto,es pa un bautizo
+consulta_producto,Es para un bautizo.
+consulta_producto,es pa un bautiso
+consulta_producto,pa un cumple nomas
+consulta_producto,"Es para un cumpleaños, nada más."
+consulta_producto,pa un cumpleanos nomas
+consulta_producto,es para mi compromiso
+consulta_producto,Es para mi compromiso.
+consulta_producto,es pa mi conpromiso
+consulta_producto,"hola, busco algo pa una entrevista de chamba"
+consulta_producto,"Hola, busco algo para una entrevista de trabajo."
+consulta_producto,ola busco algo pa una entrebista d trabajo
+consulta_producto,"pa la ofi pe, pa ir a trabajar"
+consulta_producto,"Es para la oficina, para ir a trabajar."
+consulta_producto,"pa la ofisina, pa el trabajo"
+consulta_producto,tengo mi graduacion pasado mañana y no tengo nada q ponerme
+consulta_producto,Tengo mi graduación pasado mañana y no tengo nada que ponerme.
+consulta_producto,tengo mi graduasion pasado manana y no tengo nada
+consulta_producto,"no es pa nada en especial, solo quiero regalarle algo elegante"
+consulta_producto,"No es para nada en especial, solo quiero regalarle algo elegante."
+consulta_producto,"no es pa nada espesial, solo kiero algo elegante"
+otro,el 17 de este mes
+otro,Es el 17 de este mes.
+otro,el 17 d este mes
+otro,el 28 de octubre
+otro,Es el 28 de octubre.
+otro,el 28 d otubre
+otro,pasado mañana te dije
+otro,Te dije que es pasado mañana.
+otro,pasado manana te dije pe
+otro,de nochee
+otro,Es de noche.
+otro,d noche
+otro,es d dia
+otro,Es de día.
+otro,de dia ps
+otro,el jueves de la otra semana
+otro,Es el jueves de la próxima semana.
+otro,el jueves d la otra semana
+otro,"S pe, te acabo de decir"
+otro,"Soy talla S, ya te lo dije."
+otro,S pe ya te dije
+otro,mi pedido no llega
+otro,Mi pedido todavía no llega.
+otro,mi pedido no yega
+otro,nada en especial
+otro,Nada en especial.
+otro,nada en espesial
+consulta_pago,"hola buenas, como se paga?"
+consulta_pago,"Hola, buenas tardes, ¿cómo se paga?"
+consulta_pago,ola como se paga
+consulta_pago,ya pero hay contraentrega?
+consulta_pago,¿Y hay pago contra entrega?
+consulta_pago,ya pero ay contraentrega?
+consulta_pago,si pasame los datos xfa
+consulta_pago,"Sí, pásame los datos para pagar, por favor."
+consulta_pago,si pasame los datos pa pagar
+consulta_ubicacion,"oe hola, donde quedan?"
+consulta_ubicacion,"Hola, ¿dónde quedan?"
+consulta_ubicacion,ola donde kedan
+consulta_disponibilidad,hola oe tienes el vestido holly?
+consulta_disponibilidad,"Hola, ¿tienes el vestido Holly?"
+consulta_disponibilidad,ola tienes el bestido holly?
+consulta_delivery,"Para provincia, a Ica."
+consulta_delivery,"Es para provincia, a Tacna."
+consulta_delivery,"pa provincia, a cusco"
+consulta_delivery,"hola buenas! soy de Tacna, hacen envios para aca?"
+consulta_delivery,"Hola, soy de Tacna, ¿hacen envíos para acá?"
+consulta_delivery,"ola soy d tacna, asen envios?"
+intencion_compra,"ta lindo! lo kiero en M, separamelo xfa"
+intencion_compra,"Está lindo, lo quiero en M, sepáramelo por favor."
+intencion_compra,me encanta separamelo en M porfa
+intencion_compra,ya lo quiero en M
+intencion_compra,"Ya, lo quiero en talla M."
+intencion_compra,ya lo kiero en M
+comparacion,mmm ta bacán pero muestrame más pe
+comparacion,"Está bonito, pero muéstrame más opciones."
+comparacion,ta bonito pero muestrame mas
+objecion_precio,"uy ta carito jaja. lo pienso y te aviso, grasias"
+objecion_precio,"Uy, está un poco caro, lo pienso y te aviso."
+objecion_precio,"uy ta caro ese jaja, lo pienso y te aviso"
+consulta_precio,ta chevere ese. cuanto sale?
+consulta_precio,"Está bonito, ¿cuánto cuesta?"
+consulta_precio,ta chevere cuanto questa
+consulta_talla,y si no me queda se puede ajustar?
+consulta_talla,"¿Y si no me queda, se puede ajustar?"
+consulta_talla,y si no me keda se puede ajustar
+consulta_talla,"ta bonito, y en S hay?"
+consulta_talla,"Está bonito, ¿hay en talla S?"
+consulta_talla,"ta bonito, ay en S?"
+despedida,"ya le escribo al 4, gracias"
+despedida,"Ya le escribo a la asesora, gracias."
+despedida,ya le escribo al 4 grax
+objecion,"ya chevere, lo converso con mi hermana y te escribo"
+objecion,Lo voy a conversar con mi esposo y te aviso.
+objecion,lo boy a consultar con mi hermana y te escribo
