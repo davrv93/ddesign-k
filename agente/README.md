@@ -19,11 +19,12 @@ repitiendo «Responde SI o NO».
 
 | Pieza | Archivo | Qué hace |
 |---|---|---|
-| Clasificador comercial | `data/comercial.csv` (529 frases, 20 intenciones), `app/entrenar.py` | Qué quiere la clienta en términos de venta: `interesado`, `intencion_compra`, `confirmacion_compra`, `objecion`, `objecion_precio`, `consulta_precio`, `consulta_material`… Se mide con `data/prueba_comercial.csv` (68 frases que no entran al entrenamiento): **98,5 %** (97,1 % antes de la prueba con conversaciones) |
+| Clasificador comercial | `data/comercial.csv` (543 frases, 20 intenciones), `app/entrenar.py` | Qué quiere la clienta en términos de venta: `interesado`, `intencion_compra`, `confirmacion_compra`, `objecion`, `objecion_precio`, `consulta_precio`, `consulta_material`… Se mide con `data/prueba_comercial.csv` (68 frases que no entran al entrenamiento): **98,5 %** (97,1 % antes de la prueba con conversaciones) |
 | Máquina de etapas | `app/etapas.py` | Reglas explícitas, sin LLM. Devuelve la etapa nueva y el motivo |
 | Guion por etapa | `app/venta.py` | Prompt de sistema, guía de cada etapa, totales ya calculados, datos de pago |
-| Pruebas | `app/prueba_etapas.py` | 40 casos (los 7 del encargo, el primer contacto, la cita para probarse, la indagación y «¿me lo apartas?»). Se ejecutan al construir la imagen: si falla uno, no hay imagen |
-| Memoria y hilo | `app/memoria.py`, `app/prueba_memoria.py` | Lo que ya sabemos de la clienta, la pregunta pendiente, la siguiente pregunta, la temperatura y la cita (secciones siguientes). 235 casos, también en el build |
+| Pruebas | `app/prueba_etapas.py` | 50 casos (los 7 del encargo, el primer contacto, la cita para probarse, la indagación, «¿me lo apartas?» y el sí y el no dichos de otra manera). Se ejecutan al construir la imagen: si falla uno, no hay imagen |
+| Memoria y hilo | `app/memoria.py`, `app/prueba_memoria.py` | Lo que ya sabemos de la clienta, la pregunta pendiente, la siguiente pregunta, la temperatura y la cita (secciones siguientes). 313 casos, también en el build |
+| Regresión | `app/regresion.py`, `data/regresion_*` | 60 preguntas, 30 conversaciones, entradas raras y aguante contra un agente de pruebas, **sin costo** (sección «Prueba de regresión»). Se corre antes de desplegar |
 
 Reglas de `etapas.py`:
 
@@ -148,7 +149,9 @@ viejas), `memoria.reconstruir` la arma repasando el historial con las mismas reg
   `confirmar` (y `sabemos.talla`), `esperando_pago` → `lima_o_provincia`, `esperando_ubicacion` → `direccion`. Si
   en pleno cierre el agente contesta una duda con su propia pregunta, la pendiente vuelve a la del estado.
 - **Clienta que vuelve:** Go manda `perfil` (`nombre`, `tallas` y `productos` de sus pedidos confirmados
-  anteriores, el más reciente primero, y cuántos). El agente prellena `sabemos.talla` si no la dijo hoy y el LLM
+  anteriores, el más reciente primero, y cuántos). Su talla de antes se guarda en `talla_perfil` y **se le sugiere al
+  preguntar** («¿Usas talla *M*, como en tu pedido anterior, o prefieres otra talla?»); no pasa a `sabemos.talla` ni arma un
+  pedido hasta que ella lo diga (antes se daba por dicha: «quiero el v21» armó un pedido en M y era L). El LLM
   puede mencionarlo una vez («¡qué gusto que vuelvas!»).
 - **Chat web de prueba:** guarda `memoria` en JS, la manda y la enseña en el panel de análisis (sección
   «Memoria»: qué espera, qué pregunta toca, lo que sabe y de dónde salió cada dato). «Nuevo chat» la borra.
@@ -407,6 +410,85 @@ Lo que se corrigió está en el commit «lo que destaparon 75 conversaciones de 
 «robótica» en ~40 % de las conversaciones (el LLM alarga y repite elogios; `_sin_repetir` quita lo casi idéntico, no lo
 parecido); las reglas tienen falsos positivos conocidos («dame tu Yape para pagar» no la cuenta como compra); el pedido
 de dos prendas a la vez solo arma una; y la cifra es con `deepseek-v4-flash`, no con el modelo principal.
+
+## Prueba de regresión (05-10-2026)
+
+Pedido del dueño: «asegúrate de entrenarlo para que pueda aguantar bien». `app/regresion.py` comprueba **por código**,
+turno por turno, las reglas que dictó (mostrar solo cuando lo piden o toca; si pide X, mostrar X; leer lo que responde a
+la pregunta del bot; cumplir lo que promete; derivar solo si lo pide; interés no es compra, una pregunta por mensaje, sin
+repetir ni inventar). **No cuesta nada**: no llama a DeepSeek ni a Jev, y da el mismo resultado cada vez.
+
+```bash
+# 1. Agente de pruebas (una sola copia; catálogo y stock de producción, solo lectura; el pago, con la plantilla)
+docker build -t kddesign/agente:regresion --build-arg CATALOGO100=0 --build-arg SETFIT_PASOS=0 agente
+docker run -d --name kddesign_agente_regresion -m 3g -p 127.0.0.1:18497:8000 \
+  -e JEV_MODO=off -e JEV_VERIFICAR=0 -e RESPUESTA_LLM_PRUEBA=1 -e MOTOR=deepseek -e PRODUCTO_DEMO=V42 -e SUCURSALES=0 \
+  -e PAGO_INFO=/app/seed/pago.md.ejemplo \
+  -e CATALOG_URL=https://proyectopostventa.site/baruka/api/public/catalog \
+  -e STOCK_URL=https://proyectopostventa.site/baruka/api/public/stock kddesign/agente:regresion
+# 2. La prueba (solo biblioteca estándar; corre en el host). Sale con código ≠ 0 si algo falla.
+cd agente && python3 -m app.regresion --url http://127.0.0.1:18497
+python3 -m app.regresion --caso C02 --transcripcion     # una conversación, turno por turno
+python3 -m app.regresion --solapes                       # que ningún caso esté copiado de los datos de entrenamiento
+docker rm -f kddesign_agente_regresion                   # al terminar
+```
+
+| Bloque | Qué comprueba |
+|---|---|
+| **60 preguntas** (`data/regresion_preguntas.csv`) | Un mensaje estilo WhatsApp (jerga, faltas, «pa», «q», «x») en un contexto dado (`contexto`: `nuevo`, `saludo`, `ocasion`, `fecha`, `horario`, `visto`, `probar`, `talla`, `confirmar`, `envio`, `pago`, `voucher`, `otras`…). Contra `/clasificar` (intención comercial), contra las funciones puras de `memoria.py` (`extraer`, `afirma`, `niega`, `pide_ver`) y contra `/chat` (acción, fotos, etapa, flujo, texto) |
+| **30 conversaciones** (`data/regresion_conversaciones.jsonl`) | Afirmaciones por turno (`espera`): etapa, nº de fotos y de qué prenda o categoría, pendiente y pregunta que hace, lo que queda en `memoria.sabemos`, acción, flujo y texto (`{precio:V41}`, `{total:foco:lima}` = precio + S/ 15 Lima / S/ 20 provincia, `{showroom}`, `{hoy+14}`). Más las **reglas universales** de `universales()`, que valen en todos los turnos: una pregunta por mensaje, nunca `asesora` sin pedirla, `pedido` solo en cierre y con talla, no preguntar lo ya sabido, como mucho una foto si no pidió varias, ninguna foto repetida ni con el pedido confirmado, foto o datos de pago prometidos = enviados, datos de pago solo con venta confirmada y ningún precio que no exista en el catálogo |
+| **47 entradas raras** | Mensaje vacío, solo emojis, 20.000 caracteres, historial de 600 turnos, memoria y perfil con basura, tipos equivocados, JSON cortado, etapa inválida… Siempre 200 o 4xx; **nunca 500** |
+| **Aguante** | 20 conversaciones en paralelo (200 peticiones): sin errores HTTP, p95 de latencia y memoria del contenedor antes y después |
+
+Las 30 conversaciones: las dos de WhatsApp del 04-10 por la noche (la boda del 20 y «me llamo alvaro») y cuatro reales
+anteriores, **anonimizadas** (nombres inventados, sin teléfonos); los fallos que vio el dueño, uno por conversación; su
+guion (evento → cuál → cuándo → día/noche → una opción → tela, corte, talla → precio y probárselo → cita con el refrigerio
+rechazado) y el camino de compra (confirmar → Lima o provincia → total + pago → comprobante); con y sin anuncio, clienta
+fría, clienta que vuelve, color y prenda que no hay, cambio de prenda, fuera de tema, «menu» y la vuelta tras horas.
+
+**Cómo corre sin LLM.** Cada petición va con `usar_llm: false`. El agente ejecuta toda su lógica (clasificación local,
+memoria, etapas, fotos, pago, cita, pedido) y el texto lo arma el **respaldo del código** (`respaldo_codigo` en
+`main.py`): la opción elegida, el precio, las tallas de ahora, la tela de la ficha, el showroom, los envíos y la pregunta
+que toca. Es el mismo respaldo que contesta en producción si DeepSeek y Gemini no responden (antes salía una frase
+cualquiera del dataset y la pregunta no se hacía). Las ramas que dependen de lo que **escribe** el LLM se prueban
+inyectando su respuesta con el campo `respuesta_llm` de `/chat` (en el caso, `"llm": "…"`): pasa por los mismos filtros
+que el texto real. El agente solo lo acepta si arrancó con `RESPUESTA_LLM_PRUEBA=1` (`/health` → `respuesta_llm_prueba`);
+**en producción no se define y el campo se ignora**. Así se prueban: «la respuesta nombra X → la foto es de X», la prenda
+nombrada antes de indagar (se quita), la foto o los datos de pago prometidos, las preguntas repetidas y los inventos
+(`_sin_inventos`: tiempos de entrega, descuentos, precios y telas que no están en TIENDA ni en la ficha).
+
+**Del bot Go se emula lo mínimo** (`Chat` en `regresion.py`): el resumen del pedido y el SI/NO, «menu», la pausa por
+asesora y la sesión nueva tras 6 h. El flujo real de Go se prueba con `go test ./internal/bot/` (`regresion_test.go`:
+decir el nombre no pausa el bot, «menu» quita la pausa, el pedido solo con la talla que dijo, «si ca ver» y el comprobante
+en el pago, y tras el SI no se vuelve a preguntar «¿Lima o provincia?» si ya lo dijo).
+
+**Si un caso falla.** Clasificación → frases nuevas en `comercial.csv` o `intenciones_tienda.csv` (tríos), **distintas**
+de las de la prueba (`--solapes` lo comprueba; la prueba no se usa para entrenar). Lógica → `memoria.py`, `etapas.py`,
+`main.py` o el bot Go, con su caso en `prueba_memoria.py` / `prueba_etapas.py` / `go test`. No se borran casos: si uno
+choca con una regla nueva de la tienda, se ajusta y se explica al lado. Los casos están fuera del contexto de Docker
+(`.dockerignore`): editarlos no re-entrena la imagen. Si una prenda de un caso se agotó en producción, el caso sale
+«omitido», no fallado (`requiere`).
+
+**Medido el 05-10-2026** (Mac; agente de pruebas con el catálogo y el stock de producción):
+
+| | Antes (`f7bf0be`) | Después |
+|---|---|---|
+| 60 preguntas | 33 | **60** |
+| 30 conversaciones | 2 | **30** |
+| 47 entradas raras | 44 (tres 500: caracteres de control, cita con basura en la memoria, perfil con tipos equivocados) | **47** |
+| Aguante: 200 peticiones, 20 en paralelo | 0 errores, p95 0,62 s | 0 errores, p95 0,65–1,27 s en tres corridas; memoria 1.250 → 1.268 MiB tras las tres |
+| Build: intención / comercial | 0,9848 (65/66) / 0,9853 (67/68) | igual (543 frases en `comercial.csv`) |
+
+De las 28 conversaciones que fallaban, casi todas caían por lo mismo: sin LLM el texto era una frase del dataset, la
+pregunta no se hacía y la pendiente no quedaba anotada. Lo demás eran reglas: la talla del perfil dada por dicha, «Ok, ¿el
+Irla qué precio tiene?» tomado por un sí a «¿quieres ver otras?», fotos de otra categoría de relleno, «muéstrame más» sin
+fotos (la tilde), describir la prenda sin que se busque, y el pago cuando ya dijo de dónde es.
+
+**Lo que el código no puede garantizar sin el LLM** (la prueba no lo cubre; ahí sigue haciendo falta
+`app/conversaciones.py` o leer chats reales): que el texto *conteste* una pregunta abierta («¿qué talla me recomiendas si
+soy flaquita?», «¿combina con zapatos dorados?»), que insista con razones y con otras palabras, el tono según la
+temperatura, y que el LLM no invente algo que ningún filtro conoce (los filtros cubren plazos, descuentos, precios,
+telas y escasez; lo demás lo vigila Jev con `JEV_VERIFICAR=1`).
 
 ## Respuesta estructurada y control antes de enviar (04-10-2026)
 

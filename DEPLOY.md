@@ -53,7 +53,10 @@ ssh -i $K $H 'cd ~/kddesign && awk -F= "{print \$1, (length(\$2)>0?\"set\":\"EMP
 ```bash
 cd $R/backend  && go vet ./... && go test ./...                 # bot, reservas, agente simulado
 cd $R/frontend && BASE_PATH=/baruka/ npm run build && rm -rf dist # tsc + build con la ruta base real
-cd $R/agente   && python3 -m py_compile app/*.py && python3 -m app.prueba_etapas   # sintaxis + máquina de etapas (26/26)
+cd $R/agente   && python3 -m py_compile app/*.py && python3 -m app.prueba_etapas && python3 -m app.prueba_memoria   # sintaxis, etapas y memoria
+# Si cambió algo de la conversación (agente/app, agente/data o internal/bot): la prueba de regresión, que no cuesta nada.
+# Necesita el agente de pruebas en 127.0.0.1:18497 (cómo levantarlo: agente/README.md, «Prueba de regresión»).
+cd $R/agente   && python3 -m app.regresion --url http://127.0.0.1:18497      # 60 preguntas, 30 conversaciones, entradas raras y aguante; debe decir «REGRESIÓN OK»
 ```
 
 ## 2. Subir el código

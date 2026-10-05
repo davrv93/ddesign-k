@@ -82,6 +82,13 @@ curl -s -X POST https://proyectopostventa.site/demo-design/chat -H 'Content-Type
   corpus y los resultados van en `agente/pruebas_conv/` (**fuera de git**: hay chats reales). Las 50 `reservada` no se
   miran para corregir. Cuesta ~US$ 0,10 por 50 conversaciones con `deepseek-v4-flash`; **la clave de OpenRouter es la de
   producción y tiene tope**: mira el saldo (`--tope`) antes de correr. Detalle en [`agente/README.md`](agente/README.md).
+- **Agente, prueba de regresión** (`app/regresion.py`, **sin costo**): 60 preguntas (`data/regresion_preguntas.csv`) y 30
+  conversaciones con afirmaciones por turno (`data/regresion_conversaciones.jsonl`) contra un agente de pruebas con
+  `usar_llm: false`, más entradas raras (nunca 500) y aguante. Córrela antes de desplegar cualquier cambio de conversación:
+  `python3 -m app.regresion --url http://127.0.0.1:18497`. Un fallo nuevo visto en WhatsApp se añade como caso (anonimizado:
+  el repo es público). Los casos **no** se usan para entrenar (`--solapes`) ni se borran. Lo que depende del texto del LLM se
+  prueba con `"llm": "…"` en el turno (campo `respuesta_llm`, solo con `RESPUESTA_LLM_PRUEBA=1`). Sin LLM contesta
+  `respaldo_codigo` (`main.py`): si añades un dato que el bot puede dar (un servicio, un horario), dalo también ahí.
 - **Agente, Jev:** las 20 intenciones que ve Jev están descritas en `INTENCIONES` de `app/jev.py`; si se añade
   una intención a `comercial.csv`, va también ahí. Se mide con `python -m app.evaluar_jev --local …` dentro
   del contenedor (llamadas de pago, ~US$ 0,004). Jev nunca decide la etapa: solo entrega intención y confianza
