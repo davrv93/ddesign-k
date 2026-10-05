@@ -1,0 +1,27 @@
+# LoRA de Qwen2.5-1.5B-Instruct sobre el oro (agente/finetune). Se lanza desde agente/finetune:
+#   HF_HUB_OFFLINE=1 .venv/bin/python -m mlx_lm lora -c lora.yaml
+# Rutas relativas a agente/finetune. 640 ejemplos / lote 1 = 640 iteraciones por época: 1920 = 3 épocas como máximo; se
+# guarda cada 160 y se elige el punto con menor pérdida de validación (si sube, se para antes).
+model: modelos/qwen15b
+train: true
+data: datos/mlx
+fine_tune_type: lora
+optimizer: adamw
+mask_prompt: true          # la pérdida solo cuenta el JSON de la vendedora, no el contexto (≈97 % de los tokens)
+num_layers: 16             # las 16 capas de arriba de 28
+batch_size: 1              # con 2 la validación se quedó sin memoria de GPU (Metal) en el Mac de 24 GB
+grad_accumulation_steps: 8 # lote efectivo de 8
+iters: 1920
+learning_rate: 1.0e-4
+steps_per_report: 40
+steps_per_eval: 160        # media época
+val_batches: -1
+save_every: 160
+max_seq_length: 5120       # el ejemplo más largo tiene 4.786 tokens: nada se corta
+grad_checkpoint: true
+adapter_path: modelos/adaptador
+seed: 7
+lora_parameters:
+  rank: 16
+  scale: 20.0
+  dropout: 0.05
