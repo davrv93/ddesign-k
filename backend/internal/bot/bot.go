@@ -70,6 +70,8 @@ type Bot struct {
 	Agent *agente.Client
 	// Notify avisa al panel que algo cambió ("orders", "conversations", ...).
 	Notify func(topic string)
+	// CRM recibe un evento al final de cada turno (Kommo, internal/kommo). nil = apagado (KOMMO_ENABLED=0).
+	CRM CRM
 
 	mu      sync.Mutex
 	locks   map[string]*sync.Mutex
@@ -152,6 +154,12 @@ func (b *Bot) Handle(ctx context.Context, in *Incoming) {
 		log.Printf("bot: guardar mensaje: %v", err)
 	}
 	b.Notify("conversations")
+	// CRM: lo que pase en este turno (hitos, pedido, etapa, memoria) sale en un solo evento al terminar, en segundo
+	// plano. Va también si el bot está en pausa: la clienta escribió y el lead lo refleja.
+	if ctx2, tr := b.conTurno(ctx); tr != nil {
+		ctx, tr.desdeMsg = ctx2, msg.ID
+		defer b.cerrarTurno(context.WithoutCancel(ctx), conv.ID, tr)
+	}
 
 	// Vuelve después de horas: es una conversación nueva. Sin esto el agente seguía «hablando» de las prendas de la
 	// mañana (ofrecía una sin que la pidan) y arrastraba la etapa y la pregunta pendiente de entonces.
@@ -458,6 +466,7 @@ func (b *Bot) handoff(ctx context.Context, conv *store.Conversation) {
 	_ = b.store.SetBotPaused(ctx, conv.ID, true)
 	_ = b.store.SaveDecision(ctx, &store.Decision{ConversationID: conv.ID, Decision: "derivar_humano",
 		Razon: "paso a una asesora", Autor: "bot"})
+	b.hito(ctx, conv, "🙋‍♀️ Pidió hablar con una asesora (el bot se pausó en este chat)")
 	b.reply(ctx, conv, "🙋‍♀️ ¡Listo! Una asesora te atenderá en breve por este mismo chat.\nSi prefieres seguir conmigo mientras tanto, escribe *menu*.")
 	b.Notify("conversations")
 }
@@ -503,6 +512,7 @@ func (b *Bot) handlePhoto(ctx context.Context, conv *store.Conversation, cc *con
 		return
 	}
 	log.Printf("bot: IA (%s) foto=%s code=%s conf=%.2f alt=%v", res.Model, msg.Media, res.Code, res.Confidence, res.Alternatives)
+	b.hito(ctx, conv, fmt.Sprintf("📷 Mandó una foto: la IA vio «%s» (%s, confianza %.2f)", res.Seen, firstNonEmpty(res.Code, "sin coincidencia"), res.Confidence))
 	if p, ok := byCode[res.Code]; ok && res.Confidence >= b.cfg.MatchThreshold {
 		b.offerProduct(ctx, conv, cc, p, msg.Media, res.Confidence, alternativesOf(res, byCode))
 		return
@@ -547,6 +557,7 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 			MatchConfidence: conf, Notes: "Consultó " + p.Code + " (agotado)"}
 		_ = b.store.CreateOrder(ctx, o)
 		b.Notify("orders")
+		b.hito(ctx, conv, "😔 Consultó el "+p.Code+" "+p.Name+", agotado")
 		text := "😔 El modelo *" + p.Code + " " + p.Name + "* está agotado por ahora."
 		inStock := []string{}
 		for _, a := range alts {
@@ -565,6 +576,7 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 	}
 	next := b.draftFor(ctx, conv, cc, p, customerImage, conf)
 	next.Memoria = memEditar(memoriaActual(conv, cc), func(m map[string]any) { m["producto"] = p.Code })
+	b.crmMostrado(ctx, p.Code)
 
 	var sizes []string
 	for _, v := range p.Variants {
@@ -767,6 +779,7 @@ func (b *Bot) sendSummary(ctx context.Context, conv *store.Conversation, cc *con
 		log.Printf("bot: reservar pedido %d: %v", cc.OrderID, err)
 	}
 	b.Notify("orders")
+	b.crmPedido(ctx, cc.OrderID)
 	cc.Memoria = memSabemos(memoriaActual(conv, cc), "talla", v.Size) // con el resumen, la pendiente es «confirmar»
 	b.setState(ctx, conv, stConfirm, *cc)
 	b.reply(ctx, conv, fmt.Sprintf("🧾 *Resumen de tu pedido #%d*\n\n• %s %s\n• Talla: *%s*\n• Cantidad: *%d*\n• Total: *%s*\n\nTe la apartamos por *%d minutos* ⏳\n¿Confirmas tu pedido? Responde *SI* para confirmar o *NO* para cancelar.\n(Para cambiar la cantidad, escribe el número.)",
@@ -820,6 +833,7 @@ func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *c
 // confirmOrder pasa el pedido a confirmado (descuenta el stock). Con agente sigue la venta: envío, total,
 // pago y comprobante. Sin agente pide la ubicación y deja el pago a una asesora.
 func (b *Bot) confirmOrder(ctx context.Context, conv *store.Conversation, cc *convContext) {
+	b.crmPedido(ctx, cc.OrderID)
 	_, err := b.store.UpdateOrderStatus(ctx, cc.OrderID, "confirmado", nil)
 	if errors.Is(err, store.ErrNoStock) {
 		b.setState(ctx, conv, stIdle, convContext{})
@@ -927,6 +941,8 @@ func (b *Bot) pauseDraft(ctx context.Context, conv *store.Conversation, cc *conv
 			_, _ = b.store.UpdateOrderStatus(ctx, cc.OrderID, "consulta", nil)
 		}
 		b.Notify("orders")
+		b.crmPedido(ctx, cc.OrderID)
+		b.hito(ctx, conv, fmt.Sprintf("🤔 Dudó en pleno cierre: el pedido #%d vuelve a consulta y se libera la talla", cc.OrderID))
 	}
 	if etapa == "" || etapa == "cierre" || etapa == "venta_confirmada" {
 		etapa = "seguimiento"
@@ -943,6 +959,8 @@ func (b *Bot) handlePayment(ctx context.Context, conv *store.Conversation, cc *c
 			log.Printf("bot: ubicación pedido %d: %v", cc.OrderID, err)
 		}
 		cc.Address = true
+		b.crmPedido(ctx, cc.OrderID)
+		b.hito(ctx, conv, fmt.Sprintf("📍 Dirección de envío registrada (pedido #%d)", cc.OrderID))
 		cc.Memoria = memConPendiente(memoriaActual(conv, cc), "voucher")
 		b.setState(ctx, conv, stPayment, *cc)
 		b.Notify("orders")
@@ -982,6 +1000,7 @@ func (b *Bot) handlePayment(ctx context.Context, conv *store.Conversation, cc *c
 // handleVoucher: la foto que llega con el pedido confirmado es el comprobante de pago. Queda anotado en
 // el pedido para que una asesora lo valide, y se pide la dirección si aún falta.
 func (b *Bot) handleVoucher(ctx context.Context, conv *store.Conversation, cc *convContext) {
+	b.crmPagado(ctx, cc.OrderID)
 	b.addOrderNote(ctx, cc.OrderID, "💳 Comprobante de pago recibido por WhatsApp (la foto está en la conversación). Falta validarlo.")
 	b.Notify("orders")
 	if cc.Address {
@@ -1009,6 +1028,7 @@ func (b *Bot) addOrderNote(ctx context.Context, orderID int64, note string) {
 }
 
 func (b *Bot) cancelDraft(ctx context.Context, conv *store.Conversation, cc *convContext) {
+	b.crmPedido(ctx, cc.OrderID)
 	if cc.OrderID > 0 {
 		_ = b.store.ReleaseReservation(ctx, cc.OrderID)
 		_, _ = b.store.UpdateOrderStatus(ctx, cc.OrderID, "cancelado", nil)
@@ -1048,6 +1068,8 @@ func (b *Bot) handleLocation(ctx context.Context, conv *store.Conversation, cc *
 		log.Printf("bot: ubicación pedido %d: %v", cc.OrderID, err)
 	}
 	b.Notify("orders")
+	b.crmPedido(ctx, cc.OrderID)
+	b.hito(ctx, conv, fmt.Sprintf("📍 Dirección de envío registrada (pedido #%d)", cc.OrderID))
 	orderID, pagado := cc.OrderID, cc.Voucher
 	b.setState(ctx, conv, stIdle, convContext{})
 	if pagado {
@@ -1169,6 +1191,7 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 		log.Printf("bot: agente: %v", err)
 		return nil
 	}
+	b.crmRespuesta(ctx, r)
 	b.guardarMemoria(ctx, conv, cc, r)
 	return r
 }
@@ -1273,8 +1296,10 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 		log.Printf("bot: agente foto: %v", err)
 		return false
 	}
+	b.crmRespuesta(ctx, r)
 	b.guardarMemoria(ctx, conv, cc, r)
 	log.Printf("bot: agente foto=%s %s %s sim=%.3f", msg.Media, r.Foto.Caso, r.Foto.Codigo, r.Foto.Similitud)
+	b.hito(ctx, conv, fmt.Sprintf("📷 Mandó una foto: %s (%s, similitud %.2f)", firstNonEmpty(r.Foto.Codigo, "sin coincidencia"), r.Foto.Caso, r.Foto.Similitud))
 	if r.Accion == "codigo" {
 		if p, err := b.store.GetProductByCode(ctx, r.Codigo); err == nil && p.Active {
 			b.offerProduct(ctx, conv, cc, p, msg.Media, r.Foto.Similitud, nil)
@@ -1310,6 +1335,7 @@ func (b *Bot) replySuggestion(ctx context.Context, conv *store.Conversation, sg 
 	if err := b.queueMessage(ctx, conv, m, outJob{image: url, caption: sg.Pie}); err != nil {
 		log.Printf("bot: guardar sugerencia: %v", err)
 	}
+	b.crmMostrado(ctx, sg.Codigo)
 }
 
 // ---------------------------------------------------------------------------

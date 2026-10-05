@@ -20,6 +20,7 @@ import (
 	"github.com/davrv93/ddesign-k/backend/internal/bot"
 	"github.com/davrv93/ddesign-k/backend/internal/config"
 	"github.com/davrv93/ddesign-k/backend/internal/evolution"
+	"github.com/davrv93/ddesign-k/backend/internal/kommo"
 	"github.com/davrv93/ddesign-k/backend/internal/store"
 )
 
@@ -31,6 +32,9 @@ type Server struct {
 	bot   *bot.Bot
 	auth  *auth.Auth
 	hub   *Hub
+	// Kommo es el sincronizador con el CRM (nil = apagado). Recibe los turnos del chat web y da el enlace «Ver en
+	// Kommo» de las conversaciones.
+	Kommo *kommo.Sincronizador
 }
 
 func New(cfg *config.Config, st *store.Store, evo *evolution.Client, aic *ai.Client, b *bot.Bot, a *auth.Auth, hub *Hub) *Server {
@@ -49,6 +53,9 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("GET /api/public/stock/{code}", s.publicStock)
 	mux.Handle("GET /media/", s.media())
 	mux.HandleFunc("POST /webhook/evolution/{secret}", s.webhook)
+	// Interna: el agente avisa los turnos del chat web para el CRM. Solo desde la red de Docker (el nginx del panel
+	// la bloquea) y con CRM_EVENT_SECRET.
+	mux.HandleFunc("POST /api/internal/crm/evento", s.crmEvento)
 
 	p := func(pattern string, h http.HandlerFunc) { mux.Handle(pattern, s.requireAuth(h)) }
 	p("GET /api/me", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, map[string]any{"ok": true}) })
@@ -667,6 +674,9 @@ func (s *Server) patchOrder(w http.ResponseWriter, r *http.Request) {
 	if changed && (in.Notify == nil || *in.Notify) {
 		go s.bot.NotifyStatus(context.Background(), o)
 	}
+	if changed {
+		go s.bot.PedidoCambio(context.Background(), o) // CRM: pagado, enviado o cancelado desde el tablero
+	}
 	s.hub.Publish("orders")
 	s.hub.Publish("products")
 	writeJSON(w, 200, o)
@@ -738,7 +748,44 @@ func (s *Server) listMessages(w http.ResponseWriter, r *http.Request) {
 	if orders == nil {
 		orders = []*store.Order{}
 	}
-	writeJSON(w, 200, map[string]any{"conversation": conv, "messages": msgs, "orders": orders})
+	out := map[string]any{"conversation": conv, "messages": msgs, "orders": orders}
+	if s.Kommo != nil {
+		if lead := s.store.LeadKommoDeConversacion(r.Context(), id); lead > 0 {
+			out["kommo_url"] = s.Kommo.Cliente().URLLead(lead)
+		}
+	}
+	writeJSON(w, 200, out)
+}
+
+// crmEvento recibe del agente el turno de una conversación del chat web y lo encola al mismo sincronizador que
+// WhatsApp. Responde enseguida (202): Kommo va en segundo plano.
+func (s *Server) crmEvento(w http.ResponseWriter, r *http.Request) {
+	// Sin secreto la ruta no existe. Con cabeceras de proxy, la petición vino de fuera (el nginx del panel las pone):
+	// esta ruta es solo para la red interna de Docker.
+	if s.cfg.CRMEventSecret == "" || r.Header.Get("X-Forwarded-For") != "" || r.Header.Get("X-Real-IP") != "" {
+		http.NotFound(w, r)
+		return
+	}
+	if subtle.ConstantTimeCompare([]byte(r.Header.Get("X-CRM-Secret")), []byte(s.cfg.CRMEventSecret)) != 1 {
+		writeErr(w, 403, "forbidden")
+		return
+	}
+	var in kommo.EventoWeb
+	if err := readJSON(r, &in); err != nil {
+		writeErr(w, 400, "datos inválidos")
+		return
+	}
+	ev, err := in.Evento()
+	if err != nil {
+		writeErr(w, 400, err.Error())
+		return
+	}
+	if s.Kommo == nil {
+		writeJSON(w, 202, map[string]bool{"ok": true, "kommo": false})
+		return
+	}
+	s.Kommo.Encolar(ev)
+	writeJSON(w, 202, map[string]bool{"ok": true, "kommo": true})
 }
 
 func (s *Server) sendMessage(w http.ResponseWriter, r *http.Request) {

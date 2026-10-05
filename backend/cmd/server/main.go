@@ -17,6 +17,7 @@ import (
 	"github.com/davrv93/ddesign-k/backend/internal/bot"
 	"github.com/davrv93/ddesign-k/backend/internal/config"
 	"github.com/davrv93/ddesign-k/backend/internal/evolution"
+	"github.com/davrv93/ddesign-k/backend/internal/kommo"
 	"github.com/davrv93/ddesign-k/backend/internal/seed"
 	"github.com/davrv93/ddesign-k/backend/internal/store"
 )
@@ -48,6 +49,17 @@ func main() {
 	b.Notify = hub.Publish
 	b.Agent = agente.New(cfg.AgentURL, time.Duration(cfg.AgentTimeoutSec)*time.Second)
 	srv := api.New(cfg, st, evo, aic, b, auth.New(cfg.JWTSecret, cfg.AdminUser, cfg.AdminPassword), hub)
+	// Kommo CRM: apagado por defecto. Va en segundo plano: si Kommo cae, el bot contesta igual.
+	var crm *kommo.Sincronizador
+	switch {
+	case cfg.KommoListo():
+		crm = kommo.Armar(cfg, st)
+		crm.Iniciar(ctx)
+		b.CRM, srv.Kommo = crm, crm
+		log.Printf("kommo: sincronización activa con %s (embudo %q, transcripción %v)", crm.Cliente().BaseURL, cfg.KommoPipeline, cfg.KommoTranscript)
+	case cfg.KommoEnabled:
+		log.Printf("kommo: KOMMO_ENABLED=1 pero falta KOMMO_SUBDOMAIN o KOMMO_TOKEN; queda apagado")
+	}
 
 	go srv.Bootstrap(ctx)
 	go resumePausedBots(ctx, st, hub)
@@ -71,6 +83,9 @@ func main() {
 	}
 	// Entrega lo que quedó en cola antes de salir.
 	b.Drain(15 * time.Second)
+	if crm != nil {
+		crm.Esperar(10 * time.Second)
+	}
 }
 
 // followups manda un único recordatorio a las conversaciones que quedaron en silencio (stopping

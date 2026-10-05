@@ -84,6 +84,13 @@ type Reply struct {
 	Memoria json.RawMessage `json:"memoria,omitempty"`
 	// Foto sólo viene en las respuestas de /foto.
 	Foto *PhotoResult `json:"foto"`
+	// Comercial: la intención comercial del turno (consulta_material, objecion_precio…). La usa el CRM (Kommo) para
+	// anotar el hito; no cambia lo que hace el bot.
+	Comercial *Comercial `json:"comercial,omitempty"`
+}
+
+type Comercial struct {
+	Intent string `json:"intent"`
 }
 
 type Sugerencia struct {
