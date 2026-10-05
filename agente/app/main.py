@@ -31,6 +31,8 @@ from . import datos, etapas, jev, memoria, venta
 from . import animo, crm, estructurado, gasto, rerank
 from .v2 import config as v2cfg
 from .v2.agente import AgentV2
+from .v2.decision import JevStyleDecision, ReglasDecision, juez_llama
+from .v2.motor import MotorRecursivo
 from .modelo import Embedder, EmbedderOnnx, cargar, hay_setfit
 from . import stock as stk
 
@@ -2327,7 +2329,25 @@ def ruta_clasificar(req: TextoIn):
     return cl
 
 
-_V2 = AgentV2(v1=conversar)
+def _herramienta_stock(codigo: str) -> str:
+    """Herramienta del motor V2: el estado del stock en vivo de un código ('online', 'sucursal' o '')."""
+    if E is None:
+        raise RuntimeError("agente sin arrancar")
+    return stk.estado(E.stock.consultar([codigo]).get(codigo, {}))
+
+
+def _motor_v2() -> MotorRecursivo:
+    # V2_DECISION=jev + V2_JUEZ_URL → juez local (llama-server). Si no, reglas (determinista, sin modelo).
+    lim = v2cfg.limites_desde_entorno()
+    url = os.environ.get("V2_JUEZ_URL", "").strip()
+    if os.environ.get("V2_DECISION", "reglas").strip() == "jev" and url:
+        decision = JevStyleDecision(juez_llama(url, lim.timeout_decision_ms / 1000))
+    else:
+        decision = ReglasDecision()
+    return MotorRecursivo(decision, {"stock": _herramienta_stock}, lim)
+
+
+_V2 = AgentV2(v1=conversar, motor=_motor_v2())
 
 
 @app.post("/chat")

@@ -141,11 +141,113 @@ out = agente.conversar(pedido(mensaje="hola"))
 caso("si el contexto falla, el turno sigue por V1", out["respuesta"], "Hola")
 caso("fallback queda en la traza", (out["v2"]["fallback"], out["v2"]["motivo"]), (True, "KeyError"))
 
+# --- motor recursivo: DECIDE → TOOL → ACTUALIZA → DECIDE DE NUEVO ----------------------------------------------------
+from .v2.decision import JevStyleDecision, ReglasDecision, parsear
+from .v2.motor import MotorRecursivo
+
+
+def ctx_con(foco="V35", **kw):
+    base = {"conversation": {"stage": "seguimiento", "pending_question": None, "recent_turns": []},
+            "customer": {}, "requirements": {"ocasion": "matrimonio"},
+            "product": {"focus": foco, "shown": []}, "business": {}}
+    base.update(kw)
+    return base
+
+
+llamadas_stock = []
+
+
+def stock_online(codigo):
+    llamadas_stock.append(codigo)
+    return "online"
+
+
+r = MotorRecursivo(ReglasDecision(), {"stock": stock_online}).ejecutar(ctx_con())
+caso("recursión: dos pasos (consultar stock y luego decidir)", len(r.pasos), 2)
+caso("recursión: el primer paso pide la herramienta", r.pasos[0]["herramienta"], "stock")
+caso("recursión: la herramienta se llama una vez", llamadas_stock, ["V35"])
+caso("recursión: con stock la acción final es recomendar", r.plan.accion, "recomendar")
+caso("recursión: el plan lleva el producto en foco", r.plan.producto, "V35")
+caso("recursión: plan válido, sin errores", r.errores, [])
+
+r = MotorRecursivo(ReglasDecision(), {"stock": lambda c: ""}).ejecutar(ctx_con())
+caso("sin stock: preguntar, no recomendar", r.plan.accion, "preguntar")
+caso("sin stock: el plan no nombra producto", r.plan.producto, None)
+caso("sin stock: plan válido (preguntar no necesita producto)", r.errores, [])
+
+r = MotorRecursivo(ReglasDecision(), {"stock": lambda c: "online"}).ejecutar(ctx_con(foco=None))
+caso("sin prenda en foco no consulta stock", r.pasos[0]["herramienta"], None)
+caso("sin prenda en foco: preguntar cuál", r.plan.accion, "preguntar")
+
+
+class Testarudo:
+    """Pide consultar stock en todas las vueltas: el motor no debe girar sin fin."""
+    nombre = "testarudo"
+
+    def decide(self, estado, decisiones):
+        from .v2.interfaces import Decision
+        return [Decision("intent", "purchase", 1.0), Decision("next_action", "consultar_stock", 1.0)]
+
+
+llamadas_stock.clear()
+lim = C.Limites(max_pasos=3, max_decisiones=3, max_herramientas=4)
+r = MotorRecursivo(Testarudo(), {"stock": stock_online}, lim).ejecutar(ctx_con())
+caso("tope: el bucle se corta por pasos", r.tope is not None and "paso" in r.tope, True)
+caso("tope: no pasa de 3 pasos", len(r.pasos), 3)
+caso("tope: la herramienta se llama una sola vez aunque se insista", llamadas_stock, ["V35"])
+
+lim0 = C.Limites(max_herramientas=0)
+llamadas_stock.clear()
+r = MotorRecursivo(ReglasDecision(), {"stock": stock_online}, lim0).ejecutar(ctx_con())
+caso("tope de herramientas en 0: no llama a la herramienta", llamadas_stock, [])
+caso("tope de herramientas en 0: el tope queda anotado", r.tope is not None, True)
+
+# --- juez tipo Jev: salida JSON validada ---------------------------------------------------------------------------
+buena = '{"decisiones":[{"decision":"next_action","choice":"recomendar","confianza":0.91},{"decision":"intent","choice":"purchase","confianza":0.88}]}'
+ds = parsear(buena, ["intent", "next_action"])
+caso("juez: JSON válido se parsea", [(d.decision, d.choice, d.fuente) for d in ds],
+     [("intent", "purchase", "juez"), ("next_action", "recomendar", "juez")])
+caso("juez: JSON envuelto en ```json se acepta", len(parsear("```json\n" + buena + "\n```", ["intent", "next_action"])), 2)
+for nombre, crudo in [
+    ("juez: opción fuera de lista se rechaza", '{"decisiones":[{"decision":"next_action","choice":"hacer_descuento","confianza":0.9}]}'),
+    ("juez: confianza fuera de 0–1 se rechaza", '{"decisiones":[{"decision":"next_action","choice":"responder","confianza":7}]}'),
+    ("juez: JSON roto se rechaza", '{"decisiones":[{"decision"'),
+    ("juez: falta una decisión pedida se rechaza", '{"decisiones":[{"decision":"intent","choice":"purchase","confianza":0.9}]}'),
+    ("juez: sin lista se rechaza", '{"respuesta":"hola"}'),
+]:
+    try:
+        parsear(crudo, ["intent", "next_action"])
+        caso(nombre, False, True)
+    except ValueError:
+        caso(nombre, True, True)
+
+caso("juez en el motor: su decisión llega al plan",
+     MotorRecursivo(JevStyleDecision(lambda p: '{"decisiones":[{"decision":"next_action","choice":"responder","confianza":0.8},{"decision":"intent","choice":"other","confianza":0.6}]}'))
+     .ejecutar(ctx_con(foco=None)).plan.accion, "responder")
+
+# --- sombra en AgentV2: el motor no cambia lo que se envía ---------------------------------------------------------
+out = AgentV2(v1=v1_falso, motor=MotorRecursivo(ReglasDecision(), {"stock": stock_online})).conversar(pedido(mensaje="hola"))
+caso("sombra: la respuesta sigue siendo la de V1", out["respuesta"], "Hola")
+caso("sombra: el plan va en la traza", out["v2"]["sombra"]["plan"]["accion"] in ("recomendar", "preguntar", "responder"), True)
+caso("sombra: compara con la acción de V1", "v1_accion" in out["v2"]["sombra"], True)
+
+
+class MotorRoto:
+    nombre = "roto"
+
+    def decide(self, estado, decisiones):
+        raise RuntimeError("juez caído")
+
+
+out = AgentV2(v1=v1_falso, motor=MotorRecursivo(MotorRoto())).conversar(pedido(mensaje="hola"))
+caso("motor caído: el turno sigue por V1", out["respuesta"], "Hola")
+caso("motor caído: queda anotado en la sombra", out["v2"]["sombra"], {"error": "RuntimeError"})
+
 
 def main() -> int:
     for f in fallos:
         print(f)
-    print(f"v2 fases 1–2: {total - len(fallos)}/{total} casos")
+    print(f"v2 fases 1–3 (contexto, motor recursivo, sombra): {total - len(fallos)}/{total} casos")
     return 1 if fallos else 0
 
 

@@ -14,19 +14,22 @@ from typing import Callable
 from . import config
 from .contexto import ContextBuilder
 from .estado import separar
+from .motor import MotorRecursivo
 
 log = logging.getLogger("agente.v2")
 
 
 class AgentV2:
-    def __init__(self, v1: Callable, limites: config.Limites | None = None, contexto: ContextBuilder | None = None):
+    def __init__(self, v1: Callable, limites: config.Limites | None = None, contexto: ContextBuilder | None = None,
+                 motor: MotorRecursivo | None = None):
         self.v1 = v1
         self.limites = limites or config.limites_desde_entorno()
         self.contexto = contexto or ContextBuilder()
+        self.motor = motor   # None = sin motor de decisión (fase 1)
 
     def conversar(self, req) -> dict:
         t0 = time.perf_counter()
-        traza = {"agent_version": "v2", "fase": 1, "fallback": False, "motivo": None}
+        traza = {"agent_version": "v2", "fase": 2, "fallback": False, "motivo": None}
         try:
             ctx = self.contexto.construir(req)
             traza["separado"] = separar(ctx)
@@ -37,6 +40,19 @@ class AgentV2:
             traza["motivo"] = type(e).__name__
         res = dict(self.v1(req))
         res["version"] = "v2"
+        if self.motor is not None and not traza["fallback"]:
+            traza["sombra"] = self._en_sombra(ctx, res)
         traza["ms"] = int((time.perf_counter() - t0) * 1000)
         res["v2"] = traza
         return res
+
+    def _en_sombra(self, ctx: dict, res_v1: dict) -> dict:
+        """Ejecuta el motor recursivo y compara su plan con lo que hizo V1. No cambia lo que se envía."""
+        try:
+            r = self.motor.ejecutar(ctx).a_dict()
+        except Exception as e:  # el motor nunca tira el turno
+            log.warning("v2: motor falló (%s); sin plan en este turno", type(e).__name__)
+            return {"error": type(e).__name__}
+        r["v1_accion"] = res_v1.get("accion")
+        r["v1_etapa"] = res_v1.get("etapa")
+        return r
