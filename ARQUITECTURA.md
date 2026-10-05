@@ -141,7 +141,8 @@ Si el agente no responde, el backend recurre a Gemini (`internal/ai`).
 
 ### 4.2 Chat web (`/demo-design`)
 
-La página (`agente/app/ui.html`) imita una ventana de WhatsApp. Llama a `POST /chat` y a `POST /foto` del agente con
+La página (`agente/app/ui.html`) imita una ventana de WhatsApp. Su diseño está en
+[`DISENO_WHATSAPP.md`](DISENO_WHATSAPP.md). Llama a `POST /chat` y a `POST /foto` del agente con
 el mismo contrato que usa el backend, y guarda `historial`, `etapa` y `memoria` en memoria del navegador.
 
 Los controles de demo están en el menú ⋮:
