@@ -2,185 +2,371 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chat de prueba</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#008069" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#202c33" media="(prefers-color-scheme: dark)">
+<title>Baruka Design</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2300a27e' d='M16 3C8.8 3 3 8.5 3 15.3c0 2.4.7 4.6 2 6.5L3.5 28.5l7-1.8c1.7.8 3.5 1.2 5.5 1.2 7.2 0 13-5.5 13-12.3S23.2 3 16 3z'/%3E%3C/svg%3E">
 <style>
+  /* Chat de prueba con la piel de WhatsApp: tema claro del móvil y, si el sistema va en oscuro, el oscuro. */
   :root {
-    --bg:#e9e4dc; --wall:#efeae2; --panel:#fff; --ink:#111b21; --muted:#667781; --line:#e2ddd5;
-    --me:#d9fdd3; --bot:#fff; --head:#f0f2f5; --acc:#8a3b55; --tick:#53bdeb; --dot:#8696a0;
+    color-scheme: light dark;
+    --fuera:#d9dbd5; --franja:#00a884;
+    --cab:#008069; --cab-tinta:#fff; --wall:#efeae2; --garabato:rgba(90,66,30,.115);
+    --in:#fff; --out:#d9fdd3; --tinta:#111b21; --muted:#667781; --meta:#5b6b74; --ico:#54656f;
+    --tick:#53bdeb; --tick-gris:#8696a0; --enlace:#0277ab; --verde:#00a27e; --verde-tinta:#008069;
+    --chip:rgba(255,255,255,.96); --chip-tinta:#54656f; --aviso:#ffeecd; --aviso-tinta:#54656f;
+    --pill:#fff; --menu:#fff; --hover:rgba(11,20,26,.06); --line:#e9edef; --panel:#fff; --panel-cab:#f0f2f5;
+    --cita:rgba(11,20,26,.06); --sombra:0 1px .5px rgba(11,20,26,.13); --foco:#0277ab; --img:#f5f1eb;
+    --patron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='288' height='288' viewBox='0 0 288 288' fill='none' stroke='%23000' stroke-width='1.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath transform='translate(16.8 29.1) rotate(-24) scale(1.34) translate(-12 -12)' d='M9.5 3v2.5L8 8l1.5 2.5L5.5 20h13l-4-9.5L16 8l-1.5-2.5V3M9.5 5.5c.8 1.2 4.2 1.2 5 0M9.5 10.5h5'/%3E%3Cpath transform='translate(-271.2 29.1) rotate(-24) scale(1.34) translate(-12 -12)' d='M9.5 3v2.5L8 8l1.5 2.5L5.5 20h13l-4-9.5L16 8l-1.5-2.5V3M9.5 5.5c.8 1.2 4.2 1.2 5 0M9.5 10.5h5'/%3E%3Cpath transform='translate(304.8 29.1) rotate(-24) scale(1.34) translate(-12 -12)' d='M9.5 3v2.5L8 8l1.5 2.5L5.5 20h13l-4-9.5L16 8l-1.5-2.5V3M9.5 5.5c.8 1.2 4.2 1.2 5 0M9.5 10.5h5'/%3E%3Cpath transform='translate(82.1 37.0) rotate(-15) scale(1.37) translate(-12 -12)' d='M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 10c-2-2-2-6 0-7 2 1 2 5 0 7zM14 12c2-2 6-2 7 0-1 2-5 2-7 0zM12 14c2 2 2 6 0 7-2-1-2-5 0-7zM10 12c-2 2-6 2-7 0 1-2 5-2 7 0z'/%3E%3Cpath transform='translate(-205.9 37.0) rotate(-15) scale(1.37) translate(-12 -12)' d='M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 10c-2-2-2-6 0-7 2 1 2 5 0 7zM14 12c2-2 6-2 7 0-1 2-5 2-7 0zM12 14c2 2 2 6 0 7-2-1-2-5 0-7zM10 12c-2 2-6 2-7 0 1-2 5-2 7 0z'/%3E%3Cpath transform='translate(370.1 37.0) rotate(-15) scale(1.37) translate(-12 -12)' d='M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 10c-2-2-2-6 0-7 2 1 2 5 0 7zM14 12c2-2 6-2 7 0-1 2-5 2-7 0zM12 14c2 2 2 6 0 7-2-1-2-5 0-7zM10 12c-2 2-6 2-7 0 1-2 5-2 7 0z'/%3E%3Cpath transform='translate(163.5 29.0) rotate(8) scale(1.29) translate(-12 -12)' d='M9 4 4 6.5 5.5 11 8 10v10h8V10l2.5 1L20 6.5 15 4c-.5 2-5.5 2-6 0z'/%3E%3Cpath transform='translate(-124.5 29.0) rotate(8) scale(1.29) translate(-12 -12)' d='M9 4 4 6.5 5.5 11 8 10v10h8V10l2.5 1L20 6.5 15 4c-.5 2-5.5 2-6 0z'/%3E%3Cpath transform='translate(451.5 29.0) rotate(8) scale(1.29) translate(-12 -12)' d='M9 4 4 6.5 5.5 11 8 10v10h8V10l2.5 1L20 6.5 15 4c-.5 2-5.5 2-6 0z'/%3E%3Cpath transform='translate(242.6 28.7) rotate(24) scale(1.20) translate(-12 -12)' d='M4 8h3.5L9 6h6l1.5 2H20v11H4zM12 16.5a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z'/%3E%3Cpath transform='translate(-45.4 28.7) rotate(24) scale(1.20) translate(-12 -12)' d='M4 8h3.5L9 6h6l1.5 2H20v11H4zM12 16.5a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z'/%3E%3Cpath transform='translate(530.6 28.7) rotate(24) scale(1.20) translate(-12 -12)' d='M4 8h3.5L9 6h6l1.5 2H20v11H4zM12 16.5a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z'/%3E%3Cpath transform='translate(52.5 108.7) rotate(8) scale(1.26) translate(-12 -12)' d='M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.5 14c.8 1.5 2 2.2 3.5 2.2s2.7-.7 3.5-2.2M9 9.5v.5M15 9.5v.5'/%3E%3Cpath transform='translate(-235.5 108.7) rotate(8) scale(1.26) translate(-12 -12)' d='M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.5 14c.8 1.5 2 2.2 3.5 2.2s2.7-.7 3.5-2.2M9 9.5v.5M15 9.5v.5'/%3E%3Cpath transform='translate(340.5 108.7) rotate(8) scale(1.26) translate(-12 -12)' d='M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.5 14c.8 1.5 2 2.2 3.5 2.2s2.7-.7 3.5-2.2M9 9.5v.5M15 9.5v.5'/%3E%3Cpath transform='translate(131.7 102.9) rotate(8) scale(1.35) translate(-12 -12)' d='M19 14.5A8 8 0 0 1 9.5 5a8 8 0 1 0 9.5 9.5z'/%3E%3Cpath transform='translate(-156.3 102.9) rotate(8) scale(1.35) translate(-12 -12)' d='M19 14.5A8 8 0 0 1 9.5 5a8 8 0 1 0 9.5 9.5z'/%3E%3Cpath transform='translate(419.7 102.9) rotate(8) scale(1.35) translate(-12 -12)' d='M19 14.5A8 8 0 0 1 9.5 5a8 8 0 1 0 9.5 9.5z'/%3E%3Cpath transform='translate(192.4 101.6) rotate(15) scale(1.17) translate(-12 -12)' d='M5 9h14l-1 11H6L5 9zM9 9V7.5a3 3 0 0 1 6 0V9'/%3E%3Cpath transform='translate(-95.6 101.6) rotate(15) scale(1.17) translate(-12 -12)' d='M5 9h14l-1 11H6L5 9zM9 9V7.5a3 3 0 0 1 6 0V9'/%3E%3Cpath transform='translate(480.4 101.6) rotate(15) scale(1.17) translate(-12 -12)' d='M5 9h14l-1 11H6L5 9zM9 9V7.5a3 3 0 0 1 6 0V9'/%3E%3Cpath transform='translate(262.1 103.3) rotate(15) scale(1.34) translate(-12 -12)' d='M5 5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7l-4.5 3.5V16H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM8 9h8M8 12h5'/%3E%3Cpath transform='translate(-25.9 103.3) rotate(15) scale(1.34) translate(-12 -12)' d='M5 5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7l-4.5 3.5V16H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM8 9h8M8 12h5'/%3E%3Cpath transform='translate(550.1 103.3) rotate(15) scale(1.34) translate(-12 -12)' d='M5 5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7l-4.5 3.5V16H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM8 9h8M8 12h5'/%3E%3Cpath transform='translate(23.0 179.4) rotate(0) scale(1.28) translate(-12 -12)' d='M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 9a4.5 4.5 0 0 1 0 9H7z'/%3E%3Cpath transform='translate(-265.0 179.4) rotate(0) scale(1.28) translate(-12 -12)' d='M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 9a4.5 4.5 0 0 1 0 9H7z'/%3E%3Cpath transform='translate(311.0 179.4) rotate(0) scale(1.28) translate(-12 -12)' d='M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 9a4.5 4.5 0 0 1 0 9H7z'/%3E%3Cpath transform='translate(85.5 174.9) rotate(24) scale(1.24) translate(-12 -12)' d='M4 11h16v9H4zM3 7.5h18V11H3zM12 7.5V20M12 7.5C10 3 5.5 4.5 8 7.5M12 7.5C14 3 18.5 4.5 16 7.5'/%3E%3Cpath transform='translate(-202.5 174.9) rotate(24) scale(1.24) translate(-12 -12)' d='M4 11h16v9H4zM3 7.5h18V11H3zM12 7.5V20M12 7.5C10 3 5.5 4.5 8 7.5M12 7.5C14 3 18.5 4.5 16 7.5'/%3E%3Cpath transform='translate(373.5 174.9) rotate(24) scale(1.24) translate(-12 -12)' d='M4 11h16v9H4zM3 7.5h18V11H3zM12 7.5V20M12 7.5C10 3 5.5 4.5 8 7.5M12 7.5C14 3 18.5 4.5 16 7.5'/%3E%3Cpath transform='translate(163.3 180.4) rotate(-8) scale(1.41) translate(-12 -12)' d='M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.8L12 16.4l-5.1 2.9 1.1-5.8-4.3-4 5.8-.7z'/%3E%3Cpath transform='translate(-124.7 180.4) rotate(-8) scale(1.41) translate(-12 -12)' d='M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.8L12 16.4l-5.1 2.9 1.1-5.8-4.3-4 5.8-.7z'/%3E%3Cpath transform='translate(451.3 180.4) rotate(-8) scale(1.41) translate(-12 -12)' d='M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.8L12 16.4l-5.1 2.9 1.1-5.8-4.3-4 5.8-.7z'/%3E%3Cpath transform='translate(230.2 187.7) rotate(-24) scale(1.33) translate(-12 -12)' d='M12 20C7 16.5 4 13.6 4 10.2A4.2 4.2 0 0 1 12 8a4.2 4.2 0 0 1 8 2.2c0 3.4-3 6.3-8 9.8z'/%3E%3Cpath transform='translate(-57.8 187.7) rotate(-24) scale(1.33) translate(-12 -12)' d='M12 20C7 16.5 4 13.6 4 10.2A4.2 4.2 0 0 1 12 8a4.2 4.2 0 0 1 8 2.2c0 3.4-3 6.3-8 9.8z'/%3E%3Cpath transform='translate(518.2 187.7) rotate(-24) scale(1.33) translate(-12 -12)' d='M12 20C7 16.5 4 13.6 4 10.2A4.2 4.2 0 0 1 12 8a4.2 4.2 0 0 1 8 2.2c0 3.4-3 6.3-8 9.8z'/%3E%3Cpath transform='translate(48.0 249.5) rotate(0) scale(1.30) translate(-12 -12)' d='M9 18a2.5 2.5 0 1 1-2.5-2.5A2.5 2.5 0 0 1 9 18zm0 0V6l10-2v12M19 16a2.5 2.5 0 1 1-2.5-2.5A2.5 2.5 0 0 1 19 16z'/%3E%3Cpath transform='translate(-240.0 249.5) rotate(0) scale(1.30) translate(-12 -12)' d='M9 18a2.5 2.5 0 1 1-2.5-2.5A2.5 2.5 0 0 1 9 18zm0 0V6l10-2v12M19 16a2.5 2.5 0 1 1-2.5-2.5A2.5 2.5 0 0 1 19 16z'/%3E%3Cpath transform='translate(336.0 249.5) rotate(0) scale(1.30) translate(-12 -12)' d='M9 18a2.5 2.5 0 1 1-2.5-2.5A2.5 2.5 0 0 1 9 18zm0 0V6l10-2v12M19 16a2.5 2.5 0 1 1-2.5-2.5A2.5 2.5 0 0 1 19 16z'/%3E%3Cpath transform='translate(134.3 245.2) rotate(8) scale(1.35) translate(-12 -12)' d='M12 3c.6 4.5 2 6.4 9 9-7 2.6-8.4 4.5-9 9-.6-4.5-2-6.4-9-9 7-2.6 8.4-4.5 9-9z'/%3E%3Cpath transform='translate(-153.7 245.2) rotate(8) scale(1.35) translate(-12 -12)' d='M12 3c.6 4.5 2 6.4 9 9-7 2.6-8.4 4.5-9 9-.6-4.5-2-6.4-9-9 7-2.6 8.4-4.5 9-9z'/%3E%3Cpath transform='translate(422.3 245.2) rotate(8) scale(1.35) translate(-12 -12)' d='M12 3c.6 4.5 2 6.4 9 9-7 2.6-8.4 4.5-9 9-.6-4.5-2-6.4-9-9 7-2.6 8.4-4.5 9-9z'/%3E%3Cpath transform='translate(204.8 249.0) rotate(15) scale(1.27) translate(-12 -12)' d='M12 9.5 3.5 16.2c-.8.7-.4 1.8.6 1.8h15.8c1 0 1.4-1.1.6-1.8L12 9.5zm0 0V8.2a2.3 2.3 0 1 0-2.3-2.3'/%3E%3Cpath transform='translate(-83.2 249.0) rotate(15) scale(1.27) translate(-12 -12)' d='M12 9.5 3.5 16.2c-.8.7-.4 1.8.6 1.8h15.8c1 0 1.4-1.1.6-1.8L12 9.5zm0 0V8.2a2.3 2.3 0 1 0-2.3-2.3'/%3E%3Cpath transform='translate(492.8 249.0) rotate(15) scale(1.27) translate(-12 -12)' d='M12 9.5 3.5 16.2c-.8.7-.4 1.8.6 1.8h15.8c1 0 1.4-1.1.6-1.8L12 9.5zm0 0V8.2a2.3 2.3 0 1 0-2.3-2.3'/%3E%3Cpath transform='translate(269.9 256.8) rotate(-24) scale(1.44) translate(-12 -12)' d='M7 5h10l4 5-9 10L3 10l4-5zM3 10h18M9.5 10 12 20l2.5-10M7 5l2.5 5L12 5l2.5 5L17 5'/%3E%3Cpath transform='translate(-18.1 256.8) rotate(-24) scale(1.44) translate(-12 -12)' d='M7 5h10l4 5-9 10L3 10l4-5zM3 10h18M9.5 10 12 20l2.5-10M7 5l2.5 5L12 5l2.5 5L17 5'/%3E%3Cpath transform='translate(557.9 256.8) rotate(-24) scale(1.44) translate(-12 -12)' d='M7 5h10l4 5-9 10L3 10l4-5zM3 10h18M9.5 10 12 20l2.5-10M7 5l2.5 5L12 5l2.5 5L17 5'/%3E%3C/svg%3E");
   }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-    --bg:#0b141a; --wall:#0b141a; --panel:#111b21; --ink:#e9edef; --muted:#8696a0; --line:#222d34;
-    --me:#005c4b; --bot:#202c33; --head:#202c33; --acc:#d58aa3; --tick:#53bdeb; --dot:#8696a0; } }
-  :root[data-theme="dark"] {
-    --bg:#0b141a; --wall:#0b141a; --panel:#111b21; --ink:#e9edef; --muted:#8696a0; --line:#222d34;
-    --me:#005c4b; --bot:#202c33; --head:#202c33; --acc:#d58aa3; }
+  @media (prefers-color-scheme: dark) { :root {
+    --fuera:#0a1014; --franja:#0a1014;
+    --cab:#202c33; --cab-tinta:#e9edef; --wall:#0b141a; --garabato:rgba(255,255,255,.055);
+    --in:#202c33; --out:#005c4b; --tinta:#e9edef; --muted:#8696a0; --meta:#a9b6bd; --ico:#aebac1;
+    --tick:#53bdeb; --tick-gris:#8696a0; --enlace:#53bdeb; --verde:#00a884; --verde-tinta:#06cf9c;
+    --chip:#182229; --chip-tinta:#aebac1; --aviso:#182229; --aviso-tinta:#ffd279;
+    --pill:#2a3942; --menu:#233138; --hover:rgba(255,255,255,.07); --line:#2a3942; --panel:#111b21; --panel-cab:#202c33;
+    --cita:rgba(0,0,0,.2); --sombra:0 1px .5px rgba(0,0,0,.4); --foco:#53bdeb; --img:#1a252c;
+  } }
   * { box-sizing:border-box }
-  html, body { height:100% }
-  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.4 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif }
-  main { height:100%; max-width:1180px; margin:0 auto; display:grid; grid-template-columns: minmax(0,1fr) minmax(260px, 340px); gap:0 }
-  @media (max-width: 900px) { main { grid-template-columns: minmax(0,1fr) } aside { display:none } aside.abierto { display:block; position:fixed; inset:0; z-index:5 } }
+  [hidden] { display:none !important }
+  html, body { height:100%; margin:0 }
+  body { background:var(--fuera); color:var(--tinta); font:15px/20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; -webkit-text-size-adjust:100%; overflow:hidden }
+  button, input { font:inherit }
+  button { -webkit-tap-highlight-color:transparent }
+  :focus-visible { outline:2px solid var(--foco); outline-offset:2px }
+  svg { display:block; fill:currentColor }
 
-  .chat { display:flex; flex-direction:column; min-height:0; height:100%; background:var(--wall); border-left:1px solid var(--line); border-right:1px solid var(--line) }
-  header { display:flex; align-items:center; gap:12px; padding:10px 16px; background:var(--head); border-bottom:1px solid var(--line) }
-  .avatar { width:40px; height:40px; border-radius:50%; background:var(--acc); color:#fff; display:grid; place-items:center; font-weight:600; flex:none }
-  header .quien { flex:1; min-width:0 }
-  header b { display:block; font-weight:600 }
-  header small { color:var(--muted); font-size:13px }
-  header small.tecleando { color:#25a35a }
-  .motor { display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; flex:none }
-  .motor button { border:0 !important; border-radius:0 !important; padding:6px 10px }
-  .motor button[aria-pressed="true"] { background:var(--acc); color:#fff }
-  @media (max-width: 520px) { header { flex-wrap:wrap } .motor { order:5; width:100% } .motor button { flex:1 } }
-  #anuncio[aria-pressed="true"] { background:var(--acc); color:#fff; border-color:var(--acc) }
-  header button { background:none; border:1px solid var(--line); color:var(--muted); border-radius:8px; padding:6px 10px; font:inherit; font-size:13px; cursor:pointer }
+  /* Escritorio: la ventana va centrada, con el ancho de un teléfono, sobre el fondo de WhatsApp Web. */
+  .escena { position:relative; height:100vh; height:100dvh; display:grid; place-items:center; transition:padding .26s ease }
+  .escena::before { content:''; position:absolute; inset:0 0 auto; height:calc(50% - min(50% - 19px, 480px) + 108px); background:var(--franja) }
+  .ventana { position:relative; width:min(100%, 500px); height:min(calc(100vh - 38px), 960px); height:min(calc(100dvh - 38px), 960px);
+    display:flex; flex-direction:column; background:var(--wall); border-radius:12px; overflow:hidden;
+    box-shadow:0 6px 18px rgba(11,20,26,.14), 0 1px 3px rgba(11,20,26,.12) }
+  /* Móvil: pantalla completa, como la app. */
+  @media (max-width: 560px), (max-height: 560px) {
+    .escena::before { display:none }
+    .ventana { width:100%; height:100vh; height:100dvh; border-radius:0; box-shadow:none }
+  }
 
-  .msgs { flex:1; overflow-y:auto; padding:16px 5%; display:flex; flex-direction:column; gap:2px }
-  .dia { align-self:center; background:var(--head); color:var(--muted); font-size:12px; padding:4px 10px; border-radius:8px; margin:6px 0 10px }
-  .b { max-width:min(75%, 460px); padding:6px 9px 7px; min-width:72px; border-radius:8px; white-space:pre-wrap; overflow-wrap:anywhere; box-shadow:0 1px .5px rgba(11,20,26,.13); margin-top:6px; animation:entra .18s ease-out }
-  .b + .b.mismo { margin-top:2px }
-  .b.cliente { align-self:flex-end; background:var(--me) }
-  .b.bot { align-self:flex-start; background:var(--bot) }
-  /* Como en WhatsApp: la hora flota al final de la última línea y empuja el texto, nunca lo pisa. */
-  .b .hora { float:right; position:relative; top:7px; margin-left:12px; font-size:11px; line-height:1; color:var(--muted); white-space:nowrap }
-  .b.cliente .hora::after { content:" ✓✓"; color:var(--tick) }
-  .b.foto { padding:3px 3px 7px; width:min(75%, 300px) }
-  .b.foto img { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; background:#fff; cursor:zoom-in }
-  .b.foto .pie { padding:6px 6px 0; display:inline }
-  .b.foto .hora { margin-right:6px }
-  /* Botones de talla dentro de la tarjeta de la prenda. */
+  /* Cabecera */
+  .cab { position:relative; z-index:3; flex:none; display:flex; align-items:center; height:60px; padding:0 4px 0 2px; padding-top:env(safe-area-inset-top);
+    height:calc(60px + env(safe-area-inset-top)); background:var(--cab); color:var(--cab-tinta) }
+  .cab :focus-visible { outline-color:#fff }
+  .ico { width:40px; height:40px; flex:none; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:none; color:inherit; cursor:pointer }
+  .ico svg { width:24px; height:24px }
+  .cab .atras { width:30px; cursor:default }
+  .avatar { width:40px; height:40px; flex:none; display:grid; place-items:center; border-radius:50%; background:#8a3b55; color:#fff; font-weight:600; font-size:15px; letter-spacing:.02em }
+  .quien { flex:1; min-width:0; padding:0 4px 0 11px }
+  .quien h1 { margin:0; font-size:16.5px; line-height:21px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .quien p { margin:0; font-size:13px; line-height:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+
+  @media (max-width: 350px) { .cab .ico { width:34px } .quien { padding-left:8px } #camara { display:none } }
+
+  /* Menú ⋮: ahí viven los controles de la demo, para que la cabecera siga siendo la de WhatsApp. */
+  .menu { position:absolute; top:calc(6px + env(safe-area-inset-top)); right:6px; z-index:9; min-width:214px; padding:6px 0; background:var(--menu); color:var(--tinta);
+    border-radius:10px; box-shadow:0 2px 5px rgba(11,20,26,.26), 0 2px 10px rgba(11,20,26,.16); transform-origin:top right; animation:menu .13s ease-out }
+  .menu button { display:flex; align-items:center; justify-content:space-between; gap:20px; width:100%; min-height:44px; padding:10px 16px 10px 20px;
+    border:0; background:none; color:inherit; font-size:15.5px; text-align:left; cursor:pointer }
+  .menu button:focus-visible { background:var(--hover) }
+  .menu button:focus-visible { outline-offset:-2px }
+  .menu .marca { width:18px; height:18px; flex:none; color:var(--verde-tinta); visibility:hidden }
+  .menu [aria-checked="true"] .marca { visibility:visible }
+  .menu hr { border:0; border-top:1px solid var(--line); margin:6px 0 }
+  @keyframes menu { from { opacity:0; transform:scale(.9) } }
+
+  /* Cuerpo: el fondo queda fijo y los mensajes corren por encima. */
+  .cuerpo { position:relative; flex:1; min-height:0; display:flex; flex-direction:column }
+  .fondo { position:absolute; inset:0; background:var(--wall) }
+  @supports ((mask-image:url("")) or (-webkit-mask-image:url(""))) {
+    .fondo::before { content:''; position:absolute; inset:0; background:var(--garabato);
+      -webkit-mask:var(--patron) 0 0 / 236px 236px; mask:var(--patron) 0 0 / 236px 236px }
+  }
+  .msgs { position:relative; flex:1; min-height:0; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; display:flex; flex-direction:column;
+    padding:6px 16px 8px; scrollbar-width:thin; scrollbar-color:rgba(134,150,160,.45) transparent }
+  .msgs:focus-visible { outline-offset:-3px }
+  .dia, .aviso { align-self:center; border-radius:7.5px; box-shadow:var(--sombra); font-size:12.5px }
+  .dia { margin:6px 0; padding:5px 12px; line-height:16px; background:var(--chip); color:var(--chip-tinta) }
+  .aviso { max-width:min(94%, 400px); margin:2px 0 6px; padding:6px 12px 7px; line-height:17px; text-align:center; background:var(--aviso); color:var(--aviso-tinta) }
+
+  /* Mensajes: «.m» es el mensaje entero (globo + botones de respuesta); «.b», el globo. */
+  .m { position:relative; display:flex; flex-direction:column; max-width:min(84%, 400px); margin-top:2px; animation:entra .18s ease-out }
+  .m.cola { margin-top:9px }
+  .m.cliente { align-self:flex-end }
+  .m.bot { align-self:flex-start }
+  .m.con-resp { min-width:min(84%, 250px) }
+  .m.suelta { width:min(80%, 290px) }
+  .b { position:relative; padding:6px 7px 8px 9px; border-radius:7.5px; box-shadow:var(--sombra); white-space:pre-wrap; overflow-wrap:anywhere }
+  .bot .b { background:var(--in) }
+  .cliente .b { background:var(--out) }
+  /* La cola solo en el primer globo de cada tanda, como en WhatsApp. */
+  .m.cola.bot .b { border-top-left-radius:0 }
+  .m.cola.cliente .b { border-top-right-radius:0 }
+  .m.cola .b::before { content:''; position:absolute; top:0; width:8px; height:13px; background:inherit }
+  .m.cola.bot .b::before { left:-8px; clip-path:polygon(0 0, 100% 0, 100% 100%); clip-path:path('M8 0H1.6C.3 0-.4 1.4.6 2.4L8 13Z') }
+  .m.cola.cliente .b::before { right:-8px; clip-path:polygon(0 0, 100% 0, 0 100%); clip-path:path('M0 0h6.4c1.3 0 2 1.4 1 2.4L0 13Z') }
+  /* La hora va abajo a la derecha, dentro del globo. Un hueco invisible del mismo ancho al final del texto
+     le guarda el sitio: si no cabe en la última línea, abre otra. Así nunca pisa el texto. */
+  .meta { position:absolute; z-index:1; right:7px; bottom:3px; display:flex; align-items:center; gap:3px; font-size:11px; line-height:15px; color:var(--meta); white-space:nowrap; user-select:none }
+  .esp { display:inline-block; height:0; padding-left:8px; visibility:hidden; font-size:11px; white-space:nowrap; vertical-align:baseline; user-select:none }
+  .cliente .esp { padding-right:20px }
+  .ticks { width:17px; height:11px; fill:none; color:var(--tick-gris); transition:color .2s }
+  .m.leido .ticks { color:var(--tick) }
+  .b b { font-weight:600 }
+  /* Quien llega por un anuncio trae la referencia citada en su primer mensaje. */
+  .anun { display:block; margin:-2px -3px 5px -5px; padding:5px 10px 6px; border-left:4px solid var(--verde-tinta); border-radius:5px; background:var(--cita); font-size:13px; line-height:17px; white-space:normal }
+  .anun b { display:block; color:var(--verde-tinta) }
+  .anun span { color:var(--muted) }
+
+  /* Mensaje de imagen: la foto arriba y el pie debajo, en el mismo globo. */
+  .m.foto { width:min(80%, 290px) }
+  .b.foto { padding:3px 3px 0 }
+  .ver { display:block; width:100%; padding:0; border:0; border-radius:5px; background:var(--img); cursor:zoom-in; overflow:hidden }
+  .ver img { display:block; width:100%; aspect-ratio:4/5; object-fit:cover; object-position:top center }
+  .cliente .ver img { aspect-ratio:auto; max-height:340px }
+  .b.foto .pie { padding:5px 4px 8px 6px }
   .b.foto .pie b { white-space:nowrap }            /* «S/ 330.00» no se parte en dos líneas */
-  .b.foto .pie.titulo { display:block }
-  .b.foto .tallas { display:flex; flex-wrap:wrap; gap:6px; padding:8px 6px 2px; clear:both }
-  .b.foto .tallas button { border:1px solid var(--acc); background:var(--panel); color:var(--acc); border-radius:16px; padding:6px 14px; min-width:44px; font:inherit; font-size:14px; cursor:pointer }
-  .b.foto .tallas button:hover:not(:disabled) { background:var(--acc); color:#fff }
-  .b.foto .tallas button:disabled { opacity:.4; cursor:not-allowed; text-decoration:line-through }
-  .b.foto .tallas small { flex-basis:100%; color:var(--muted); font-size:12px }
-  .oferta { flex-wrap:wrap; max-width:min(100%, 520px) }
-  .oferta { align-self:flex-start; display:flex; gap:6px; margin-top:6px }
-  .oferta button { border:1px solid var(--acc); background:var(--panel); color:var(--acc); border-radius:16px; padding:7px 14px; font:inherit; font-size:14px; cursor:pointer }
-  .oferta button.si { background:var(--acc); color:#fff }
-  .oferta button:disabled { opacity:.4; cursor:not-allowed; text-decoration:line-through }
-  .escribiendo { align-self:flex-start; background:var(--bot); border-radius:8px; padding:10px 14px; margin-top:6px; display:flex; gap:4px; box-shadow:0 1px .5px rgba(11,20,26,.13) }
-  .escribiendo i { width:7px; height:7px; border-radius:50%; background:var(--dot); animation:salta 1.2s infinite }
-  .escribiendo i:nth-child(2) { animation-delay:.15s } .escribiendo i:nth-child(3) { animation-delay:.3s }
+  .nota { color:var(--muted); font-size:13px }
+  .b.foto.sinpie { padding-bottom:3px }
+  .b.foto.sinpie::after { content:''; position:absolute; inset:auto 3px 3px; height:30px; border-radius:0 0 5px 5px; background:linear-gradient(transparent, rgba(11,20,26,.55)); pointer-events:none }
+  .b.foto.sinpie .meta { right:9px; bottom:6px; color:#fff }
+  .b.foto.sinpie .ticks { color:#fff } .m.leido .b.foto.sinpie .ticks { color:var(--tick) }
+
+  /* Botones de respuesta rápida de WhatsApp Business: filas del color del globo, colgadas debajo, texto azul centrado. */
+  .resp { display:grid; grid-template-columns:repeat(var(--cols, 1), minmax(0, 1fr)); gap:3px; margin-top:3px }
+  .resp button { display:flex; align-items:center; justify-content:center; gap:6px; min-height:40px; padding:8px 10px; border:0; border-radius:7.5px;
+    background:var(--in); color:var(--enlace); box-shadow:var(--sombra); font-size:15px; line-height:20px; text-align:center; overflow-wrap:break-word; cursor:pointer }
+  .resp button svg { width:16px; height:16px; flex:none }
+  .resp button.si { font-weight:600 }
+  .resp button:disabled { color:var(--muted); text-decoration:line-through; cursor:not-allowed }
+  .resp.c2 button:last-child:nth-child(odd) { grid-column:1 / -1 }
+
+  .escr .b { display:flex; gap:4px; padding:13px 14px 12px }
+  .escr i { width:7px; height:7px; border-radius:50%; background:var(--tick-gris); animation:salta 1.2s infinite }
+  .escr i:nth-child(2) { animation-delay:.15s } .escr i:nth-child(3) { animation-delay:.3s }
   @keyframes salta { 0%,60%,100% { transform:none; opacity:.5 } 30% { transform:translateY(-4px); opacity:1 } }
   @keyframes entra { from { opacity:0; transform:translateY(4px) } }
-  @media (prefers-reduced-motion: reduce) { .b, .escribiendo i { animation:none } }
 
-  .rapidas { display:flex; gap:6px; overflow-x:auto; padding:8px 12px 0; background:var(--head) }
-  .rapidas button { flex:none; border:1px solid var(--line); background:var(--panel); color:var(--ink); border-radius:16px; padding:6px 12px; font:inherit; font-size:13px; cursor:pointer }
-  form { display:flex; gap:8px; padding:8px 12px 12px; background:var(--head) }
-  input { flex:1; min-width:0; padding:10px 14px; border-radius:20px; border:1px solid var(--line); background:var(--panel); color:var(--ink); font:inherit }
-  form button { width:44px; height:44px; flex:none; border-radius:50%; border:0; background:#00a884; color:#fff; font-size:18px; cursor:pointer }
-  form button:disabled { opacity:.5 }
-  form .clip { background:none; color:var(--muted); font-size:22px; width:40px }
+  /* Respuestas de ejemplo para la demo: una fila que se desliza sobre el fondo; se apaga desde el menú. */
+  .rapidas { position:relative; flex:none; display:flex; gap:6px; overflow-x:auto; padding:4px 8px; scrollbar-width:none }
+  .rapidas::-webkit-scrollbar { display:none }
+  .rapidas button { flex:none; min-height:34px; padding:6px 12px; border:0; border-radius:17px; background:var(--in); color:var(--tinta); box-shadow:var(--sombra); font-size:13.5px; line-height:18px; cursor:pointer }
 
-  aside { background:var(--panel); padding:14px 16px; font-size:13px; overflow-y:auto; overflow-x:hidden; height:100%; min-width:0; overflow-wrap:anywhere }
+  /* Barra de escritura */
+  form { position:relative; flex:none; display:flex; align-items:flex-end; gap:6px; margin:0; padding:3px 6px calc(6px + env(safe-area-inset-bottom)) }
+  .caja { flex:1; min-width:0; display:flex; align-items:center; min-height:46px; padding:0 3px; border-radius:23px; background:var(--pill); color:var(--ico); box-shadow:var(--sombra) }
+  /* El campo siempre tiene el cursor; el aro se reserva para quien llega con el teclado. */
+  .teclado .caja:focus-within { box-shadow:0 0 0 2px var(--verde) }
+  .caja input { flex:1; min-width:0; height:46px; padding:0 4px; border:0; outline:0; background:none; color:var(--tinta); font-size:16px }
+  .caja input::placeholder { color:var(--muted); opacity:1 }
+  .caja .clip svg { transform:rotate(45deg) }
+  .redondo { width:46px; height:46px; flex:none; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:var(--verde); color:#fff; box-shadow:var(--sombra); cursor:pointer }
+  .redondo svg { width:24px; height:24px }
+  .redondo .avion { display:none; margin-left:3px }
+  .redondo:disabled { opacity:.6; cursor:default }
+  form.con-texto .avion { display:block }
+  form.con-texto .micro, form.con-texto #camara { display:none }
+  .emojis { position:relative; flex:none; display:grid; grid-template-columns:repeat(8, 1fr); gap:2px; margin:2px 6px 3px; padding:6px; border-radius:16px; background:var(--pill); box-shadow:var(--sombra) }
+  .emojis button { height:38px; padding:0; border:0; border-radius:8px; background:none; font-size:22px; line-height:1; cursor:pointer }
+
+  /* Análisis: cajón inferior dentro de la ventana; en pantallas anchas, panel a la derecha que deja seguir chateando. */
+  .velo { position:absolute; inset:0; z-index:7; background:rgba(11,20,26,.45) }
+  .cajon { position:absolute; inset:auto 0 0; z-index:8; height:84%; display:flex; flex-direction:column; background:var(--panel); color:var(--tinta);
+    border-radius:16px 16px 0 0; box-shadow:0 -4px 24px rgba(11,20,26,.22); overflow:hidden;
+    visibility:hidden; transform:translateY(103%); transition:transform .26s cubic-bezier(.2,.8,.2,1), visibility 0s .26s }
+  .cajon.abierto { visibility:visible; transform:none; transition:transform .26s cubic-bezier(.2,.8,.2,1) }
+  .cajon-cab { position:relative; flex:none; display:flex; align-items:center; gap:4px; padding:14px 8px 8px 18px; background:var(--panel-cab); border-bottom:1px solid var(--line) }
+  .cajon-cab::before { content:''; position:absolute; top:6px; left:50%; width:36px; height:4px; margin-left:-18px; border-radius:2px; background:var(--tick-gris); opacity:.5 }
+  .cajon-cab h2 { flex:1; margin:0; font-size:16.5px; line-height:22px; font-weight:600 }
+  .cajon-cab h2 small { display:block; font-size:12.5px; line-height:16px; font-weight:400; color:var(--muted) }
+  .cajon-cab .ico { color:var(--ico) }
+  .ajustes { flex:none; display:flex; flex-wrap:wrap; gap:6px; padding:10px 18px 0; font-size:12.5px; line-height:16px }
+  .ajustes span { padding:3px 9px; border-radius:11px; background:var(--panel-cab); color:var(--ico) }
+  .info { flex:1; min-height:0; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; padding:10px 18px 22px; font-size:13.5px; line-height:19px; overflow-wrap:anywhere; scrollbar-width:thin }
+  .info h3 { margin:18px 0 6px; font-size:12px; line-height:16px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--verde-tinta) }
+  .info h3:first-child { margin-top:4px }
+  .info p { margin:4px 0 }
+  .info ul { margin:0; padding-left:18px }
+  .info code { font-size:12.5px }
+  .info b { font-weight:600 }
   .etapas { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; margin:4px 0 8px }
-  .etapas span { text-align:center; font-size:11px; padding:6px 2px; border-radius:8px; background:var(--line); color:var(--muted) }
-  .etapas span.hecha { background:color-mix(in srgb, var(--acc) 22%, transparent); color:var(--ink) }
-  .etapas span.actual { background:var(--acc); color:#fff; font-weight:600 }
-  .bita { font-size:12px } .bita li { margin:2px 0 }
-  aside h2 { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:16px 0 6px }
-  aside h2:first-of-type { margin-top:4px }
-  aside .cerrar { display:none }
-  @media (max-width: 900px) { aside .cerrar { display:inline-block; float:right } }
-  .bar { height:5px; background:var(--line); border-radius:3px; overflow:hidden } .bar i { display:block; height:100%; background:var(--acc) }
-  .row { display:grid; grid-template-columns: 1fr 40px; gap:6px; align-items:center; margin:4px 0 }
-  .sub { color:var(--muted) } code { font-size:12px } ul { margin:0; padding-left:18px }
+  .etapas span { padding:6px 2px; border-radius:8px; background:var(--panel-cab); color:var(--muted); font-size:11.5px; line-height:15px; text-align:center }
+  .etapas span.hecha { background:color-mix(in srgb, var(--verde) 20%, transparent); color:var(--tinta) }
+  .etapas span.actual { background:#008069; color:#fff; font-weight:600 }
+  .bita { font-size:12.5px } .bita li { margin:2px 0 }
+  .bar { height:5px; margin-top:2px; border-radius:3px; background:var(--line); overflow:hidden } .bar i { display:block; height:100%; background:var(--verde) }
+  .row { display:grid; grid-template-columns:1fr 40px; gap:6px; align-items:center; margin:4px 0 } .row > :last-child { text-align:right }
+  .sub { color:var(--muted) }
+  @media (min-width: 1000px) and (min-height: 561px) {
+    .velo { display:none }
+    .cajon { position:fixed; inset:0 0 0 auto; width:400px; height:auto; border-radius:0; box-shadow:-1px 0 0 var(--line), -10px 0 30px rgba(11,20,26,.1); transform:translateX(103%) }
+    .cajon-cab { padding-top:12px; padding-bottom:12px } .cajon-cab::before { display:none }
+    body.con-info .escena { padding-right:400px }
+  }
 
-  .zoom { position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; place-items:center; z-index:10; cursor:zoom-out }
-  .zoom.on { display:grid } .zoom img { max-width:92vw; max-height:92vh; border-radius:6px }
+  /* Foto ampliada, como el visor de WhatsApp. */
+  .zoom { position:absolute; inset:0; z-index:12; display:grid; place-items:center; background:rgba(11,20,26,.95); color:#fff; cursor:zoom-out }
+  .zoom img { max-width:96%; max-height:84%; border-radius:4px }
+  .zoom .ico { position:absolute; top:calc(10px + env(safe-area-inset-top)); left:8px }
+  .zoom :focus-visible { outline-color:#fff }
+
+  .toast { position:absolute; z-index:14; left:50%; bottom:calc(72px + env(safe-area-inset-bottom)); max-width:86%; padding:8px 14px; border-radius:18px; background:rgba(17,27,33,.92); color:#fff;
+    font-size:13.5px; line-height:18px; text-align:center; opacity:0; transform:translate(-50%, 8px); transition:opacity .18s, transform .18s; pointer-events:none }
+  .toast.on { opacity:1; transform:translate(-50%, 0) }
+
+  /* El resalte al pasar el ratón, solo donde hay ratón: en el teléfono se quedaría pegado tras tocar. */
+  @media (hover: hover) {
+    .cab .ico:hover, .zoom .ico:hover { background:rgba(255,255,255,.13) }
+    .menu button:hover, .caja .ico:hover, .emojis button:hover, .cajon-cab .ico:hover { background:var(--hover) }
+    .resp button:hover:not(:disabled), .rapidas button:hover { background:color-mix(in srgb, var(--in) 93%, var(--tinta)) }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation:none !important; transition:none !important }
+  }
 </style>
 </head>
 <body>
-<main>
-  <section class="chat">
-    <header>
-      <div class="avatar">BD</div>
-      <div class="quien"><b>Baruka Design</b><small id="estado">en línea</small></div>
-      <div class="motor" role="group" aria-label="Motor de conversación">
-        <button type="button" data-motor="actual" title="Clasificador + Gemini, el flujo de siempre">Actual</button>
-        <button type="button" data-motor="deepseek" title="DeepSeek: conversación más humana">DeepSeek</button>
-      </div>
-      <button id="anuncio" type="button" aria-pressed="false" title="Simula que la clienta llegó desde el anuncio del vestido (clic a WhatsApp). Apagado: el bot no sabe de qué vestido le hablan y pregunta cuál.">Desde anuncio</button>
-      <button id="nuevo" title="Empezar otra conversación">Nuevo chat</button>
-      <button id="verInfo" title="Ver cómo entendió el mensaje">Análisis</button>
+<div class="escena">
+  <main class="ventana">
+    <header class="cab">
+      <span class="ico atras" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg></span>
+      <div class="avatar" aria-hidden="true">BD</div>
+      <div class="quien"><h1>Baruka Design</h1><p id="estado" aria-live="polite">en línea</p></div>
+      <button type="button" class="ico" id="video" aria-label="Videollamada (no disponible en esta demo)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>
+      <button type="button" class="ico" id="llamada" aria-label="Llamada (no disponible en esta demo)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25c1.1.37 2.3.57 3.6.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1l-2.22 2.23z"/></svg></button>
+      <button type="button" class="ico" id="mas" aria-label="Más opciones" aria-haspopup="menu" aria-expanded="false" aria-controls="menu"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button>
     </header>
-    <div class="msgs" id="msgs"><div class="dia">HOY</div></div>
-    <div class="rapidas" id="rapidas">
-      <button>Hola, quisiera saber si todavía tienen este vestido</button>
-      <button>Es para un matrimonio</button>
-      <button>¿Cuánto cuesta?</button>
-      <button>¿Cómo es el material?</button>
-      <button>Soy talla M</button>
-      <button>Sí, me interesa</button>
-      <button>Lo voy a pensar</button>
-      <button>Quiero comprarlo</button>
-      <button>¿Dónde quedan?</button>
+    <div class="menu" id="menu" role="menu" aria-label="Opciones de la demo" hidden>
+      <button type="button" role="menuitem" id="nuevo" title="Empezar otra conversación">Nuevo chat</button>
+      <button type="button" role="menuitemcheckbox" id="anuncio" aria-checked="false" title="Simula que la clienta llegó desde el anuncio del vestido (clic a WhatsApp). Apagado: el bot no sabe de qué vestido le hablan y pregunta cuál.">Desde anuncio<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
+      <hr>
+      <button type="button" role="menuitemradio" data-motor="actual" aria-checked="false" title="Clasificador + Gemini, el flujo de siempre">Motor: Actual<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
+      <button type="button" role="menuitemradio" data-motor="deepseek" aria-checked="false" title="DeepSeek: conversación más humana">Motor: DeepSeek<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
+      <hr>
+      <button type="button" role="menuitemcheckbox" id="verRapidas" aria-checked="true" title="Muestra u oculta la fila de mensajes de ejemplo">Respuestas rápidas<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
+      <button type="button" role="menuitem" id="verInfo" title="Ver cómo entendió el mensaje">Análisis</button>
     </div>
-    <form id="f">
-      <button type="button" class="clip" id="clip" aria-label="Adjuntar foto" title="Adjuntar foto">📎</button>
-      <input type="file" id="archivo" accept="image/*" hidden>
-      <input id="t" autocomplete="off" placeholder="Escribe un mensaje o adjunta una foto">
-      <button id="enviar" aria-label="Enviar">➤</button>
-    </form>
-  </section>
-  <aside id="info">
-    <button class="cerrar" id="cerrarInfo">Cerrar</button>
-    <h2>Análisis</h2><p class="sub">Escribe como clienta para ver la intención, la prenda y las fuentes.</p>
-  </aside>
-</main>
-<div class="zoom" id="zoom"><img alt=""></div>
+    <div class="cuerpo">
+      <div class="fondo" aria-hidden="true"></div>
+      <div class="msgs" id="msgs" role="log" aria-label="Conversación" tabindex="0"></div>
+      <div class="rapidas" id="rapidas" role="group" aria-label="Respuestas rápidas">
+        <button type="button">Hola, quisiera saber si todavía tienen este vestido</button>
+        <button type="button">Es para un matrimonio</button>
+        <button type="button">¿Cuánto cuesta?</button>
+        <button type="button">¿Cómo es el material?</button>
+        <button type="button">Soy talla M</button>
+        <button type="button">Sí, me interesa</button>
+        <button type="button">Lo voy a pensar</button>
+        <button type="button">Quiero comprarlo</button>
+        <button type="button">¿Dónde quedan?</button>
+      </div>
+      <div class="emojis" id="emojis" role="group" aria-label="Emojis" hidden></div>
+      <form id="f">
+        <div class="caja">
+          <button type="button" class="ico" id="emoji" aria-label="Emojis" aria-expanded="false" aria-controls="emojis"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zM8.5 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm7 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM12 17.5c2.3 0 4.3-1.4 5.1-3.5H6.9c.8 2.1 2.8 3.5 5.1 3.5z"/></svg></button>
+          <input id="t" autocomplete="off" enterkeyhint="send" aria-label="Escribe un mensaje" placeholder="Escribe un mensaje">
+          <button type="button" class="ico clip" id="clip" aria-label="Adjuntar foto" title="Adjuntar foto"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 6v11.5a4 4 0 0 1-8 0V5a2.5 2.5 0 0 1 5 0v10.5a1 1 0 0 1-2 0V6H10v9.5a2.5 2.5 0 0 0 5 0V5a4 4 0 0 0-8 0v12.5a5.5 5.5 0 0 0 11 0V6h-1.5z"/></svg></button>
+          <button type="button" class="ico" id="camara" aria-label="Tomar una foto" title="Tomar una foto"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 14.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg></button>
+        </div>
+        <input type="file" id="archivo" accept="image/*" hidden>
+        <input type="file" id="archivoCam" accept="image/*" capture="environment" hidden>
+        <button class="redondo" id="enviar" aria-label="Mensaje de voz (no disponible en esta demo)">
+          <svg class="micro" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5.3-3a5.3 5.3 0 0 1-10.6 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-1.7z"/></svg>
+          <svg class="avion" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </form>
+    </div>
+    <div class="velo" id="velo" hidden></div>
+    <aside class="cajon" id="cajon" aria-label="Análisis de la conversación">
+      <div class="cajon-cab">
+        <h2>Análisis<small>Cómo entendió el bot el último mensaje</small></h2>
+        <button type="button" class="ico" id="cerrarInfo" aria-label="Cerrar el análisis"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg></button>
+      </div>
+      <div class="ajustes" id="ajustes"></div>
+      <div class="info" id="info"></div>
+    </aside>
+    <div class="zoom" id="zoom" role="dialog" aria-modal="true" aria-label="Foto ampliada" hidden>
+      <button type="button" class="ico" id="cerrarZoom" aria-label="Cerrar la foto"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg></button>
+      <img alt="">
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+  </main>
+</div>
 <script>
 const $ = id => document.getElementById(id);
-const msgs = $('msgs'), info = $('info'), estado = $('estado');
+const msgs = $('msgs'), info = $('info'), estado = $('estado'), campo = $('t'), form = $('f');
 let hist = [], ocupado = false, ultimoRol = '';
 // Etapa de la venta: la decide el agente; aquí solo se guarda y se devuelve en cada mensaje.
 let etapa = 'prospeccion', bitacora = [];
 // Memoria de la conversación (lo que ya sabemos de la clienta y la pregunta pendiente): la actualiza el
 // agente; aquí solo se guarda y se devuelve en cada mensaje, igual que la etapa. «Nuevo chat» la borra.
 let memoria = null;
+// «Desde anuncio»: simula que la clienta llegó por el anuncio de clic a WhatsApp.
+let desdeAnuncio = false;
 // Motor elegido: se recuerda en este navegador; si no hay, manda el del servidor.
 let motor = '';
 try { motor = localStorage.getItem('motor') || ''; } catch (e) {}
-function pintarMotor() { document.querySelectorAll('.motor button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.motor === motor))); }
-document.querySelector('.motor').onclick = ev => {
-  const b = ev.target.closest('button'); if (!b) return;
-  motor = b.dataset.motor; pintarMotor();
-  try { localStorage.setItem('motor', motor); } catch (e) {}
-};
-fetch('health').then(r => r.json()).then(h => { if (!motor) { motor = h.motor || 'actual'; pintarMotor(); } }).catch(() => {});
-pintarMotor();
+const NOMBRE_MOTOR = { actual: 'Actual', deepseek: 'DeepSeek' };
+function pintarMotor() {
+  document.querySelectorAll('#menu [data-motor]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.motor === motor)));
+  pintarAjustes();
+}
+// En el cajón de análisis se ve con qué ajustes se está probando, ya que los controles viven en el menú.
+function pintarAjustes() {
+  $('ajustes').innerHTML = `<span>Motor: ${esc(NOMBRE_MOTOR[motor] || motor || 'el del servidor')}</span><span>Desde anuncio: ${desdeAnuncio ? 'sí' : 'no'}</span>`;
+}
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 // *negrita* y _cursiva_ de WhatsApp
 const wa = s => esc(s).replace(/\*([^*\n]+)\*/g, '<b>$1</b>').replace(/(^|\s)_([^_\n]+)_/g, '$1<i>$2</i>');
-const hora = () => new Date().toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
+const hora = () => new Date().toLocaleTimeString('es-PE', { hour:'numeric', minute:'2-digit' });
 const espera = ms => new Promise(r => setTimeout(r, ms));
 const bajar = () => { msgs.scrollTop = msgs.scrollHeight; };
+fetch('health').then(r => r.json()).then(h => { if (!motor) { motor = h.motor || 'actual'; pintarMotor(); } }).catch(() => {});
+pintarMotor();
 
-function burbuja(rol, html, extra = '') {
-  const d = document.createElement('div');
-  d.className = `b ${rol} ${extra} ${ultimoRol === rol ? 'mismo' : ''}`;
-  d.innerHTML = html + `<span class="hora">${hora()}</span>`;
-  msgs.appendChild(d); ultimoRol = rol; bajar(); return d;
+const TICKS = '<svg class="ticks" viewBox="0 0 17 11" role="img" aria-label="Leído"><path d="M1 5.9 4.4 9.5 11 1.5M6.9 8.3 8 9.5 14.9 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const RESPONDER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>';
+const INICIO = '<div class="dia">HOY</div><div class="aviso">🔒 Los mensajes y las llamadas están cifrados de extremo a extremo. Solo las personas en este chat pueden leerlos, escucharlos o compartirlos.</div>';
+const INFO_VACIA = '<p class="sub">Escribe como clienta para ver la intención, la prenda y las fuentes.</p>';
+
+// Un mensaje: el globo con su hora (y los checks en los enviados). «hueco» es el sitio que la hora reserva al final del texto.
+function globo(rol, cuerpo, h, clase = '') {
+  const m = document.createElement('div');
+  m.className = `m ${rol}${ultimoRol !== rol ? ' cola' : ''}${clase ? ' foto' : ''}`;
+  m.innerHTML = `<div class="b ${clase}">${cuerpo}<span class="meta"><span>${h}</span>${rol === 'cliente' ? TICKS : ''}</span></div>`;
+  msgs.appendChild(m); ultimoRol = rol; bajar(); return m;
+}
+const hueco = h => `<span class="esp" aria-hidden="true">${h}</span>`;
+function burbuja(rol, html) { const h = hora(); return globo(rol, html + hueco(h), h); }
+// Mensaje de imagen de WhatsApp: la foto y, debajo, el pie dentro del mismo globo.
+function burbujaFoto(rol, src, alt, pie = '') {
+  const h = hora();
+  const m = globo(rol, `<button type="button" class="ver" aria-label="Ampliar la foto${alt ? ': ' + esc(alt) : ''}"><img src="${src}" alt="${esc(alt)}"></button>`
+    + (pie ? `<div class="pie">${pie}${hueco(h)}</div>` : ''), h, pie ? 'foto' : 'foto sinpie');
+  m.querySelector('img').addEventListener('load', bajar);
+  return m;
 }
 let puntos = null;
 function tecleando(on) {
   estado.textContent = on ? 'escribiendo…' : 'en línea';
-  estado.className = on ? 'tecleando' : '';
-  if (on && !puntos) { puntos = document.createElement('div'); puntos.className = 'escribiendo'; puntos.innerHTML = '<i></i><i></i><i></i>'; msgs.appendChild(puntos); bajar(); }
+  if (on && !puntos) {
+    puntos = document.createElement('div'); puntos.className = `m bot escr${ultimoRol !== 'bot' ? ' cola' : ''}`;
+    puntos.innerHTML = '<div class="b" role="img" aria-label="Escribiendo"><i></i><i></i><i></i></div>'; msgs.appendChild(puntos); bajar();
+  }
   if (!on && puntos) { puntos.remove(); puntos = null; }
 }
 // Una persona tarda más en escribir un mensaje largo: ~25 ms por carácter, entre 0,6 y 2,2 s.
 const pausa = texto => Math.min(2200, Math.max(600, texto.length * 25));
+function ocupar(on) { ocupado = on; $('enviar').disabled = on; }
 
 async function enviar(texto) {
   if (ocupado || !texto.trim()) return;
-  ocupado = true; $('enviar').disabled = true;
-  burbuja('cliente', wa(texto));
-  await espera(350); tecleando(true);
+  ocupar(true);
+  // Quien llega por un anuncio trae la referencia citada en su primer mensaje, como en WhatsApp.
+  const cita = desdeAnuncio && !hist.length ? '<span class="anun"><b>Anuncio</b><span>Baruka Design · clic a WhatsApp</span></span>' : '';
+  const mio = burbuja('cliente', cita + wa(texto));
+  await espera(350); mio.classList.add('leido'); tecleando(true);
   let j;
   try {
     const r = await fetch('chat', { method:'POST', headers:{'Content-Type':'application/json'},
@@ -188,7 +374,7 @@ async function enviar(texto) {
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
-    tecleando(false); burbuja('bot', 'Uy, se me cortó la conexión 😅 ¿Me lo repites?'); ocupado = false; $('enviar').disabled = false; return;
+    tecleando(false); burbuja('bot', 'Uy, se me cortó la conexión 😅 ¿Me lo repites?'); ocupar(false); return;
   }
   hist.push({ rol:'cliente', texto });
   await mostrar(j);
@@ -208,12 +394,14 @@ async function mostrar(j) {
     // Prenda que se pide por el bot: título y un botón por talla (las agotadas, tachadas).
     // Las demás (solo en sucursal, agotadas) conservan su pie de texto.
     const tallas = s.tallas || [];
-    const cuerpo = tallas.length
-      ? `<span class="pie titulo">${wa(s.titulo)}</span><div class="tallas"><small>Elige tu talla</small>${tallas.map(t =>
-          `<button data-enviar="Talla ${esc(t.talla)} del ${esc(s.codigo)}"${t.disponible ? '' : ' disabled'}>${esc(t.talla)}</button>`).join('')}</div>`
-      : `<span class="pie">${wa(s.pie)}</span>`;
-    burbuja('bot', `<img src="${esc(s.imagen.replace(/^\//, ''))}" alt="${esc(s.codigo)}" loading="lazy">${cuerpo}`, 'foto');
-    if (tallas.length) conBotones.add(s.codigo);
+    const m = burbujaFoto('bot', esc(s.imagen.replace(/^\//, '')), s.codigo,
+      tallas.length ? `${wa(s.titulo)}\n<span class="nota">Elige tu talla 👇</span>` : wa(s.pie));
+    if (tallas.length) {
+      m.classList.add('con-resp');
+      m.insertAdjacentHTML('beforeend', `<div class="resp tallas" role="group" aria-label="Tallas del ${esc(s.codigo)}" style="--cols:${Math.min(tallas.length, 4)}">${tallas.map(t =>
+        `<button type="button" data-enviar="Talla ${esc(t.talla)} del ${esc(s.codigo)}"${t.disponible ? '' : ` disabled title="Agotada" aria-label="Talla ${esc(t.talla)}, agotada"`}>${esc(t.talla)}</button>`).join('')}</div>`);
+      conBotones.add(s.codigo); bajar();
+    }
     hist.push({ rol:'bot', texto: s.pie });
   }
   tecleando(false);
@@ -225,7 +413,7 @@ async function mostrar(j) {
   // Si la tarjeta de esa prenda ya los trae, no se repiten.
   if ((j.tallas || []).length && !conBotones.has(j.tallas[0].codigo)) {
     botones(j.tallas.map(t => ({ texto: `${t.talla}${t.precio != null ? ` (S/ ${Math.round(t.precio) === t.precio ? t.precio : t.precio.toFixed(2)})` : ''}`,
-      enviar: `Talla ${t.talla} del ${t.codigo}`, off: !t.disponible })));
+      enviar: `Talla ${t.talla} del ${t.codigo}`, off: !t.disponible })), true);
   }
   if ((j.botones || []).length) botones(j.botones.map(t => ({ texto: t, enviar: t })));
   if (j.confirmar_pedido) {
@@ -233,29 +421,43 @@ async function mostrar(j) {
   }
   // «¿Quieres ver otras opciones?»: botones en vez de mandar prendas que no pidió.
   if (j.ofrecer_opciones) {
-    const d = document.createElement('div'); d.className = 'oferta';
-    d.innerHTML = '<button class="si">Sí, muéstrame</button><button>No, gracias</button>';
-    d.onclick = ev => {
-      const b = ev.target.closest('button'); if (!b || ocupado) return;
-      d.remove(); enviar(b.classList.contains('si') ? 'Sí, quiero ver otras opciones' : 'No, gracias');
-    };
-    msgs.appendChild(d); bajar();
+    botones([{ texto: 'Sí, muéstrame', enviar: 'Sí, quiero ver otras opciones', si: true }, { texto: 'No, gracias', enviar: 'No, gracias' }]);
   }
   hist = hist.slice(-20);
   pintarInfo(j);
-  ocupado = false; $('enviar').disabled = false; $('t').focus();
+  ocupar(false); campo.focus();
 }
 
-// Fila de botones de respuesta rápida bajo el último mensaje del bot; desaparece al usarla.
-function botones(lista) {
-  const d = document.createElement('div'); d.className = 'oferta';
+// Botones de respuesta rápida, como los de WhatsApp Business: cuelgan del último mensaje del bot y
+// desaparecen al usarlos. Si ese mensaje es una tarjeta (ya trae sus tallas), van en un bloque aparte.
+function botones(lista, tallas = false) {
+  const d = document.createElement('div'); d.className = 'resp';
+  const largo = Math.max(...lista.map(b => b.texto.length));
+  const cols = largo <= 4 ? Math.min(lista.length, 4) : tallas || (lista.length === 2 && largo <= 16) || (lista.length > 2 && largo <= 12) ? 2 : 1;
+  d.style.setProperty('--cols', cols); if (cols === 2) d.classList.add('c2');
   lista.forEach(b => {
-    const el = document.createElement('button'); el.textContent = b.texto; el.disabled = !!b.off;
+    const el = document.createElement('button'); el.type = 'button'; el.disabled = !!b.off;
+    if (largo > 4 && !tallas) el.innerHTML = RESPONDER;
+    el.appendChild(document.createTextNode(b.texto));
     if (b.si) el.className = 'si';
-    el.onclick = () => { if (ocupado) return; d.remove(); enviar(b.enviar); };
+    if (b.off) el.title = 'Agotada';
+    el.onclick = () => {
+      if (ocupado) return;
+      const m = d.parentNode; d.remove();
+      if (!m.querySelector('.resp')) { m.classList.remove('con-resp'); if (!m.querySelector('.b')) m.remove(); }
+      enviar(b.enviar);
+    };
     d.appendChild(el);
   });
-  msgs.appendChild(d); bajar();
+  let m = msgs.lastElementChild;
+  if (!m || !m.classList.contains('bot') || m.classList.contains('foto') || m.classList.contains('escr')) {
+    const trasTarjeta = !!m && m.classList.contains('foto');
+    m = document.createElement('div'); m.className = 'm bot' + (trasTarjeta ? ' suelta' : ''); msgs.appendChild(m);
+  }
+  m.classList.add('con-resp'); m.appendChild(d);
+  // En dos columnas, si algún texto no cabe en una línea, mejor una fila por botón.
+  if (cols === 2 && largo > 4 && [...d.children].some(b => b.offsetHeight > 46)) { d.style.setProperty('--cols', 1); d.classList.remove('c2'); }
+  bajar();
 }
 
 // Reduce la foto a 1024 px en el navegador: viaja rápido y al modelo no le hace falta más.
@@ -275,12 +477,12 @@ function reducir(file) {
 
 async function enviarFoto(file) {
   if (ocupado || !file) return;
-  ocupado = true; $('enviar').disabled = true;
-  const texto = $('t').value.trim(); $('t').value = '';
+  ocupar(true);
+  const texto = campo.value.trim(); campo.value = ''; alEscribir();
   let dataUrl;
-  try { dataUrl = await reducir(file); } catch (e) { ocupado = false; $('enviar').disabled = false; return; }
-  burbuja('cliente', `<img src="${dataUrl}" alt="foto enviada">${texto ? `<span class="pie">${wa(texto)}</span>` : ''}`, 'foto');
-  await espera(350); tecleando(true);
+  try { dataUrl = await reducir(file); } catch (e) { ocupar(false); aviso('Ese archivo no es una imagen'); return; }
+  const mio = burbujaFoto('cliente', dataUrl, 'foto enviada', texto ? wa(texto) : '');
+  await espera(350); mio.classList.add('leido'); tecleando(true);
   let j;
   try {
     const r = await fetch('foto', { method:'POST', headers:{'Content-Type':'application/json'},
@@ -288,7 +490,7 @@ async function enviarFoto(file) {
     j = await r.json();
     if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status));
   } catch (e) {
-    tecleando(false); burbuja('bot', 'Uy, no pude ver bien la foto 😅 ¿Me la mandas otra vez?'); ocupado = false; $('enviar').disabled = false; return;
+    tecleando(false); burbuja('bot', 'Uy, no pude ver bien la foto 😅 ¿Me la mandas otra vez?'); ocupar(false); return;
   }
   hist.push({ rol:'cliente', texto: '[foto]' + (texto ? ' ' + texto : '') });
   await mostrar(j);
@@ -303,12 +505,12 @@ function panelVenta(j) {
   const idx = ETAPAS.findIndex(e => e[0] === etapa), c = j.comercial;
   if (c) bitacora.unshift({ de: c.etapa_anterior, a: etapa, intent: c.intent, p: c.confianza, motivo: c.motivo, cambio: c.transicion });
   bitacora = bitacora.slice(0, 6);
-  return `<h2>Etapa de la venta</h2>
+  return `<h3>Etapa de la venta</h3>
     <div class="etapas">${ETAPAS.map((e, i) => `<span class="${i < idx ? 'hecha' : i === idx ? 'actual' : ''}">${e[1]}</span>`).join('')}</div>
     ${c ? `<div class="sub">entendió <b>${esc(c.intent)}</b> · confianza ${(c.confianza * 100).toFixed(0)} % (${esc(c.nivel)})${c.motivo ? '<br>' + esc(c.motivo) : ''}</div>
-    <h2>Clasificador comercial</h2>${bars(c.clasificador)}
+    <h3>Clasificador comercial</h3>${bars(c.clasificador)}
     ${c.jev ? `<div class="sub">Jev (con contexto${c.fuente === 'jev' ? ', decidió él' : ', el local estaba más seguro'}): <b>${esc(c.jev.intent)}</b> ${(c.jev.confianza * 100).toFixed(0)} % · ${c.jev.ms} ms</div>` : ''}` : ''}
-    ${bitacora.length ? `<h2>Decisiones</h2><ul class="bita">${bitacora.map(b => `<li>${b.cambio ? `<b>${esc(b.de)} → ${esc(b.a)}</b>` : esc(b.a)} · ${esc(b.intent)} ${(b.p * 100).toFixed(0)} %</li>`).join('')}</ul>` : ''}
+    ${bitacora.length ? `<h3>Decisiones</h3><ul class="bita">${bitacora.map(b => `<li>${b.cambio ? `<b>${esc(b.de)} → ${esc(b.a)}</b>` : esc(b.a)} · ${esc(b.intent)} ${(b.p * 100).toFixed(0)} %</li>`).join('')}</ul>` : ''}
     ${panelMemoria(j)}`;
 }
 
@@ -325,11 +527,11 @@ function panelMemoria(j) {
   const leido = l && l.pendiente ? `<div class="sub">esperaba <b>${esc(l.pendiente)}</b>: ${l.respondio ? 'lo respondió' : l.espera ? 'dice que ya lo manda (se espera)' : 'no lo respondió'}</div>` : '';
   const fuentes = l && Object.keys(l.datos || {}).length ? `<div class="sub">de este mensaje: ${Object.entries(l.datos).map(([k, v]) => `${esc(NOMBRE_DATO[k] || k)} ${esc(v)}${l.fuente && l.fuente[k] === 'jev' ? ' (Jev)' : ''}`).join(' · ')}</div>` : '';
   const t = TEMP[m.temperatura];
-  const temp = t ? `<h2>Temperatura</h2><div>${t[0]} <b>${esc(t[1])}</b>${m.temperatura_motivo ? ' — ' + esc(m.temperatura_motivo) : ''}</div>` : '';
+  const temp = t ? `<h3>Temperatura</h3><div>${t[0]} <b>${esc(t[1])}</b>${m.temperatura_motivo ? ' — ' + esc(m.temperatura_motivo) : ''}</div>` : '';
   const tent = m.cita_tentativa || {};
   const cita = m.sabemos && m.sabemos.cita ? `<div class="sub">🗓️ cita: <b>${esc(m.sabemos.cita)}</b></div>`
     : (tent.dia || tent.hora) ? `<div class="sub">🗓️ cita en curso: ${esc(tent.dia || 'falta el día')} · ${esc(tent.hora || 'falta la hora')}</div>` : '';
-  return `${temp}${cita}<h2>Memoria</h2>
+  return `${temp}${cita}<h3>Memoria</h3>
     <div>Esperando: <b>${esc(m.pendiente || '—')}</b> · siguiente: <b>${esc(j.siguiente_pregunta || '—')}</b></div>${leido}${fuentes}
     <ul>${sab.length ? sab.map(([k, v]) => `<li>${esc(NOMBRE_DATO[k] || k)}: <b>${esc(v)}</b></li>`).join('') : '<li class="sub">todavía nada</li>'}</ul>
     <div class="sub">ya preguntó: ${esc((m.preguntado || []).join(', ') || '—')}${m.producto ? ` · prenda: ${esc(m.producto)}` : ''}${(m.mostrados || []).length ? ` · mostró: ${esc(m.mostrados.join(', '))}` : ''}${(m.objeciones || []).length ? ` · dudas: ${esc(m.objeciones.join(', '))}` : ''}${m.llego_por ? ` · llegó por: ${esc(m.llego_por)}` : ''}</div>`;
@@ -338,46 +540,151 @@ function panelMemoria(j) {
 function pintarInfo(j) {
   if (j.foto) {
     const f = j.foto;
-    info.innerHTML = `<button class="cerrar" id="cerrarInfo">Cerrar</button>
-      <h2>Búsqueda por foto</h2>
+    info.innerHTML = `<h3>Búsqueda por foto</h3>
       <div>Resultado: <b>${esc(f.caso)}</b> · nivel ${esc(f.nivel)}</div>
       <div class="sub">umbral «es este» ≥ ${f.umbrales.exacto.toFixed(3)} · «se parece» ≥ ${f.umbrales.parecido.toFixed(3)} · ${j.ms} ms · ${esc(j.motor || '')} · ${esc(j.modelo_llm)}</div>
-      <h2>Más parecidas</h2>${f.top.map(x => `<div class="row"><div><code>${esc(x.codigo)}</code><div class="bar"><i style="width:${Math.max(0, x.sim)*100}%"></i></div></div><div>${x.sim.toFixed(2)}</div></div>`).join('')}
-      <h2>Acción</h2><div>${esc(j.accion)}${j.codigo ? ' · ' + esc(j.codigo) : ''}</div>${panelVenta(j)}`;
-    $('cerrarInfo').onclick = () => info.classList.remove('abierto');
+      <h3>Más parecidas</h3>${f.top.map(x => `<div class="row"><div><code>${esc(x.codigo)}</code><div class="bar"><i style="width:${Math.max(0, x.sim)*100}%"></i></div></div><div>${x.sim.toFixed(2)}</div></div>`).join('')}
+      <h3>Acción</h3><div>${esc(j.accion)}${j.codigo ? ' · ' + esc(j.codigo) : ''}</div>${panelVenta(j)}`;
     return;
   }
-  info.innerHTML = `<button class="cerrar" id="cerrarInfo">Cerrar</button>
-    ${panelVenta(j)}
-    <h2>Intención general</h2>${bars(j.top_intenciones)}
+  info.innerHTML = `${panelVenta(j)}
+    <h3>Intención general</h3>${bars(j.top_intenciones)}
     <div class="sub">motor: <b>${esc(j.motor || '—')}</b> · acción: <b>${esc(j.accion)}</b> · ${esc(j.modelo_llm || 'sin LLM')} · ${j.ms} ms · stock: ${esc(j.stock_fuente || '—')}</div>
-    <h2>Prenda</h2><div>${esc(j.categoria_prenda)} (${(j.confianza_categoria*100).toFixed(0)}%)</div>
-    <h2>Códigos</h2><div>${j.codigos.length ? j.codigos.map(esc).join(', ') : '—'}</div>
-    <h2>Fichas (RAG)</h2><ul>${j.fichas.map(f => `<li><code>${esc(f.codigo)}</code> ${esc(f.nombre)} <span class="sub">${esc(f.fuente)}</span></li>`).join('')}</ul>
-    <h2>Ejemplos del dataset</h2><ul>${j.ejemplos.map(e => `<li>[${esc(e.intencion)}] ${esc(e.texto)} <span class="sub">${e.sim}</span></li>`).join('')}</ul>`;
-  $('cerrarInfo').onclick = () => info.classList.remove('abierto');
+    <h3>Prenda</h3><div>${esc(j.categoria_prenda)} (${(j.confianza_categoria*100).toFixed(0)}%)</div>
+    <h3>Códigos</h3><div>${j.codigos.length ? j.codigos.map(esc).join(', ') : '—'}</div>
+    <h3>Fichas (RAG)</h3><ul>${j.fichas.map(f => `<li><code>${esc(f.codigo)}</code> ${esc(f.nombre)} <span class="sub">${esc(f.fuente)}</span></li>`).join('')}</ul>
+    <h3>Ejemplos del dataset</h3><ul>${j.ejemplos.map(e => `<li>[${esc(e.intencion)}] ${esc(e.texto)} <span class="sub">${e.sim}</span></li>`).join('')}</ul>`;
 }
 
-$('f').onsubmit = ev => { ev.preventDefault(); const t = $('t'); const v = t.value; t.value = ''; enviar(v); };
+// Aviso breve, como los de la app (para lo que en la demo no existe o acaba de cambiar).
+let relojAviso = 0;
+function aviso(texto) {
+  const t = $('toast'); t.textContent = texto; t.classList.add('on');
+  clearTimeout(relojAviso); relojAviso = setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+// Barra de escritura: micrófono con el campo vacío, avión de enviar cuando hay texto.
+function alEscribir() {
+  const hay = !!campo.value.trim();
+  form.classList.toggle('con-texto', hay);
+  $('enviar').setAttribute('aria-label', hay ? 'Enviar' : 'Mensaje de voz (no disponible en esta demo)');
+}
+campo.addEventListener('input', alEscribir);
+form.onsubmit = ev => {
+  ev.preventDefault();
+  const v = campo.value;
+  if (!v.trim()) { aviso('Las notas de voz no están en esta demo: escribe tu mensaje'); campo.focus(); return; }
+  if (ocupado) return;
+  campo.value = ''; alEscribir(); emojis(false); enviar(v);
+};
 $('clip').onclick = () => $('archivo').click();
-$('archivo').onchange = ev => { const f = ev.target.files[0]; ev.target.value = ''; enviarFoto(f); };
+$('camara').onclick = () => $('archivoCam').click();
+$('archivo').onchange = $('archivoCam').onchange = ev => { const f = ev.target.files[0]; ev.target.value = ''; enviarFoto(f); };
 // arrastrar una foto sobre el chat también la envía
 msgs.addEventListener('dragover', ev => ev.preventDefault());
 msgs.addEventListener('drop', ev => { ev.preventDefault(); const f = ev.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) enviarFoto(f); });
-$('rapidas').onclick = ev => { if (ev.target.tagName === 'BUTTON') enviar(ev.target.textContent); };
-let desdeAnuncio = false;
-$('anuncio').onclick = () => { desdeAnuncio = !desdeAnuncio; $('anuncio').setAttribute('aria-pressed', String(desdeAnuncio)); };
-$('nuevo').onclick = () => { if (ocupado) return; hist = []; ultimoRol = ''; etapa = 'prospeccion'; bitacora = []; memoria = null; msgs.innerHTML = '<div class="dia">HOY</div>'; };
-$('verInfo').onclick = () => info.classList.add('abierto');
-$('cerrarInfo').onclick = () => info.classList.remove('abierto');
-// Botones de talla de las tarjetas: siguen activos mientras la tarjeta esté en pantalla.
+$('video').onclick = () => aviso('Las videollamadas no están en esta demo');
+$('llamada').onclick = () => aviso('Las llamadas no están en esta demo');
+
+// Emojis: una bandeja corta que escribe en el campo.
+const bandeja = $('emojis');
+bandeja.innerHTML = ['😊','😍','🥰','😂','😅','🤔','😢','🤩','👍','👏','🙌','🙏','👋','💃','👗','👠','💖','❤️','✨','🔥','🎉','💐','💍','📸','🛍️','💳','🚚','📍','⏰','✅','❌','😘']
+  .map(e => `<button type="button" aria-label="Emoji ${e}">${e}</button>`).join('');
+function emojis(on) { bandeja.hidden = !on; $('emoji').setAttribute('aria-expanded', String(on)); if (on) bajar(); }
+$('emoji').onclick = () => emojis(bandeja.hidden);
+bandeja.onclick = ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  const i = campo.selectionStart ?? campo.value.length, f = campo.selectionEnd ?? i;
+  campo.value = campo.value.slice(0, i) + b.textContent + campo.value.slice(f);
+  campo.focus(); campo.setSelectionRange(i + b.textContent.length, i + b.textContent.length); alEscribir();
+};
+
+// Respuestas rápidas de ejemplo: la rueda del ratón las desliza de lado.
+const rapidas = $('rapidas');
+rapidas.onclick = ev => { if (ev.target.tagName === 'BUTTON') enviar(ev.target.textContent); };
+rapidas.addEventListener('wheel', ev => {
+  if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) { rapidas.scrollLeft += ev.deltaY; ev.preventDefault(); }
+}, { passive: false });
+let verRapidas = true;
+try { verRapidas = localStorage.getItem('rapidas') !== '0'; } catch (e) {}
+function pintarRapidas() { rapidas.hidden = !verRapidas; $('verRapidas').setAttribute('aria-checked', String(verRapidas)); }
+pintarRapidas();
+
+// Menú ⋮ de la cabecera: los controles de la demo.
+const menu = $('menu'), mas = $('mas');
+function abrirMenu(on, foco = true) {
+  menu.hidden = !on; mas.setAttribute('aria-expanded', String(on));
+  if (on && foco) menu.querySelector('button').focus(); else if (!on && foco) mas.focus();
+}
+// Con el teclado (detail 0) el foco entra al menú; con ratón o dedo se queda en ⋮ y la flecha abajo lo mete.
+mas.onclick = ev => abrirMenu(menu.hidden, menu.hidden ? ev.detail === 0 : true);
+mas.addEventListener('keydown', ev => { if (ev.key === 'ArrowDown' && !menu.hidden) { ev.preventDefault(); menu.querySelector('button').focus(); } });
+addEventListener('keydown', ev => { if (ev.key === 'Tab') document.documentElement.classList.add('teclado'); });
+addEventListener('pointerdown', () => document.documentElement.classList.remove('teclado'));
+document.addEventListener('pointerdown', ev => { if (!menu.hidden && !menu.contains(ev.target) && !mas.contains(ev.target)) abrirMenu(false, false); });
+menu.addEventListener('keydown', ev => {
+  const items = [...menu.querySelectorAll('button')], i = items.indexOf(document.activeElement);
+  const ir = n => { ev.preventDefault(); items[(n + items.length) % items.length].focus(); };
+  if (ev.key === 'ArrowDown') ir(i + 1);
+  else if (ev.key === 'ArrowUp') ir(i - 1);
+  else if (ev.key === 'Home') ir(0);
+  else if (ev.key === 'End') ir(items.length - 1);
+  else if (ev.key === 'Tab') abrirMenu(false, false);
+});
+function nuevoChat() {
+  if (ocupado) { aviso('Espera a que termine de responder'); return; }
+  hist = []; ultimoRol = ''; etapa = 'prospeccion'; bitacora = []; memoria = null;
+  msgs.innerHTML = INICIO; info.innerHTML = INFO_VACIA; campo.value = ''; alEscribir(); emojis(false);
+}
+menu.onclick = ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  abrirMenu(false, false);
+  if (b.id === 'nuevo') { nuevoChat(); campo.focus(); }
+  else if (b.id === 'anuncio') {
+    desdeAnuncio = !desdeAnuncio; b.setAttribute('aria-checked', String(desdeAnuncio)); pintarAjustes();
+    aviso(desdeAnuncio ? 'Desde anuncio: la clienta llega por el anuncio del vestido' : 'Desde anuncio: apagado'); campo.focus();
+  } else if (b.dataset.motor) {
+    motor = b.dataset.motor; pintarMotor();
+    try { localStorage.setItem('motor', motor); } catch (e) {}
+    aviso('Motor: ' + NOMBRE_MOTOR[motor]); campo.focus();
+  } else if (b.id === 'verRapidas') {
+    verRapidas = !verRapidas; pintarRapidas();
+    try { localStorage.setItem('rapidas', verRapidas ? '1' : '0'); } catch (e) {}
+    campo.focus();
+  } else if (b.id === 'verInfo') abrirInfo(true);
+};
+
+// Cajón de análisis.
+const cajon = $('cajon');
+function abrirInfo(on) {
+  cajon.classList.toggle('abierto', on); $('velo').hidden = !on; document.body.classList.toggle('con-info', on);
+  if (on) $('cerrarInfo').focus(); else campo.focus();
+}
+$('cerrarInfo').onclick = $('velo').onclick = () => abrirInfo(false);
+
+// Fotos: al pulsarlas se amplían, como en el visor de WhatsApp.
+const zoom = $('zoom');
+let volverA = null;
+function ampliar(src, alt, desde) { const i = zoom.querySelector('img'); i.src = src; i.alt = alt || ''; zoom.hidden = false; volverA = desde; $('cerrarZoom').focus(); }
+function cerrarZoom() { zoom.hidden = true; if (volverA && volverA.isConnected) volverA.focus(); volverA = null; }
+zoom.onclick = cerrarZoom;
 msgs.addEventListener('click', ev => {
+  const v = ev.target.closest('.ver');
+  if (v) { const i = v.querySelector('img'); ampliar(i.src, i.alt, v); return; }
+  // Botones de talla de las tarjetas: siguen activos mientras la tarjeta esté en pantalla.
   const b = ev.target.closest('.tallas button'); if (!b || b.disabled || ocupado) return;
   enviar(b.dataset.enviar);
 });
-msgs.onclick = ev => { if (ev.target.tagName === 'IMG') { $('zoom').querySelector('img').src = ev.target.src; $('zoom').classList.add('on'); } };
-$('zoom').onclick = () => $('zoom').classList.remove('on');
-$('t').focus();
+document.addEventListener('keydown', ev => {
+  if (ev.key !== 'Escape') return;
+  if (!zoom.hidden) cerrarZoom();
+  else if (!menu.hidden) abrirMenu(false);
+  else if (!bandeja.hidden) { emojis(false); campo.focus(); }
+  else if (cajon.classList.contains('abierto')) abrirInfo(false);
+});
+
+msgs.innerHTML = INICIO; info.innerHTML = INFO_VACIA; alEscribir();
+campo.focus();
 </script>
 </body>
 </html>
