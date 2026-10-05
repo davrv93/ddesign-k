@@ -39,6 +39,21 @@ type Config struct {
 	MatchThreshold float64
 	SeedCatalog    bool
 	Currency       string
+
+	// Kommo CRM (internal/kommo). Apagado por defecto: sin KOMMO_ENABLED=1, subdominio y token no se llama a nadie.
+	KommoEnabled    bool
+	KommoSubdomain  string // «baruka» de baruka.kommo.com
+	KommoToken      string // token de larga duración de la integración privada (nunca se imprime)
+	KommoPipeline   string
+	KommoTranscript bool // el último intercambio de cada turno va como nota (sin datos de pago)
+	// CRMEventSecret protege POST /api/internal/crm/evento (el agente avisa los turnos del chat web). Vacío = la ruta
+	// no existe.
+	CRMEventSecret string
+}
+
+// KommoListo: integración encendida y con credenciales.
+func (c *Config) KommoListo() bool {
+	return c.KommoEnabled && c.KommoSubdomain != "" && c.KommoToken != ""
 }
 
 func Load() *Config {
@@ -73,6 +88,13 @@ func Load() *Config {
 		MatchThreshold: envFloat("MATCH_THRESHOLD", 0.6),
 		SeedCatalog:    env("SEED_CATALOG", "true") == "true",
 		Currency:       env("CURRENCY", "S/"),
+
+		KommoEnabled:    env("KOMMO_ENABLED", "0") == "1",
+		KommoSubdomain:  strings.TrimSpace(env("KOMMO_SUBDOMAIN", "")),
+		KommoToken:      strings.TrimSpace(env("KOMMO_TOKEN", "")),
+		KommoPipeline:   env("KOMMO_PIPELINE_NAME", "Baruka · Ventas por WhatsApp"),
+		KommoTranscript: env("KOMMO_SYNC_TRANSCRIPT", "0") == "1",
+		CRMEventSecret:  strings.TrimSpace(env("CRM_EVENT_SECRET", "")),
 	}
 	if c.MediaBaseURL == "" {
 		c.MediaBaseURL = c.WebhookBaseURL

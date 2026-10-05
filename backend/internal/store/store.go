@@ -190,6 +190,19 @@ CREATE TABLE IF NOT EXISTS pares_dpo (
 	created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_pares_conv ON pares_dpo(conversation_id, id);
+-- Vínculo con Kommo CRM (internal/kommo): qué lead y qué contacto de Kommo corresponden a cada conversación, para
+-- no duplicarlos. clave = «wa:<conversation_id>» (WhatsApp) o «web:<sesión>» (chat web). estado guarda lo último que
+-- se mandó (estado del embudo, precio, campos, etiquetas) para enviar solo lo que cambió.
+CREATE TABLE IF NOT EXISTS kommo_vinculos (
+	clave           TEXT PRIMARY KEY,
+	canal           TEXT NOT NULL DEFAULT '',
+	conversation_id INTEGER NOT NULL DEFAULT 0,
+	lead_id         INTEGER NOT NULL DEFAULT 0,
+	contact_id      INTEGER NOT NULL DEFAULT 0,
+	estado          TEXT NOT NULL DEFAULT '{}',
+	updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_kommo_conv ON kommo_vinculos(conversation_id);
 `
 
 func (s *Store) migrate() error {
