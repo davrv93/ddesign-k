@@ -434,3 +434,9 @@ producto_descripcion,errores_ortograficos,tiene mangitas
 producto_descripcion,correcta,¿El vestido tiene tirantes?
 producto_descripcion,informal,el vestido tiene forro?
 producto_descripcion,errores_ortograficos,el bestido tiene sierre
+pregunta_general,correcta,¿Cuánto es 8 por 7?
+pregunta_general,informal,cuanto es 15 x 3 pe
+pregunta_general,errores_ortograficos,kuanto es 9 mas 6
+pregunta_general,correcta,¿Me ayudas con una multiplicación?
+pregunta_general,informal,oe resuelveme una suma
+pregunta_general,errores_ortograficos,ayudame cn una divicion

@@ -100,6 +100,10 @@ UMBRAL_SIN_FICHAS = float(os.environ.get("NO_RAG_THRESHOLD", "0.6"))
 # CATALOGO100=0: la tienda usa solo su catálogo (backend); el de 100 modelos ficticios de BOT.zip no se
 # ofrece ni se reconoce por foto. Debe coincidir con el build arg del mismo nombre (índice de fotos).
 CATALOGO100 = os.environ.get("CATALOGO100", "1") != "0"
+# SOLO PARA PRUEBAS (app/regresion.py): con RESPUESTA_LLM_PRUEBA=1 el agente acepta en /chat el campo `respuesta_llm`
+# y lo trata como si fuera lo que redactó el LLM (pasa por los mismos filtros). Así se prueban sin costo las ramas que
+# dependen del texto del LLM. En producción no se define: el campo se ignora.
+PRUEBA_LLM = os.environ.get("RESPUESTA_LLM_PRUEBA", "0") == "1"
 # Precios del catálogo de 100 modelos (de demostración): se ponen en las fichas al arrancar, sin re-entrenar.
 PRECIOS_100 = os.environ.get("PRECIOS_CATALOGO100", os.path.join(os.path.dirname(__file__), "..", "seed", "precios_catalogo100.json"))
 
@@ -229,6 +233,16 @@ class ChatIn(BaseModel):
     memoria: dict | None = None
     # Clienta que vuelve: {nombre, tallas: [más reciente primero], productos: [...], pedidos: n}. Lo arma el bot Go.
     perfil: dict | None = None
+    # Solo pruebas: lo que «escribió» el LLM en este turno. Se ignora salvo con RESPUESTA_LLM_PRUEBA=1 (ver PRUEBA_LLM).
+    respuesta_llm: str = ""
+
+
+RE_NO_TEXTO = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\ud800-\udfff]")
+
+
+def _limpio(t: str) -> str:
+    """Sin caracteres de control ni medios emojis (sustitutos sueltos): el tokenizador revienta con ellos (500)."""
+    return RE_NO_TEXTO.sub("", t or "")
 
 
 # La memoria del mensaje en curso, para las funciones que miran «lo ya mostrado» o la prenda en foco sin
@@ -252,11 +266,13 @@ def _memoria_de(req) -> dict:
 def _texto_perfil(perfil: dict | None) -> str:
     if not isinstance(perfil, dict) or not (perfil.get("pedidos") or perfil.get("productos")):
         return ""
-    prods = ", ".join(str(x) for x in (perfil.get("productos") or [])[:3])
-    tallas = ", ".join(str(x) for x in (perfil.get("tallas") or [])[:2])
+    lista = lambda k: [str(x) for x in perfil[k] if isinstance(x, str)] if isinstance(perfil.get(k), list) else []   # noqa: E731
+    prods = ", ".join(lista("productos")[:3])
+    tallas = ", ".join(lista("tallas")[:2])
     return (f"CLIENTA QUE VUELVE: ya nos compró antes ({perfil.get('pedidos') or 1} pedido(s)"
             + (f": {prods}" if prods else "") + (f"; talla {tallas}" if tallas else "")
-            + "). Puedes mencionarlo con naturalidad una vez («¡qué gusto que vuelvas!»), sin listar sus pedidos.\n")
+            + "). Puedes mencionarlo con naturalidad una vez («¡qué gusto que vuelvas!»), sin listar sus pedidos. Su talla de "
+              "antes NO es la de hoy: no la des por dicha.\n")
 
 
 def bloque_memoria(mem: dict, sig: str, perfil: dict | None = None, mensaje: str = "") -> str:
@@ -814,7 +830,7 @@ RE_LOGISTICA = re.compile(r"\b(d[oó]nde|direcci[oó]n|ubicaci[oó]n|ubicad|qued
 RE_MAS_OPCIONES = re.compile(r"\b(otr[oa]s? (modelos?|opci|vestid|colou?r|prendas?|conjunt|blus|fald|blazer|pantal|cosas?|dise|tipos?|estilos?)"
                              r"|^\W*(y\s+)?otr[oa]s?\W*$|(tienes|tienen|hay|ten[eé]s|muestr\w*|pas\w*|ens[eé][nñ]\w*) (algun(os|as)? )?otr[oa]s?\b"
                              r"|m[aá]s (modelos|opciones|colores)|qu[eé] m[aá]s|alternativa|parecid|"
-                             r"diferente|distint|muestr|ens[eé][nñ]|ver (los|m[aá]s|otr))\w*", re.I)
+                             r"diferente|distint|mu[eé]str|ens[eé][nñ]|ver (los|m[aá]s|otr))\w*", re.I)
 
 
 # Palabras de ropa que no abren otra búsqueda: «¿en qué talla hay?» sigue hablando de la misma prenda.
@@ -850,7 +866,11 @@ def acepta_oferta(req: ChatIn) -> bool:
     pend = _pend_previa.get()
     if pend is None:
         pend = memoria.pregunta_de("\n\n".join(reversed(_ultimos_del_bot(req))))
-    return len(req.mensaje) <= 40 and bool(RE_SI.search(req.mensaje)) and pend == "otras_opciones"
+    if pend != "otras_opciones" or "?" in req.mensaje or nombrados(req.mensaje) or memoria.no_mostrar(req.mensaje):
+        # «Ok, ¿el vestido Irla qué precio tiene?» empieza por «ok» y no es un sí a la oferta: pregunta por el Irla
+        # (chat real: se le mandaron tres vestidos que no pidió).
+        return False
+    return memoria.afirma(req.mensaje) or (len(req.mensaje.split()) <= 4 and bool(RE_SI.search(req.mensaje)))
 
 
 RE_OTRO_DE_ESA = re.compile(r"\b(otros? colou?r(es)?|otras? tallas?|qu[eé] colores|en qu[eé] color)\b", re.I)
@@ -865,9 +885,18 @@ RE_CATALOGO = re.compile(r"\bcat[aá]logo|\b(ver|mu[eé]str[ae]me|ens[eé][nñ][
 RE_OTRAS = re.compile(r"\b(otr[oa]s?|m[aá]s|parecid|alternativ|diferente|distint)", re.I)
 
 
+RE_MAS_BARATO = re.compile(r"\bmas (barat|economic|comod|bajo)\w*|\bmenos precio\b|\balgo (barat|economic)\w*|\bde menor precio\b")
+
+
+def pide_mas_barato(req: ChatIn) -> bool:
+    return bool(RE_MAS_BARATO.search(memoria._plano(req.mensaje)))
+
+
 def pide_mas(req: ChatIn) -> bool:
-    if pregunta_variante(req):
-        return False
+    if pregunta_variante(req) or memoria.no_mostrar(req.mensaje):
+        return False   # «no me muestres nada todavía» trae «muestr» y es lo contrario de pedir ver
+    if pide_mas_barato(req) and producto_en_foco(req) is not None:
+        return True
     # «muéstrame tu catálogo» y «quiero ver los modelos» piden el catálogo, no «otras opciones»:
     # caían aquí por «muestr» y «ver los» y salían tres prendas al azar.
     if RE_CATALOGO.search(req.mensaje) and not RE_OTRAS.search(req.mensaje):
@@ -911,12 +940,15 @@ def ofrecida_hace_poco(req: ChatIn) -> bool:
     return any("otras opciones" in t.texto for t in req.historial[-6:] if t.rol != "cliente")
 
 
-def otras_opciones(req: ChatIn, qv: np.ndarray) -> list:
+def otras_opciones(req: ChatIn, qv: np.ndarray, precio_max: float | None = None) -> list:
     """Lo que una vendedora sacaría al decirle «sí, muéstrame otras»: prendas de la tienda que aún no vio,
-    con stock, primero de la misma categoría que la que se venía mirando y luego las más parecidas."""
+    con stock, primero de la misma categoría que la que se venía mirando y luego las más parecidas.
+    Si pide una prenda concreta («muéstrame blazers»), solo de esa (antes un blazer venía con dos blusas de relleno);
+    con `precio_max` («algo más barato»), solo las que cuestan menos."""
     vistos = _ya_mostrados(req) | set(nombrados(req.mensaje))
     ref = next((E.fichas[E.por_codigo[c]] for c in _codigos_contexto(req) if c in E.por_codigo), None)
-    cat = categoria_pedida(req.mensaje) or (categoria_de(ref) if ref else None)
+    pedida = categoria_pedida(req.mensaje)
+    cat = pedida or (categoria_de(ref) if ref else None) or ((_mem_actual.get() or {}).get("sabemos") or {}).get("prenda")
     with E.lock:
         fichas, Xf = E.fichas, E.Xf
     sims = Xf @ qv
@@ -925,7 +957,13 @@ def otras_opciones(req: ChatIn, qv: np.ndarray) -> list:
     st = E.stock.consultar([f.codigo for f in pool])
     pool = [f for f in pool if disponible(f, st.get(f.codigo, {}))]
     pool = rerank.ordenar(req.mensaje, pool[:24])   # cross-encoder: relevancia real con lo que pidió
-    if cat:
+    if precio_max is not None:
+        pool = [f for f in pool if f.precio is not None and f.precio < precio_max]
+        if cat and any(categoria_de(f) == cat for f in pool):
+            pool = [f for f in pool if categoria_de(f) == cat]      # más barato, pero de lo mismo que miraba
+    if pedida:
+        pool = [f for f in pool if categoria_de(f) == pedida]        # pidió X: X, no Y ni Z
+    elif cat:
         pool.sort(key=lambda f: categoria_de(f) != cat)  # estable: misma categoría primero
     return pool[:MAX_SUGERENCIAS]
 
@@ -1006,6 +1044,8 @@ def pide_foto_de(req: ChatIn):
 def quiere_opciones(req: ChatIn, cl: dict) -> bool:
     """¿Toca mandar fotos de otros modelos? Una vendedora no saca más prendas cuando la clienta pregunta
     dónde queda la tienda o sigue hablando del vestido que ya vio: solo si pide opciones o abre otra búsqueda."""
+    if memoria.no_mostrar(req.mensaje):
+        return False
     if RE_MAS_OPCIONES.search(req.mensaje):
         return True
     if RE_LOGISTICA.search(req.mensaje):
@@ -1047,11 +1087,16 @@ def mejor_opcion(mem: dict, req: ChatIn):
         partes.append(f"color {sab['color']}")
     qv = E.emb([" ".join(partes)])[0]
     vistos = _ya_mostrados(req)
+    comprados = (req.perfil or {}).get("productos") if isinstance(req.perfil, dict) else None
+    if isinstance(comprados, list):     # «quiero otro vestido como el que compré»: otro, no el mismo
+        vistos = vistos | {c.upper() for c in comprados if isinstance(c, str)}
     cands = [f for f in recuperar(qv, [], prenda, k=12) if f.fuente == "seed" and f.codigo not in vistos and _imagen(f)]
     st = E.stock.consultar([f.codigo for f in cands])
     cands = [f for f in cands if disponible(f, st.get(f.codigo, {}))]
     tope = float(sab["presupuesto"]) if str(sab.get("presupuesto") or "").isdigit() else None
     cands = rerank.ordenar(" ".join(partes), cands)   # cross-encoder: la que mejor encaja con su necesidad
+    if sab.get("color") and (del_color := [f for f in cands if _de_color(f, _raiz_color(sab["color"]))]):
+        cands = del_color     # dijo «un vestido negro»: la opción es negra (si hay)
     rango = {"online": 0, "sucursal": 1}
     # estable: conserva el orden del RAG; primero lo que se pide ya y lo que entra en su presupuesto
     cands.sort(key=lambda f: (rango[disponible(f, st.get(f.codigo, {}))],
@@ -1068,12 +1113,63 @@ def color_pedido(texto: str) -> str:
     return "ros" if "ros" in c else c[:3]
 
 
+def _raiz_color(color: str) -> str:
+    """«negra» y «negro» → «negr»; «rosado» y «palo rosa» → «ros»."""
+    c = memoria._plano(color or "")
+    if "ros" in c:
+        return "ros"
+    return c[:-1] if len(c) > 4 and c[-1] in "oa" else c
+
+
+def _de_color(f, raiz: str) -> bool:
+    """La prenda es de ese color según su ficha (el campo color; «blazer» no es «blanco»)."""
+    return bool(raiz) and any(w.startswith(raiz) for w in re.findall(r"[a-zñ]+", _sin_tildes(f.color or "")))
+
+
+def color_dicho(texto: str) -> str:
+    """El color que pide, con su nombre («rojo»); '' si no pide ninguno o lo descarta («rojo no»)."""
+    t = memoria._plano(texto or "")
+    m = memoria.RE_COLOR.search(t)
+    if not m:
+        return ""
+    c = m.group(1)
+    if re.search(rf"\b{c}\w*\s+no\b|\bno\s+(quiero\s+|me gusta\s+)?(el\s+|en\s+|nada\s+)?{c}", t):
+        return ""
+    return c
+
+
+def lo_que_no_hay(req: ChatIn, mem: dict, foco) -> str:
+    """Pide una prenda o un color que la tienda no tiene ahora: «polos», «vestidos en rojo». '' si lo hay (o si no
+    se puede saber). Regla de la tienda: si no lo tenemos, se dice y se pregunta si quiere ver otra cosa; no se manda
+    otra prenda en su lugar (antes, a «¿tienen en rojo?» del vestido salían un conjunto y una blusa rojos)."""
+    pedida, color = categoria_pedida(req.mensaje), color_dicho(req.mensaje)
+    if not pedida and not color:
+        return ""
+    with E.lock:
+        tienda = [f for f in E.fichas if f.fuente == "seed"][:50]
+    st = E.stock.consultar([f.codigo for f in tienda])
+    hay = [f for f in tienda if disponible(f, st.get(f.codigo, {}))]
+    if not hay:
+        return ""      # sin datos de stock no se afirma que no hay
+    if pedida and not any(categoria_de(f) == pedida for f in hay):
+        return PLURAL.get(pedida, pedida)
+    # Un color cuenta si lo está pidiendo («¿tienen en rojo?», «busco uno verde», «¿y en azul?»), no si lo comenta
+    # («¿combina con zapatos dorados?»).
+    t = memoria._plano(req.mensaje)
+    if color and re.search(r"\b(tien\w+|hay|busc\w+|quier\w+|quisiera|necesit\w+|tendr\w+|vend\w+|manej\w+|vienen?)\b|^\W*(y\s+)?en\s", t):
+        cat = pedida or (categoria_de(foco) if foco is not None else None) or mem["sabemos"].get("prenda")
+        de_cat = [f for f in hay if not cat or categoria_de(f) == cat]
+        if de_cat and not any(_de_color(f, _raiz_color(color)) for f in de_cat):
+            return f"{PLURAL.get(cat, cat)} en {color}" if cat else f"prendas en {color}"
+    return ""
+
+
 def sugerir(req: ChatIn, cl: dict, fichas: list) -> list:
     """Hasta MAX_SUGERENCIAS prendas con foto para ofrecer. Primero las que la clienta nombró;
     después las recuperadas, con las de la tienda (que se pueden pedir ya) por delante."""
-    if cl["intencion"] in SIN_SUGERENCIAS:
-        return []
     nombradas = nombrados(req.mensaje)
+    if cl["intencion"] in SIN_SUGERENCIAS and not (nombradas and cl["intencion"] not in ("censura", "despedida")):
+        return []      # «El Irla me gusta» salía «saludo» y se quedaba sin la foto del Irla
     if nombradas:
         # Preguntó por modelos concretos (por código o por nombre): sólo esos, y nunca otro en su lugar.
         # Si ya los vio hace poco, no se reenvía la foto.
@@ -1091,7 +1187,7 @@ def sugerir(req: ChatIn, cl: dict, fichas: list) -> list:
     con_stock = [f for f in resto if disponible(f, st.get(f.codigo, {}))]
     if (col := color_pedido(req.mensaje)):
         # «¿no tienes nada azul oscuro?»: de ese color o ninguna. Antes salían tres prendas de otros colores.
-        con_stock = [f for f in con_stock if col in _sin_tildes(f"{f.color} {f.nombre}")]
+        con_stock = [f for f in con_stock if _de_color(f, _raiz_color(color_dicho(req.mensaje) or col))]
     con_stock = rerank.ordenar(req.mensaje, con_stock)   # cross-encoder: relevancia dentro del mismo stock
     con_stock.sort(key=lambda f: orden[disponible(f, st.get(f.codigo, {}))])  # estable: conserva el orden del RAG
     return con_stock[:MAX_SUGERENCIAS]
@@ -1172,12 +1268,107 @@ def _pendiente_sin_resolver(pend: str, reglas: dict, mensaje: str) -> bool:
 
 RE_PIDE_ASESORA = re.compile(r"\b(asesor[ae]?s?|vendedor[ae]?s?|persona|humano|alguien|encargad[oa]|operador[ae]?|agente|"
                              r"atiend[ae]n?|atender|hablar con|reclamo|queja|gerente|due[nñ][oa])\b", re.I)
+# Pedir una persona con todas sus letras: deriva aunque el clasificador no lo vea («oe quiero poner un reclamo»).
+RE_ASESORA_EXPLICITA = re.compile(
+    r"\b(hablar|hable|conversar|comunic\w+|contact\w+|atienda|atiendan|atender|que me (escriba|llame|ayude|responda))\b[^.?!]{0,25}"
+    r"\b(asesor[ae]?s?|vendedor[ae]?s?|persona|humano|alguien|encargad[oa]|gerente|duen[oa]|supervisor[ae]?)\b"
+    r"|\b(pasame|ponme|comunicame|derivame|contactame|me (pasas|comunicas|derivas|contactas|pones))\s+(con|a)\s+(una?\s+|el\s+|la\s+|tu\s+|su\s+)?"
+    r"(asesor|vendedor|persona|humano|alguien|encargad|gerente|duen|supervisor|jef)"
+    r"|\b(quiero|quisiera|necesito|deseo|prefiero)\s+(a\s+|con\s+)?(una?\s+|el\s+|la\s+)?(asesor[ae]|vendedor[ae]|encargad[oa]|gerente|duen[oa]|humano)\b"
+    r"|\b(poner|presentar|hacer|dejar|tengo|quiero)\s+(un\s+|una\s+)?(reclamo|queja)\b|\blibro de reclamaciones\b")
+# «¿eres un bot o una persona?» pregunta qué es; no pide que la atienda otra.
+RE_PREGUNTA_SI_BOT = re.compile(r"\b(eres|sos|es usted|hablo con|estoy hablando con|me atiende|me responde|esto es)\b[^.?!]{0,30}"
+                                r"\b(bot|robot|persona|humano|maquina|ia|inteligencia artificial)\b")
+# Dice que ya pagó: lo que toca es el comprobante (no volver a mandar el Yape).
+RE_YA_PAGO = re.compile(r"\bya (te |les |lo |le )?(pague|yapee|deposite|transferi|cancele|hice (el|mi|la) (pago|yape|deposito|transferencia))\b|"
+                        r"\bya esta (pagado|yapeado|depositado)\b|\bpago (hecho|realizado|listo)\b|"
+                        r"\b(ahi|aqui|alli) (va|esta|te (mando|envio|paso)) (el|la|mi) (comprobante|captura|voucher|constancia)\b")
+# Lo que el LLM no puede saber porque no está en TIENDA: tiempos de entrega y descuentos. Si lo afirma, lo inventó.
+RE_TIEMPO_ENTREGA = re.compile(
+    r"\b(lleg\w*|entreg\w*|demor\w*|tard\w*|recib\w*|lo tienes|estar[aá] (ah[ií]|all[aá]|contigo))\b[^.!?\n]*?"
+    # la duración; «¡Llega rapidísimo!» también es una promesa de plazo (última alternativa)
+    r"\b(\d+|un|una|dos|tres|cuatro|cinco|seis|siete)\s*(?:a|o|-|y)?\s*(?:\d+|dos|tres|cuatro|cinco|seis|siete)?\s*(d[ií]as?|horas?|semanas?)\b"
+    r"|\bd[ií]as h[aá]biles\b|\b(24|48|72)\s*(horas|h)\b|\bal d[ií]a siguiente\b|\bel mismo d[ií]a\b|\bde un d[ií]a para otro\b"
+    r"|\b(te llega|llegar[aáí]\w*|entrega\w*)\b[^.!?\n]*\b(r[aá]pid\w*|pronto|al toque|enseguida|volando|inmediat\w*)\b", re.I)
+RE_DESCUENTO_INVENTADO = re.compile(
+    r"\b\d{1,2}\s?%|\bdescuento (de|del)\b|\bte (hago|puedo hacer|doy|dejo|aplico|consigo)\b[^.!?\n]*\b(descuent\w*|rebaj\w*|precio especial|promo\w*)"
+    r"|\b(2x1|dos por uno)\b|\benv[ií]o gratis\b|\bte (lo |la )?(dejo|quedar[ií]a|queda) en\b", re.I)
+RE_PRECIO_DICHO = re.compile(r"S/\.?\s*\*?\s*(\d{2,4})(?:[.,]\d{2})?", re.I)
+_TELAS = (r"sat[eé]n|sat[ií]n|seda|algod[oó]n|lino|chif[oó]n|gasa|tul|crepe|terciopelo|licra|lycra|organza|poli[eé]ster|denim|"
+          r"jackard|jacquard|podesu[aá]|stre[ct]ch")
+RE_TELA_DICHA = re.compile(rf"\b({_TELAS})\b", re.I)
+# Palabras que dicen que la pregunta es de la tienda o de una prenda, aunque el clasificador la lea como general.
+RE_TEMA_TIENDA = re.compile(r"\b(corte|pegad\w*|entallad\w*|ajustad\w*|suelt\w*|tela|mangas?|escote|forro|cierre|basta|precio|cuesta|"
+                            r"vale|envi\w+|delivery|pago|pagar|yape|tienda|showroom|stock|separ\w+|apart\w+|pedido|compr\w+)\b")
+RE_CORTE_EMOJI = re.compile(r"(?<=[\U0001F300-\U0001FAFF☀-➿])\s+(?=[A-ZÁÉÍÓÚÑ¡¿])")
+AVISO_TIEMPO = "El tiempo exacto de entrega te lo confirma la asesora al programar tu envío 😊"
+AVISO_DESCUENTO = "Lo de descuentos y promociones te lo confirma una asesora: escribe *4* 😊"
+
+
+def _precios_reales() -> set[int]:
+    """Los precios que el bot puede decir: los del catálogo, los envíos y los totales (precio + envío)."""
+    with E.lock:
+        base = {int(round(f.precio)) for f in E.fichas if f.fuente == "seed" and f.precio is not None}
+    envios = {int(e["costo"]) for e in (venta.VENTA.get("envio") or {}).values() if isinstance(e, dict) and "costo" in e}
+    return base | envios | {b + e for b in base for e in envios}
+
+
+def _sin_inventos(texto: str, prendas=()) -> str:
+    """Quita del texto del LLM, frase a frase, lo que no puede saber: tiempos de entrega y descuentos (TIENDA no los
+    dice), precios que no existen en el catálogo y telas que la ficha de la prenda no nombra. Donde quitó un tiempo o
+    un descuento deja dicho quién lo confirma. Es el piso que no depende de Jev (que hace lo mismo con más criterio)."""
+    validos = _precios_reales()
+    ficha = _sin_tildes(" ".join(ficha_txt(f) for f in prendas if f is not None))
+    avisos, partes = [], []
+    for p in texto.split("\n\n"):
+        frases = []
+        # Un emoji seguido de mayúscula también separa frases («…por Olva 😊 Te llega en 24 horas.»): si no, se iría entera.
+        for fr in [x for f in estructurado._frases(p) for x in RE_CORTE_EMOJI.split(f) if x.strip()]:
+            if RE_TIEMPO_ENTREGA.search(fr):
+                avisos.append(AVISO_TIEMPO)
+            elif RE_DESCUENTO_INVENTADO.search(fr):
+                avisos.append(AVISO_DESCUENTO)
+            elif validos and any(int(m.group(1)) not in validos for m in RE_PRECIO_DICHO.finditer(fr)):
+                continue
+            elif ficha and any(_sin_tildes(m.group(1)) not in ficha for m in RE_TELA_DICHA.finditer(fr)):
+                continue
+            else:
+                frases.append(fr)
+        if frases:
+            partes.append(" ".join(frases))
+    if avisos:   # «¡Claro!» seguido de «eso te lo confirma una asesora» se contradice: fuera las exclamaciones sueltas
+        partes = [p for p in partes if not re.fullmatch(r"[¡!\s]*(claro|por supuesto|s[ií]|obvio|seguro|perfecto|genial|listo)[\s!.,😊😉]*", p, re.I)]
+    return "\n\n".join(partes + list(dict.fromkeys(avisos)))
+
+
+def _solo_hilo(texto: str, prendas) -> str:
+    """Mientras se indaga la necesidad no se nombran prendas. Si el LLM nombró una («el Azra Turquesa es ideal…»), queda
+    su primera frase si no la nombra y las preguntas; lo demás (la prenda y su descripción) se va."""
+    def nombra(fr: str) -> bool:
+        return bool(nombradas_en_respuesta(fr)) or bool(RE_PROMESA_FOTOS.search(fr))
+    frases = estructurado._frases(texto)
+    out = [fr for k, fr in enumerate(frases) if not nombra(fr) and (k == 0 or "?" in fr)]
+    return "\n\n".join(out)
+
+
+def _art(f) -> str:
+    return "la" if categoria_de(f) in ("blusa", "falda") else "el"
+
+
+def _y(xs: list[str]) -> str:
+    xs = [str(x) for x in xs]
+    return (", ".join(xs[:-1]) + " y " + xs[-1]) if len(xs) > 1 else "".join(xs)
+
+
 RE_PIDE_ESTADO = re.compile(r"\b(pedido|orden|compra|env[ií]o|paquete|lleg[oóa]|estado|seguimiento|tracking|rastre)\w*", re.I)
 RE_PIDE_PAGO = re.compile(r"\b(datos|pasos|formas?|medios?|m[eé]todos?) (de|del|para el) pago|\bc[oó]mo (te |le |les )?(pago|deposito|yapeo|transfiero)|"
                           r"\ba qu[eé] (n[uú]mero|cuenta)|\bd[oó]nde (te |les )?(deposito|pago|yapeo)|\b(tu|su|el|pasa\w*) (yape|plin|n[uú]mero de cuenta)|"
                           r"\bcuenta (bcp|interbank|bbva)|\bn[uú]mero de yape", re.I)
 RE_PROMETE_PAGO = re.compile(r"[^.!?\n]*\bte (paso|env[ií]o|mando|comparto|dejo)\b[^.!?\n]*\bdatos\b[^.!?\n]*\bpago\b[^.!?\n]*[.!]?", re.I)
-RE_QUIERE_FOTO = re.compile(r"\bfotos?\b|\bim[aá]gen(es)?\b|\bc[oó]mo es\b|\bquiero verl[oa]\b|\bmu[eé]stra(me)?l[oa]\b", re.I)
+# «¿cómo es?» pide verla; «¿cómo es el corte?» o «¿cómo es la tela?» pregunta un detalle (no se reenvía la foto).
+RE_QUIERE_FOTO = re.compile(r"\bfotos?\b|\bim[aá]gen(es)?\b|\bquiero verl[oa]\b|\bmu[eé]stra(me)?l[oa]\b|"
+                            r"\bc[oó]mo es\b(?!\s+(el|la|su|de)\s+(corte|tela|material|talla|largo|cierre|forro|escote|manga|env[ií]o|pago|precio))",
+                            re.I)
 
 
 def nombradas_en_respuesta(texto: str, foco=None) -> list:
@@ -1228,8 +1419,12 @@ RE_VARIOS = re.compile(r"\b(vestidos|modelos|opciones|cat[aá]logo|otr[oa]s?|dif
 def conversar(req: ChatIn) -> dict:
     t0 = time.time()
     gasto.iniciar()
+    req.mensaje = _limpio(req.mensaje)
+    for t in req.historial:
+        t.texto = _limpio(t.texto)
     if not req.mensaje.strip():
         raise HTTPException(400, "mensaje vacío")
+    plano_m = memoria._plano(req.mensaje)
     consulta = req.mensaje
     if req.historial:  # el contexto inmediato ayuda a recuperar en repreguntas
         previo = next((t.texto for t in reversed(req.historial) if t.rol == "cliente"), "")
@@ -1282,7 +1477,10 @@ def conversar(req: ChatIn) -> dict:
     anuncio = bool(req.desde_anuncio or req.anuncio)
     sin_mostrar = not (mem["mostrados"] or mem["producto"] or _ya_mostrados(req))
     vitrina_pedida = bool(categoria_distinta(req.mensaje) and (memoria.pide_ver(req.mensaje) or cl["intencion"] == "catalogo"))
+    # Mientras se espera saber cuál prenda vio («¿me pasas la foto o el nombre?») no se indaga la ocasión: si la
+    # describe («era negro, cortito»), se buscan parecidas.
     necesidad = (foco is None and not anuncio and sin_mostrar and not nombrados(req.mensaje) and not vitrina_pedida
+                 and pend not in ESPERANDO_CUAL
                  and (memoria.en_necesidad(mem, req.mensaje) or (etapa_in or "prospeccion") == "prospeccion"))
     indagando = necesidad and not memoria.necesidad_conocida(mem) and not memoria.pide_ver(req.mensaje) and not pide_mas(req)
     # Pide ver modelos («me gustaría ver los modelos», «muéstrame el catálogo») sin haber contado para qué: una
@@ -1291,15 +1489,19 @@ def conversar(req: ChatIn) -> dict:
     pide_ver_ya = memoria.pide_ver(req.mensaje) or (cl["intencion"] == "catalogo" and cl["confianza"] >= UMBRAL_ACCION)
     indaga_antes_de_ver = bool(foco is None and not anuncio and sin_mostrar and not nombrados(req.mensaje)
                                and pide_ver_ya and not mem["sabemos"].get("ocasion") and not mem.get("pidio_ver")
-                               and not memoria.ya_hecha(mem, "ocasion")
+                               # una vez: si ya se le preguntó la ocasión y contesta «a ver, muéstrame», se le muestra
+                               and memoria.veces(mem, "ocasion") == 0
                                and not categoria_distinta(req.mensaje))
     if indaga_antes_de_ver:
         mem["pidio_ver"] = True
         necesidad, indagando = True, True
     # Contestar una pregunta de indagación («el 24 de octubre», «de noche») no es una objeción ni nada que mueva la
     # etapa: el clasificador leía las fechas como «objeción» y saltaba a seguimiento.
-    if (lectura.get("respondio") and pend in memoria.INDAGAR and com["intent"] in ("objecion", "objecion_precio")
-            and not memoria.RE_FRIO.search(memoria._plano(req.mensaje))):
+    # Tampoco una consulta: «de noche, empieza a las 8» salía «consulta_horario» y pasaba a seguimiento sin prenda.
+    if (lectura.get("respondio") and pend in memoria.INDAGAR and "?" not in req.mensaje and not lectura.get("es_cita")
+            and com["intent"] not in ("intencion_compra", "confirmacion_compra", "cancelacion")
+            and not etapas.RE_COMPRA.search(plano_m)
+            and not (memoria.RE_FRIO.search(plano_m) and com["intent"] not in ("objecion", "objecion_precio"))):
         com = dict(com, intent="otro", confianza=0.5, fuente=com.get("fuente", "local") + "+respuesta")
     dec = etapas.decidir(etapa_in, com["intent"], com["confianza"], req.mensaje, ultimo_bot,
                          primer_mensaje=not any(t.rol != "cliente" for t in req.historial), pendiente=pend, indagando=indagando)
@@ -1359,6 +1561,8 @@ def conversar(req: ChatIn) -> dict:
     if foco and not pide and etapa == "cierre" and not sin_pedido:
         if "?" not in req.mensaje and len(req.mensaje) <= 60:
             talla = talla_en(req.mensaje)
+            if pend == "talla" and (lectura.get("datos") or {}).get("talla"):
+                talla = lectura["datos"]["talla"]     # «la ele», «sí, la misma» (la de su pedido anterior, que se le sugirió)
         if not talla and dec["intent"] == "intencion_compra":
             talla = talla_conocida(req)        # ya la había dicho: «soy talla M» … «quiero comprarlo»
     talla_cita = lectura["datos"].get("talla") if (cita_hecha and pend == "talla" and not compra_explicita) else ""
@@ -1384,7 +1588,7 @@ def conversar(req: ChatIn) -> dict:
         dia, hora = mem["sabemos"]["cita"].split("T")
         nombre = (req.cliente or "").split()[0] if (req.cliente or "").strip() else ""
         respuesta = (f"¡Gracias a ti{', ' + nombre if nombre else ''}! 💙 Te esperamos {venta.dia_humano(dia, ahora.date())} a las "
-                     f"{venta.hora_humana(hora)}. Cualquier cosa, me escribes por aquí.")
+                     f"{venta.hora_humana(hora).rstrip('.')}. Cualquier cosa, me escribes por aquí.")
         modelo, forzar = "flujo_cita", ""
     elif talla_cita and foco is not None:
         # Ya tiene cita y le preguntamos la talla: es la que se va a probar, no un pedido.
@@ -1415,9 +1619,17 @@ def conversar(req: ChatIn) -> dict:
             modelo, tallas_boton, forzar = "flujo_pedido", tallas_f, "talla"
     elif foco and not pide and etapa == "cierre" and dec["intent"] == "intencion_compra" and not sin_pedido:
         # Quiere comprarlo y aún no dijo la talla: es el paso pendiente del cierre.
-        respuesta = f"¡Perfecto! 😊 Para separar tu *{foco.codigo}* {foco.nombre} necesito tu talla.\n\n¿Cuál usas?"
+        # Su talla de un pedido anterior se le sugiere; no se da por dicha (WhatsApp real: armó el pedido en M y era L).
+        respuesta = (f"¡Perfecto! 😊 Para separar tu *{foco.codigo}* {foco.nombre} necesito tu talla.\n\n"
+                     + (memoria.texto_pregunta("talla", mem) if mem.get("talla_perfil") else "¿Cuál usas?"))
         modelo, tallas_boton, forzar = "flujo_cierre", tallas_de(foco), "talla"
-    elif (etapa == "venta_confirmada" and not dec["transicion"] and foco is not None and pend == "lima_o_provincia"
+    elif etapa == "venta_confirmada" and not dec["transicion"] and RE_YA_PAGO.search(plano_m):
+        # «ya yapeé», «ahí va la captura»: lo que toca es el comprobante. Antes «ya hice el yape» traía «el yape» y se
+        # le volvían a mandar los datos de pago.
+        respuesta = "¡Genial! 🙌 Mándame la foto del comprobante por aquí y con eso programo tu envío."
+        modelo, forzar = "flujo_pago", "voucher"
+    elif (etapa == "venta_confirmada" and not dec["transicion"] and foco is not None
+          and (pend == "lima_o_provincia" or "total_enviado" not in mem["preguntado"])
           and (lectura.get("datos") or {}).get("envio") and venta.texto_total(lectura["datos"]["envio"], foco.precio, MONEDA)):
         # Dijo a dónde va: el total (lo suma el código) y los datos de pago van juntos. Un paso menos donde romperse:
         # antes venían «¿te paso los datos?» → «sí» → «te los paso» → y no llegaban.
@@ -1425,7 +1637,7 @@ def conversar(req: ChatIn) -> dict:
                      + "\n\n" + venta.texto_pago()
                      + "\n\nCuando hagas el pago, mándame la foto del comprobante por aquí y programo tu envío 🙌")
         modelo, forzar = "flujo_pago", "voucher"
-        mem["preguntado"] += ["pago_enviado", "pago"]
+        mem["preguntado"] += ["pago_enviado", "pago", "total_enviado"]
     elif (etapa == "venta_confirmada" and not dec["transicion"]
           and ((pend == "pago" and memoria.afirma(req.mensaje)) or RE_PIDE_PAGO.search(req.mensaje)
                or (pend == "voucher" and memoria.afirma(req.mensaje) and "pago_enviado" not in mem["preguntado"]))):
@@ -1447,11 +1659,14 @@ def conversar(req: ChatIn) -> dict:
         zona = (venta.VENTA.get("envio") or {}).get(mem["sabemos"].get("envio") or "")
         if zona and foco.precio is not None:
             # Ya dijo que es para provincia (o Lima): no se vuelve a preguntar; va el total, que lo calcula el código.
+            destino_e = ((mem["sabemos"].get("ciudad") or "").title() if mem["sabemos"]["envio"] == "provincia" else "") \
+                or mem["sabemos"]["envio"].capitalize()
             respuesta = (f"¡Listo! 🎉 Tu pedido del *{foco.codigo}* {foco.nombre}" + (f" talla *{talla_prev}*" if talla_prev else "")
-                         + f" quedó separado.\n\nEl envío a {mem['sabemos']['envio'].capitalize()} es *{MONEDA} {zona['costo']:.2f}* "
+                         + f" quedó separado.\n\nEl envío a {destino_e} es *{MONEDA} {zona['costo']:.2f}* "
                          f"({zona['detalle']}), así que el total es *{MONEDA} {foco.precio + zona['costo']:.2f}*.\n\n"
                          + memoria.PREGUNTAS["pago"])
             botones, forzar = [], "pago"
+            mem["preguntado"].append("total_enviado")
     elif foco and re.search(r"cambiar talla", req.mensaje, re.I):
         respuesta, modelo, tallas_boton = f"Claro 😊 ¿Qué talla prefieres para el *{foco.codigo}* {foco.nombre}?", "flujo_pedido", tallas_de(foco)
         forzar = "talla"
@@ -1493,19 +1708,22 @@ def conversar(req: ChatIn) -> dict:
     foto_pedida = None if (respuesta or pide) else pide_foto_de(req)
     if foto_pedida:
         cl = dict(cl, intencion="pide_foto")  # no es «te mando una foto»: quiere que se la mandemos
+    # Pide una prenda o un color que no hay: se dice y se pregunta si quiere ver otra cosa. Ninguna foto en su lugar, y
+    # tampoco «¿para qué ocasión es?» como si lo hubiera («¿tienen vestidos verdes?» → «para mostrarte los vestidos…»).
+    no_hay = "" if (respuesta or foto_pedida or nombrados(req.mensaje) or esperando_cual or describiendo) else lo_que_no_hay(req, mem, foco)
     categorias = []
     opcion = MENU_WEB.get(req.mensaje.strip()) if (req.canal == "web" and not respuesta) else None
     if opcion and opcion != "catalogo":
         cl = dict(cl, intencion=opcion)
         accion, respuesta, modelo = opcion, TEXTO_ACCION[opcion], "menu"
         forzar = "foto" if opcion == "foto" else ""
-    elif not respuesta and indaga_antes_de_ver:
+    elif not respuesta and indaga_antes_de_ver and not no_hay:
         prenda = mem["sabemos"].get("prenda") or categoria_pedida(req.mensaje) or ""
         cuales = {"vestido": "los vestidos", "conjunto": "los conjuntos", "blusa": "las blusas", "falda": "las faldas",
                   "pantalon": "los pantalones", "blazer": "los blazers", "enterizo": "los enterizos"}.get(prenda, "los modelos")
         respuesta = (f"¡Claro! 😊 Para mostrarte {cuales} que mejor te van, cuéntame: ¿para qué ocasión es?")
         modelo, forzar = "indaga_antes_de_ver", "ocasion"
-    elif (not respuesta and not foto_pedida and not pide and (opcion == "catalogo" or catalogo_generico(req, cl))
+    elif (not respuesta and not foto_pedida and not pide and not no_hay and (opcion == "catalogo" or catalogo_generico(req, cl))
           and not mem["sabemos"].get("prenda")):
         # Con la prenda ya dicha («busco un vestido») no se le pregunta otra vez qué tipo quiere ver: se le muestra
         # una opción de esa prenda (más abajo, mejor_opcion), como pide el método de venta.
@@ -1517,13 +1735,20 @@ def conversar(req: ChatIn) -> dict:
             respuesta, modelo, fichas = texto_categorias(categorias), "catalogo_categorias", []
         if opcion == "catalogo" and not categorias:
             cl = dict(cl, intencion="catalogo", confianza=1.0)   # «1» en la web: la vitrina de siempre
+    es_bot = bool(RE_PREGUNTA_SI_BOT.search(plano_m))     # «¿eres un bot o una persona?»: se contesta, no se deriva
+    # «tengo que hablarlo con alguien primero» es una duda suya (lo consulta en casa), no pedir que la atienda otra persona.
+    duda_propia = bool(re.search(r"\b(tengo que|voy a|debo|dejame|deja|primero)\s+(lo\s+)?(hablar|conversar|consultar|pregunt)", plano_m))
     if respuesta:
         pass  # contestó el flujo de pedido, el menú o el catálogo por categorías
+    elif (RE_ASESORA_EXPLICITA.search(plano_m) and not es_bot and not duda_propia
+          and not re.search(r"\bno (quiero|necesito|deseo|hace falta|es necesario)\b", plano_m)):
+        cl = dict(cl, intencion="asesora")
+        accion, respuesta, forzar = "asesora", TEXTO_ACCION["asesora"], ""
     elif (not pide and not foto_pedida and cl["intencion"] in ACCIONES_BOT and cl["confianza"] >= UMBRAL_ACCION
           and not (cl["intencion"] == "foto" and (nombrados(req.mensaje) or foco is not None))
           # Pasar a una asesora PAUSA el bot: solo si lo pide con palabras. «me llamo Alvaro» salía como «asesora»
           # y la clienta se quedaba hablando sola. Lo mismo con el estado del pedido.
-          and not (cl["intencion"] == "asesora" and not RE_PIDE_ASESORA.search(req.mensaje))
+          and not (cl["intencion"] == "asesora" and (es_bot or duda_propia or not RE_PIDE_ASESORA.search(req.mensaje)))
           and not (cl["intencion"] == "pedido_estado" and not RE_PIDE_ESTADO.search(req.mensaje))):
         accion, respuesta = cl["intencion"], TEXTO_ACCION[cl["intencion"]]
         forzar = "foto" if accion == "foto" else ""
@@ -1545,7 +1770,17 @@ def conversar(req: ChatIn) -> dict:
         # Método de venta: con la necesidad conocida (o si pide ver), UNA opción, la mejor con stock; mientras se
         # indaga, ninguna. Si después pide ver más, entonces sí otras (otras_opciones, más abajo en otro turno).
         logistica = bool(RE_LOGISTICA.search(req.mensaje) and "?" in req.mensaje and not memoria.pide_ver(req.mensaje))
-        una_opcion = mejor_opcion(mem, req) if (necesidad and not foto_pedida and not indagando and not logistica) else None
+        if no_hay:
+            if categoria_pedida(req.mensaje) and mem["sabemos"].get("prenda") == categoria_pedida(req.mensaje) and " en " not in no_hay:
+                mem["sabemos"]["prenda"] = None      # la prenda que no vendemos no es «la prenda que busca»
+            if " en " in no_hay:
+                mem["sabemos"]["color"] = None
+            pide = es_catalogo = False
+        if describiendo and cl["intencion"] in SIN_SUGERENCIAS:
+            cl = dict(cl, intencion="producto_recomendacion")   # describe la prenda que vio: es una búsqueda
+        mas_barato = bool(pide and foco is not None and foco.precio is not None and pide_mas_barato(req))
+        una_opcion = (mejor_opcion(mem, req) if (necesidad and not foto_pedida and not indagando and not logistica and not no_hay
+                                                 and not memoria.no_mostrar(req.mensaje)) else None)
         if necesidad and logistica and not indagando:
             indagando = True   # se contesta la logística sin fotos; la opción, cuando vuelva a la prenda
         if necesidad and (indagando or una_opcion is not None):
@@ -1557,8 +1792,10 @@ def conversar(req: ChatIn) -> dict:
             sugeridas = [foto_pedida]   # la pidió: se manda aunque ya la haya visto
         elif esperando_cual and not lectura["describe"]:
             sugeridas = []              # aún no sabemos cuál es: ninguna foto al azar
+        elif no_hay:
+            sugeridas = []
         elif pide:
-            sugeridas = otras_opciones(req, qv)
+            sugeridas = otras_opciones(req, qv, foco.precio if mas_barato else None)
         elif es_catalogo:
             sugeridas = vitrina(req, qv)
         elif solo_demo:
@@ -1579,6 +1816,10 @@ def conversar(req: ChatIn) -> dict:
             if prenda_q and sugeridas and not categoria_pedida(req.mensaje):
                 # Si dijo qué prenda busca, las sugerencias son de esa prenda.
                 sugeridas = [f for f in sugeridas if categoria_de(f) == prenda_q]
+            if pregunta_variante(req):
+                # «¿lo tienes en otros colores?»: se contesta por esa prenda y se PREGUNTA si quiere ver otras; antes,
+                # además de preguntar, ya mandaba otra foto.
+                sugeridas = [f for f in sugeridas if f.codigo in nombrados(req.mensaje)]
         if foco and not pide and not es_catalogo and not nombrados(req.mensaje):
             fichas = [foco] + [f for f in fichas if f is not foco]     # la primera ficha es de la que se habla
         # Con confianza baja la intención no cuenta («es de noche» salía como material con 0.38).
@@ -1612,9 +1853,11 @@ def conversar(req: ChatIn) -> dict:
         if noms and not pide and not foto_pedida and not ofrecida_hace_poco(req):
             st_n = E.stock.consultar(noms)
             agotada = any(not disponible(E.fichas[E.por_codigo[c]], st_n.get(c, {})) for c in noms)
-            ofrecer = agotada or not sugeridas
+            ofrecer = agotada or (not sugeridas and dec["intent"] not in ("interesado", "intencion_compra", "confirmacion_compra"))
         if pregunta_variante(req) and not ofrecida_hace_poco(req):
             ofrecer = True   # «¿lo tienes en otros colores?»: se contesta por esa prenda y se PREGUNTA por otras
+        if no_hay:
+            ofrecer = not ofrecida_hace_poco(req)
         # Sólo si el mensaje no trae prenda alguna: «hola, ¿tienen el V21?» conserva sus fichas.
         if (cl["intencion"] in SIN_FICHAS and cl["confianza"] >= UMBRAL_SIN_FICHAS and not sugeridas and not ofrecer
                 and not noms and not datos.codigos_en(req.mensaje) and not RE_ROPA.search(req.mensaje)
@@ -1623,10 +1866,13 @@ def conversar(req: ChatIn) -> dict:
         # La siguiente pregunta la elige el código: la primera de la etapa que no sepamos ni hayamos hecho.
         # Mientras se busca la prenda que describió, la pregunta es «¿es alguno de estos?», no la de la etapa.
         hay_prenda = bool(foco is not None or sugeridas or mem["mostrados"] or mem["producto"])
-        sig = "" if (esperando_cual or describiendo) else memoria.siguiente(mem, etapa, hay_prenda)
+        # Una pregunta por mensaje: si el bot va a preguntar «¿Quieres ver otras opciones?», no va otra.
+        sig = "" if (esperando_cual or describiendo or ofrecer) else memoria.siguiente(mem, etapa, hay_prenda, req.mensaje)
         if etapa == "cierre" and (mem["sabemos"].get("cita") or mem["pendiente"] == "cita"):
             sig = ""        # en la cita manda el paso de la cita, no «¿confirmamos tu pedido?»
         msgs_llm = None
+        redacto = False     # el LLM principal (o la respuesta inyectada en pruebas) llegó a redactar
+        inyectada = (req.respuesta_llm or "").strip() if PRUEBA_LLM else ""
 
         def redactar(msgs: list[dict], sig_k: str, extra: str = "") -> tuple[str, str]:
             """Respuesta estructurada (estructurado.py): el LLM da responde/por_que/pregunta y el código arma el mensaje
@@ -1636,13 +1882,151 @@ def conversar(req: ChatIn) -> dict:
             msgs = [dict(m) for m in msgs]
             if extra:
                 msgs[-1]["content"] += "\n\n" + extra
+            if inyectada:      # solo pruebas: este es el texto «del LLM»; no se llama a nadie
+                return (estructurado.armar(inyectada, q, permitir) or estructurado.sin_json(inyectada)) if estructurado.ACTIVO else inyectada, "inyectada"
             if not estructurado.ACTIVO:
                 return llamar_deepseek(msgs)
             msgs[-1]["content"] += "\n\n" + estructurado.formato(q, permitir)
             txt, mod = llamar_deepseek(msgs, formato_json=True)
             return estructurado.armar(txt, q, permitir) or estructurado.sin_json(txt), mod
 
-        if req.usar_llm and motor == "deepseek":
+        def pulir(txt: str) -> str:
+            """Lo que se le hace al texto del LLM antes de enviarlo. '' si no queda nada que decir (entonces contesta
+            el respaldo del código)."""
+            txt = _sin_escasez(_sin_pies(_sin_resaludo(_whatsapp(txt), req)))
+            txt = _sin_repetir(_sin_nombre(txt, req), req)
+            txt = _sin_inventos(txt, [foco] + list(sugeridas))
+            if sugeridas:   # la foto va igual: «te paso la foto», no «¿te paso la foto?»
+                txt = "\n\n".join(x for x in (RE_PREGUNTA_FOTO.sub("", p).strip() for p in txt.split("\n\n")) if re.search(r"\w", x)) or txt
+            # Lo ya preguntado (o ya sabido) no se vuelve a preguntar, aunque el LLM lo intente.
+            txt = memoria.quitar_repetidas(txt, mem, permitida=sig, vaciar=True)
+            if no_hay and txt and not re.search(r"\bno\b", memoria._plano(txt)):
+                txt = f"Por ahora no tengo {no_hay} 😔\n\n" + txt       # si no lo tenemos, se dice
+            # En prospección la pregunta que toca (también la abierta, «¿qué estás buscando?») no es opcional: si el LLM
+            # contestó «tenemos vestidos para toda ocasión» y nada más, la pone el código. Sin eso el hilo se corta.
+            if txt and sig and etapa == "prospeccion" and memoria.pregunta_de(txt) != sig:
+                txt = txt.rstrip() + "\n\n" + memoria.texto_pregunta(sig, mem, req.mensaje)
+            return txt
+
+        def respaldo_codigo() -> str:
+            """Sin texto del LLM (no contestó ninguno, `usar_llm=false`, o todo lo que escribió eran inventos o
+            preguntas repetidas): el código arma una respuesta corta con lo que sí sabe —la opción que eligió, el
+            precio, las tallas de ahora, la tela de la ficha, el showroom, los envíos— y la pregunta que toca. Antes
+            salía una frase cualquiera del dataset («Una función agrupa instrucciones…») y la pregunta no se hacía,
+            así que el hilo se perdía justo cuando OpenRouter no respondía."""
+            intent = dec["intent"] if dec["nivel"] != "baja" else ""
+            datos_l = lectura.get("datos") or {}
+            primer = not any(t.rol != "cliente" for t in req.historial)
+            q = memoria.texto_pregunta(sig, mem, req.mensaje) if sig else ""
+            ref = f"*{foco.codigo}* {foco.nombre}" if foco is not None else ""
+            cab = ("¡Hola!" + (f" Soy {venta.ASESORA}, de {req.negocio or NEGOCIO}." if venta.ASESORA else "")) if primer else ""
+            if datos_l.get("nombre"):
+                cab = (cab + " " if cab else "") + f"¡Mucho gusto, {datos_l['nombre']}!"
+            cat_p = categoria_pedida(req.mensaje)
+            habla_envio = bool(re.search(r"\b(envi\w+|delivery|mandan|despach\w+|demora\w*|tarda\w*|llega\w*)\b", plano_m))
+            cuerpo = []
+            if no_hay:
+                cuerpo.append(f"Por ahora no tengo {no_hay} 😔")
+            elif es_bot:
+                cuerpo.append(f"Soy la asistente virtual de {req.negocio or NEGOCIO} 😊 Si prefieres que te atienda una asesora, escribe *4*.")
+            elif (cl["intencion"] == "pregunta_general" and cl["confianza"] >= UMBRAL_ACCION and not lectura.get("respondio")
+                  and not datos_l and not RE_ROPA.search(req.mensaje) and not RE_TEMA_TIENDA.search(plano_m)
+                  and len(plano_m.split()) >= 3 and not nombrados(req.mensaje)
+                  and not memoria.afirma(req.mensaje) and not memoria.niega(req.mensaje)):
+                return FUERA_DE_GIRO
+            elif re.search(r"\b\d+\s*(por|mas|menos|entre|dividido|\+|\*)\s*\d+\b", plano_m) and re.search(r"\bcuanto (es|da|sale)\b|\bcalcul|\bresuelv", plano_m):
+                return FUERA_DE_GIRO      # una cuenta («cuánto es 25 x 4») no es del rubro, la lea como la lea el clasificador
+            elif una_opcion is not None:
+                oc = memoria.OCASION_TXT.get(mem["sabemos"].get("ocasion") or "", "")
+                cuerpo.append((f"Para {oc} te recomiendo" if oc else "Te recomiendo")
+                              + f" {_art(una_opcion)} *{una_opcion.codigo}* {una_opcion.nombre} 😊 Te paso la foto.")
+            elif sugeridas and (pide or es_catalogo or describiendo or (esperando_cual and lectura.get("describe"))):
+                cuerpo.append("Mira, ¿es alguno de estos? Te paso las fotos." if (describiendo or esperando_cual) else
+                              "¡Claro! 😊 Te paso " + ("la foto." if len(sugeridas) == 1 else "las fotos."))
+            elif pide:
+                cuerpo.append("Por ahora no tengo otra más económica en esa línea 😊" if mas_barato else
+                              "Por ahora eso es todo lo que tengo en esa línea 😊")
+            elif sugeridas:
+                f0 = sugeridas[0]
+                cuerpo.append(f"¡Claro! 😊 Te paso la foto de{'l' if _art(f0) == 'el' else ' la'} *{f0.codigo}* {f0.nombre}.")
+            elif cat_p and "?" in req.mensaje and foco is None:
+                cuerpo.append(f"¡Sí, tenemos {PLURAL.get(cat_p, cat_p)}! 😊")
+            elif foco is not None and nombrados(req.mensaje) and intent in ("", "otro", "interesado", "consulta_ubicacion"):
+                cuerpo.append(f"¡Sí, tenemos {_art(foco)} {ref}! 😊" if "?" in req.mensaje or intent != "interesado" else "¡Buena elección! 😊")
+            # Lo que preguntó de la prenda de la que se habla, con datos de su ficha y del stock de ahora.
+            dato = ""
+            # Si pregunta por otra cosa («¿y en conjuntos qué hay?») o van fotos de otras prendas, no se contesta con
+            # datos de la que estaba mirando.
+            de_otra = bool((cat_p and foco is not None and cat_p != categoria_de(foco)) or any(f is not foco for f in sugeridas))
+            if foco is not None and not no_hay and not es_bot and not de_otra:
+                libres = [x["talla"] for x in tallas_de(foco) if x["disponible"]]
+                t_p = datos_l.get("talla")
+                if pide_tela:
+                    dato = venta.respuesta_tela(foco.codigo, foco.nombre, foco.detalle)
+                elif habla_envio:
+                    pass      # «¿cuánto sale el envío a Piura?» pregunta por el envío, no por el precio de la prenda
+                elif (intent == "consulta_precio" or re.search(r"\b(precio|cuanto (cuesta|sale|esta|vale|es)|que precio|a cuanto)\b", plano_m)) \
+                        and foco.precio is not None:
+                    dato = f"{_art(foco).capitalize()} {ref} está a *{MONEDA} {foco.precio:.2f}* 😊"
+                elif t_p:     # preguntó por una talla («¿tienes en M?») o dijo la suya («soy talla M»)
+                    dato = (f"Sí, {_art(foco)} {ref} está disponible en talla *{t_p}* 😊" if t_p in libres else
+                            f"En talla *{t_p}* no hay 😔" + (f" Hay en {_y(libres)}." if libres else ""))
+                    if pregunta_variante(req) and foco.color:      # «sería en L, ¿pero lo tienes en otros colores?»
+                        dato += f"\n\nViene en color {foco.color}."
+                elif intent in ("consulta_talla", "consulta_disponibilidad") or re.search(r"\btallas?\b|\bstock\b|\bdisponib", plano_m):
+                    dato = (f"{_art(foco).capitalize()} {ref} está disponible en talla {_y(libres)}." if libres else
+                            f"{_art(foco).capitalize()} {ref} está agotado por ahora 😔")
+                elif (intent == "consulta_color" or pregunta_variante(req)) and foco.color:
+                    dato = f"{_art(foco).capitalize()} {ref} viene en color {foco.color}."
+                elif intent == "interesado" and not cuerpo and not q:
+                    dato = f"¡Qué bueno que te guste {_art(foco)} {ref}! 😊"
+                elif intent == "consulta_producto" and "?" in req.mensaje and foco.detalle and not sugeridas:
+                    dato = f"Te cuento de{'l' if _art(foco) == 'el' else ' la'} {ref}: " + (estructurado._frases(foco.detalle) or [foco.detalle])[0][:220]
+            sr, envios = venta.SHOWROOM, (venta.VENTA.get("envio") or {})
+            pregunta_m = "?" in req.mensaje       # la intención sola no basta para contestar datos de la tienda
+            if not dato and not no_hay and not es_bot:
+                if re.search(r"\b(descuent\w*|rebaj\w*|promo(cion(es)?)?|ofertas?|precio especial)\b", plano_m) and not datos_l.get("ocasion"):
+                    dato = AVISO_DESCUENTO
+                elif (habla_envio or (intent == "consulta_delivery" and pregunta_m)) and envios:
+                    zona = datos_l.get("envio") or mem["sabemos"].get("envio")
+                    if zona in envios:
+                        destino = (mem["sabemos"].get("ciudad") or zona).title() if zona == "provincia" else "Lima"
+                        dato = f"El envío a {destino} es *{MONEDA} {envios[zona]['costo']:.2f}* ({envios[zona]['detalle']})."
+                    else:
+                        dato = "Sí hacemos envíos 😊 " + " y ".join(f"a {z.capitalize()} *{MONEDA} {e['costo']:.2f}*" for z, e in envios.items()) + "."
+                    if re.search(r"\b(demora\w*|tarda\w*|cuando llega|cuanto tiempo|en cuanto)\b", plano_m):
+                        dato += " " + AVISO_TIEMPO
+                elif ((intent in ("consulta_ubicacion", "consulta_horario") and pregunta_m and not nombrados(req.mensaje))
+                      or re.search(r"\b(donde (estan|quedan|queda|es)|direccion|ubicacion|ubicad\w+|horario|a que hora (abren|atienden|cierran))\b", plano_m)) and sr:
+                    dato = (f"Nuestro showroom está en *{sr.get('direccion', '')}* ({sr.get('referencia', '')}). Atendemos solo con cita, "
+                            f"{sr.get('horario', '')}.")
+                elif intent == "consulta_pago" and pregunta_m and etapa != "venta_confirmada":
+                    dato = "El pago se hace antes del envío y me compartes el comprobante por aquí. Los datos te los paso cuando confirmemos tu pedido 😊"
+                elif (intent in ("objecion", "objecion_precio") and dec["nivel"] == "alta" and not cuerpo
+                      and not any(datos_l.get(k) for k in ("ocasion", "fecha", "horario", "prenda", "nombre"))):
+                    dato, q = "Te entiendo, sin apuro 😊 Cuando lo decidas, aquí estoy.", ""     # no se empuja a quien duda
+                elif intent == "despedida" and not cuerpo:
+                    dato, q = "¡Gracias a ti! 😊 Cualquier cosa, me escribes por aquí.", ""
+                elif cl["intencion"] == "censura" and cl["confianza"] >= UMBRAL_ACCION:
+                    dato = "Disculpa si algo te incomodó 🙏 Estoy aquí para ayudarte con lo que necesites de la tienda."
+            if dato:
+                cuerpo.append(dato)
+            if not cuerpo and lectura.get("respondio") and pend in memoria.INDAGAR + ("talla",) and not lectura.get("no_sabe"):
+                bonito = pend == "ocasion" and datos_l.get("ocasion") not in (None, "diario", "trabajo")
+                cuerpo.append("¡Qué bonito! 😊" if bonito else "¡Anotado! 😊")
+            if ofrecer:
+                q = ""      # la pregunta será «¿Quieres ver otras opciones?»
+            if cab and not cuerpo:
+                cab = cab.rstrip(".") + " 😊"
+            partes_r = [" ".join(x for x in [cab] + cuerpo[:1] if x)] + cuerpo[1:] + [q]
+            partes_r = [x for x in partes_r if x]
+            if not partes_r:
+                partes_r = ["¡Claro! 😊" if ofrecer else
+                            "Ese dato te lo confirma una asesora: escribe *4* 😊" if (pregunta_m and re.search(r"\w", req.mensaje))
+                            else "¡Dale! 😊 Aquí estoy para lo que necesites."]
+            return "\n\n".join(partes_r)
+
+        if (req.usar_llm or inyectada) and motor == "deepseek":
             try:
                 nota = ("OJO: la clienta está DESCRIBIENDO un vestido que vio; todavía no sabemos cuál es. Las fotos son "
                         "posibles coincidencias: pregúntale si es alguno de ellos. No digas que ya sabes cuál es ni que ella lo mencionó."
@@ -1657,31 +2041,30 @@ def conversar(req: ChatIn) -> dict:
                         if indagando else "")
                 if pide_tela:   # la tela sale de la ficha; si no figura, se dice que no figura (no se adivina)
                     nota = (nota + "\n" if nota else "") + venta.nota_tela(foco.codigo, foco.nombre, foco.detalle)
+                if no_hay:
+                    nota = (nota + "\n" if nota else "") + (f"NO TENEMOS {no_hay} ahora: dilo claro en la primera frase y no ofrezcas "
+                                                           "otra prenda en su lugar (el bot preguntará si quiere ver otras opciones).")
                 msgs_llm = _prompt_comercial(req, cl, dec, foco, fichas, sugeridas, ofrecer, paso, pedido_txt, bool(lamina), nota, mem, sig)
                 respuesta, modelo = redactar(msgs_llm, sig)
-                respuesta = _sin_escasez(_sin_pies(_sin_resaludo(_whatsapp(respuesta), req)))
-                respuesta = _sin_repetir(_sin_nombre(respuesta, req), req)
-                if sugeridas:   # la foto va igual: «te paso la foto», no «¿te paso la foto?»
-                    respuesta = "\n\n".join(x for x in (RE_PREGUNTA_FOTO.sub("", p).strip() for p in respuesta.split("\n\n")) if re.search(r"\w", x)) or respuesta
-                # Lo ya preguntado (o ya sabido) no se vuelve a preguntar, aunque el LLM lo intente.
-                sin_rep = memoria.quitar_repetidas(respuesta, mem, permitida=sig, vaciar=True)
-                # Todo el mensaje era la pregunta repetida («¿estás buscando algún vestido para una ocasión…?» por cuarta
-                # vez): antes se mandaba igual. Ahora va la pregunta que toca o, si no toca ninguna, una puerta abierta.
-                respuesta = sin_rep or (memoria.texto_pregunta(sig, mem, req.mensaje) if sig else
-                                        "¡Dale! 😊 Cuando quieras ver algo para vestir, aquí estoy.")
-                # Indagar la necesidad no es opcional: si el LLM no hizo la pregunta (respondió «tenemos vestidos para
-                # toda ocasión» y nada más), la pone el código. Sin eso el hilo se corta.
-                # En prospección la pregunta que toca (también la abierta, «¿qué estás buscando?») no es opcional.
-                if sig and etapa == "prospeccion" and memoria.pregunta_de(respuesta) != sig:
-                    respuesta = respuesta.rstrip() + "\n\n" + memoria.texto_pregunta(sig, mem, req.mensaje)
+                redacto = True
+                # Si tras los filtros no queda nada (todo eran preguntas repetidas o datos inventados), contesta el
+                # respaldo del código, más abajo: la pregunta que toca o lo que sí se sabe.
+                respuesta = pulir(respuesta)
             except Exception as e:
                 log.warning("DeepSeek no respondió, sigo con el motor actual: %s", e)
-        if req.usar_llm and not respuesta:
+                respuesta = ""
+        if req.usar_llm and not redacto and not respuesta:
             try:
                 respuesta, modelo = llamar_llm(_prompt(req, cl, fichas, ejemplos, sugeridas, ofrecer))
                 respuesta = _sin_pies(_sin_resaludo(_whatsapp(respuesta), req))
+                if motor == "deepseek":
+                    respuesta = pulir(respuesta)     # redactó el LLM de respaldo: mismos filtros y misma pregunta
             except Exception as e:
                 log.warning("sin LLM, uso respuesta de referencia: %s", e)
+                respuesta = ""
+        if not respuesta and motor == "deepseek":
+            respuesta = respaldo_codigo()
+            modelo = "fuera_de_giro" if respuesta == FUERA_DE_GIRO else "respaldo_codigo"
         # ¿Preguntó o pidió algo concreto? Entonces la respuesta tiene que contestarlo (Jev lo revisa en la misma llamada).
         pregunto = bool("?" in req.mensaje or dec["intent"].startswith("consulta_") or cl["intencion"] in (
             "consulta_precio", "consulta_stock", "consulta_entrega", "consulta_medidas", "producto_descripcion",
@@ -1738,9 +2121,9 @@ def conversar(req: ChatIn) -> dict:
             # El cierre del método de venta va con el precio: si el LLM no lo dijo, lo pone el código (de la ficha),
             # justo antes de «¿te lo pruebas o te lo separo?».
             precio = f"{MONEDA} {foco.precio:.2f}"
-            if precio not in respuesta and not re.search(rf"\b{int(foco.precio)}\b", respuesta):
-                partes = respuesta.split("\n\n")
-                i = next((k for k, p in enumerate(partes) if memoria.pregunta_de(p) == "probar"), len(partes))
+            partes = respuesta.split("\n\n")
+            i = next((k for k, p in enumerate(partes) if memoria.pregunta_de(p) == "probar"), None)
+            if i is not None and precio not in respuesta and not re.search(rf"\b{int(foco.precio)}\b", respuesta):
                 partes.insert(i, f"Está a *{precio}* 😊")
                 respuesta = "\n\n".join(partes)
         if not respuesta and cl["intencion"] == "pregunta_general":
@@ -1782,7 +2165,20 @@ def conversar(req: ChatIn) -> dict:
     if accion == "responder" and respuesta and etapa != "venta_confirmada" and modelo not in ("pide_cual", "espera_cual"):
         quiere_varias = bool(pide or es_catalogo or describiendo or (esperando_cual and sugeridas) or categorias)
         nombradas_r = nombradas_en_respuesta(respuesta, foco)
+        if indagando and nombradas_r and modelo not in ("respaldo_codigo", "indaga_antes_de_ver", "flujo_cita", "flujo_cierre"):
+            # Regla de la tienda: primero se indaga. Si el LLM nombró un vestido antes de tiempo («el Azra Turquesa es
+            # ideal para una boda»), no se le sigue la corriente mandando su foto: se quita y queda la pregunta.
+            respuesta = _solo_hilo(respuesta, nombradas_r)
+            if sig and memoria.pregunta_de(respuesta) != sig:
+                respuesta = (respuesta + "\n\n" if respuesta else "") + memoria.texto_pregunta(sig, mem, req.mensaje)
+            respuesta = respuesta or "¡Dale! 😊 Cuéntame un poquito más y te ayudo."
+            nombradas_r, sugeridas = [], []
         promete = bool(RE_PROMESA_FOTOS.search(respuesta))
+        if nombradas_r and pide and not categorias and modelo not in ("respaldo_codigo",):
+            # Pidió ver otras y el texto dice cuáles («mira el Kendall y el Holly»): las fotos son de ESAS.
+            con_foto = [f for f in nombradas_r if _imagen(f)]
+            if con_foto and {f.codigo for f in con_foto} != {f.codigo for f in sugeridas}:
+                sugeridas = con_foto[:MAX_SUGERENCIAS]
         if nombradas_r and not quiere_varias:
             vistos = set(mem["mostrados"]) | _ya_mostrados(req)
             pidio_foto = bool(promete or foto_pedida is not None or RE_QUIERE_FOTO.search(req.mensaje))
@@ -1796,6 +2192,9 @@ def conversar(req: ChatIn) -> dict:
                 sugeridas = [foco]
             else:
                 respuesta = "\n\n".join(x for x in (RE_PROMESA_FOTOS.sub("", p).strip() for p in respuesta.split("\n\n")) if re.search(r"\w", x)) or respuesta
+    if accion == "responder" and sugeridas and memoria.no_mostrar(req.mensaje):
+        sugeridas = []          # «no me muestres nada todavía»
+        respuesta = "\n\n".join(x for x in (RE_PROMESA_FOTOS.sub("", p).strip() for p in respuesta.split("\n\n")) if re.search(r"\w", x)) or respuesta
     promesa_pago = next((m for m in RE_PROMETE_PAGO.finditer(respuesta or "")
                          if "¿" not in m.group(0) and not (respuesta or "")[m.end():m.end() + 1] == "?"), None)
     if (etapa == "venta_confirmada" and accion == "responder" and modelo != "flujo_pago" and promesa_pago is not None
@@ -1862,6 +2261,7 @@ def health():
             "deepseek": {"modelos": DEEPSEEK_MODELOS, "configurado": bool(DEEPSEEK_KEY)}, "fichas": len(E.fichas) if E else 0,
             "catalogo": E.seed_origen if E else None,
             "producto_demo": venta.PRODUCTO_DEMO or None,
+            "respuesta_llm_prueba": PRUEBA_LLM,   # true solo en el agente de pruebas (app/regresion.py)
             "comercial": (E.metricas.get("comercial") or {}).get("exactitud") if E else None,
             "clasificador": {"embeddings": E.emb_clf.model_name, "comparacion": E.metricas.get("comparacion")} if E else None,
             "jev": {"modo": jev.MODO, "verificar": jev.VERIFICAR, "modelo": jev.MODELO, "configurado": bool(jev.CLAVE)},
@@ -1880,6 +2280,7 @@ class TextoIn(BaseModel):
 
 @app.post("/clasificar")
 def ruta_clasificar(req: TextoIn):
+    req.texto = _limpio(req.texto)
     cl = clasificar(req.texto)
     cl["comercial"] = clasificar_comercial(cl["vector_clf"])
     cl.pop("vector")

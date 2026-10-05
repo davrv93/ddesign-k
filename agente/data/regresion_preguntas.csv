@@ -19,13 +19,13 @@ P17,tienen fotos d los vestidos?,nuevo,,,,,,si,responder,0,,,ocasion,,,"pide ver
 P18,pasame foto del holly,nuevo,,,,,,,responder,=V41,,,,,,"la foto de la prenda nombrada, ninguna otra"
 P19,como es el irla? manda foto,visto,,,,,,,responder,=V35,,,,,,pregunta por otra prenda: la foto es de esa
 P20,otros modelos tendras?,visto,,,,,,,responder,1+;no:V41,,,,,,pide más: otras que no vio
-P21,y en conjuntos q hay,visto,,,,,,,responder,1+;cat:conjunto,,,,,,cambia de categoría: solo conjuntos
+P21,y en conjuntos q hay,visto,,,,,,,responder,1+;cat:conjunto,,,,,Holly,cambia de categoría: solo conjuntos
 P22,tienen blazer?,nuevo,,,,,,,responder,cat:blazer,,,,,,"si se muestra algo, que sea un blazer"
 P23,kiero ver todo el catalogo,nuevo,,,,,,si,responder,0,,,,,,el catálogo sin prenda no saca fotos al azar
 P24,"no me muestres nada todavia, solo pregunto",visto,,,,,,no,responder,0,,,,,,«no me muestres» no es pedir ver
-P25,tienen en rojo?,visto,consulta_color,,"{""color"": ""rojo""}",,,,responder,0,,,,,,del vestido que ve no hay rojo: no se manda un conjunto rojo en su lugar
-P26,tienen vestidos verdes?,nuevo,,,"{""prenda"": ""vestido"", ""color"": ""verde""}",,,,responder,0,,,,,,no hay vestido verde (sí una blusa): no se manda la blusa
-P27,hay polos?,nuevo,,,"{""prenda"": ""polo""}",,,,responder,0,,,,,,la tienda no vende polos
+P25,tienen en rojo?,visto,consulta_color,,"{""color"": ""rojo""}",,,,responder,0,,,otras_opciones,no tengo vestidos en rojo,,del vestido que ve no hay rojo: no se manda un conjunto rojo en su lugar
+P26,tienen vestidos verdes?,nuevo,,,"{""prenda"": ""vestido"", ""color"": ""verde""}",,,,responder,0,,,otras_opciones,no tengo vestidos en verde,,no hay vestido verde (sí una blusa): no se manda la blusa
+P27,hay polos?,nuevo,,,"{""prenda"": ""polo""}",,,,responder,0,,,otras_opciones,no tengo polos,,la tienda no vende polos
 P28,ta bonito pero dejame consultarlo con mi esposo,visto,objecion,,,,,,responder,0,seguimiento,,,,,objeción: sin presionar
 P29,es pa mañana,fecha,,,"{""fecha"": ""manana""}",,,,,0,prospeccion,,horario,,,«pa» es «para»; responde a ¿para cuándo?
 P30,par aun quinceañero,ocasion,,,"{""ocasion"": ""quinceanero""}",,,,,0,,,fecha,,,espacio mal puesto
