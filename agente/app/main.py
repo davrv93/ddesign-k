@@ -545,7 +545,7 @@ PRODUCTO (fichas; la primera es de la que se habla):
 {fich}
 
 {nota + chr(10) + chr(10) if nota else ""}{nota_catalogo(cl)}FOTOS QUE EL BOT ENVIARÁ DESPUÉS DE TU TEXTO: {", ".join(f"{f.codigo} {f.nombre}" for f in sugeridas) or "ninguna"}{"; y la lámina de materiales del vestido (dilo: «te paso la lámina de materiales»)" if lamina else ""}{_nota_oferta(ofrecer)}
-
+{(chr(10) + estilo + chr(10)) if (estilo := venta.bloque_estilo(dec["etapa"])) else ""}
 MENSAJE NUEVO DE LA CLIENTA:
 {req.mensaje}"""
     return [{"role": "system", "content": venta.sistema(req.negocio or NEGOCIO)}, {"role": "user", "content": usuario}]
