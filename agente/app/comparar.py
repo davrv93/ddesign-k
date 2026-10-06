@@ -59,6 +59,9 @@ def turnos(url: str, con_temas: bool = False) -> list[dict]:
                 "cat_score": (v2.get("catalogos") or {}).get("score"), "cat_tema": (v2.get("catalogos") or {}).get("tema"),
                 "cat_cambio": (v2.get("catalogos") or {}).get("habria_cambiado"),
                 "cat_aplicado": str((tm.get("evento") or {}).get("causa") or "").startswith("catálogo"),
+                "rag_fuente": (v2.get("rag") or {}).get("fuente"), "rag_diversa": (v2.get("rag") or {}).get("diversa") or [],
+                "rag_elegido": (v2.get("rag") or {}).get("elegido"),
+                "rag_rerank": ((v2.get("rag") or {}).get("rerank") or {}).get("motivo"),
                 "tema_pendientes": [f"{x['slot']}:{x['status']}" for x in tm.get("pendientes") or []],
             })
     return filas

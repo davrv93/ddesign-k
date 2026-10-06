@@ -439,6 +439,11 @@ for t, esp in [("si ca ver", True), ("si claro", True), ("ya pues", True), ("pas
     caso(f"afirma: «{t}»", M.afirma(t), esp)
 m = M.nueva(); m["pendiente"] = "pago"
 caso("«si ca ver» responde a la pendiente de pago", M.leer(m, "si ca ver")["respondio"], True)
+m = M.nueva(); m["pendiente"] = "aclarar"
+caso("«el segundo» responde a la aclaración", (M.leer(m, "el segundo")["respondio"], m["pendiente"]), (True, ""))
+m = M.nueva(); m["pendiente"] = "aclarar"
+caso("«el V24» responde a la aclaración", M.leer(m, "me quedo con el V24")["respondio"], True)
+caso("la aclaración se reconoce", M.clave_de("¿Cuál de estas te gusta más?"), "aclarar")
 caso("nombre: me llamo alvaro", M.extraer("me llamo alvaro").get("nombre"), "Alvaro")
 caso("nombre: mi nombre es Ana María", M.extraer("hola, mi nombre es Ana María").get("nombre"), "Ana Maria")
 caso("«soy talla M» no es un nombre", M.extraer("soy talla M").get("nombre"), None)

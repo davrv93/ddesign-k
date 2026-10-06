@@ -37,6 +37,7 @@ from .v2.factual import CompuertaFactual
 from .v2.semantica import Semantica
 from .v2.generacion import Encadenada, LlmLocalGeneracion
 from .v2 import motivo as v2motivo
+from .v2 import rag as v2rag
 from .v2 import plantillas as v2plantillas
 from .v2.realizador import (ClienteLLM, RealizadorBase, RealizadorReescritura, RealizadorVariantes, RedactorSemantico)
 from .v2.motor import MotorRecursivo
@@ -2387,11 +2388,22 @@ def _herramienta_crm(perfil: dict | None) -> dict:
 
 
 def _herramienta_rag(texto: str) -> list[str]:
-    """Herramienta del motor V2: las prendas del catálogo que encajan con la búsqueda (mismo RAG que V1)."""
+    """Herramienta del motor V2: híbrida léxico (BM25F por campos) + vector a
+    peso bajo, con el reranker eligiendo la unidad (regla «no quita»). El
+    detalle (órdenes, elegido, motivo) queda en v2.rag.ultimo_detalle() para
+    la traza. Sin híbrida, sigue el orden del vector: nunca tira el turno."""
     if E is None:
         raise RuntimeError("agente sin arrancar")
     qv = E.emb([texto])[0]
-    return [f.codigo for f in recuperar(qv, [], categoria_pedida(texto))][:5]
+    with E.lock:
+        fichas = list(E.fichas)
+        sims = list(E.Xf @ qv)
+    cat = categoria_pedida(texto)
+    permitidos = {f.codigo for f in fichas if categoria_de(f) == cat} if cat else None
+    orden = [f.codigo for _, f in sorted(zip(sims, fichas), key=lambda x: -x[0])]
+    cods, _ = v2rag.hibrida(texto, fichas, orden, permitidos,
+                            elegir_fn=(rerank.elegir if rerank.activo() else None))
+    return cods[:5] or [c for c in orden if permitidos is None or c in permitidos][:5]
 
 
 def _nombre_de(codigo: str) -> str | None:
@@ -2515,7 +2527,7 @@ _V2 = AgentV2(
     calidad=ReglasCalidad(precios=_precios_reales, nombres=_nombre_de, todos_los_nombres=_todos_los_nombres,
                           ficha_texto=_ficha_texto, clave_de=memoria.clave_de, preguntas_en=memoria.preguntas_en, fundamento=False),
     redactor=_PLANTILLA, redactor_activo=_ACTIVO, habla=v2cfg.habla_por_defecto(),
-    semantica=_SEM, candidatos_ref=_candidatos_ref,
+    semantica=_SEM, candidatos_ref=_candidatos_ref, texto_derivacion=TEXTO_ACCION["asesora"],
 )
 
 

@@ -79,6 +79,14 @@ class Registro:
                     c["cat_habria_cambiado"] += bool(cg.get("habria_cambiado"))
                     c["cat_tema_aplicado"] += bool(cg.get("modo") == "activo" and cg.get("tema") and (tm.get("evento") or {}).get("causa", "").startswith("catálogo"))
             gen = sb.get("generacion") or {}
+            rg = traza.get("rag") or {}
+            if rg:                                     # recuperación híbrida (v2/rag.py)
+                c["rag_turnos"] += 1
+                c["rag_hibrida"] += rg.get("fuente") == "hibrida"
+                rr = rg.get("rerank") or {}
+                c["rerank_elige"] += rr.get("motivo") in ("ok", "desempate")
+                if rr.get("motivo") not in (None, "ok", "apagado", "desempate"):
+                    self._motivos[version][f"reranker: {rr.get('motivo')}"] += 1
             if gen.get("intentos"):
                 c["con_borrador"] += 1
                 c["regeneraciones"] += gen.get("regeneraciones", 0)
@@ -118,6 +126,9 @@ class Registro:
                     "temas": {"interrupciones": c["temas_interrupciones"], "cambios_totales": c["temas_cambios_totales"], "ayuda": c["temas_ayuda"],
                               "retomas_planeadas": c["temas_retomas_planeadas"], "retomas_enviadas": c["temas_retomas_enviadas"],
                               "v1_retomo_solo": c["temas_v1_retomo"], "errores": c["temas_error"]},
+                    "rag": {"turnos": c["rag_turnos"],
+                            "hibrida": round(c["rag_hibrida"] / (c["rag_turnos"] or 1), 3),
+                            "rerank_elige": round(c["rerank_elige"] / (c["rag_turnos"] or 1), 3)},
                 }
             return out
 

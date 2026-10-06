@@ -47,7 +47,7 @@ caso("cada regla a la que apunta «prohibido» existe en la compuerta",
 activas = sorted(p.id for p in cat.plantillas.values() if p.activa)
 caso("activas en esta etapa: acuses, preguntas, recomendación y las retomas de los cambios de tema",
      activas, sorted(["ACK_NAME", "CATEGORY_AVAILABLE", "OCCASION_CAPTURED", "ACK_NOTED", "ASK_OCCASION", "ASK_DAY_NIGHT", "ASK_DATE", "ASK_SIZE",
-                      "CONFIRM_KNOWN_SIZE", "ASK_HEIGHT", "ASK_COLOR", "ASK_WHAT_LOOKING_FOR", "ASK_WHAT_LIKED", "RECOMMEND_ONE_PRODUCT",
+                      "CONFIRM_KNOWN_SIZE", "ASK_HEIGHT", "ASK_COLOR", "ASK_WHAT_LOOKING_FOR", "ASK_WHAT_LIKED", "ASK_ACLARAR", "RECOMMEND_ONE_PRODUCT",
                       "SEND_PRODUCT_PHOTOS", "RESUME_SIZE_REQUIRED", "RESUME_SIZE_USEFUL", "RESUME_SIZE_HELP", "RESUME_SIZE_DOUBT",
                       "RESUME_SIZE_CHOOSE", "RESUME_OCCASION", "RESUME_DATE", "RESUME_DAY_NIGHT"]))
 caso("las que hablan de datos de la tienda, cierre y derivación siguen sin activar",

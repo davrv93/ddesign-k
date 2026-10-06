@@ -29,15 +29,31 @@ from typing import Callable
 from . import config
 from . import temas as T
 from .accion import accion_v1, es_flujo_fijo, tarjetas_de_prenda
+from .decision import fuera_de_giro
 from .calidad import FALLBACK
 from .contexto import ContextBuilder
 from .estado import separar
 from .generacion import Encadenada
-from .motor import MotorRecursivo, Resultado
-from .plan import Plan
+from .motor import MotorRecursivo, Resultado, duda_rag
+from .plan import Plan, validar
 from .plantillas import SinPlantilla
+from .rag import tomar_detalle
 
 log = logging.getLogger("agente.v2")
+
+
+def _etapa(traza: dict, nombre: str, t_ini: float, estado: str = "ok", detalle=None) -> None:
+    """Una etapa de la traza con sus ms y los valores que decidió. Con
+    V2_TRAZA=0 solo quedan nombre, ms y estado."""
+    e: dict = {"etapa": nombre, "ms": int((time.perf_counter() - t_ini) * 1000), "estado": estado}
+    if detalle is not None and config.traza_nivel() != "0":
+        e["detalle"] = detalle
+    traza.setdefault("etapas", []).append(e)
+
+
+def _degrada(traza: dict, texto: str) -> None:
+    """Cada degradación en texto (qué respaldo entró y por qué)."""
+    traza.setdefault("degradaciones", []).append(texto)
 
 
 def _sin_llm(req):
@@ -54,8 +70,9 @@ class AgentV2:
     def __init__(self, v1: Callable, limites: config.Limites | None = None, contexto: ContextBuilder | None = None,
                  motor: MotorRecursivo | None = None, calidad=None, redactor=None, redactor_activo=None,
                  modo: str | None = None, habla: tuple[str, ...] | None = None, semantica=None,
-                 candidatos_ref: Callable | None = None):
+                 candidatos_ref: Callable | None = None, texto_derivacion: str = ""):
         self.v1 = v1
+        self.texto_derivacion = texto_derivacion         # el de V1 para la acción «asesora»; vacío = V2 no deriva por su cuenta
         self.limites = limites or config.limites_desde_entorno()
         self.contexto = contexto or ContextBuilder()
         self.motor = motor
@@ -71,17 +88,25 @@ class AgentV2:
     def conversar(self, req) -> dict:
         t0 = time.perf_counter()
         modo = config.modo_pedido(getattr(req, "modo", ""), self.modo or config.modo_por_defecto())
-        traza = {"agent_version": "v2", "fase": 7, "modo": modo, "fallback": False, "motivo": None, "enviado": "v1"}
+        traza = {"agent_version": "v2", "fase": 7, "modo": modo, "fallback": False, "motivo": None,
+                 "enviado": "v1", "etapas": [], "degradaciones": []}
         activo = modo == "activo" and self.motor is not None and self.contexto is not None
         veces_v1 = 0
+        t_v1 = time.perf_counter()
         if activo:
             res = dict(self.v1(_sin_llm(req)) if getattr(req, "usar_llm", True) else self.v1(req))
             veces_v1 = 1
         else:
             res = dict(self.v1(req))
         res["version"] = "v2"
+        _etapa(traza, "v1", t_v1, detalle={"etapa": res.get("etapa"), "llamadas": veces_v1 or 1})
+        t_cat = time.perf_counter()
         self._leer_catalogos(req, res, traza)
+        _etapa(traza, "catalogos", t_cat,
+               detalle={k: (traza.get("catalogos") or {}).get(k) for k in ("catalogo", "intent", "score", "margen")})
+        t_ana = time.perf_counter()
         sombra = self._analizar(req, res, traza, activo)
+        _etapa(traza, "analizar", t_ana, estado="error" if isinstance(sombra, dict) and sombra.get("error") else "ok")
         if activo:
             motivo = sombra.get("no_habla") if isinstance(sombra, dict) else "sin análisis"
             gen = (sombra.get("generacion") or {}) if isinstance(sombra, dict) else {}
@@ -100,7 +125,11 @@ class AgentV2:
                     veces_v1 = 2
                     if previo_ms is not None and "ms" in res:
                         res["ms"] += previo_ms
+        self._derivar_fuera_de_giro(req, res, traza, modo == "activo")
+        t_temas = time.perf_counter()
         self._temas(req, res, traza, activo)       # cambios de tema: la pila de pendientes y, si está encendido, la retoma
+        _etapa(traza, "temas", t_temas,
+               estado="error" if isinstance(traza.get("temas"), dict) and traza["temas"].get("error") else "ok")
         traza["llamadas_v1"] = veces_v1
         traza["sombra"] = sombra
         traza["ms"] = int((time.perf_counter() - t0) * 1000)
@@ -127,36 +156,76 @@ class AgentV2:
 
     def _analizar(self, req, res: dict, traza: dict, activo: bool) -> dict:
         """Contexto → motor → borrador. Todo con lo que V1 acaba de entender. Nunca tira el turno."""
+        t_ctx = time.perf_counter()
         try:
             ctx = self.contexto.construir(req, res)
             if traza.get("catalogos"):
                 ctx["conversation"]["catalog"] = traza["catalogos"]       # solo informa; las reglas de decisión todavía no lo leen
             traza["separado"] = separar(ctx)
             traza["ctx_turnos"] = len(ctx["conversation"]["recent_turns"])
+            _etapa(traza, "contexto", t_ctx, detalle={"turnos": traza["ctx_turnos"]})
         except Exception as e:
             log.warning("v2: contexto falló (%s); el turno sigue por V1", type(e).__name__)
             traza["fallback"] = True
             traza["motivo"] = type(e).__name__
+            _etapa(traza, "contexto", t_ctx, estado="error")
+            _degrada(traza, f"contexto: {type(e).__name__}; el turno sigue por V1")
             return {"error": type(e).__name__, "no_habla": "el contexto falló"}
         if self.motor is None:
+            _degrada(traza, "sin motor; el turno sigue por V1")
             return {"no_habla": "sin motor"}
+        t_motor = time.perf_counter()
         try:
             r: Resultado = self.motor.ejecutar(ctx)
         except Exception as e:
             log.warning("v2: motor falló (%s); sin plan en este turno", type(e).__name__)
+            _etapa(traza, "motor", t_motor, estado="error")
+            _degrada(traza, f"motor: {type(e).__name__}; sin plan en este turno")
             return {"error": type(e).__name__, "no_habla": "el motor falló"}
+        _etapa(traza, "motor", t_motor, estado="error" if r.tope or r.fallo_herramienta else "ok",
+               detalle={"plan": bool(r.plan), "errores": r.errores, "tope": r.tope,
+                        "fallo_herramienta": r.fallo_herramienta})
+        if r.tope:
+            _degrada(traza, f"tope {r.tope}; plan a pedir_asesora")
+        if r.fallo_herramienta:
+            _degrada(traza, f"herramienta {r.fallo_herramienta} falló; sin el hecho no se afirma nada")
+        rag = tomar_detalle()
+        if rag and config.traza_nivel() != "0":
+            traza["rag"] = rag
+        if rag and rag.get("fuente") != "hibrida":
+            _degrada(traza, f"rag: {rag.get('motivo')}; orden del vector")
+        elif rag and (rag.get("rerank") or {}).get("motivo") not in (None, "ok", "apagado"):
+            _degrada(traza, f"reranker: {(rag.get('rerank') or {}).get('motivo')}; orden de la fusión")
         obs = accion_v1(res)
         salida = r.a_dict() | {"v1_accion": obs, "v1_flujo_fijo": es_flujo_fijo(res), "v1_etapa": res.get("etapa")}
         ultima = getattr(getattr(self.motor, "decision", None), "ultima", None)
         if ultima:
             salida["jev"] = ultima
         salida["no_habla"] = self._motivo_no_habla(res, r, ctx)
+        duda = duda_rag(r.plan, r.errores, ctx, rag)
+        if duda is not None:
+            nuevo, nota = duda
+            stock = (ctx.get("herramientas") or {}).get("stock") or {}
+            errs = validar(nuevo, {c for c, v in stock.items() if v == "online"})
+            if not errs:
+                r.plan = nuevo
+                salida["plan"] = nuevo.a_dict()
+                salida["errores"] = []
+                salida["no_habla"] = self._motivo_no_habla(res, r, ctx)
+                salida["duda_rag"] = {"motivo": (ultimo_detalle().get("rerank") or {}).get("motivo"),
+                                      "decision": nota}
         redactor = self.redactor_activo if activo else self.redactor
         # En sombra se redacta siempre (con el redactor de código) para medir el control de calidad; en activo, solo si
         # V2 va a hablar: un modelo local no se llama para un borrador que no se va a enviar.
         puede_hablar = (not activo) or salida["no_habla"] is None
         if r.plan is not None and not r.errores and redactor and self.calidad and puede_hablar:
+            t_red = time.perf_counter()
             salida["generacion"] = self._redactar(r, res, ctx, redactor)
+            gen = salida["generacion"] or {}
+            _etapa(traza, "redaccion", t_red, estado="ok" if gen.get("passed", True) else "error",
+                   detalle={"passed": gen.get("passed"), "motor": gen.get("motor")})
+            if gen.get("passed") is False:
+                _degrada(traza, f"redacción: {gen.get('sin_plantilla') or 'no pasó el control'}; habla V1")
         return salida
 
     # ------------------------------------------------------------------------------------------------------------
@@ -248,6 +317,25 @@ class AgentV2:
         mem["v2"] = {"temas": nuevo}
         out["pendientes"] = T.resumen(nuevo)
         return out
+
+    def _derivar_fuera_de_giro(self, req, res: dict, traza: dict, activo: bool) -> None:
+        """Pregunta ajena al negocio (cripto, empleo, bolsa…): la clienta no recibe «¿qué modelo te gustaría?» sino el paso a la
+        dueña, con la misma acción «asesora» de V1 (el bot Go pausa y avisa; sirve igual en la web y en WhatsApp). En sombra solo
+        se anota. Lo que V1 ya derivó no se toca."""
+        if not fuera_de_giro(getattr(req, "mensaje", "") or ""):
+            return
+        traza["fuera_de_giro"] = {"deriva": False}
+        if res.get("accion") == "asesora":
+            traza["fuera_de_giro"]["motivo"] = "V1 ya derivó"
+            return
+        if not (activo and config.deriva_activa() and self.texto_derivacion):
+            traza["fuera_de_giro"]["motivo"] = "sombra" if not activo else "apagada"
+            return
+        traza["v1_texto_respaldo"] = res.get("respuesta")
+        res.update(accion="asesora", respuesta=self.texto_derivacion, codigo=None, confirmar_pedido=False, ofrecer_opciones=False,
+                   sugerencias=[], botones=[], tallas=[], modelo_llm="v2:deriva")
+        traza["enviado"] = "v2"
+        traza["fuera_de_giro"] = {"deriva": True, "motivo": "pregunta fuera del giro"}
 
     def _motivo_no_habla(self, res_v1: dict, r: Resultado, ctx: dict) -> str | None:
         """None = V2 puede hablar en este turno. Si no, la razón, en una frase."""

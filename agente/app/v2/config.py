@@ -4,6 +4,8 @@ AGENT_VERSION      v1 (por defecto) | v2
 V2_MODO            sombra (por defecto: V2 solo observa) | activo (V2 puede hablar)
 V2_HABLA           acciones en las que V2 habla en modo activo (por defecto: recomendar,preguntar; «responder_y_retomar» = cambios de tema)
 V2_TEMAS           0 apaga el seguimiento de cambios de tema (pila de pendientes); por defecto corre con V2
+V2_TRAZA           1 traza por etapas con ms y valores (por defecto) | 0 mínima (sin etapas ni detalle de recuperación)
+V2_DERIVA          1 (por defecto) | 0: en modo activo, lo que está fuera del giro (cripto, empleo, bolsa, préstamo, denuncia) se deriva a la dueña
 MAX_AGENT_STEPS    pasos del agente por turno (1–10)
 MAX_DECISION_CALLS llamadas al motor de decisión por turno (0–10; 4 = el camino stock→RAG→stock→recomendar)
 MAX_TOOL_CALLS     herramientas (stock, RAG, CRM) por turno (0–10)
@@ -59,6 +61,22 @@ def habla_por_defecto(env=os.environ) -> tuple[str, ...]:
 def temas_activos(env=os.environ) -> bool:
     """V2_TEMAS=0 apaga por completo el seguimiento de cambios de tema (la pila y su traza). Por defecto corre cuando corre V2."""
     return (env.get("V2_TEMAS") or "1").strip().lower() not in ("0", "no", "off", "false")
+
+
+TRAZAS = ("0", "1")
+
+
+def traza_nivel(env=os.environ) -> str:
+    """V2_TRAZA: 1 (por defecto) = traza por etapas con ms y valores por turno;
+    0 = mínima (sin etapas ni detalle de recuperación). La traza vive en
+    ``res["v2"]`` y nunca en ``respuesta``: no sale al WhatsApp de la clienta."""
+    t = (env.get("V2_TRAZA") or "1").strip().lower()
+    return t if t in TRAZAS else "1"
+
+
+def deriva_activa(env=os.environ) -> bool:
+    """V2_DERIVA=0 apaga la derivación a la dueña de lo que está fuera del giro. Por defecto corre en modo activo."""
+    return (env.get("V2_DERIVA") or "1").strip().lower() not in ("0", "no", "off", "false")
 
 
 def modo_pedido(valor: str | None, defecto: str) -> str:

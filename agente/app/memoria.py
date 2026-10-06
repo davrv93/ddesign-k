@@ -138,6 +138,8 @@ ESPERA = {
     "pago": "si le pasas los datos de pago", "voucher": "la foto del comprobante de pago",
     "direccion": "su dirección de envío", "otras_opciones": "si quiere ver otras opciones",
     "foto": "la foto del modelo", "que_busca": "que te cuente qué está buscando",
+    # La redacta el código V2 con las opciones del RAG (desempate del reranker): puntual, no va en ORDEN.
+    "aclarar": "cuál de las opciones le gusta más",
 }
 PENDIENTES = set(ESPERA)
 # Pendientes que se resuelven con un dato de `sabemos`.
@@ -209,6 +211,7 @@ DETECTOR = [
     ("separar", re.compile(r"\b(separ|reserv|apart)\w*")),
     ("horario", re.compile(r"de dia o de noche|de noche o de dia|\bde dia\b|\bde noche\b|a que hora")),
     ("que_le_gusto", re.compile(r"(lo que )?mas te gust|que te gusto|que te llamo la atencion|que te enamoro")),
+    ("aclarar", re.compile(r"cual de estas|entre estas|cual te gusta mas|cual prefieres|con cual te quedas")),
     ("fecha", re.compile(r"para cuando|que fecha|cuando (es|sera|seria) (el|la|tu)|cuando lo necesitas|para que fecha|tienes fecha")),
     ("ocasion", re.compile(r"ocasion|para que (evento|es|lo (buscas|quieres|necesitas))|que evento|que celebr")),
     ("estatura", re.compile(r"cuanto mides|tu (estatura|altura)|que estatura")),
@@ -915,6 +918,8 @@ def leer(mem: dict, texto: str, jev: dict | None = None, ahora: _dt.datetime | N
         res["respondio"] = res["describe"]
     elif pend in ("separar", "pago", "otras_opciones", "voucher"):
         res["respondio"] = bool(afirma(texto) or RE_NIEGA.match(t))
+    elif pend == "aclarar":
+        res["respondio"] = bool(re.search(r"\bv\d{2}\b|primer[oa]?|segund[oa]?|tercer[oa]?|\b[123]\b", t))
     elif pend == "confirmar":
         res["respondio"] = bool(RE_AFIRMA.match(t) or RE_NIEGA.match(t) or re.search(r"\bconfirm", t))
     if not res["respondio"] and RE_ESPERA.search(t) and not pregunta:
@@ -1036,7 +1041,7 @@ def quitar_repetidas(texto: str, mem: dict, permitida: str = "", vaciar: bool = 
 
     def sobra(q: str) -> bool:
         k = clave_de(q)
-        if not k or k == permitida or k in PERSISTENTES or k in ("otras_opciones",):
+        if not k or k == permitida or k in PERSISTENTES or k in ("otras_opciones", "aclarar"):
             return False
         return k in hechas or bool(k in DATO_DE and sab.get(DATO_DE[k]))
 

@@ -28,6 +28,31 @@ OPCIONES = {
 }
 
 
+# La clienta pide una persona o pregunta fuera del giro (cripto, empleo, reclamos…):
+# se deriva a la dueña en vez de recomendar lo más cercano. Capa léxica de actos
+# inequívocos: solo patrones que no se confunden («mi persona favorita» no pide persona).
+FUERA_DE_ALCANCE = frozenset({"asesora"})
+_PIDE_PERSONA_RE = re.compile(r"(hablar|conversar).{0,25}persona|\basesora\b|\bencargad[oa]\b|\bhumano\b|eres un bot")
+_FUERA_GIRO_RE = re.compile(r"criptomoneda|bitcoin|\b(quiero|buscan)\b.{0,25}(trabaj|empleo|personal)|bolsa de valores|pr[eé]stamo|\breclamo\b|libro de reclamaciones|\bdenuncia\b")
+
+
+def plano(texto: str) -> str:
+    """Minúsculas y sin tildes, para los patrones de arriba."""
+    import unicodedata
+    t = unicodedata.normalize("NFD", (texto or "").lower())
+    return "".join(c for c in t if unicodedata.category(c) != "Mn")
+
+
+def fuera_de_giro(mensaje: str) -> bool:
+    """Pregunta ajena al negocio (cripto, empleo, bolsa, préstamo, denuncia). Es lo único que V2 deriva por su cuenta: pedir
+    una persona («eres un bot», «tengo que hablarlo con alguien») ya lo resuelve V1 con sus guardas."""
+    return bool(_FUERA_GIRO_RE.search(plano(mensaje)))
+
+
+def _texto_plano(estado: dict) -> str:
+    return plano((estado.get("conversation") or {}).get("last_user_message") or "")
+
+
 # Intenciones en las que la clienta pide un dato o cierra: ahí se responde con hechos (o con un flujo de código); no se
 # recomienda ni se pregunta otra cosa.
 INTENCIONES_INFORMATIVAS = frozenset({
@@ -59,6 +84,10 @@ class ReglasDecision:
         conv = estado.get("conversation") or {}
         prod = estado.get("product") or {}
         pregunta = conv.get("next_question")
+        plano = _texto_plano(estado)
+        if (conv.get("intent") in FUERA_DE_ALCANCE or _PIDE_PERSONA_RE.search(plano)
+                or _FUERA_GIRO_RE.search(plano)):
+            return Decision("next_action", "pedir_asesora", 0.9)   # fuera de alcance: deriva a la dueña
         if conv.get("intent") in INTENCIONES_INFORMATIVAS:
             return Decision("next_action", "responder", 0.8)                  # pidió un dato o cierra: se contesta
         if conv.get("wants_to_see") and (not foco or foco in (prod.get("shown") or [])):

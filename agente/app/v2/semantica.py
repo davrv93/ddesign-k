@@ -114,6 +114,10 @@ class Semantica:
                 it = clf.catalogo.intenciones.get(intent)
                 if it is not None:
                     out["hechos_requeridos"] = list(getattr(it, "hechos_requeridos", None) or [])
+                    fuente = getattr(it, "fuente", "") or getattr(clf.catalogo, "fuente", "") or ""
+                    out["fuente"] = fuente
+                    if out["hechos_requeridos"] and not fuente:
+                        out["sin_fuente"] = True     # sin fuente no se responde como hecho
                 for k in ("strength", "stage", "etapa_bot"):
                     if r.get(k) is not None:
                         out[k] = r[k]

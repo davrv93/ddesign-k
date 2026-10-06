@@ -81,6 +81,8 @@ class Intencion:
     accion: str = ""
     stage: Optional[str] = None
     strength: Optional[float] = None
+    fuente: str = ""                                   # mensaje o documento de la dueña que respalda el dato visible
+    revisado_por_humano: bool = False
     extra: dict = field(default_factory=dict)          # cualquier otra clave del YAML
 
 
@@ -92,6 +94,8 @@ class Catalogo:
     intenciones: dict = field(default_factory=dict)    # nombre -> Intencion
     minimo_ejemplos: int = MINIMO_EJEMPLOS
     fuentes: list = field(default_factory=list)
+    fuente: str = ""                                   # fuente por defecto de sus intenciones
+    revisado_por_humano: bool = False
 
     def ejemplos(self):
         """Lista plana (texto, intención, origen)."""
@@ -149,10 +153,14 @@ def cargar_faq_txt(ruta: str) -> dict:
 
 
 def _nueva_intencion(nombre: str, d: dict) -> Intencion:
-    conocidas = {"descripcion", "ejemplos", "slots", "hechos_requeridos", "accion", "stage", "strength"}
+    conocidas = {"descripcion", "ejemplos", "slots", "hechos_requeridos", "accion", "stage", "strength",
+                 "fuente", "revisado_por_humano"}
+    rev = d.get("revisado_por_humano")
     return Intencion(nombre=nombre, descripcion=str(d.get("descripcion") or ""),
                      slots=dict(d.get("slots") or {}), hechos_requeridos=list(d.get("hechos_requeridos") or []),
                      accion=str(d.get("accion") or ""), stage=d.get("stage"), strength=d.get("strength"),
+                     fuente=str(d.get("fuente") or ""),
+                     revisado_por_humano=rev is True or str(rev).lower() in ("1", "sí", "si", "true"),
                      extra={k: v for k, v in d.items() if k not in conocidas})
 
 
@@ -165,7 +173,9 @@ def cargar_catalogo(nombre_o_ruta: str, directorio: Optional[str] = None, valida
         raise CatalogoInvalido(f"{ruta}: falta «intenciones»")
     cat = Catalogo(nombre=str(datos.get("catalogo") or os.path.basename(ruta)[:-5]), version=int(datos.get("version", 1)),
                    descripcion=str(datos.get("descripcion") or ""),
-                   minimo_ejemplos=int(datos.get("minimo_ejemplos", MINIMO_EJEMPLOS)), fuentes=[os.path.basename(ruta)])
+                   minimo_ejemplos=int(datos.get("minimo_ejemplos", MINIMO_EJEMPLOS)), fuentes=[os.path.basename(ruta)],
+                   fuente=str(datos.get("fuente") or ""),
+                   revisado_por_humano=str(datos.get("revisado_por_humano") or "").lower() in ("1", "sí", "si", "true"))
     # 1) el .txt (los originales, en su orden) 2) los ejemplos del YAML (ampliaciones o catálogo propio)
     if datos.get("fuente_txt"):
         ruta_txt = os.path.join(os.path.dirname(ruta), datos["fuente_txt"])
@@ -185,12 +195,33 @@ def cargar_catalogo(nombre_o_ruta: str, directorio: Optional[str] = None, valida
             it.descripcion = base.descripcion or it.descripcion
             it.slots, it.hechos_requeridos, it.accion = base.slots, base.hechos_requeridos, base.accion
             it.stage, it.strength, it.extra = base.stage, base.strength, base.extra
+            it.fuente = base.fuente or it.fuente
+            it.revisado_por_humano = base.revisado_por_humano or it.revisado_por_humano
         for texto in d_int.get("ejemplos") or []:
             it.ejemplos.append(sustituir(str(texto)) if texto is not None else "")
             it.origen.append("ampliado" if datos.get("fuente_txt") else "propio")
     if validar_:
         validar(cat)
     return cat
+
+
+def fuente_efectiva(it: Intencion, cat: Catalogo | None = None) -> tuple[str, bool]:
+    """(fuente, revisado) de la intención, o los del catálogo si no trae propios."""
+    if it.fuente:
+        return it.fuente, it.revisado_por_humano
+    if cat is not None and cat.fuente:
+        return cat.fuente, cat.revisado_por_humano
+    return "", False
+
+
+def resumen_fuentes(cat: Catalogo) -> dict:
+    """Curaduría del catálogo (2.1): cuántas intenciones tienen fuente y revisión
+    humana. Una intención sin fuente no se responde como hecho."""
+    sin = [it.nombre for it in cat.intenciones.values()
+           if not fuente_efectiva(it, cat)[0] and it.hechos_requeridos]
+    rev = [it.nombre for it in cat.intenciones.values() if fuente_efectiva(it, cat)[1]]
+    return {"intenciones": len(cat.intenciones), "con_fuente": len(cat.intenciones) - len(sin),
+            "revisadas": len(rev), "sin_fuente": sin}
 
 
 def cargar_catalogo_prueba(nombre: str, directorio: Optional[str] = None) -> Optional[dict]:

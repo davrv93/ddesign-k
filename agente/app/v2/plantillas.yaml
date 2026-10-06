@@ -209,6 +209,21 @@ plantillas:
     partes:
       pregunta: ["{{PREGUNTA_V1}}", "¿Cuánto mides? Así te digo cómo te quedaría el largo."]
 
+  ASK_ACLARAR:
+    tipo: pregunta
+    clave: aclarar
+    activa: true
+    acciones: [preguntar]
+    objetivo: desambiguar_entre_opciones
+    semantica: [preguntar_con_las_tres_opciones_mas_probables, no_recomendar_lo_mas_cercano]
+    protegidos: [PREGUNTA_V1]
+    prohibido: [inventar_producto, inventar_precio, hacer_multiples_preguntas]
+    max_frases: 2
+    fijas: {pregunta: 0}        # la pregunta la redacta el código con las opciones del RAG
+    forma: "{pregunta}"
+    partes:
+      pregunta: ["{{PREGUNTA_V1}}"]
+
   ASK_COLOR:
     tipo: pregunta
     clave: color

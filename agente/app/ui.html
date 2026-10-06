@@ -537,7 +537,19 @@ function panelV2(j) {
     ${sb.jev ? `<div class="sub">Jev local propuso <b>${esc(sb.jev.opcion)}</b> (${(sb.jev.p * 100).toFixed(0)} %)</div>` : ''}
     ${v.motivo_v1 ? `<div class="sub">V2 no habló: ${esc(v.motivo_v1)}</div>` : sb.no_habla && v.modo === 'activo' ? `<div class="sub">V2 no habló: ${esc(sb.no_habla)}</div>` : ''}
     ${panelTemas(v.temas)}
-    ${g.intentos ? `<div class="sub">Control de calidad: ${g.passed ? 'pasó' : 'no pasó'}${g.motor ? ' · realizó ' + esc(g.motor) : ''}${g.plantillas ? ' · plantillas ' + g.plantillas.map(esc).join(' + ') : ''}${g.regeneraciones ? ' · ' + g.regeneraciones + ' regeneración(es)' : ''}</div>` : ''}`;
+    ${g.intentos ? `<div class="sub">Control de calidad: ${g.passed ? 'pasó' : 'no pasó'}${g.motor ? ' · realizó ' + esc(g.motor) : ''}${g.plantillas ? ' · plantillas ' + g.plantillas.map(esc).join(' + ') : ''}${g.regeneraciones ? ' · ' + g.regeneraciones + ' regeneración(es)' : ''}</div>` : ''}
+    ${panelTraza(v)}`;
+}
+
+// Traza por etapas (V2): cada fase con sus ms y qué decidió; cada degradación en texto; y qué hizo el RAG.
+// Solo existe en el panel web: al WhatsApp de la clienta nunca sale (la traza vive en `v2`, no en `respuesta`).
+function panelTraza(v) {
+  const ets = v.etapas || [], degs = v.degradaciones || [], rag = v.rag;
+  if (!ets.length && !degs.length && !rag) return '';
+  return `<h3>Traza por etapas</h3>
+    ${ets.length ? `<div class="sub">${ets.map(e => `${esc(e.etapa)} ${e.ms} ms${e.estado && e.estado !== 'ok' ? ' (' + esc(e.estado) + ')' : ''}`).join(' · ')}</div>` : ''}
+    ${rag ? `<div class="sub">RAG ${esc(rag.fuente || '?')}${rag.rerank && rag.rerank.motivo ? ' · reranker: ' + esc(rag.rerank.motivo) : ''}${rag.ms_lex != null ? ' · léxico ' + rag.ms_lex + ' ms' : ''}</div>` : ''}
+    ${degs.map(d => `<div class="sub">↳ ${esc(d)}</div>`).join('')}`;
 }
 
 // Cambios de tema (V2): qué hizo ella con la pregunta pendiente y qué retomaría o retomó.

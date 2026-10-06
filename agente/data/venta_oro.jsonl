@@ -1,0 +1,40 @@
+{"id": "V01", "mensaje": "ola buenas noches", "espera": {"pregunta": "busc"}}
+{"id": "V02", "mensaje": "soy alvaro", "espera": {"contiene": ["alvaro"], "no_contiene": ["asesora"]}}
+{"id": "V03", "mensaje": "tienen blazer?", "espera": {"contiene": ["blazer"]}}
+{"id": "V04", "mensaje": "tienen blazer??", "espera": {"contiene": ["blazer"]}}
+{"id": "V05", "mensaje": "tinen blazer", "espera": {"contiene": ["blazer"]}}
+{"id": "V06", "mensaje": "blzr", "espera": {"contiene": ["blazer"]}}
+{"id": "V07", "mensaje": "vestido", "espera": {}}
+{"id": "V08", "mensaje": "precio?", "espera": {}}
+{"id": "V09", "mensaje": "quiero hablar con una persona x favor", "espera": {"deriva": true}}
+{"id": "V10", "mensaje": "me comunicas con alguien de ventas?", "espera": {"deriva": true}}
+{"id": "V11", "mensaje": "necesito q me atienda una asesora no un bot", "espera": {"deriva": true}}
+{"id": "V12", "mensaje": "como pago con criptomonedas?", "espera": {"deriva": true}}
+{"id": "V13", "mensaje": "aceptan bitcoin?", "espera": {"deriva": true}}
+{"id": "V14", "mensaje": "hacen envios a españa?", "espera": {"deriva": true}}
+{"id": "V15", "mensaje": "estoy buscando trabajo, contratan?", "espera": {"deriva": true}}
+{"id": "V16", "mensaje": "quiero poner un reclamo", "espera": {"deriva": true}}
+{"id": "V17", "mensaje": "venden ropa de hombre?", "espera": {"deriva": true}}
+{"id": "V18", "mensaje": "tienen local en arequipa?", "espera": {}}
+{"id": "V19", "mensaje": "do you speak english?", "espera": {"deriva": true}}
+{"id": "V20", "mensaje": "cuanto es 2 + 2?", "espera": {"deriva": true}}
+{"id": "V21", "mensaje": "tienen vestidos?", "espera": {"contiene": ["vestido"]}}
+{"id": "V22", "mensaje": "tienen vestidos de fiesta?", "espera": {"contiene": ["vestido"]}}
+{"id": "V23", "mensaje": "tienen vestdos de fiesta", "espera": {"contiene": ["vestido"]}}
+{"id": "V24", "mensaje": "busco algo para un matrimonio", "espera": {"contiene_alguno": ["vestido", "fiesta", "matrimonio", "ocasión"]}}
+{"id": "V25", "hilo": ["tienen vestidos?"], "mensaje": "y en rojo?", "espera": {"contiene": ["roj"]}}
+{"id": "V26", "hilo": ["tienen vestidos?"], "mensaje": "y luego?", "espera": {}}
+{"id": "V27", "hilo": ["soy rosa"], "mensaje": "busco un vestido verde", "espera": {"contiene": ["verde"], "no_contiene": ["rosa"]}}
+{"id": "V28", "mensaje": "mi nombre es rosa elvira", "espera": {"no_contiene": ["color"]}}
+{"id": "V29", "mensaje": "es para mi persona favorita, mi mami", "espera": {"no_contiene": ["asesora"]}}
+{"id": "V30", "mensaje": "listo me lo llevo entonces", "espera": {"contiene": ["talla"]}}
+{"id": "V31", "mensaje": "que talla me recomiendan si mido 1.60?", "espera": {}}
+{"id": "V32", "mensaje": "hacen descuento por llevar dos?", "espera": {"deriva": true}}
+{"id": "V33", "mensaje": "me separas el vestido?", "espera": {}}
+{"id": "V34", "mensaje": "donde queda el showroom?", "espera": {"contiene_alguno": ["santa anita", "showroom", "dirección", "ubica"]}}
+{"id": "V35", "mensaje": "a que hora abren?", "espera": {}}
+{"id": "V36", "mensaje": "es de algodon o de q?", "espera": {}}
+{"id": "V37", "mensaje": "de q tela es?", "espera": {}}
+{"id": "V38", "mensaje": "tienen el V24?", "espera": {"codigo": "V24"}}
+{"id": "V39", "mensaje": "me pasas la foto del pandora?", "espera": {"contiene": ["pandora"]}}
+{"id": "V40", "mensaje": "gracias, chao", "espera": {"no_contiene": ["asesora"]}}

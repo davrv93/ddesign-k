@@ -23,11 +23,40 @@ from . import config
 from .estado import separar
 from .interfaces import Decision, DecisionEngine
 from .plan import ACCIONES_CON_PRODUCTO, Plan, validar
+from .rag import ultimo_detalle
 
 DECISIONES = ["intent", "next_action"]
 # acción → herramienta que necesita para tener el hecho que falta
 ACCION_TOOL = {"consultar_stock": "stock", "buscar_alternativa": "rag"}
 PREGUNTA_TALLA = {"tipo": "talla", "texto": "¿Qué talla usas normalmente?"}
+
+
+def duda_rag(plan: Plan | None, errores: list[str], ctx: dict, rag: dict | None = None) -> tuple[Plan, str] | None:
+    """El reranker dudó sobre un plan de recomendar: desempate → aclarar con
+    las opciones; sin evidencia → pedir_asesora (deriva a la dueña, nunca
+    recomienda lo más cercano). Devuelve (plan_nuevo, nota) o None."""
+    if plan is None or plan.accion != "recomendar" or errores:
+        return None
+    rag = ultimo_detalle() if rag is None else rag
+    if not rag or rag.get("fuente") != "hibrida":
+        return None
+    motivo = (rag.get("rerank") or {}).get("motivo")
+    if motivo == "bajo_umbral":
+        return Plan(accion="pedir_asesora", hechos=list(plan.hechos),
+                    razon="sin evidencia: deriva a la dueña"), "deriva"
+    if motivo != "desempate":
+        return None
+    ops = [o for o in (rag.get("opciones") or []) if o.get("codigo")][:3]
+    if len(ops) < 2:
+        return None
+    piezas = [(f"*{o['codigo']}* {o['nombre']}".rstrip().replace("?", "")) for o in ops]
+    if len(piezas) == 2:
+        texto = f"¿Cuál de estas dos te gusta más: {piezas[0]} o {piezas[1]}?"
+    else:
+        texto = f"¿Cuál de estas te gusta más: {', '.join(piezas[:-1])} o {piezas[-1]}?"
+    return Plan(accion="preguntar", hechos=list(plan.hechos),
+                pregunta={"tipo": "aclarar", "texto": texto},
+                razon="desempate del reranker: aclara con las opciones"), "aclara"
 
 
 @dataclass
@@ -96,24 +125,31 @@ class MotorRecursivo:
                 tope = str(e)
                 break
 
+            t_paso = time.perf_counter()
             ultima = self.decision.decide(estado, DECISIONES)
             accion = next((d for d in ultima if d.decision == "next_action"), None)
-            paso = {"n": len(pasos) + 1, "decisiones": [asdict(d) for d in ultima], "herramienta": None}
+            paso = {"n": len(pasos) + 1, "decisiones": [asdict(d) for d in ultima], "herramienta": None,
+                    "estado": "ok"}
             pasos.append(paso)
             nombre_accion = accion.choice if accion else "responder"
             tool = ACCION_TOOL.get(nombre_accion)
             if tool and tool not in self.herramientas:
                 # Sin herramienta no hay hecho: se pregunta en vez de afirmar.
                 paso["degradada"] = nombre_accion
+                paso["estado"] = "degradada"
+                paso["ms"] = int((time.perf_counter() - t_paso) * 1000)
                 ultima = [d for d in ultima if d.decision != "next_action"]
                 ultima.append(Decision("next_action", "preguntar", accion.confianza, "regla"))
                 break
             if not tool:
+                paso["ms"] = int((time.perf_counter() - t_paso) * 1000)
                 break
 
             arg = (accion.arg if accion and accion.arg else None) or (
                 (estado.get("product") or {}).get("focus") if tool == "stock" else _consulta_rag(estado))
             if self._ya_consultado(estado, tool, arg):
+                paso.update(herramienta=tool, argumento=arg, estado="omitida",
+                            ms=int((time.perf_counter() - t_paso) * 1000))
                 continue                                              # el dato ya está: que decida otra cosa
             try:
                 pres.gastar("herramienta")
@@ -123,11 +159,13 @@ class MotorRecursivo:
             try:
                 resultado = self.herramientas[tool](arg)
             except Exception as e:           # sin el hecho no se afirma nada: una persona decide
-                paso.update(herramienta=tool, argumento=arg, error=type(e).__name__)
+                paso.update(herramienta=tool, argumento=arg, error=type(e).__name__, estado="error",
+                            ms=int((time.perf_counter() - t_paso) * 1000))
                 fallo_tool = tool
                 break
             self._guardar(estado, tool, arg, resultado)
-            paso.update(herramienta=tool, argumento=arg, resultado=resultado)
+            paso.update(herramienta=tool, argumento=arg, resultado=resultado, estado="ok",
+                        ms=int((time.perf_counter() - t_paso) * 1000))
             # RECURSIÓN: la siguiente vuelta decide de nuevo con el hecho nuevo en el estado.
 
         # Tope (o herramienta rota) con una acción de herramienta pendiente: no se entrega un plan a medias.
