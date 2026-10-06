@@ -1370,6 +1370,36 @@ def _sin_inventos(texto: str, prendas=()) -> str:
     return "\n\n".join(partes + list(dict.fromkeys(avisos)))
 
 
+RE_TALLAS_DICHAS = re.compile(r"\btallas?\s+((?:\*?(?:XXL|XL|XS|S|M|L)\*?(?![A-Za-z])(?:\s*(?:,|y|o|e|/)\s*)?)+)", re.I)
+RE_NEGA_TALLA = re.compile(r"\b(no|ni|sin|agotad[oa]s?|nunca)\b|se nos agot", re.I)
+
+
+def _sin_tallas_falsas(texto: str, prendas=()) -> str:
+    """El LLM dijo «sí está disponible en talla XL» y la ficha solo tiene S, M y L (WhatsApp 06-10, Kabanova). La talla la
+    manda el stock, no el modelo: la frase que afirma una talla que NINGUNA de las prendas en juego tiene ahora se cambia por
+    lo que dice el stock de la primera (la que se habla)."""
+    prendas = [f for f in prendas if f is not None]
+    if not prendas or not RE_TALLAS_DICHAS.search(texto):
+        return texto
+    libres = {f.codigo: {x["talla"] for x in tallas_de(f) if x["disponible"]} for f in prendas}
+    hay_en_alguna = set().union(*libres.values())
+    out, cambio = [], False
+    for p in texto.split("\n\n"):
+        frases = []
+        for fr in [x for f in estructurado._frases(p) for x in RE_CORTE_EMOJI.split(f) if x.strip()]:
+            dicha = {t.upper() for m in RE_TALLAS_DICHAS.finditer(fr) for t in re.findall(r"XXL|XL|XS|S|M|L", m.group(1).upper())}
+            falsa = sorted(dicha - hay_en_alguna, key=lambda t: ORDEN_TALLAS.index(t) if t in ORDEN_TALLAS else 99)
+            if falsa and not RE_NEGA_TALLA.search(fr):
+                cambio = True
+                ok = [x["talla"] for x in tallas_de(prendas[0]) if x["disponible"]]
+                frases.append(f"En talla *{falsa[0]}* no hay 😔" + (f" Hay en {_y(ok)}." if ok else ""))
+            else:
+                frases.append(fr)
+        if frases:
+            out.append(" ".join(frases))
+    return "\n\n".join(out) if cambio else texto
+
+
 def _solo_hilo(texto: str, prendas) -> str:
     """Mientras se indaga la necesidad no se nombran prendas. Si el LLM nombró una («el Azra Turquesa es ideal…»), queda
     su primera frase si no la nombra y las preguntas; lo demás (la prenda y su descripción) se va."""
@@ -1957,6 +1987,7 @@ def conversar(req: ChatIn) -> dict:
             txt = _sin_escasez(_sin_pies(_sin_resaludo(_whatsapp(txt), req)))
             txt = _sin_repetir(_sin_nombre(txt, req), req)
             txt = _sin_inventos(txt, [foco] + list(sugeridas))
+            txt = _sin_tallas_falsas(txt, [foco] + list(sugeridas))
             if sugeridas:   # la foto va igual: «te paso la foto», no «¿te paso la foto?»
                 txt = "\n\n".join(x for x in (RE_PREGUNTA_FOTO.sub("", p).strip() for p in txt.split("\n\n")) if re.search(r"\w", x)) or txt
             # Lo ya preguntado (o ya sabido) no se vuelve a preguntar, aunque el LLM lo intente.
