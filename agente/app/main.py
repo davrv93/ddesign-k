@@ -1203,7 +1203,10 @@ def lo_que_no_hay(req: ChatIn, mem: dict, foco) -> str:
     # Un color cuenta si lo está pidiendo («¿tienen en rojo?», «busco uno verde», «¿y en azul?»), no si lo comenta
     # («¿combina con zapatos dorados?»).
     t = memoria._plano(req.mensaje)
-    if color and re.search(r"\b(tien\w+|hay|busc\w+|quier\w+|quisiera|necesit\w+|tendr\w+|vend\w+|manej\w+|vienen?)\b|^\W*(y\s+)?en\s", t):
+    # «algun vestido rojo ?», «vestido rojo?», «y rojo?»: también pregunta por el color, sin verbo (con un vestido ya en foco mandaba
+    # cuatro fotos de otros colores, 06-10). Corto o con «algún/uno»; «¿combina con zapatos dorados?» sigue sin contar.
+    pregunta_color = bool(re.search(r"\balgun[oa]s?\b|\buno\b|\bunos\b|\buna\b", t)) or len(t.split()) <= 4
+    if color and (pregunta_color or re.search(r"\b(tien\w+|hay|busc\w+|quier\w+|quisiera|necesit\w+|tendr\w+|vend\w+|manej\w+|vienen?)\b|^\W*(y\s+)?en\s", t)):
         cat = pedida or (categoria_de(foco) if foco is not None else None) or mem["sabemos"].get("prenda")
         de_cat = [f for f in hay if not cat or categoria_de(f) == cat]
         if de_cat and not any(_de_color(f, _raiz_color(color)) for f in de_cat):
