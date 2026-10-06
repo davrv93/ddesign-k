@@ -997,6 +997,7 @@ def otras_opciones(req: ChatIn, qv: np.ndarray, precio_max: float | None = None)
     pool = [fichas[i] for i in orden if fichas[i].fuente == "seed" and fichas[i].codigo not in vistos and _imagen(fichas[i])]
     st = E.stock.consultar([f.codigo for f in pool])
     pool = [f for f in pool if disponible(f, st.get(f.codigo, {}))]
+    pool = del_color_que_pide(req, pool)   # «¿algún vestido rojo?»: rojas o ninguna (antes salían de cualquier color)
     pool = rerank.ordenar(req.mensaje, pool[:24])   # cross-encoder: relevancia real con lo que pidió
     if precio_max is not None:
         pool = [f for f in pool if f.precio is not None and f.precio < precio_max]
@@ -1161,11 +1162,18 @@ def _pide_otro_color(foco, texto: str) -> bool:
 
 
 def _raiz_color(color: str) -> str:
-    """«negra» y «negro» → «negr»; «rosado» y «palo rosa» → «ros»."""
+    """«negra» y «negro» → «negr»; «roja» y «rojo» → «roj»; «rosado» y «palo rosa» → «ros».
+    Con «> 4» «roja» se quedaba entera y no casaba con el «rojo» de la ficha: «¿tienes blusas rojas?» → «no tengo» (06-10)."""
     c = memoria._plano(color or "")
     if "ros" in c:
         return "ros"
-    return c[:-1] if len(c) > 4 and c[-1] in "oa" else c
+    return c[:-1] if len(c) > 3 and c[-1] in "oa" else c
+
+
+def _color_txt(color: str) -> str:
+    """El color para decirlo tras «en»: «blusas en rojo», no «en roja» (se escribe como lo dijo la clienta)."""
+    c = memoria._plano(color or "")
+    return c[:-1] + "o" if c.endswith("a") and c[:-1] + "o" in memoria.COLORES else c
 
 
 def _de_color(f, raiz: str) -> bool:
@@ -1185,6 +1193,35 @@ def color_dicho(texto: str) -> str:
     return c
 
 
+# Un color cuenta si lo está pidiendo («¿tienen en rojo?», «busco uno verde», «¿y en azul?»), no si lo comenta
+# («¿combina con zapatos dorados?»).
+RE_PIDE_COLOR_VERBO = re.compile(r"\b(tien\w+|hay|busc\w+|quier\w+|quisiera|necesit\w+|tendr\w+|vend\w+|manej\w+|vienen?)\b|^\W*(y\s+)?en\s")
+# Sin verbo también lo pide si justo antes del color va una prenda o «algún/uno/otro»: «¿algún vestido rojo?», «vestido
+# rojo?», «uno rojo», «algo en rojo», «¿y rojo?». «¿Combina con una cartera roja?» no: el color va con algo que no vendemos.
+_PRENDA_ANTES = r"(?:[vb]estid|conjunt|blus|fald|pantal|blazer|enteriz|polo|jean|modelo|opcion|prenda)\w*\s+"
+RE_ANTES_DEL_COLOR = re.compile(rf"(?:\b(?:alg\w*|un[oa]s?|otr[oa]s?)\s+(?:{_PRENDA_ANTES})?|\b{_PRENDA_ANTES}|^\W*(?:y\s+)?)"
+                                r"(?:en\s+|de\s+color\s+|color\s+)?$")
+
+
+def color_que_pide(texto: str) -> str:
+    """El color que PIDE («rojo»), con verbo o sin él; '' si no nombra ninguno, lo descarta («rojo no») o solo lo comenta.
+    Caso real (web, 06-10): «algun vestido rojo ?» no traía verbo, no contaba como pedido y salían tres vestidos de otros
+    colores en vez de «no tengo vestidos en rojo»."""
+    color = color_dicho(texto)
+    if not color:
+        return ""
+    t = memoria._plano(texto)
+    m = memoria.RE_COLOR.search(t)
+    sin_verbo = bool(m and RE_ANTES_DEL_COLOR.search(t[:m.start()]))
+    return color if (RE_PIDE_COLOR_VERBO.search(t) or sin_verbo) else ""
+
+
+def del_color_que_pide(req: ChatIn, pool: list) -> list:
+    """Si el mensaje pide un color, solo las prendas de ese color (o ninguna): nunca otras «de relleno» en su lugar."""
+    color = color_que_pide(req.mensaje)
+    return [f for f in pool if _de_color(f, _raiz_color(color))] if color else pool
+
+
 def lo_que_no_hay(req: ChatIn, mem: dict, foco) -> str:
     """Pide una prenda o un color que la tienda no tiene ahora: «polos», «vestidos en rojo». '' si lo hay (o si no
     se puede saber). Regla de la tienda: si no lo tenemos, se dice y se pregunta si quiere ver otra cosa; no se manda
@@ -1200,17 +1237,11 @@ def lo_que_no_hay(req: ChatIn, mem: dict, foco) -> str:
         return ""      # sin datos de stock no se afirma que no hay
     if pedida and not any(categoria_de(f) == pedida for f in hay):
         return PLURAL.get(pedida, pedida)
-    # Un color cuenta si lo está pidiendo («¿tienen en rojo?», «busco uno verde», «¿y en azul?»), no si lo comenta
-    # («¿combina con zapatos dorados?»).
-    t = memoria._plano(req.mensaje)
-    # «algun vestido rojo ?», «vestido rojo?», «y rojo?»: también pregunta por el color, sin verbo (con un vestido ya en foco mandaba
-    # cuatro fotos de otros colores, 06-10). Corto o con «algún/uno»; «¿combina con zapatos dorados?» sigue sin contar.
-    pregunta_color = bool(re.search(r"\balgun[oa]s?\b|\buno\b|\bunos\b|\buna\b", t)) or len(t.split()) <= 4
-    if color and (pregunta_color or re.search(r"\b(tien\w+|hay|busc\w+|quier\w+|quisiera|necesit\w+|tendr\w+|vend\w+|manej\w+|vienen?)\b|^\W*(y\s+)?en\s", t)):
+    if color and color_que_pide(req.mensaje):
         cat = pedida or (categoria_de(foco) if foco is not None else None) or mem["sabemos"].get("prenda")
         de_cat = [f for f in hay if not cat or categoria_de(f) == cat]
         if de_cat and not any(_de_color(f, _raiz_color(color)) for f in de_cat):
-            return f"{PLURAL.get(cat, cat)} en {color}" if cat else f"prendas en {color}"
+            return f"{PLURAL.get(cat, cat)} en {_color_txt(color)}" if cat else f"prendas en {_color_txt(color)}"
     return ""
 
 
@@ -1286,7 +1317,7 @@ def vitrina(req: ChatIn, qv: np.ndarray) -> list:
     pool = pool[:24]
     st = E.stock.consultar([f.codigo for f in pool])
     rango = {"online": 0, "sucursal": 1}
-    pool = [f for f in pool if disponible(f, st.get(f.codigo, {}))]
+    pool = del_color_que_pide(req, [f for f in pool if disponible(f, st.get(f.codigo, {}))])
     pool = rerank.ordenar(req.mensaje, pool)   # cross-encoder: relevancia dentro del mismo stock
     pool.sort(key=lambda f: rango[disponible(f, st.get(f.codigo, {}))])  # estable: lo que se pide ya, primero
     return pool[:MAX_VITRINA]
@@ -1656,6 +1687,11 @@ def conversar(req: ChatIn) -> dict:
     if (not pide and dec["intent"] == "comparacion" and dec["nivel"] == "alta" and not pregunta_variante(req)
             and re.search(r"modelo|opci[oó]n|[vb]estido|parecid|otr[oa]s? (modelo|opci|[vb]estid|prenda|dise|colou?r)", req.mensaje, re.I)):
         pide = True   # «envíame nuevos modelos»: pide ver otras prendas
+    if (not pide and foco is not None and not nombrados(req.mensaje) and not pregunta_variante(req)
+            and color_que_pide(req.mensaje) and _pide_otro_color(foco, req.mensaje)):
+        # «vestido azul?» con el Irla (negro) delante: quiere ver las de ese color. otras_opciones solo trae de ese color y,
+        # si no hay ninguna, lo_que_no_hay lo dice. Antes caía en «Ese dato te lo confirma una asesora» (06-10).
+        pide = True
     if pide:
         cl = dict(cl, intencion="otras_opciones")  # un «sí» suelto no es saludo ni acción del bot
     tallas_boton, confirmar, talla_pedida, codigo_pedido = [], False, "", ""
@@ -1893,7 +1929,7 @@ def conversar(req: ChatIn) -> dict:
             # Pidió un color que no hay: no se le manda una prenda de otro color. Se dice y se pregunta si quiere ver otras;
             # solo con su «sí» se le muestran (arriba).
             cat_m = categoria_de(una_opcion)
-            no_hay, una_opcion, color_sin_stock_ya = f"{PLURAL.get(cat_m, cat_m)} en {col_m}", None, True
+            no_hay, una_opcion, color_sin_stock_ya = f"{PLURAL.get(cat_m, cat_m)} en {_color_txt(col_m)}", None, True
         if necesidad and logistica and not indagando:
             indagando = True   # se contesta la logística sin fotos; la opción, cuando vuelva a la prenda
         if necesidad and (indagando or una_opcion is not None):
