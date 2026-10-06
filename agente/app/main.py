@@ -850,7 +850,7 @@ RE_LOGISTICA = re.compile(r"\b(d[oó]nde|direcci[oó]n|ubicaci[oó]n|ubicad|qued
                           r"horario|hora[s]?|abren|cierran|atienden|probar(me)?|probador|pag[oa]|yape|plin|tarjeta|"
                           r"transferencia|efectivo|env[ií]o|delivery|despacho|cambio|devoluci[oó]n|garant[ií]a)\b", re.I)
 # Pedir más opciones de forma explícita.
-RE_MAS_OPCIONES = re.compile(r"\b(otr[oa]s? (modelos?|opci|vestid|colou?r|prendas?|conjunt|blus|fald|blazer|pantal|cosas?|dise|tipos?|estilos?)"
+RE_MAS_OPCIONES = re.compile(r"\b(otr[oa]s? (modelos?|opci|vestid|colou?r|prendas?|conjunt|blus|fald|blazer|pantal|cosas|dise|tipos?|estilos?)"
                              r"|^\W*(y\s+)?otr[oa]s?\W*$|(tienes|tienen|hay|ten[eé]s|muestr\w*|pas\w*|ens[eé][nñ]\w*) (algun(os|as)? )?otr[oa]s?\b"
                              r"|m[aá]s (modelos|opciones|colores)|qu[eé] m[aá]s|alternativa|parecid|"
                              r"diferente|distint|mu[eé]str|ens[eé][nñ]|ver (los|m[aá]s|otr))\w*", re.I)
@@ -915,7 +915,25 @@ def pide_mas_barato(req: ChatIn) -> bool:
     return bool(RE_MAS_BARATO.search(memoria._plano(req.mensaje)))
 
 
+RE_NO_OTRO = re.compile(r"\bno (quiero|busco|necesito|me interesa|deseo|quisiera)\b[^.?!]{0,20}\botr[oa]s?\b|\bsolo (quiero|me interesa|busco)\b[^.?!]{0,12}\b(el|la|ese|esa|este|esta)\b")
+
+
+RE_COMPARA_TIENDA = re.compile(r"\b(gamarra|mesa redonda|otra tienda|otras tiendas|en otro lado|en otros lados|por internet|shein|saga|ripley)\b")
+RE_PIDE_EXPLICITO = re.compile(r"\b(muestr|ensen|pasame|mandame|enviame|otras? opcion|otros? modelo|ver (otr|mas))\w*")
+RE_BUSCA_CAMBIO = re.compile(r"\b(busco|quiero|necesito|prefiero|mejor|no me sirve|no me gusta)\b")
+
+
 def pide_mas(req: ChatIn) -> bool:
+    plano_ = memoria._plano(req.mensaje)
+    if RE_NO_OTRO.search(plano_):
+        return False   # «no quiero otro vestido, quiero el Holly»: pide ESA prenda, no más
+    if RE_COMPARA_TIENDA.search(plano_) and not RE_PIDE_EXPLICITO.search(plano_):
+        return False   # «en Gamarra encuentro parecidos más baratos»: regatea, no pide catálogo
+    cat_ = categoria_pedida(req.mensaje)
+    if cat_ and RE_BUSCA_CAMBIO.search(plano_) and not nombrados(req.mensaje):
+        f_ = producto_en_foco(req)
+        if f_ is not None and categoria_de(f_) != cat_:
+            return True   # «busco un vestido» mirando un pantalón: pide otra prenda, no la talla del pantalón
     if pregunta_variante(req) or memoria.no_mostrar(req.mensaje):
         return False   # «no me muestres nada todavía» trae «muestr» y es lo contrario de pedir ver
     if pide_mas_barato(req) and producto_en_foco(req) is not None:
@@ -1867,7 +1885,8 @@ def conversar(req: ChatIn) -> dict:
                                                  and not memoria.no_mostrar(req.mensaje)) else None)
         if pide and mem["sabemos"].get("color") and not color_dicho(req.mensaje):
             mem["sabemos"]["color"] = None      # «sí, muéstrame otras»: acepta ver de otro color
-        if una_opcion is not None and (col_m := mem["sabemos"].get("color")) and not _de_color(una_opcion, _raiz_color(col_m)):
+        if (una_opcion is not None and etapa in ("prospeccion", "seguimiento") and pend != "cita"
+                and (col_m := mem["sabemos"].get("color")) and not _de_color(una_opcion, _raiz_color(col_m))):
             # Pidió un color que no hay: no se le manda una prenda de otro color. Se dice y se pregunta si quiere ver otras;
             # solo con su «sí» se le muestran (arriba).
             cat_m = categoria_de(una_opcion)
@@ -2097,11 +2116,14 @@ def conversar(req: ChatIn) -> dict:
                 elif intent == "consulta_pago" and pregunta_m and etapa != "venta_confirmada":
                     dato = "El pago se hace antes del envío y me compartes el comprobante por aquí. Los datos te los paso cuando confirmemos tu pedido 😊"
                 elif (intent in ("objecion", "objecion_precio") and dec["nivel"] == "alta" and not cuerpo
-                      and not any(datos_l.get(k) for k in ("ocasion", "fecha", "horario", "prenda", "nombre"))):
+                      and not any(datos_l.get(k) for k in ("ocasion", "fecha", "horario", "prenda", "nombre", "presupuesto"))
+                      and not re.search(r"\bpresupuesto\b|\bmaximo\b|\bhasta \d{2,4}\b|\b\d{3} soles\b", plano_m)):
                     dato, q = "Te entiendo, sin apuro 😊 Cuando lo decidas, aquí estoy.", ""     # no se empuja a quien duda
                 elif intent == "despedida" and not cuerpo:
                     dato, q = "¡Gracias a ti! 😊 Cualquier cosa, me escribes por aquí.", ""
-                elif cl["intencion"] == "censura" and cl["confianza"] >= UMBRAL_ACCION:
+                elif (cl["intencion"] == "censura" and cl["confianza"] >= UMBRAL_ACCION
+                      and not re.search(r"\bno s[eé]\b|\bno (tengo|estoy) (claro|segura)|\bno se que\b|\baun no\b|\btodavia no\b|\bsolo (estoy )?viendo\b|\bnada\b", plano_m)):
+                    # «mmm no sé aún qué busco» no es una grosería: no se le pide disculpas, se sigue con su necesidad
                     dato = "Disculpa si algo te incomodó 🙏 Estoy aquí para ayudarte con lo que necesites de la tienda."
             if dato:
                 cuerpo.append(dato)

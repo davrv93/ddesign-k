@@ -380,6 +380,8 @@ def correr_una(conv: dict, url: str, clave: str, modelo_clienta: str, cuenta: Cu
                       "estado": estado, "producto": producto, "talla": talla}
             if mem is not None:
                 cuerpo["memoria"] = mem
+            if os.environ.get("CONV_SIN_LLM") == "1":
+                cuerpo["usar_llm"] = False        # solo la lógica de código del agente: no gasta el saldo de la clave
             mem_antes = json.loads(json.dumps(mem)) if mem is not None else None
             etapa_antes = etapa
             try:
@@ -416,6 +418,10 @@ def correr_una(conv: dict, url: str, clave: str, modelo_clienta: str, cuenta: Cu
                 "costo": j.get("costo_usd"), "mem_antes": mem_antes, "memoria": mem, "lectura": j.get("lectura"),
                 "siguiente": j.get("siguiente_pregunta"), "tallas": [x.get("talla") for x in j.get("tallas") or []],
                 "foto_caso": (j.get("foto") or {}).get("caso"),
+                # Para la prueba web de 100: la traza V2 íntegra y las tarjetas tal cual salieron (no cambian las reglas).
+                "v2": j.get("v2"), "version": j.get("version"),
+                "tarjetas": [{"codigo": s.get("codigo"), "nombre": s.get("nombre"), "pie": s.get("pie"), "tallas": s.get("tallas")} for s in sug],
+                "botones": j.get("botones"), "categorias": j.get("categorias"), "ofrecer_opciones": j.get("ofrecer_opciones"),
             })
             historial.append({"rol": "cliente", "texto": ("" if not foto else "[foto] ") + (parte or "")})
             for p in (j.get("respuesta") or "").split("\n\n"):

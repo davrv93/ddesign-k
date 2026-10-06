@@ -104,6 +104,25 @@ os.environ["V2_DERIVA"] = "0"
 caso("V2_DERIVA=0 la apaga", turno("quiero comprar bitcoin")["accion"], "responder")
 del os.environ["V2_DERIVA"]
 
+# _sin_llm no puede apagar el LLM de la petición original (pydantic 1: copy.copy comparte el estado).
+from .v2.agente import _sin_llm
+o = NS(usar_llm=True, mensaje="hola")
+c = _sin_llm(o)
+caso("_sin_llm: la copia no usa LLM", c.usar_llm, False)
+caso("_sin_llm: la original sigue con LLM", o.usar_llm, True)
+try:
+    from pydantic import BaseModel
+
+    class _Req(BaseModel):
+        usar_llm: bool = True
+        mensaje: str = "hola"
+    o = _Req()
+    c = _sin_llm(o)
+    caso("_sin_llm (pydantic): la copia no usa LLM", c.usar_llm, False)
+    caso("_sin_llm (pydantic): la original sigue con LLM", o.usar_llm, True)
+except ImportError:
+    pass
+
 print(f"aclarar-derivar: {total - len(fallos)}/{total} ok")
 if fallos:
     print("\n".join(fallos))

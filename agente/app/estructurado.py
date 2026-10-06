@@ -105,6 +105,8 @@ def formato(pregunta_codigo: str, permitir_pregunta: bool) -> str:
 def _frases(texto: str) -> list[str]:
     # El punto de un decimal o de una hora no termina la frase: «S/ 20.00» salía como «S/ 20. 00».
     t = re.sub(r"(?<=\d)\.(?=\d)", "\u2024", texto or "")
+    # «a. m.» y «p. m.» tampoco: partían «a las 11:30 a. m.» en «…a.» y «m.», y el filtro perdía una mitad (WhatsApp/web 06-10).
+    t = re.sub(r"\b([ap])\.(\s?)m\.", "\\1\u2024\\2m\u2024", t, flags=re.I)
     return [f.strip().replace("\u2024", ".") for f in RE_FRASE.findall(t) if f.strip()]
 
 

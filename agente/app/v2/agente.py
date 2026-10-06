@@ -57,13 +57,24 @@ def _degrada(traza: dict, texto: str) -> None:
 
 
 def _sin_llm(req):
-    """La misma petición sin el LLM de pago: V1 entiende y decide con código, y arma su texto de respaldo."""
+    """La misma petición sin el LLM de pago: V1 entiende y decide con código, y arma su texto de respaldo.
+    SIEMPRE una copia: con pydantic 1 (el de la imagen) no hay `model_copy` y `copy.copy` comparte el estado del modelo, así que
+    poner `usar_llm=False` en la «copia» lo ponía también en la petición original y V2 activo nunca llamaba al LLM (06-10: 393 de
+    613 turnos del 100 salieron del texto de respaldo)."""
+    for metodo in ("model_copy", "copy"):                 # pydantic 2 | pydantic 1
+        f = getattr(req, metodo, None)
+        if f is not None:
+            try:
+                return f(update={"usar_llm": False})
+            except TypeError:
+                continue
+    r = copy.copy(req)                                    # objetos simples (las pruebas)
     try:
-        return req.model_copy(update={"usar_llm": False})
-    except AttributeError:
-        r = copy.copy(req)
-        r.usar_llm = False
-        return r
+        r.__dict__ = dict(r.__dict__)
+    except (AttributeError, TypeError):
+        pass
+    r.usar_llm = False
+    return r
 
 
 class AgentV2:

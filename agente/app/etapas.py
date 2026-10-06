@@ -57,6 +57,14 @@ RE_COMPRA = re.compile(
     r"|(?<!no )(?<!no me )\bl[oa] quiero\b(?! (ver|probar|pensar|consultar|mirar)))")
 # El botón de talla de las tarjetas de la web: elegir talla es querer esa prenda.
 RE_BOTON_TALLA = re.compile(r"^talla\s+\w+\s+del\s+[a-z]{1,3}-?\d+")
+RE_CONFIRMA_COMPUESTO = re.compile(r"^(s+i+p?|sii+|claro|ya|dale|ok(ey|is)?|listo|bueno|perfecto|de acuerdo|correcto)\b.{0,80}\bconfirm\w*"
+                                   r"|^\W*(si+|ya|dale|ok\w*|listo|perfecto)\W+(confirm\w*|esta bien|de acuerdo|conforme)\b"
+                                   r"|^\W*confirm(o|ado|a|alo|ala|amelo|ame)\b")
+# Lo que convierte ese «sí» en duda o cambio: no se confirma, se atiende.
+RE_DUDA_CONFIRMA = re.compile(r"\b(pero|no (quiero|es|me|lo|la|todavia|aun)|cambi\w+|otra? (talla|color|vestido|modelo)|mejor|espera\w*|todavia no|aun no|"
+                              r"\ben (xs|s|m|l|xl|xxl)\b|talla (xs|s|m|l|xl|xxl)\b)")
+
+
 def pide_confirmar(ultimo_bot: str) -> bool:
     """¿El último mensaje del bot pedía confirmar la compra? Es la pregunta pendiente «confirmar» de la memoria;
     esto solo se usa cuando quien llama no manda la pendiente (pruebas y llamadas viejas)."""
@@ -101,6 +109,12 @@ def decidir(etapa: str, intent: str, confianza: float, mensaje: str, ultimo_bot:
         else:
             intent, confianza = "otro", 0.5
             motivos.append("«no» sin contexto de compra: no cambia la etapa")
+    elif (confirma and etapa == "cierre" and RE_CONFIRMA_COMPUESTO.search(texto) and not RE_DUDA_CONFIRMA.search(texto)
+          and not memoria.RE_CITA.search(texto)):
+        # «si, confirmado! como te pago?» / «ya, confirma nomas y pasame tus datos»: confirma Y pregunta. Con el sí a secas ya
+        # funcionaba; con la pregunta pegada se repetía el resumen y el pedido no se confirmaba.
+        intent, confianza = "confirmacion_compra", 0.93
+        motivos.append("confirma el pedido y además pregunta algo")
     elif RE_COMPRA.search(texto) and etapa != "venta_confirmada":   # con el pedido confirmado, «¿a qué número yapeo?» es pago
         intent, confianza = "intencion_compra", max(confianza, 0.9)
         motivos.append("señal fuerte de compra")

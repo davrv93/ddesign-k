@@ -664,12 +664,19 @@ def validar_cita(dia: str, hora: str, ahora: _dt.datetime, evento: str | None = 
 
 # Pedir cita para probarse es querer comprar (etapas.py lo trata como intención de compra).
 RE_CITA = re.compile(
-    r"\b(quiero|quisiera|me gustaria|puedo|podria|voy a|deseo|vamos a|iria|ire)\s+(ir|pasar|venir|acercarme|darme una vuelta)\b"
+    r"\b(quiero|quisiera|me gustaria|puedo|podria|voy a|deseo|vamos a|iria|ire)\s+(ir|pasar|pasarme|venir|acercarme|darme una vuelta)\b"
     r"[^.?!]{0,40}\bprob(ar|arme|armel[oa]|arl[oa]|armelos)\b"
     r"|\b(ir|pasar|venir) a probarme(l[oa])?\b"
     # «quiero probarme el vestido Holly», «lo quiero, pero quiero probármelo antes» (chat real: armó un pedido)
     r"|\b(quiero|quisiera|prefiero|me gustaria|necesito)\s+prob(arme|armel[oa]s?|arl[oa]s?)\b"
-    r"|\b(agendar|agendame|separar|sacar|reservar|programar|coordinar|hacer|pedir|quiero|quisiera|dame)\s+(una |la |mi )?cita\b")
+    r"|\b(agendar|agendame|separar|sacar|reservar|programar|coordinar|hacer|pedir|quiero|quisiera|dame|cierro|cerrar|confirmar|confirmo|fijar|asegurar\w*)\s+(una |la |mi |esa |nuestra )?cita\b"
+    # «¿puedo ir mañana a las 4?», «¿podré pasar hoy en la noche?»: visitar con día u hora es pedir cita, aunque no diga «probar»
+    # «¿me podrías agendar el domingo a las 7:30?», «¿el sábado a las 11 te parece bien?»: proponer día u hora de visita
+    r"|\b(agend\w+|program\w+)\b[^.?!]{0,30}\b(hoy|manana|pasado manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b"
+    r"|\b(hoy|manana|pasado manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b[^.?!]{0,30}\b(te parece|te queda|te acomoda|le parece)\b"
+    r"|\b(te parece|te queda|te acomoda|le parece|quedamos|nos vemos)\b[^.?!]{0,30}\b(hoy|manana|pasado manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b"
+    r"|\b(puedo|podria|podre|podrias|quisiera|quiero|voy a|ire|iria|paso|pasaria|pasare|me acerco|me acercaria)\s+(ir|pasar|pasarme|pasarte|venir|visitar|acercarme|llegar)\b"
+    r"[^.?!]{0,30}\b(hoy|manana|pasado manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo|a las \d|\d{1,2}\s?(am|pm|a\. ?m|p\. ?m)|\d{1,2}:\d{2})")
 # Cuenta una necesidad sin nombrar prenda: «tengo un evento», «busco algo para una boda».
 RE_NECESIDAD = re.compile(r"\bevento\b|\b(busco|necesito|quiero)\s+(un|una|algo)\b|\bpara (un|una|mi) "
                           r"(evento|boda|matrimonio|fiesta|graduacion|cena|reunion|quinceanero|compromiso)\b")
