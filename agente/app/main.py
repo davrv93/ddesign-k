@@ -1136,6 +1136,12 @@ def color_pedido(texto: str) -> str:
     return "ros" if "ros" in c else c[:3]
 
 
+def _pide_otro_color(foco, texto: str) -> bool:
+    """«yo quiero uno rojo» con el Kendall (negro) en foco: pide otro color, no confirma ese vestido. Sin ficha de color no se asume."""
+    col = color_pedido(texto)
+    return bool(col and getattr(foco, "color", "") and not _de_color(foco, _raiz_color(color_dicho(texto) or col)))
+
+
 def _raiz_color(color: str) -> str:
     """«negra» y «negro» → «negr»; «rosado» y «palo rosa» → «ros»."""
     c = memoria._plano(color or "")
@@ -1556,6 +1562,10 @@ def conversar(req: ChatIn) -> dict:
         compra_sin_prenda = not memoria.pide_ver(req.mensaje) and not categoria_pedida(req.mensaje)
     else:
         compra_sin_prenda = False
+    if dec["etapa"] == "cierre" and dec["transicion"] and foco is not None and _pide_otro_color(foco, req.mensaje):
+        # «yo quiero uno rojo» con el Kendall negro delante: pide otro color, no cierra esa prenda; la etapa no cambia.
+        dec.update(etapa=dec["etapa_anterior"], transicion=False,
+                   motivo=(dec["motivo"] + "; " if dec["motivo"] else "") + "pide otro color que el de la prenda: la etapa no cambia")
     etapa = dec["etapa"]
     # Temperatura de la clienta (reglas): por la fecha del evento y sus señales. Cambia el tono que pide la guía.
     memoria.anotar_senales(mem, req.mensaje, dec["intent"], dec["nivel"], cita=dec["cita"])
@@ -1591,6 +1601,7 @@ def conversar(req: ChatIn) -> dict:
     pide = pide_mas(req)   # «sí» a «¿Quieres ver otras opciones?» o «muéstrame otras»
     esperando_cual = foco is None and pend in ESPERANDO_CUAL and not nombrados(req.mensaje)
     ofrecer = False
+    color_sin_stock_ya = False     # al ir a recomendar descubre que no hay el color que pidió: la oferta se repite (su «sí» la necesita)
     if (not pide and dec["intent"] == "comparacion" and dec["nivel"] == "alta" and not pregunta_variante(req)
             and re.search(r"modelo|opci[oó]n|[vb]estido|parecid|otr[oa]s? (modelo|opci|[vb]estid|prenda|dise|colou?r)", req.mensaje, re.I)):
         pide = True   # «envíame nuevos modelos»: pide ver otras prendas
@@ -1660,7 +1671,8 @@ def conversar(req: ChatIn) -> dict:
             respuesta = (f"La talla *{talla}* del *{foco.codigo}* {foco.nombre} " + ("se nos agotó 😔" if hay else "no la tenemos 😔")
                          + (f"\n\nTenemos en {', '.join(libres)}. ¿Te sirve alguna?" if libres else ""))
             modelo, tallas_boton, forzar = "flujo_pedido", tallas_f, "talla"
-    elif foco and not pide and etapa == "cierre" and dec["intent"] == "intencion_compra" and not sin_pedido:
+    elif (foco and not pide and etapa == "cierre" and dec["intent"] == "intencion_compra" and not sin_pedido
+          and not _pide_otro_color(foco, req.mensaje)):
         # Quiere comprarlo y aún no dijo la talla: es el paso pendiente del cierre.
         # Su talla de un pedido anterior se le sugiere; no se da por dicha (WhatsApp real: armó el pedido en M y era L).
         respuesta = (f"¡Perfecto! 😊 Para separar tu *{foco.codigo}* {foco.nombre} necesito tu talla.\n\n"
@@ -1816,14 +1828,20 @@ def conversar(req: ChatIn) -> dict:
         if no_hay:
             if categoria_pedida(req.mensaje) and mem["sabemos"].get("prenda") == categoria_pedida(req.mensaje) and " en " not in no_hay:
                 mem["sabemos"]["prenda"] = None      # la prenda que no vendemos no es «la prenda que busca»
-            if " en " in no_hay:
-                mem["sabemos"]["color"] = None
+            # El color que pidió se CONSERVA (si no, más tarde se le recomienda una prenda de otro color): lo limpia el «sí» a ver otras.
             pide = es_catalogo = False
         if describiendo and cl["intencion"] in SIN_SUGERENCIAS:
             cl = dict(cl, intencion="producto_recomendacion")   # describe la prenda que vio: es una búsqueda
         mas_barato = bool(pide and foco is not None and foco.precio is not None and pide_mas_barato(req))
         una_opcion = (mejor_opcion(mem, req) if (necesidad and not foto_pedida and not indagando and not logistica and not no_hay
                                                  and not memoria.no_mostrar(req.mensaje)) else None)
+        if pide and mem["sabemos"].get("color") and not color_dicho(req.mensaje):
+            mem["sabemos"]["color"] = None      # «sí, muéstrame otras»: acepta ver de otro color
+        if una_opcion is not None and (col_m := mem["sabemos"].get("color")) and not _de_color(una_opcion, _raiz_color(col_m)):
+            # Pidió un color que no hay: no se le manda una prenda de otro color. Se dice y se pregunta si quiere ver otras;
+            # solo con su «sí» se le muestran (arriba).
+            cat_m = categoria_de(una_opcion)
+            no_hay, una_opcion, color_sin_stock_ya = f"{PLURAL.get(cat_m, cat_m)} en {col_m}", None, True
         if necesidad and logistica and not indagando:
             indagando = True   # se contesta la logística sin fotos; la opción, cuando vuelva a la prenda
         if necesidad and (indagando or una_opcion is not None):
@@ -1900,7 +1918,7 @@ def conversar(req: ChatIn) -> dict:
         if pregunta_variante(req) and not ofrecida_hace_poco(req):
             ofrecer = True   # «¿lo tienes en otros colores?»: se contesta por esa prenda y se PREGUNTA por otras
         if no_hay:
-            ofrecer = not ofrecida_hace_poco(req)
+            ofrecer = color_sin_stock_ya or not ofrecida_hace_poco(req)
         # Sólo si el mensaje no trae prenda alguna: «hola, ¿tienen el V21?» conserva sus fichas.
         if (cl["intencion"] in SIN_FICHAS and cl["confianza"] >= UMBRAL_SIN_FICHAS and not sugeridas and not ofrecer
                 and not noms and not datos.codigos_en(req.mensaje) and not RE_ROPA.search(req.mensaje)
