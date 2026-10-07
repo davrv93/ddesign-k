@@ -50,12 +50,11 @@
   .ancho { max-width: 1120px; margin: 0 auto; }
 
   /* ------------------------------------------------------------ quiosco (barra lateral) */
-  .quiosco { display: none; }
+  /* La columna lleva el fondo y llega al final de la página; dentro, el quiosco queda fijo al alto de la ventana. */
+  .col-quiosco { display: none; }
   @media (min-width: 1000px) {
-    .quiosco {
-      display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; padding: 28px 24px;
-      border-right: 1px solid var(--linea); background: var(--papel-2); overflow: hidden;
-    }
+    .col-quiosco { display: block; background: var(--papel-2); border-right: 1px solid var(--linea); }
+    .quiosco { display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; padding: 28px 24px; overflow: hidden; }
   }
   .q-et { font: 600 10.5px/1 var(--sans); letter-spacing: .28em; text-transform: uppercase; color: var(--suave); }
   .pila { position: relative; height: 342px; margin: 26px 0 18px; }
@@ -201,13 +200,13 @@
 <body>
 <div class="franja" aria-hidden="true"><div class="franja-cinta" id="cinta"></div></div>
 <div class="pagina">
-  <aside class="quiosco" aria-label="Quiosco de cabeceras">
+  <div class="col-quiosco"><aside class="quiosco" aria-label="Quiosco de cabeceras">
     <span class="q-et">En el quiosco</span>
     <div class="pila" id="pila" aria-hidden="true"></div>
     <p class="q-actual" id="q-actual" aria-live="off"></p>
     <ol class="q-indice" id="q-indice" aria-hidden="true"></ol>
     <p class="q-pie">Cabeceras de muestra, inventadas para JMD Ventas.</p>
-  </aside>
+  </aside></div>
 
   <main>
     <div class="ancho">
@@ -320,7 +319,7 @@
   }
 
   var pila = document.getElementById("pila"), actual = document.getElementById("q-actual");
-  if (getComputedStyle(pila.parentNode).display !== "none") {
+  if (getComputedStyle(pila.parentNode.parentNode).display !== "none") {
     var minis = CABS.map(function (c, i) {
       var m = el("div", "mini");
       m.style.setProperty("--mf", c.f);
