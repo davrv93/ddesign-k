@@ -98,34 +98,41 @@
   .franja-cinta i { font-style: normal; opacity: .4; }
   @keyframes cinta { to { transform: translateX(-50%); } }
 
-  /* ------------------------------------------------------------ cabecera de revista */
-  .cabecera { padding-top: 22px; }
-  .regla { display: flex; justify-content: space-between; gap: 12px; border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--tinta); padding: 7px 0; font: 600 10.5px/1.2 var(--sans); letter-spacing: .22em; text-transform: uppercase; }
-  .regla span:nth-child(2) { display: none; }
-  @media (min-width: 720px) { .regla span:nth-child(2) { display: inline; } }
-  .marca {
-    font: 900 clamp(54px, 13.2vw, 168px)/.84 var(--didona); letter-spacing: -.035em; text-align: center; margin: 16px 0 6px;
-    font-variation-settings: "opsz" 96; white-space: nowrap;
-  }
-  .marca em { font-style: italic; font-weight: 400; letter-spacing: -.04em; }
-  .bajada { text-align: center; font: italic 400 clamp(15px, 2vw, 19px)/1.3 var(--didona); color: var(--tinta-2); padding-bottom: 14px; border-bottom: 1px solid var(--linea-2); }
+  /* ------------------------------------------------------------ cabecera compacta */
+  .cabecera { padding-top: 14px; }
+  .regla { display: flex; justify-content: space-between; gap: 12px; border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--tinta); padding: 6px 0; font: 600 10px/1.2 var(--sans); letter-spacing: .22em; text-transform: uppercase; }
+  .regla span:nth-child(2), .regla span:nth-child(3) { display: none; }
+  @media (min-width: 720px) { .regla span:nth-child(2), .regla span:nth-child(3) { display: inline; } }
+  .titulo-marca { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 18px; flex-wrap: wrap; padding: 6px 0 10px; border-bottom: 1px solid var(--linea-2); }
+  .marca { font: 900 44px/.92 var(--didona); letter-spacing: -.03em; margin: 0; white-space: nowrap; font-variation-settings: "opsz" 96; }
+  @media (min-width: 1000px) { .marca { font-size: 58px; } }
+  .marca em { font-style: italic; font-weight: 400; letter-spacing: -.035em; }
+  .bajada { font: italic 400 15px/1.3 var(--didona); color: var(--tinta-2); margin: 0; }
 
-  /* ------------------------------------------------------------ titular + ilustración */
-  .hero { display: grid; grid-template-columns: 1fr; gap: 8px; align-items: center; padding: 28px 0 8px; }
-  @media (min-width: 860px) { .hero { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 32px; padding: 44px 0 16px; } }
-  .antetitulo { font: 600 11px/1 var(--sans); letter-spacing: .3em; text-transform: uppercase; color: var(--vino); margin: 0 0 14px; }
+  /* ------------------------------------------------------------ escena: titular, figurín y tiendas en una pantalla */
+  .escena { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "texto" "tiendas" "fig"; gap: 14px; padding: 14px 0 10px; }
+  @media (min-width: 1000px) {
+    .escena { grid-template-columns: 240px minmax(0, 1fr); grid-template-areas: "texto tiendas" "fig tiendas"; grid-template-rows: auto 1fr; gap: 4px 30px; padding-top: 20px; }
+  }
+  .e-texto { grid-area: texto; }
+  .e-tiendas { grid-area: tiendas; min-width: 0; }
+  .e-fig { grid-area: fig; margin: 0; position: relative; display: flex; justify-content: center; align-items: flex-end; min-height: 0; }
+  .antetitulo { font: 600 10.5px/1 var(--sans); letter-spacing: .28em; text-transform: uppercase; color: var(--vino); margin: 0 0 8px; }
   @media (prefers-color-scheme: dark) { .antetitulo { color: #d27aa2; } }
-  h1 { font: italic 500 clamp(46px, 8.6vw, 104px)/.92 var(--didona); letter-spacing: -.03em; margin: 0; }
-  h1 b { font-style: normal; font-weight: 900; letter-spacing: -.04em; display: block; }
-  .entradilla { font-size: 17px; color: var(--tinta-2); max-width: 30em; margin: 20px 0 0; }
-  .lineas-portada { list-style: none; padding: 0; margin: 26px 0 0; border-top: 1px solid var(--linea-2); }
-  .lineas-portada li { display: flex; gap: 14px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--linea); }
-  .lineas-portada b { font: 900 22px/1 var(--didona); min-width: 34px; }
-  .lineas-portada span { font: 400 15px/1.35 var(--sans); color: var(--tinta-2); }
-  .figurin { position: relative; display: flex; justify-content: center; }
-  .figurin svg { width: min(78vw, 420px); height: auto; overflow: visible; }
-  @media (min-width: 860px) { .figurin svg { width: 100%; max-width: 440px; } }
-  .figurin figcaption { position: absolute; right: 0; bottom: 4%; font: italic 400 13px/1.3 var(--didona); color: var(--suave); writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: .04em; }
+  h1 { font: italic 500 40px/.95 var(--didona); letter-spacing: -.025em; margin: 0; }
+  @media (min-width: 1000px) { h1 { font-size: 50px; } }
+  h1 b { font-style: normal; font-weight: 900; letter-spacing: -.03em; }
+  @media (min-width: 1000px) { h1 b { display: block; } }
+  .entradilla { font-size: 14.5px; line-height: 1.5; color: var(--tinta-2); margin: 10px 0 0; max-width: 34em; }
+  .e-fig svg { width: min(64vw, 270px); height: auto; overflow: visible; }
+  @media (min-width: 1000px) { .e-fig svg { width: auto; height: min(100%, 420px); max-width: 100%; min-height: 260px; } }
+  .e-fig figcaption { position: absolute; right: 0; bottom: 6px; font: italic 400 12px/1.3 var(--didona); color: var(--suave); writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: .04em; }
+
+  .sumario { list-style: none; padding: 0; margin: 18px 0 0; border-top: 2px solid var(--tinta); display: grid; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .sumario { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 22px; } }
+  .sumario li { display: flex; gap: 12px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--linea); }
+  .sumario b { font: 900 20px/1 var(--didona); min-width: 30px; }
+  .sumario span { font: 400 14px/1.35 var(--sans); color: var(--tinta-2); }
 
   .trazo { fill: none; stroke: var(--tinta); stroke-linecap: round; stroke-linejoin: round; }
   .relleno { fill: var(--oliva); opacity: 0; transition: opacity 1.4s ease .2s; }
@@ -135,28 +142,29 @@
   .seccion { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-top: 2px solid var(--tinta); margin-top: 36px; padding-top: 10px; }
   .seccion h2 { font: 900 clamp(26px, 3.4vw, 38px)/1 var(--didona); letter-spacing: -.02em; margin: 0; }
   .seccion span { font: 600 10.5px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--suave); }
-  .portadas { display: grid; grid-template-columns: 1fr; gap: 22px; padding: 22px 0 56px; }
+  .portadas { display: grid; grid-template-columns: 1fr; gap: 18px; }
   @media (min-width: 640px) { .portadas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (min-width: 1280px) { .portadas.tres { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
   .portada {
     --c: #555; position: relative; overflow: hidden; border-radius: 4px; color: #fbf8f2;
     background: radial-gradient(120% 90% at 85% 10%, color-mix(in srgb, var(--c) 70%, #fff 6%), var(--c) 55%, color-mix(in srgb, var(--c) 72%, #000));
-    min-height: 520px; padding: 18px 20px 20px; display: flex; flex-direction: column;
+    min-height: 500px; padding: 16px 18px 18px; display: flex; flex-direction: column; container-type: inline-size;
     box-shadow: 0 1px 0 rgba(0,0,0,.06), 0 28px 50px -30px rgba(0,0,0,.55);
     opacity: 0; transform: translateY(18px); animation: entra .9s cubic-bezier(.2,.7,.2,1) forwards;
     transition: transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s;
   }
-  @media (min-width: 640px) { .portada { aspect-ratio: 3 / 4; min-height: 0; } }
+  @media (min-width: 640px) and (max-width: 999px) { .portada { aspect-ratio: 3 / 4; min-height: 0; } }
+  @media (min-width: 1000px) { .portada { min-height: 0; height: min(600px, max(440px, calc(100vh - 200px))); } }
   .portada:hover { transform: translateY(-4px); box-shadow: 0 1px 0 rgba(0,0,0,.06), 0 36px 60px -30px rgba(0,0,0,.6); }
   @keyframes entra { to { opacity: 1; transform: none; } }
   .p-sup { display: flex; justify-content: space-between; align-items: baseline; font: 600 10.5px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; opacity: .85; position: relative; z-index: 2; }
   .p-sup b { font: 900 15px/1 var(--didona); letter-spacing: .02em; }
   .p-cab {
-    position: relative; z-index: 2; margin: 10px 0 0; font: 900 clamp(40px, 11vw, 64px)/.86 var(--didona); letter-spacing: -.03em;
-    text-transform: uppercase; overflow-wrap: anywhere; font-variation-settings: "opsz" 96;
+    position: relative; z-index: 2; margin: 10px 0 0; font: 900 44px/.9 var(--didona); letter-spacing: -.01em;
+    text-transform: uppercase; overflow-wrap: break-word; font-variation-settings: "opsz" 96;
+    font-size: clamp(32px, 12.5cqi, 58px);
   }
-  @media (min-width: 640px) { .p-cab { font-size: clamp(38px, 4.6vw, 62px); } }
   .p-cab small { display: block; font: italic 400 .36em/1.2 var(--didona); text-transform: none; letter-spacing: 0; opacity: .85; margin-top: 8px; }
   .p-fig { position: absolute; right: -2%; bottom: 84px; height: 58%; z-index: 1; opacity: .9; pointer-events: none; }
   .p-fig .trazo { stroke: rgba(255, 252, 245, .78); }
@@ -212,32 +220,35 @@
     <div class="ancho">
       <header class="cabecera">
         <div class="regla"><span id="edicion">Edición Nº 01</span><span>CRM de moda por WhatsApp</span><span>Consultoría Digital</span></div>
-        <div class="marca" aria-label="JMD Ventas">JMD <em>Ventas</em></div>
-        <p class="bajada">Pedidos, conversaciones y stock de cada tienda, en un solo lugar.</p>
+        <div class="titulo-marca">
+          <div class="marca" aria-label="JMD Ventas">JMD <em>Ventas</em></div>
+          <p class="bajada">Pedidos, conversaciones y stock de cada tienda, en un solo lugar.</p>
+        </div>
       </header>
 
-      <section class="hero">
-        <div>
-          <p class="antetitulo">En portada</p>
+      <div class="escena">
+        <div class="e-texto">
+          <p class="antetitulo" id="cuenta">En portada</p>
           <h1>Elige <b>tu tienda</b></h1>
-          <p class="entradilla">Cada empresa tiene su panel de pedidos, conversaciones y stock, y un catálogo público para compartir con sus clientas.</p>
-          <ul class="lineas-portada">
-            <li><b>01</b><span>Tablero de pedidos y stock por talla</span></li>
-            <li><b>02</b><span>Conversaciones de WhatsApp con la asesora</span></li>
-            <li><b>03</b><span>Fichas técnicas de cada prenda</span></li>
-          </ul>
+          <p class="entradilla">Panel de pedidos, conversaciones y stock, y un catálogo público para compartir con sus clientas.</p>
         </div>
-        <figure class="figurin" style="margin:0">
+        <section class="e-tiendas" aria-label="Tiendas">
+          <div id="empresas" class="portadas" aria-live="polite">
+            <div class="portada esqueleto" aria-hidden="true"></div>
+            <div class="portada esqueleto" aria-hidden="true"></div>
+          </div>
+        </section>
+        <figure class="e-fig">
           <svg id="figurin" viewBox="0 0 72 104" role="img" aria-label="Figurín de moda dibujado a línea"></svg>
           <figcaption>Figurín · gala con capa</figcaption>
         </figure>
-      </section>
+      </div>
 
-      <div class="seccion"><h2>Las tiendas</h2><span id="cuenta">En portada</span></div>
-      <section id="empresas" class="portadas" aria-live="polite">
-        <div class="portada esqueleto" aria-hidden="true"></div>
-        <div class="portada esqueleto" aria-hidden="true"></div>
-      </section>
+      <ul class="sumario">
+        <li><b>01</b><span>Tablero de pedidos y stock por talla</span></li>
+        <li><b>02</b><span>Conversaciones de WhatsApp con la asesora</span></li>
+        <li><b>03</b><span>Fichas técnicas de cada prenda</span></li>
+      </ul>
 
       <footer>
         <span>JMD Ventas · Consultoría Digital</span>
@@ -247,8 +258,10 @@
   </main>
 </div>
 
-<!-- Intro (en cada carga, «Saltar», nada con movimiento reducido) y figurines compartidos (window.JMDFiguras). -->
-<script src="/jmdventas/_jmd/intro.js"></script>
+<!-- Figurines (window.JMDFiguras), síncronos y antes que todo; luego la intro (en cada carga, «Saltar», nada con
+     movimiento reducido). ?v= evita mezclar en la caché del navegador una versión vieja con esta página. -->
+<script src="/jmdventas/_jmd/figuras.js?v=20261007c"></script>
+<script src="/jmdventas/_jmd/intro.js?v=20261007c"></script>
 <script>
 (function () {
   "use strict";
@@ -268,7 +281,7 @@
 
   // Dibuja un figurín en un <svg viewBox="0 0 72 104">; con «animar», cada trazo se dibuja (stroke-dashoffset).
   function figurin(svg, nombre, grosor, animar, retraso) {
-    if (!F) return;
+    if (!F || !F.figuras || !F.figuras[nombre] || !svg) return;
     svg.textContent = "";
     var rel = document.createElementNS(NS, "path");
     rel.setAttribute("class", "relleno");
@@ -297,11 +310,16 @@
     setTimeout(function () { svg.classList.add("dibujado"); }, (t0 + paths.length * .11 + 1) * 1000);
   }
 
-  // La ilustración del titular se dibuja cuando se ve (si la intro está encima, espera a que se vaya).
+  // La ilustración del titular está SIEMPRE: se pinta completa al cargar y, cuando la intro se va (o enseguida si no
+  // hay intro), se vuelve a dibujar trazo a trazo. Si algo falla, queda la versión estática.
   var heroSvg = document.getElementById("figurin");
-  function dibujarHero() { figurin(heroSvg, "gala", .32, true, .1); }
-  var espera = setInterval(function () {
-    if (!document.getElementById("jmd-intro")) { clearInterval(espera); dibujarHero(); }
+  try { figurin(heroSvg, "gala", .32, false); } catch (e) { /* sigue la página */ }
+  var vueltas = 0, espera = setInterval(function () {
+    vueltas++;
+    if (!document.getElementById("jmd-intro") || vueltas > 120) {
+      clearInterval(espera);
+      try { figurin(heroSvg, "gala", .32, true, .05); } catch (e) { try { figurin(heroSvg, "gala", .32, false); } catch (e2) { /* nada */ } }
+    }
   }, 120);
 
   // ------------------------------------------------------------ quiosco: cabeceras inventadas
@@ -319,7 +337,15 @@
   }
 
   var pila = document.getElementById("pila"), actual = document.getElementById("q-actual");
-  if (getComputedStyle(pila.parentNode.parentNode).display !== "none") {
+  if (getComputedStyle(pila.parentNode.parentNode).display !== "none") try {
+    var indice = document.getElementById("q-indice");
+    var filas = CABS.map(function (c, i) {
+      var li = el("li");
+      li.appendChild(el("small", "", String(7 + i).padStart(2, "0")));
+      li.appendChild(el("span", c.c, c.n));
+      indice.appendChild(li);
+      return li;
+    });
     var minis = CABS.map(function (c, i) {
       var m = el("div", "mini");
       m.style.setProperty("--mf", c.f);
@@ -334,20 +360,13 @@
       s.setAttribute("preserveAspectRatio", "xMidYMax meet");
       s.style.color = c.i;
       m.appendChild(s);
-      figurin(s, c.fig, .55, false);
+      try { figurin(s, c.fig, .55, false); } catch (e) { /* la mini portada queda sin figurín */ }
       s.querySelectorAll(".trazo").forEach(function (p) { p.style.stroke = c.i; });
-      s.querySelector(".relleno").style.fill = c.i;
+      var rel = s.querySelector(".relleno");
+      if (rel) rel.style.fill = c.i;
       m.appendChild(el("div", "linea-cap", c.l));
       pila.appendChild(m);
       return m;
-    });
-    var indice = document.getElementById("q-indice");
-    var filas = CABS.map(function (c, i) {
-      var li = el("li");
-      li.appendChild(el("small", "", String(7 + i).padStart(2, "0")));
-      li.appendChild(el("span", c.c, c.n));
-      indice.appendChild(li);
-      return li;
     });
     var orden = minis.map(function (_, i) { return i; });
     function colocar(sale) {
@@ -380,7 +399,7 @@
         }, 650);
       }, 2800);
     }
-  }
+  } catch (e) { /* el quiosco es decorativo: si falla, la página sigue */ }
 
   // ------------------------------------------------------------ empresas como portadas de revista
   var cont = document.getElementById("empresas");
@@ -436,7 +455,7 @@
     b2.setAttribute("aria-label", "Ver el catálogo público de " + e.nombre);
     bot.appendChild(b1); bot.appendChild(b2);
     a.appendChild(bot);
-    setTimeout(function () { figurin(s, LOOKS[i % LOOKS.length], .4, true, 0); }, 400 + i * 200);
+    try { figurin(s, LOOKS[i % LOOKS.length], .4, false); } catch (err) { /* sin figurín */ }
     return a;
   }
 
@@ -444,7 +463,7 @@
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function (lista) {
       cont.textContent = "";
-      document.getElementById("cuenta").textContent = lista.length === 1 ? "1 tienda" : lista.length + " tiendas";
+      document.getElementById("cuenta").textContent = "En portada · " + (lista.length === 1 ? "1 tienda" : lista.length + " tiendas");
       if (!lista.length) { cont.appendChild(el("p", "aviso", "Todavía no hay tiendas.")); return; }
       if (lista.length >= 3) cont.classList.add("tres");
       lista.forEach(function (e, i) { cont.appendChild(portada(e, i)); });

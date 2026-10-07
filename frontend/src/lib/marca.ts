@@ -14,8 +14,10 @@ export const LEMA = MARCA === "Baruka Design" ? "CRM WhatsApp" : MARCA;
 
 export const titulo = (pagina: string) => `${pagina} · ${MARCA}`;
 
-/** Intro animada (frontend/jmdventas/intro.js): solo en JMD Ventas; la sirve su nginx en /jmdventas/_jmd/. */
-export const INTRO_URL = MARCA === "JMD Ventas" ? "/jmdventas/_jmd/intro.js" : "";
+/** Intro animada (frontend/jmdventas/): solo en JMD Ventas; la sirve su nginx en /jmdventas/_jmd/. Primero los
+ *  figurines (figuras.js) y luego la intro, en ese orden. ?v= evita mezclar versiones en la caché del navegador. */
+const V_INTRO = "20261007c";
+export const INTRO_URLS = MARCA === "JMD Ventas" ? [`/jmdventas/_jmd/figuras.js?v=${V_INTRO}`, `/jmdventas/_jmd/intro.js?v=${V_INTRO}`] : [];
 
 export const iniciales = (nombre: string) =>
   nombre
