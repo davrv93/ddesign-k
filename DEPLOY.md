@@ -389,3 +389,93 @@ ssh -i $K $H 'cd ~/kddesign && python3 -c "import re;p=\".env\";s=open(p).read()
   arrancar). Si alguien renombra un campo en Kommo, se crea otro con el nombre original.
 - **Apagar:** `KOMMO_ENABLED=0` + `docker compose up -d backend`. El chat web deja de avisar con `CRM_EVENT_SECRET` vacío
   + `docker compose up -d agente` (con el secreto puesto y Kommo apagado, el backend acepta el aviso y no hace nada).
+
+## 12. JMD Ventas — multiempresa sobre MariaDB (`/jmdventas/<empresa>/`, proyecto `jmdventas`)
+
+El mismo CRM, para varias empresas, en `https://proyectopostventa.site/jmdventas/<empresa>/` (Baruka:
+`/jmdventas/baruka/`). Es un **proyecto aparte** de `kddesign`: `/baruka/` sigue con su SQLite, su bot y su WhatsApp.
+Contexto y diseño en [`CLAUDE.md`](CLAUDE.md), «JMD Ventas».
+
+| En el servidor | Qué es |
+|---|---|
+| `~/jmdventas/` | Copia (rsync, sin `.git`) de `backend/`, `frontend/` y `deploy/` de la rama `feat/jmdventas-multitenant` |
+| `~/jmdventas/deploy/jmdventas/.env` (600) | `JWT_SECRET`, `WEBHOOK_SECRET`, `DB_PASSWORD`, `GEMINI_API_KEY` |
+| `~/jmdventas/deploy/jmdventas/mariadb.env` (600) | `MARIADB_PASSWORD` (= `DB_PASSWORD`) y `MARIADB_ROOT_PASSWORD` |
+| Contenedores | `jmdventas_mariadb`, `jmdventas_backend`, `jmdventas_frontend` (servicios `jmd-*`) |
+| Volúmenes | `jmdventas_mariadb_data` (la base) y `jmdventas_backend_data` (fotos: `/data/tenants/<slug>/media`) |
+| Red | `jmdventas_net`; backend y panel también en `landing_default` (el borde y el agente) |
+
+**Desde el 07-10-2026 todo corre con Podman** (rootful): `sudo podman ps`. Las imágenes se compilan con Docker y se
+cargan en Podman. Las imágenes se llaman `localhost/jmdventas/*` a propósito: con otro nombre, `podman load` las deja
+como `docker.io/…` y el contenedor sigue con la vieja.
+
+### 12.1 Desplegar un cambio
+
+```bash
+rsync -az --exclude .git --exclude .env --exclude '*.env' --exclude node_modules --exclude dist \
+  -e "ssh -i $K" $R/backend $R/frontend $R/deploy "${H}:jmdventas/"
+ssh -i $K $H 'cd ~/jmdventas/deploy/jmdventas && docker compose build jmd-backend \
+  && docker save localhost/jmdventas/backend:local | sudo podman load'
+# podman-compose --force-recreate NO recrea si el panel depende del backend: se quitan los dos y se levantan.
+ssh -i $K $H 'cd ~/jmdventas/deploy/jmdventas && sudo podman rm -f --depend jmdventas_backend \
+  && sudo podman-compose -p jmdventas up -d --no-build && sudo podman ps --format "{{.Names}} {{.ImageID}} {{.Status}}" | grep jmd'
+# Panel: igual con jmd-frontend (compila con BASE_PATH=/jmdventas/XEMPRESAX/, ~1 min) y `podman rm -f jmdventas_frontend`.
+```
+
+Verificar:
+
+```bash
+for p in /jmdventas/baruka/ /jmdventas/baruka/login/ /jmdventas/baruka/api/public/catalog /baruka/ /demo-design/health; do
+  curl -s -o /dev/null -w "$p %{http_code}\n" https://proyectopostventa.site$p; done          # todo 200
+curl -s https://proyectopostventa.site/jmdventas/baruka/login/ | grep -c XEMPRESAX                  # 0
+```
+
+### 12.2 Alta de una empresa (sin tocar código)
+
+```bash
+# La clave va por entorno (nunca en la línea de órdenes). Idempotente: repetirla actualiza nombre y clave.
+read -rs JMD_CLAVE && export JMD_CLAVE && ssh -i $K $H "export JMD_CLAVE='$JMD_CLAVE'; \
+  sudo --preserve-env=JMD_CLAVE podman exec -e JMD_CLAVE jmdventas_backend \
+  jmd alta --slug otra-tienda --nombre 'Otra Tienda' --whatsapp 51900000000 --usuario admin"; unset JMD_CLAVE
+ssh -i $K $H 'sudo podman exec jmdventas_backend jmd empresas'     # empresas y conteos por tabla
+```
+
+Queda en `https://proyectopostventa.site/jmdventas/otra-tienda/` (panel, `login/`, `catalogo/`). El slug: minúsculas,
+cifras y guiones, 2–40, y no una ruta reservada (`api`, `media`, `build`, `login`, `catalogo`…). La empresa nueva
+empieza vacía: productos desde el panel. Sin WhatsApp (ver §12.4).
+
+### 12.3 Migración de la SQLite de `/baruka/` (hecha el 07-10-2026)
+
+Sobre una **copia** (el respaldo del §7), nunca sobre la base viva. Repetible: borra lo que la empresa tenga en las
+tablas de negocio (no sus usuarios) y lo vuelve a cargar en una transacción; conserva los ids (los números de pedido).
+
+```bash
+ssh -i $K $H 'T=$(mktemp -d) && tar xzf ~/respaldos/kddesign_backend_data-<fecha>.tgz -C $T ./crm.db ./crm.db-wal ./crm.db-shm \
+  && sudo podman exec -u 0 jmdventas_backend mkdir -p /data/migracion \
+  && for f in $T/crm.db*; do sudo podman cp $f jmdventas_backend:/data/migracion/; done \
+  && sudo podman exec -u 0 jmdventas_backend jmd migrar-sqlite --origen /data/migracion/crm.db --empresa baruka \
+  && sudo podman exec -u 0 jmdventas_backend rm -rf /data/migracion; rm -rf $T'
+# Fotos: media/ del respaldo → jmdventas_backend:/data/tenants/baruka/media (podman cp + chown -R app).
+```
+
+Imprime los conteos origen/destino y falla si no cuadran. La SQLite de producción trae columnas de otra rama
+(`agent_version`, `agent_last`, un `tenant_id` de texto): las comunes se copian y las demás se avisan. Los usuarios de
+su tabla `users` (bcrypt) se copian por nombre. Los ids son globales: la migración con ids es para la primera empresa
+de una base; si un id ya es de otra empresa, falla sin escribir nada.
+
+### 12.4 WhatsApp
+
+Apagado en este stack (`EVOLUTION_URL=off`, sin `WHATSAPP_TENANT`): el panel lo muestra «no disponible», no se envía ni
+se recibe nada y el webhook da 404. El número sigue en `kddesign_backend` (`/baruka/`). **No levantes otra evolution**
+(dos bots con el mismo número). El corte, cuando se decida: apuntar el webhook de `kddesign_evolution` al backend nuevo
+(`WHATSAPP_TENANT=baruka`, `EVOLUTION_URL` a la evolution de kddesign, misma red) y migrar otra vez lo que haya
+entrado mientras tanto.
+
+### 12.5 Volver atrás
+
+- **Quitar `/jmdventas/` del borde:** restaurar `~/landing/nginx.conf.bak-pre-jmdventas-20261007-2119` **en sitio**
+  (`python3 -c 'd=open("/home/ubuntu/landing/nginx.conf.bak-pre-jmdventas-20261007-2119").read(); f=open("/home/ubuntu/landing/nginx.conf","r+"); f.write(d); f.truncate()'`),
+  `sudo podman exec landing_web nginx -t && sudo podman exec landing_web nginx -s reload`.
+- **Apagar el stack:** `cd ~/jmdventas/deploy/jmdventas && sudo podman-compose -p jmdventas down` (sin `-v` conserva
+  la base y las fotos). No toca `kddesign`, `keto` ni `landing`.
+- **Datos de `/baruka/`:** la migración solo leyó una copia. Respaldo previo: `~/respaldos/kddesign_backend_data-pre-jmdventas-20261007-2119.tgz`.

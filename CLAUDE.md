@@ -298,6 +298,32 @@ Tablero → PATCH /api/orders/{id} (bot.PedidoCambio) ────────�
   estados y el límite de 7/s; lo usan `internal/kommo`, `internal/bot/kommo_test.go`, `internal/api/crm_test.go` y el
   seed. **La API v4 no borra leads**: `kommo-seed --limpiar` los cierra como perdidos y el borrado final es a mano.
 
+## JMD Ventas: multiempresa sobre MariaDB (07-10-2026, rama `feat/jmdventas-multitenant`)
+
+El mismo CRM para varias empresas en `https://proyectopostventa.site/jmdventas/<empresa>/`. Baruka es la primera
+(`/jmdventas/baruka/`, migrada de la SQLite). Proyecto compose aparte (`jmdventas`: MariaDB, backend y panel); `/baruka/`
+sigue igual, con su SQLite y el WhatsApp. Despliegue, alta, migración y vuelta atrás: [`DEPLOY.md`](DEPLOY.md) §12.
+
+- **Aislamiento:** `tenant_id` en todas las tablas de negocio. Un `*store.Store` siempre va ligado a una empresa
+  (`ForTenant`) y **todas** sus consultas filtran por ella, también las que reciben un id (los ids son globales): con el id
+  de otra empresa no se lee, cambia ni borra nada. El Store base de MariaDB es la empresa 0 (no ve nada). Pruebas con dos
+  empresas: `internal/store/tenant_test.go` (SQLite y, con `JMD_TEST_MYSQL_DSN`, MariaDB) y `internal/api/tenant_test.go`
+  (HTTP). Un método nuevo del store lleva `tenant_id=?` en su SQL y su caso en esas pruebas.
+- **Ruta → empresa:** con `MULTITENANT=1`, el backend recibe `/<slug>/api/…`, busca la empresa y pasa `/api/…` a las rutas
+  de siempre (`api/tenant.go`). Los manejadores usan `s.st(r)`, nunca `s.store`. El token lleva la empresa: no abre otra.
+  Usuarios en la tabla `users` (PBKDF2; acepta bcrypt de los migrados); no hay usuario del `.env`. Avisos SSE y fotos
+  (`DATA_DIR/tenants/<slug>/media`) también por empresa.
+- **Un panel para todas:** se compila una vez con `BASE_PATH=/jmdventas/XEMPRESAX/` y `nginx.jmdventas.conf` cambia el
+  marcador por la empresa de la URL con `sub_filter` (HTML, JS, JSON). Qwik no genera páginas si la base lleva `__`. El
+  nombre de la empresa sale de `/api/public/info` en el navegador (`src/lib/marca.ts`); la marca del producto (`MARCA`) se
+  compila. Las mismas trampas de siempre: `u()` en toda ruta absoluta.
+- **Sin WhatsApp** en este stack (`EVOLUTION_URL=off`): el bot es de una sola empresa (`WHATSAPP_TENANT`) y las demás no
+  envían ni reciben nada. El corte de Baruka al stack nuevo está pendiente (§12.4).
+- **Ojo al fusionar:** la SQLite de `/baruka/` ya trae cambios de otra línea de trabajo (sin commit en la copia principal
+  `claude/gifted-rubin-oc1iqo`: `store/mariadb.go`, `tenants.go`, `users.go`), con un `tenant_id` **de texto** ('baruka')
+  en `products`/`warehouses` y su propia tabla `users`. Esta rama usa `tenant_id` numérico: no despliegues este backend
+  sobre esa SQLite sin reconciliar antes las dos versiones.
+
 ## Reglas
 
 1. **No despliegues sin que el usuario lo pida.** Aun así, una orden de desplegar ya es la autorización:

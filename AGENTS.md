@@ -21,6 +21,8 @@ backend/            Go 1.26 · API, webhook de evolution, bot (internal/bot/bot.
   internal/seed/    catálogo y sucursales iniciales (solo el primer arranque)
   internal/kommo/   CRM Kommo: cliente API v4, embudo y campos, Sincronizador; simulado/ = Kommo falso para pruebas
   cmd/kommo-seed/   embudo + campos, leads demo, --limpiar, --desde-base [--dry-run] (DEPLOY.md §11)
+  cmd/jmd/          JMD Ventas: alta de empresas, `empresas`, migrar-sqlite (DEPLOY.md §12)
+  internal/store/   SQLite (una tienda) o MariaDB (multiempresa); todo filtrado por tenant_id (CLAUDE.md, «JMD Ventas»)
 frontend/           Qwik City estático + nginx · src/lib/api.ts (cliente) · src/lib/base.ts (ruta base)
 agente/             Python 3.12 · FastAPI · app/main.py (conversación, prompts, motores, fotos sugeridas)
   app/entrenar.py   entrena clasificadores e índice RAG (en el build)   app/imagen.py  índice de fotos

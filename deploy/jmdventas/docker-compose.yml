@@ -45,7 +45,7 @@ services:
 
   jmd-backend:
     build: ../../backend
-    image: jmdventas/backend:local
+    image: localhost/jmdventas/backend:local
     container_name: jmdventas_backend
     restart: unless-stopped
     depends_on:
@@ -81,7 +81,7 @@ services:
         BASE_PATH: /jmdventas/XEMPRESAX/
         MARCA: JMD Ventas
         NGINX_CONF: nginx.jmdventas.conf
-    image: jmdventas/frontend:local
+    image: localhost/jmdventas/frontend:local
     container_name: jmdventas_frontend
     restart: unless-stopped
     depends_on:
