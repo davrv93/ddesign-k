@@ -7,6 +7,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Aislamiento entre empresas: dos empresas con el mismo código de producto, la misma clienta (mismo jid) y pedidos
@@ -242,6 +244,11 @@ func TestClave(t *testing.T) {
 	}
 	if !CheckPassword(h, "una-clave-larga") || CheckPassword(h, "otra") {
 		t.Fatal("CheckPassword")
+	}
+	// Los usuarios migrados de la SQLite de /baruka/ traen bcrypt.
+	b, _ := bcrypt.GenerateFromPassword([]byte("clave-bcrypt"), bcrypt.MinCost)
+	if !CheckPassword(string(b), "clave-bcrypt") || CheckPassword(string(b), "otra") {
+		t.Fatal("CheckPassword bcrypt")
 	}
 }
 

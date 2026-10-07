@@ -14,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Tenant es una empresa de JMD Ventas. Su slug es la ruta: /jmdventas/<slug>/.
@@ -191,6 +193,10 @@ func HashPassword(password string) (string, error) {
 }
 
 func CheckPassword(hash, password string) bool {
+	// bcrypt: los usuarios que vienen de la SQLite de /baruka/ (tabla users con pass_hash, internal/auth de esa rama).
+	if strings.HasPrefix(hash, "$2a$") || strings.HasPrefix(hash, "$2b$") || strings.HasPrefix(hash, "$2y$") {
+		return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil
+	}
 	parts := strings.Split(hash, "$")
 	if len(parts) != 4 || parts[0] != "pbkdf2-sha256" {
 		return false

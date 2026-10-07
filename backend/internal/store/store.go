@@ -187,7 +187,9 @@ CREATE TABLE IF NOT EXISTS conversations (
 	paused_at       DATETIME,
 	unread          INTEGER NOT NULL DEFAULT 0,
 	last_message    TEXT NOT NULL DEFAULT '',
-	last_message_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+	last_message_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	agent_version   TEXT NOT NULL DEFAULT '',
+	agent_last      TEXT NOT NULL DEFAULT ''
 );
 CREATE TABLE IF NOT EXISTS messages (
 	id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -349,6 +351,15 @@ func (s *Store) migrateSQLite() error {
 			}
 		}
 	}
+	for _, c := range [][2]string{{"conversations", "agent_version"}, {"conversations", "agent_last"}} {
+		if has, err := s.sqliteHasColumn(c[0], c[1]); err != nil {
+			return err
+		} else if !has {
+			if _, err := s.DB.Exec(`ALTER TABLE ` + c[0] + ` ADD COLUMN ` + c[1] + ` TEXT NOT NULL DEFAULT ''`); err != nil {
+				return err
+			}
+		}
+	}
 	if _, err := s.DB.Exec(indexesSQLite); err != nil {
 		return err
 	}
@@ -447,6 +458,10 @@ var schemaMySQL = []string{
 	unread          INT NOT NULL DEFAULT 0,
 	last_message    TEXT NOT NULL DEFAULT '',
 	last_message_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	-- Del agente V2 (rama feat/agente-v2): versión fijada por la asesora y la que habló en el último turno. Esta
+	-- rama no las usa; están para que la migración no pierda el dato y la fusión no tenga que migrar otra vez.
+	agent_version   VARCHAR(16) NOT NULL DEFAULT '',
+	agent_last      VARCHAR(32) NOT NULL DEFAULT '',
 	KEY idx_conversations_tenant (tenant_id, last_message_at),
 	FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
 )`,
@@ -594,6 +609,15 @@ func (s *Store) migrateMySQL() error {
 	for _, q := range schemaMySQL {
 		if _, err := s.DB.Exec(q + ` ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`); err != nil {
 			return fmt.Errorf("%.60s…: %w", q, err)
+		}
+	}
+	// Columnas añadidas después de crear la tabla (MariaDB admite IF NOT EXISTS).
+	for _, q := range []string{
+		`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS agent_version VARCHAR(16) NOT NULL DEFAULT ''`,
+		`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS agent_last VARCHAR(32) NOT NULL DEFAULT ''`,
+	} {
+		if _, err := s.DB.Exec(q); err != nil {
+			return err
 		}
 	}
 	return nil
