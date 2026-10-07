@@ -277,6 +277,10 @@ func copiarTabla(ctx context.Context, src *sql.DB, tx *sql.Tx, tb string, tid in
 			args = append(args, valor(cols[i], vals[i]))
 		}
 		if _, err := stmt.ExecContext(ctx, args...); err != nil {
+			if strings.Contains(err.Error(), "Duplicate entry") {
+				return n, fmt.Errorf("fila %d: %w (el id ya lo usa OTRA empresa: la migración conserva los ids y está "+
+					"pensada para la primera empresa de una base nueva; nada se escribió)", n+1, err)
+			}
 			return n, fmt.Errorf("fila %d: %w", n+1, err)
 		}
 		n++

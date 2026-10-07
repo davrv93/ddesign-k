@@ -1,5 +1,6 @@
 import { $, component$, useOnWindow, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import { titulo } from "~/lib/marca";
 import { api } from "~/lib/api";
 
 interface Status {
@@ -232,4 +233,4 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = { title: "WhatsApp · Baruka Design" };
+export const head: DocumentHead = { title: titulo("WhatsApp") };

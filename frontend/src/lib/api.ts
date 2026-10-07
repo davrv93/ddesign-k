@@ -1,8 +1,10 @@
 // Cliente de la API del backend Go. Sólo se usa en el navegador (el sitio es estático).
 
-import { u } from "./base";
+import { BASE, u } from "./base";
 
-const TOKEN_KEY = "kd_token";
+// Una sesión por panel: /baruka/ conserva su clave de siempre; cada empresa de /jmdventas/<empresa>/ tiene la suya
+// (comparten el mismo origen, y un token de una empresa no vale en otra).
+const TOKEN_KEY = BASE && BASE !== "/baruka" ? `kd_token:${BASE}` : "kd_token";
 
 export const getToken = (): string | null => {
   try {

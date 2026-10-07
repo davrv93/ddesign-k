@@ -1,5 +1,6 @@
 import { $, component$, sync$, useComputed$, useOnWindow, useSignal, useStore, useVisibleTask$, type QRL } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import { titulo } from "~/lib/marca";
 import { api, type Order, type Product, type Stats } from "~/lib/api";
 import { customerName, mapsLink, money, phoneLabel, STATUS, timeAgo } from "~/lib/format";
 import { u } from "~/lib/base";
@@ -542,4 +543,4 @@ const NewOrderModal = component$<NewOrderProps>(({ products, onClose$, onCreated
   );
 });
 
-export const head: DocumentHead = { title: "Pedidos · Baruka Design" };
+export const head: DocumentHead = { title: titulo("Pedidos") };

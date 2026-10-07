@@ -1,5 +1,6 @@
 import { $, component$, useSignal, useStore, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import { titulo } from "~/lib/marca";
 import { api } from "~/lib/api";
 
 type Settings = Record<string, string>;
@@ -70,4 +71,4 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = { title: "Ajustes · Baruka Design" };
+export const head: DocumentHead = { title: titulo("Ajustes") };

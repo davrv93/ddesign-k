@@ -2,6 +2,7 @@ import { $, component$, Slot, useSignal, useVisibleTask$ } from "@builder.io/qwi
 import { Link, useLocation } from "@builder.io/qwik-city";
 import { api, getToken, setToken, type Conversation } from "~/lib/api";
 import { BASE, u } from "~/lib/base";
+import { LEMA, MARCA, cargarEmpresa, empresaGuardada, iniciales } from "~/lib/marca";
 
 const NAV = [
   { href: "/", label: "Pedidos", icon: "▦" },
@@ -17,6 +18,7 @@ export default component$(() => {
   const wa = useSignal<{ available?: boolean; logged_in?: boolean; name?: string } | null>(null);
   const unread = useSignal(0);
   const navOpen = useSignal(false);
+  const empresa = useSignal("");
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup }) => {
@@ -26,6 +28,8 @@ export default component$(() => {
       return;
     }
     ready.value = true;
+    empresa.value = empresaGuardada();
+    cargarEmpresa().then((n) => (empresa.value = n));
 
     // Avisos en vivo del backend: cada página escucha "kd-change" y recarga lo suyo.
     const es = new EventSource(u(`/api/events?token=${encodeURIComponent(token)}`));
@@ -72,10 +76,10 @@ export default component$(() => {
     <div class={["shell", navOpen.value && "nav-open"]}>
       <aside class="sidebar">
         <div class="brand">
-          <span class="brand-mark">BD</span>
+          <span class="brand-mark">{iniciales(empresa.value || MARCA)}</span>
           <div>
-            <strong>Baruka Design</strong>
-            <small>CRM WhatsApp</small>
+            <strong>{empresa.value || " "}</strong>
+            <small>{LEMA}</small>
           </div>
         </div>
         <nav>
@@ -111,7 +115,7 @@ export default component$(() => {
           <button class="btn btn-ghost burger" aria-label="Menú" onClick$={() => (navOpen.value = !navOpen.value)}>
             ☰
           </button>
-          <span class="topbar-title">Baruka Design</span>
+          <span class="topbar-title">{empresa.value}</span>
         </header>
         {ready.value ? <Slot /> : <div class="loading">Cargando…</div>}
       </div>

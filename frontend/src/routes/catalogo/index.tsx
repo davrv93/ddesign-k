@@ -2,6 +2,7 @@ import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { money } from "~/lib/format";
 import { u } from "~/lib/base";
+import { MARCA, iniciales, titulo } from "~/lib/marca";
 
 interface PubProduct {
   code: string;
@@ -39,8 +40,8 @@ export default component$(() => {
   return (
     <main class="catalog">
       <header class="catalog-head">
-        <span class="brand-mark">BD</span>
-        <h1>{d?.business ?? "Baruka Design"}</h1>
+        <span class="brand-mark">{iniciales(d?.business ?? MARCA)}</span>
+        <h1>{d?.business ?? " "}</h1>
         <p>Pide por WhatsApp enviando el código del modelo o su foto.</p>
         <div class="chips">
           {cats.map((c) => (
@@ -85,6 +86,6 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Catálogo · Baruka Design",
+  title: titulo("Catálogo"),
   meta: [{ name: "description", content: "Vestidos y moda femenina. Pide por WhatsApp." }],
 };

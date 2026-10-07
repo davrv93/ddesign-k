@@ -1,5 +1,6 @@
 import { $, component$, noSerialize, useOnWindow, useSignal, useStore, useVisibleTask$, type NoSerialize, type QRL } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import { titulo } from "~/lib/marca";
 import { api, getToken, type Product } from "~/lib/api";
 import { money } from "~/lib/format";
 import { u } from "~/lib/base";
@@ -288,4 +289,4 @@ const ProductForm = component$<FormProps>(({ product, onClose$, onSaved$ }) => {
   );
 });
 
-export const head: DocumentHead = { title: "Productos · Baruka Design" };
+export const head: DocumentHead = { title: titulo("Productos") };

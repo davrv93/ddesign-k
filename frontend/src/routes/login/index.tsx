@@ -2,16 +2,20 @@ import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { api, getToken, setToken } from "~/lib/api";
 import { u } from "~/lib/base";
+import { LEMA, MARCA, cargarEmpresa, empresaGuardada, iniciales, titulo } from "~/lib/marca";
 
 export default component$(() => {
   const user = useSignal("admin");
   const pass = useSignal("");
   const error = useSignal("");
   const busy = useSignal(false);
+  const empresa = useSignal("");
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(() => {
+  useVisibleTask$(async () => {
     if (getToken()) location.href = u("/");
+    empresa.value = empresaGuardada();
+    empresa.value = await cargarEmpresa();
   });
 
   const submit = $(async () => {
@@ -32,10 +36,10 @@ export default component$(() => {
     <main class="login">
       <form class="login-card" preventdefault:submit onSubmit$={submit}>
         <div class="brand brand-lg">
-          <span class="brand-mark">BD</span>
+          <span class="brand-mark">{iniciales(empresa.value || MARCA)}</span>
           <div>
-            <strong>Baruka Design</strong>
-            <small>CRM de pedidos por WhatsApp</small>
+            <strong>{empresa.value || " "}</strong>
+            <small>{LEMA === "CRM WhatsApp" ? "CRM de pedidos por WhatsApp" : LEMA}</small>
           </div>
         </div>
         <label>
@@ -55,4 +59,4 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = { title: "Ingresar · Baruka Design" };
+export const head: DocumentHead = { title: titulo("Ingresar") };

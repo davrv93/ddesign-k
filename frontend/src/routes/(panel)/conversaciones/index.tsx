@@ -1,5 +1,6 @@
 import { $, component$, sync$, useOnWindow, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import { titulo } from "~/lib/marca";
 import { api, type Conversation, type Message, type Order } from "~/lib/api";
 import { customerName, money, phoneLabel, STATUS, timeAgo, timeLabel, waText } from "~/lib/format";
 import { u } from "~/lib/base";
@@ -224,4 +225,4 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = { title: "Conversaciones · Baruka Design" };
+export const head: DocumentHead = { title: titulo("Conversaciones") };

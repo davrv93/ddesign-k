@@ -1,13 +1,14 @@
 import { component$ } from "@builder.io/qwik";
 import { useDocumentHead, useLocation } from "@builder.io/qwik-city";
 import { u } from "~/lib/base";
+import { titulo } from "~/lib/marca";
 
 export const RouterHead = component$(() => {
   const head = useDocumentHead();
   const loc = useLocation();
   return (
     <>
-      <title>{head.title || "Baruka Design · CRM"}</title>
+      <title>{head.title || titulo("CRM")}</title>
       <link rel="canonical" href={loc.url.href} />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta name="theme-color" content="#6d1f45" />
