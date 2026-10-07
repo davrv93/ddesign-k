@@ -75,6 +75,36 @@ func (s *Server) waEnabled(r *http.Request) bool {
 	return s.cfg.EvolutionURL != "" && s.isBotTenant(r)
 }
 
+// EmpresaPublica es lo único que la portada de JMD Ventas sabe de cada empresa. Nada de ids, WhatsApp, moneda ni
+// datos de clientas: solo lo que se pinta en su tarjeta.
+type EmpresaPublica struct {
+	Slug      string `json:"slug"`
+	Nombre    string `json:"nombre"`
+	Orden     int    `json:"orden"`
+	Color     string `json:"color"`
+	Logo      string `json:"logo"`
+	Productos int    `json:"productos"` // productos activos
+}
+
+// empresasPublicas: GET /api/empresas (sin empresa en la ruta), las empresas activas en su orden.
+func (s *Server) empresasPublicas(w http.ResponseWriter, r *http.Request) {
+	ts, err := s.store.Tenants(r.Context())
+	if err != nil {
+		writeErr(w, 500, "no se pudo leer las empresas")
+		return
+	}
+	out := make([]EmpresaPublica, 0, len(ts))
+	for _, t := range ts {
+		if !store.ValidSlug(t.Slug) { // p. ej. «default», la tienda de una SQLite de una sola empresa
+			continue
+		}
+		n, _ := s.store.ForTenant(t.ID).CountActiveProducts(r.Context())
+		out = append(out, EmpresaPublica{Slug: t.Slug, Nombre: t.Name, Orden: t.Orden, Color: store.ColorDe(t), Logo: t.Logo, Productos: n})
+	}
+	w.Header().Set("Cache-Control", "public, max-age=60")
+	writeJSON(w, 200, out)
+}
+
 // isBotTenant: la empresa de la petición es la del bot (sin multiempresa, siempre).
 func (s *Server) isBotTenant(r *http.Request) bool {
 	return !s.cfg.MultiTenant || (s.BotTenant > 0 && s.tenantID(r) == s.BotTenant)
@@ -120,6 +150,10 @@ func (s *Server) tenantRouter(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/healthz" {
 			next.ServeHTTP(w, r)
+			return
+		}
+		if r.URL.Path == "/api/empresas" && r.Method == http.MethodGet {
+			s.empresasPublicas(w, r)
 			return
 		}
 		rest := strings.TrimPrefix(r.URL.Path, "/")

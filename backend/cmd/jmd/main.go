@@ -4,6 +4,10 @@
 //	jmd alta --slug baruka --nombre "Baruka Design" [--moneda S/] [--whatsapp 519…] [--usuario admin]
 //	    La clave del usuario se lee de JMD_CLAVE (nunca de la línea de órdenes, que queda en el historial y en ps).
 //	    Sin JMD_CLAVE solo crea o actualiza la empresa. Idempotente.
+//	jmd orden --empresa baruka --orden 2
+//	    Posición de la empresa en la portada /jmdventas/ (menor primero). El alta solo la fija al crearla (--orden).
+//	jmd marca --empresa baruka [--color #rrggbb] [--logo https://…]
+//	    Color del monograma (vacío = derivado del slug) y logo de la tarjeta (vacío = monograma).
 //	jmd empresas
 //	    Lista las empresas con sus conteos por tabla.
 //	jmd migrar-sqlite --origen /ruta/crm.db --empresa baruka
@@ -38,6 +42,10 @@ func main() {
 		err = alta(ctx, os.Args[2:])
 	case "empresas":
 		err = empresas(ctx)
+	case "orden":
+		err = orden(ctx, os.Args[2:])
+	case "marca":
+		err = marca(ctx, os.Args[2:])
 	case "migrar-sqlite":
 		err = migrar(ctx, os.Args[2:])
 	default:
@@ -51,6 +59,8 @@ func main() {
 
 func uso() {
 	fmt.Fprintln(os.Stderr, "uso: jmd alta --slug S --nombre N [--moneda S/] [--whatsapp 51…] [--usuario admin]  (clave en JMD_CLAVE)")
+	fmt.Fprintln(os.Stderr, "     jmd orden --empresa SLUG --orden N")
+	fmt.Fprintln(os.Stderr, "     jmd marca --empresa SLUG [--color #rrggbb] [--logo URL]")
 	fmt.Fprintln(os.Stderr, "     jmd empresas")
 	fmt.Fprintln(os.Stderr, "     jmd migrar-sqlite --origen crm.db --empresa SLUG")
 	os.Exit(2)
@@ -79,17 +89,24 @@ func alta(ctx context.Context, args []string) error {
 	moneda := fs.String("moneda", "S/", "moneda")
 	wa := fs.String("whatsapp", "", "número público de WhatsApp (solo dígitos) para el catálogo")
 	usuario := fs.String("usuario", "admin", "usuario del panel")
+	ord := fs.Int("orden", 0, "posición en la portada al crearla (0 = al final); para cambiarla después: jmd orden")
 	_ = fs.Parse(args)
 	st, err := abrir()
 	if err != nil {
 		return err
 	}
 	defer st.DB.Close()
-	t := &store.Tenant{Slug: *slug, Name: *nombre, Currency: *moneda, WhatsApp: strings.Trim(*wa, "+ ")}
+	t := &store.Tenant{Slug: *slug, Name: *nombre, Currency: *moneda, WhatsApp: strings.Trim(*wa, "+ "), Orden: *ord}
 	if err := st.UpsertTenant(ctx, t); err != nil {
 		return err
 	}
-	fmt.Printf("empresa %d «%s» → /jmdventas/%s/\n", t.ID, t.Name, t.Slug)
+	if *ord != 0 && t.Orden != *ord { // ya existía: el orden se cambia aparte
+		if err := st.SetTenantOrden(ctx, t.Slug, *ord); err != nil {
+			return err
+		}
+		t.Orden = *ord
+	}
+	fmt.Printf("empresa %d «%s» → /jmdventas/%s/ (orden %d)\n", t.ID, t.Name, t.Slug, t.Orden)
 	if clave := os.Getenv("JMD_CLAVE"); clave != "" {
 		if err := st.ForTenant(t.ID).UpsertUser(ctx, *usuario, clave, *usuario, "admin"); err != nil {
 			return err
@@ -98,6 +115,41 @@ func alta(ctx context.Context, args []string) error {
 	} else {
 		fmt.Println("sin JMD_CLAVE: no se tocó ningún usuario")
 	}
+	return nil
+}
+
+func orden(ctx context.Context, args []string) error {
+	fs := flag.NewFlagSet("orden", flag.ExitOnError)
+	slug := fs.String("empresa", "", "slug")
+	n := fs.Int("orden", 0, "posición (menor primero)")
+	_ = fs.Parse(args)
+	st, err := abrir()
+	if err != nil {
+		return err
+	}
+	defer st.DB.Close()
+	if err := st.SetTenantOrden(ctx, *slug, *n); err != nil {
+		return fmt.Errorf("%s: %w", *slug, err)
+	}
+	fmt.Printf("%s → orden %d\n", *slug, *n)
+	return nil
+}
+
+func marca(ctx context.Context, args []string) error {
+	fs := flag.NewFlagSet("marca", flag.ExitOnError)
+	slug := fs.String("empresa", "", "slug")
+	color := fs.String("color", "", "#rrggbb (vacío = derivado del slug)")
+	logo := fs.String("logo", "", "URL del logo (vacío = monograma)")
+	_ = fs.Parse(args)
+	st, err := abrir()
+	if err != nil {
+		return err
+	}
+	defer st.DB.Close()
+	if err := st.SetTenantMarca(ctx, *slug, *color, *logo); err != nil {
+		return fmt.Errorf("%s: %w", *slug, err)
+	}
+	fmt.Printf("%s → color %q, logo %q\n", *slug, *color, *logo)
 	return nil
 }
 
@@ -112,7 +164,7 @@ func empresas(ctx context.Context) error {
 		return err
 	}
 	for _, t := range ts {
-		fmt.Printf("%d\t%s\t%s\n", t.ID, t.Slug, t.Name)
+		fmt.Printf("%d\t%s\t%s\torden %d\tcolor %s\n", t.ID, t.Slug, t.Name, t.Orden, store.ColorDe(t))
 		c, err := conteos(ctx, st.DB, "tenant_id=?", t.ID)
 		if err != nil {
 			return err

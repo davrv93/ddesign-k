@@ -10,6 +10,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"hash/fnv"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -25,6 +27,9 @@ type Tenant struct {
 	Name      string    `json:"name"`
 	Currency  string    `json:"currency"`
 	WhatsApp  string    `json:"whatsapp"`
+	Orden     int       `json:"orden"` // posición en la portada (menor primero)
+	Color     string    `json:"color"` // color del monograma; vacío = derivado del slug (ColorDe)
+	Logo      string    `json:"logo"`  // URL del logo; vacío = monograma
 	Active    bool      `json:"active"`
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -40,12 +45,12 @@ var reservedSlugs = map[string]bool{
 // ValidSlug dice si el texto sirve como ruta de una empresa (minúsculas, cifras y guiones; 2 a 40).
 func ValidSlug(slug string) bool { return reSlug.MatchString(slug) && !reservedSlugs[slug] }
 
-const tenantCols = `id, slug, name, currency, whatsapp, active, created_at`
+const tenantCols = `id, slug, name, currency, whatsapp, orden, color, logo, active, created_at`
 
 func scanTenant(sc interface{ Scan(...any) error }) (*Tenant, error) {
 	t := &Tenant{}
 	var active int
-	if err := sc.Scan(&t.ID, &t.Slug, &t.Name, &t.Currency, &t.WhatsApp, &active, &t.CreatedAt); err != nil {
+	if err := sc.Scan(&t.ID, &t.Slug, &t.Name, &t.Currency, &t.WhatsApp, &t.Orden, &t.Color, &t.Logo, &active, &t.CreatedAt); err != nil {
 		return nil, err
 	}
 	t.Active = active == 1
@@ -72,7 +77,7 @@ func (s *Store) Tenant(ctx context.Context) (*Tenant, error) {
 
 // Tenants lista las empresas activas (para los trabajos de fondo, que recorren una por una).
 func (s *Store) Tenants(ctx context.Context) ([]*Tenant, error) {
-	rows, err := s.DB.QueryContext(ctx, `SELECT `+tenantCols+` FROM tenants WHERE active=1 ORDER BY id`)
+	rows, err := s.DB.QueryContext(ctx, `SELECT `+tenantCols+` FROM tenants WHERE active=1 ORDER BY orden, id`)
 	if err != nil {
 		return nil, err
 	}
@@ -100,13 +105,17 @@ func (s *Store) UpsertTenant(ctx context.Context, t *Tenant) error {
 	if t.Currency == "" {
 		t.Currency = "S/"
 	}
-	q := `INSERT INTO tenants(slug, name, currency, whatsapp, active, created_at) VALUES(?,?,?,?,1,?)
+	if t.Orden == 0 {
+		t.Orden = 100
+	}
+	// El orden solo se crea aquí; en una empresa que ya existe se cambia con SetTenantOrden (jmd orden).
+	q := `INSERT INTO tenants(slug, name, currency, whatsapp, orden, active, created_at) VALUES(?,?,?,?,?,1,?)
 		ON CONFLICT DO UPDATE SET name=excluded.name, currency=excluded.currency, whatsapp=excluded.whatsapp, active=1`
 	if s.mysql() {
-		q = `INSERT INTO tenants(slug, name, currency, whatsapp, active, created_at) VALUES(?,?,?,?,1,?)
+		q = `INSERT INTO tenants(slug, name, currency, whatsapp, orden, active, created_at) VALUES(?,?,?,?,?,1,?)
 		ON DUPLICATE KEY UPDATE name=VALUES(name), currency=VALUES(currency), whatsapp=VALUES(whatsapp), active=1`
 	}
-	if _, err := s.DB.ExecContext(ctx, q, t.Slug, t.Name, t.Currency, t.WhatsApp, now()); err != nil {
+	if _, err := s.DB.ExecContext(ctx, q, t.Slug, t.Name, t.Currency, t.WhatsApp, t.Orden, now()); err != nil {
 		return err
 	}
 	got, err := s.TenantBySlug(ctx, t.Slug)
@@ -115,6 +124,78 @@ func (s *Store) UpsertTenant(ctx context.Context, t *Tenant) error {
 	}
 	*t = *got
 	return nil
+}
+
+// SetTenantOrden cambia la posición de la empresa en la portada.
+func (s *Store) SetTenantOrden(ctx context.Context, slug string, orden int) error {
+	res, err := s.DB.ExecContext(ctx, `UPDATE tenants SET orden=? WHERE slug=?`, orden, slug)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// SetTenantMarca fija el color del monograma (#rrggbb, vacío = derivado) y el logo (URL, vacío = monograma).
+func (s *Store) SetTenantMarca(ctx context.Context, slug, color, logo string) error {
+	if color != "" && !reColor.MatchString(color) {
+		return fmt.Errorf("color inválido %q: usa #rrggbb", color)
+	}
+	if logo != "" && !strings.HasPrefix(logo, "https://") && !strings.HasPrefix(logo, "/") {
+		return fmt.Errorf("logo inválido: una URL https:// o una ruta del sitio")
+	}
+	res, err := s.DB.ExecContext(ctx, `UPDATE tenants SET color=?, logo=? WHERE slug=?`, color, logo, slug)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+var reColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
+
+// ColorDe es el color propio de la empresa: el guardado o uno derivado del slug (tono por hash, saturación y luz
+// fijas para que el monograma blanco siempre se lea).
+func ColorDe(t *Tenant) string {
+	if t.Color != "" {
+		return t.Color
+	}
+	h := fnv.New32a()
+	h.Write([]byte(t.Slug))
+	return hslHex(float64(h.Sum32()%360), 0.46, 0.40)
+}
+
+func hslHex(h, s, l float64) string {
+	c := (1 - math.Abs(2*l-1)) * s
+	x := c * (1 - math.Abs(math.Mod(h/60, 2)-1))
+	m := l - c/2
+	var r, g, b float64
+	switch {
+	case h < 60:
+		r, g, b = c, x, 0
+	case h < 120:
+		r, g, b = x, c, 0
+	case h < 180:
+		r, g, b = 0, c, x
+	case h < 240:
+		r, g, b = 0, x, c
+	case h < 300:
+		r, g, b = x, 0, c
+	default:
+		r, g, b = c, 0, x
+	}
+	return fmt.Sprintf("#%02x%02x%02x", int(math.Round((r+m)*255)), int(math.Round((g+m)*255)), int(math.Round((b+m)*255)))
+}
+
+// CountActiveProducts cuenta los productos activos de la empresa (el dato de su tarjeta en la portada).
+func (s *Store) CountActiveProducts(ctx context.Context) (int, error) {
+	var n int
+	err := s.DB.QueryRowContext(ctx, `SELECT count(*) FROM products WHERE tenant_id=? AND active=1`, s.tid).Scan(&n)
+	return n, err
 }
 
 // ---------------------------------------------------------------------------

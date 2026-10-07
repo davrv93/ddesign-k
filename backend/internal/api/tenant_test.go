@@ -77,7 +77,8 @@ func TestEmpresasAisladasPorHTTP(t *testing.T) {
 	alfa, beta := "alfa"+sfx, "beta"+sfx
 	ids := map[string]int64{}
 	for slug, nombre := range map[string]string{alfa: "Alfa Moda", beta: "Beta Ropa"} {
-		tn := &store.Tenant{Slug: slug, Name: nombre, WhatsApp: "51900000000"}
+		orden := map[string]int{alfa: 2, beta: 1}[slug]
+		tn := &store.Tenant{Slug: slug, Name: nombre, WhatsApp: "51900000000", Orden: orden}
 		if err := st.UpsertTenant(ctx, tn); err != nil {
 			t.Fatal(err)
 		}
@@ -92,6 +93,29 @@ func TestEmpresasAisladasPorHTTP(t *testing.T) {
 		}
 	}
 	ta, tb := login(t, h, alfa, "clave-"+alfa), login(t, h, beta, "clave-"+beta)
+
+	// Portada: lista pública en su orden, solo con los campos de la tarjeta.
+	w0 := llamar(h, "GET", "/api/empresas", "", "")
+	if w0.Code != 200 {
+		t.Fatalf("/api/empresas: %d", w0.Code)
+	}
+	for _, prohibido := range []string{"whatsapp", "51900000000", `"id"`, "currency", "admin", "password"} {
+		if strings.Contains(w0.Body.String(), prohibido) {
+			t.Fatalf("/api/empresas expone %q: %s", prohibido, w0.Body)
+		}
+	}
+	var emps []EmpresaPublica
+	_ = json.Unmarshal(w0.Body.Bytes(), &emps)
+	pos := map[string]int{}
+	for i, e := range emps {
+		pos[e.Slug] = i
+		if e.Slug == alfa && (e.Productos != 1 || e.Nombre != "Alfa Moda" || !strings.HasPrefix(e.Color, "#") || len(e.Color) != 7) {
+			t.Fatalf("tarjeta de alfa: %+v", e)
+		}
+	}
+	if _, ok := pos[alfa]; !ok || pos[beta] > pos[alfa] {
+		t.Fatalf("orden de la portada: beta (1) antes que alfa (2): %v", pos)
+	}
 
 	// La clave de una empresa no entra en la otra.
 	if w := llamar(h, "POST", "/"+alfa+"/api/auth/login", "", `{"user":"admin","password":"clave-`+beta+`"}`); w.Code != 401 {

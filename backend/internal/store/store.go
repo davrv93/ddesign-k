@@ -351,11 +351,17 @@ func (s *Store) migrateSQLite() error {
 			}
 		}
 	}
-	for _, c := range [][2]string{{"conversations", "agent_version"}, {"conversations", "agent_last"}} {
+	for _, c := range [][3]string{
+		{"conversations", "agent_version", "TEXT NOT NULL DEFAULT ''"},
+		{"conversations", "agent_last", "TEXT NOT NULL DEFAULT ''"},
+		{"tenants", "orden", "INTEGER NOT NULL DEFAULT 100"},
+		{"tenants", "color", "TEXT NOT NULL DEFAULT ''"},
+		{"tenants", "logo", "TEXT NOT NULL DEFAULT ''"},
+	} {
 		if has, err := s.sqliteHasColumn(c[0], c[1]); err != nil {
 			return err
 		} else if !has {
-			if _, err := s.DB.Exec(`ALTER TABLE ` + c[0] + ` ADD COLUMN ` + c[1] + ` TEXT NOT NULL DEFAULT ''`); err != nil {
+			if _, err := s.DB.Exec(`ALTER TABLE ` + c[0] + ` ADD COLUMN ` + c[1] + ` ` + c[2]); err != nil {
 				return err
 			}
 		}
@@ -615,6 +621,10 @@ func (s *Store) migrateMySQL() error {
 	for _, q := range []string{
 		`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS agent_version VARCHAR(16) NOT NULL DEFAULT ''`,
 		`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS agent_last VARCHAR(32) NOT NULL DEFAULT ''`,
+		// Portada de JMD Ventas: orden de las tarjetas, color del monograma (vacío = derivado del slug) y logo.
+		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS orden INT NOT NULL DEFAULT 100`,
+		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS color VARCHAR(16) NOT NULL DEFAULT ''`,
+		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS logo VARCHAR(500) NOT NULL DEFAULT ''`,
 	} {
 		if _, err := s.DB.Exec(q); err != nil {
 			return err

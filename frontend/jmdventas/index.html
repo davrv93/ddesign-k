@@ -2,42 +2,240 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>JMD Ventas</title>
+<meta name="description" content="JMD Ventas · CRM de pedidos por WhatsApp. Elige tu empresa.">
+<meta name="theme-color" content="#f5f3ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e0e10" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2316161a'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='17' fill='%23f5f3ee' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
 <style>
-  :root { --fg:#1d1d1f; --muted:#6e6e73; --bg:#f5f5f7; --card:#fff; --accent:#6d1f45; }
-  @media (prefers-color-scheme: dark) { :root { --fg:#f5f5f7; --muted:#a1a1a6; --bg:#111; --card:#1c1c1e; } }
+  :root {
+    --bg: #f5f3ee;
+    --bg-2: #ece8df;
+    --card: #ffffff;
+    --ink: #16161a;
+    --ink-2: #4a4a52;
+    --muted: #7a7a83;
+    --line: rgba(22, 22, 26, .09);
+    --line-2: rgba(22, 22, 26, .16);
+    --btn: #16161a;
+    --btn-ink: #f5f3ee;
+    --shadow: 0 1px 2px rgba(22, 22, 26, .04), 0 8px 24px -12px rgba(22, 22, 26, .12);
+    --shadow-hover: 0 1px 2px rgba(22, 22, 26, .05), 0 22px 44px -18px rgba(22, 22, 26, .26);
+    --serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e0e10;
+      --bg-2: #17171a;
+      --card: #161619;
+      --ink: #f2f0ea;
+      --ink-2: #c3c1bb;
+      --muted: #8d8b86;
+      --line: rgba(255, 255, 255, .08);
+      --line-2: rgba(255, 255, 255, .16);
+      --btn: #f2f0ea;
+      --btn-ink: #0e0e10;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+      --shadow-hover: 0 24px 48px -20px rgba(0, 0, 0, .7);
+    }
+  }
   * { box-sizing: border-box; }
-  body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg); color:var(--fg);
-    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding:16px; }
-  main { background:var(--card); border-radius:18px; padding:32px; width:100%; max-width:380px;
-    box-shadow:0 10px 30px rgba(0,0,0,.08); }
-  h1 { margin:0 0 4px; font-size:26px; }
-  p { margin:0 0 20px; color:var(--muted); }
-  label { display:block; font-size:14px; color:var(--muted); margin-bottom:6px; }
-  input { width:100%; padding:12px 14px; border-radius:10px; border:1px solid #c7c7cc; font-size:16px;
-    background:transparent; color:var(--fg); }
-  button { margin-top:14px; width:100%; padding:12px; border:0; border-radius:10px; background:var(--accent);
-    color:#fff; font-size:16px; font-weight:600; cursor:pointer; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink);
+    font: 400 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased;
+    background-image: radial-gradient(1200px 520px at 50% -180px, var(--bg-2), transparent 70%);
+    background-repeat: no-repeat;
+  }
+  a { color: inherit; }
+  .wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+  @media (min-width: 720px) { .wrap { padding: 0 32px; } }
+
+  /* Barra */
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 0; }
+  .wordmark { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+  .wordmark .sello {
+    width: 30px; height: 30px; border-radius: 8px; background: var(--ink); color: var(--bg);
+    display: grid; place-items: center; font: 600 17px/1 var(--serif);
+  }
+  .wordmark b { font: 600 19px/1 var(--serif); letter-spacing: -.01em; }
+  .top small { color: var(--muted); font-size: 13px; text-align: right; }
+
+  /* Titular */
+  .hero { padding: 40px 0 28px; }
+  @media (min-width: 720px) { .hero { padding: 72px 0 40px; } }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+  h1 {
+    font: 500 clamp(36px, 7.4vw, 60px)/1.04 var(--serif); letter-spacing: -.025em; margin: 0;
+    font-variation-settings: "opsz" 144;
+  }
+  .hero p { color: var(--ink-2); font-size: 17px; max-width: 34em; margin: 16px 0 0; }
+
+  /* Tarjetas */
+  .grid { display: grid; gap: 16px; grid-template-columns: 1fr; padding: 8px 0 56px; }
+  @media (min-width: 720px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
+  @media (min-width: 1040px) { .grid.tres { grid-template-columns: repeat(3, 1fr); } }
+
+  .card {
+    --c: #555;
+    position: relative; overflow: hidden; background: var(--card); border: 1px solid var(--line);
+    border-radius: 20px; padding: 24px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 22px; min-height: 236px;
+    transition: transform .35s cubic-bezier(.2, .7, .2, 1), box-shadow .35s, border-color .35s;
+    opacity: 0; transform: translateY(14px);
+    animation: entra .7s cubic-bezier(.2, .7, .2, 1) forwards;
+  }
+  .card::before { /* halo con el color de la empresa */
+    content: ""; position: absolute; inset: -40% -30% auto auto; width: 70%; aspect-ratio: 1;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--c) 16%, transparent), transparent);
+    pointer-events: none;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); border-color: color-mix(in srgb, var(--c) 35%, var(--line)); }
+  @keyframes entra { to { opacity: 1; transform: none; } }
+
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; position: relative; }
+  .mono {
+    width: 60px; height: 60px; border-radius: 16px; background: var(--c); color: #fff;
+    display: grid; place-items: center; font: 600 23px/1 var(--serif); letter-spacing: .01em;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 6px 16px -8px var(--c);
+  }
+  .mono img { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; background: #fff; }
+  .num { font: 500 13px/1 var(--sans); color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: .06em; }
+
+  .card h2 { font: 500 27px/1.12 var(--serif); letter-spacing: -.015em; margin: 0; position: relative; }
+  .dato { display: flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 14.5px; margin-top: 8px; }
+  .dato i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); flex: none; }
+  .dato.vacio { color: var(--muted); }
+  .dato.vacio i { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
+
+  .acciones { display: flex; gap: 10px; margin-top: auto; position: relative; }
+  .btn {
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 46px; padding: 0 16px; border-radius: 12px; text-decoration: none;
+    font: 600 15px/1 var(--sans); transition: background .2s, color .2s, border-color .2s, transform .2s;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn-1 { background: var(--btn); color: var(--btn-ink); }
+  .btn-1:hover { background: color-mix(in srgb, var(--btn) 86%, var(--c)); }
+  .btn-1 svg { transition: transform .2s; }
+  .btn-1:hover svg { transform: translateX(2px); }
+  .btn-2 { border: 1px solid var(--line-2); color: var(--ink); }
+  .btn-2:hover { border-color: var(--ink); }
+  .btn:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+
+  /* Cargando / error */
+  .card.sk { animation: none; opacity: 1; transform: none; }
+  .sk .bar { background: var(--bg-2); border-radius: 8px; animation: pulso 1.4s ease-in-out infinite; }
+  @keyframes pulso { 50% { opacity: .55; } }
+  .aviso { grid-column: 1 / -1; color: var(--muted); padding: 24px 0; }
+
+  footer { border-top: 1px solid var(--line); padding: 22px 0 36px; color: var(--muted); font-size: 13px;
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none; opacity: 1; transform: none; transition: none; }
+    .sk .bar { animation: none; }
+  }
 </style>
 </head>
 <body>
-<main>
-  <h1>JMD Ventas</h1>
-  <p>CRM de pedidos por WhatsApp. Entra al panel de tu empresa.</p>
-  <form id="f">
-    <label for="e">Empresa</label>
-    <input id="e" name="e" placeholder="p. ej. baruka" autocomplete="organization" autocapitalize="none" required
-      pattern="[a-z0-9][a-z0-9\-]{1,39}">
-    <button>Entrar</button>
-  </form>
-</main>
+<div class="wrap">
+  <header class="top">
+    <a class="wordmark" href="/jmdventas/" aria-label="JMD Ventas, inicio"><span class="sello">J</span><b>JMD Ventas</b></a>
+    <small>CRM de pedidos por WhatsApp</small>
+  </header>
+
+  <section class="hero">
+    <p class="eyebrow">Empresas</p>
+    <h1>Elige tu tienda</h1>
+    <p>Cada empresa tiene su panel de pedidos, conversaciones y stock, y un catálogo público para compartir con sus clientas.</p>
+  </section>
+
+  <main id="empresas" class="grid" aria-live="polite">
+    <div class="card sk" aria-hidden="true"><div class="bar" style="width:60px;height:60px;border-radius:16px"></div><div><div class="bar" style="width:62%;height:26px"></div><div class="bar" style="width:40%;height:14px;margin-top:12px"></div></div><div class="bar" style="height:46px;margin-top:auto"></div></div>
+    <div class="card sk" aria-hidden="true"><div class="bar" style="width:60px;height:60px;border-radius:16px"></div><div><div class="bar" style="width:52%;height:26px"></div><div class="bar" style="width:36%;height:14px;margin-top:12px"></div></div><div class="bar" style="height:46px;margin-top:auto"></div></div>
+  </main>
+
+  <footer>
+    <span>JMD Ventas</span>
+    <span>¿Eres de una empresa nueva? Pide tu acceso a tu administrador.</span>
+  </footer>
+</div>
+
 <script>
-  document.getElementById("f").addEventListener("submit", function (ev) {
-    ev.preventDefault();
-    var e = document.getElementById("e").value.trim().toLowerCase();
-    if (e) location.href = "/jmdventas/" + encodeURIComponent(e) + "/login/";
-  });
+(function () {
+  var cont = document.getElementById("empresas");
+  var flecha = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9m-3.5-4L12 8l-3.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function el(tag, cls, txt) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt != null) e.textContent = txt;
+    return e;
+  }
+  function iniciales(nombre) {
+    var p = String(nombre).split(/\s+/).filter(Boolean);
+    return ((p[0] || "?")[0] + (p[1] ? p[1][0] : "")).toUpperCase();
+  }
+  function color(c) { return /^#[0-9a-fA-F]{6}$/.test(c || "") ? c : "#555555"; }
+
+  function tarjeta(e, i) {
+    var base = "/jmdventas/" + encodeURIComponent(e.slug) + "/";
+    var card = el("article", "card");
+    card.style.setProperty("--c", color(e.color));
+    card.style.animationDelay = (90 + i * 80) + "ms";
+
+    var top = el("div", "card-top");
+    var mono = el("div", "mono");
+    mono.setAttribute("aria-hidden", "true");
+    if (e.logo && /^(https:\/\/|\/)/.test(e.logo)) {
+      var img = el("img"); img.src = e.logo; img.alt = ""; img.loading = "lazy";
+      img.onerror = function () { mono.textContent = iniciales(e.nombre); };
+      mono.appendChild(img);
+    } else {
+      mono.textContent = iniciales(e.nombre);
+    }
+    top.appendChild(mono);
+    top.appendChild(el("span", "num", String(i + 1).padStart(2, "0")));
+    card.appendChild(top);
+
+    var cuerpo = el("div");
+    cuerpo.appendChild(el("h2", "", e.nombre));
+    var n = e.productos | 0;
+    var dato = el("p", "dato" + (n ? "" : " vacio"));
+    dato.appendChild(el("i"));
+    dato.appendChild(document.createTextNode(n ? n + (n === 1 ? " producto activo" : " productos activos") : "Catálogo en preparación"));
+    cuerpo.appendChild(dato);
+    card.appendChild(cuerpo);
+
+    var acc = el("div", "acciones");
+    var a1 = el("a", "btn btn-1"); a1.href = base; a1.innerHTML = "Abrir panel " + flecha;
+    a1.setAttribute("aria-label", "Abrir el panel de " + e.nombre);
+    var a2 = el("a", "btn btn-2", "Catálogo"); a2.href = base + "catalogo/";
+    a2.setAttribute("aria-label", "Ver el catálogo público de " + e.nombre);
+    acc.appendChild(a1); acc.appendChild(a2);
+    card.appendChild(acc);
+    return card;
+  }
+
+  fetch("/jmdventas/api/empresas", { headers: { Accept: "application/json" } })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (lista) {
+      cont.textContent = "";
+      if (!lista.length) { cont.appendChild(el("p", "aviso", "Todavía no hay empresas.")); return; }
+      if (lista.length >= 3) cont.classList.add("tres");
+      lista.forEach(function (e, i) { cont.appendChild(tarjeta(e, i)); });
+    })
+    .catch(function () {
+      cont.textContent = "";
+      cont.appendChild(el("p", "aviso", "No se pudo cargar la lista de empresas. Vuelve a intentarlo en un momento."));
+    });
+})();
 </script>
 </body>
 </html>
