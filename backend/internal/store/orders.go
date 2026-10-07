@@ -62,7 +62,8 @@ type Order struct {
 const orderSelect = `SELECT o.id, o.customer_id, o.status, o.total, o.notes, o.source, o.customer_image, o.match_confidence,
 	o.location_lat, o.location_lng, o.location_text, o.stock_reserved, o.position, o.created_at, o.updated_at,
 	cu.id, cu.jid, cu.phone, cu.name, cu.created_at, coalesce(cv.id, 0)
-	FROM orders o JOIN customers cu ON cu.id=o.customer_id LEFT JOIN conversations cv ON cv.customer_id=cu.id`
+	FROM orders o JOIN customers cu ON cu.id=o.customer_id AND cu.tenant_id=o.tenant_id
+	LEFT JOIN conversations cv ON cv.customer_id=cu.id AND cv.tenant_id=o.tenant_id`
 
 func scanOrder(sc interface{ Scan(...any) error }) (*Order, error) {
 	o := &Order{Customer: &Customer{}, Items: []OrderItem{}}
@@ -86,7 +87,8 @@ func (s *Store) loadItems(ctx context.Context, q queryer, orders []*Order) error
 		return nil
 	}
 	byID := map[int64]*Order{}
-	ids := make([]any, 0, len(orders))
+	ids := make([]any, 0, len(orders)+1)
+	ids = append(ids, s.tid)
 	ph := ""
 	for i, o := range orders {
 		byID[o.ID] = o
@@ -97,7 +99,7 @@ func (s *Store) loadItems(ctx context.Context, q queryer, orders []*Order) error
 		ph += "?"
 	}
 	rows, err := q.QueryContext(ctx, `SELECT id, order_id, product_id, variant_id, product_code, product_name, image, size, qty, unit_price
-		FROM order_items WHERE order_id IN (`+ph+`) ORDER BY id`, ids...)
+		FROM order_items WHERE tenant_id=? AND order_id IN (`+ph+`) ORDER BY id`, ids...)
 	if err != nil {
 		return err
 	}
@@ -126,14 +128,15 @@ type queryer interface {
 }
 
 func (s *Store) ListOrders(ctx context.Context, customerID int64) ([]*Order, error) {
-	q := orderSelect
-	args := []any{}
+	q := orderSelect + ` WHERE o.tenant_id=?`
+	args := []any{s.tid}
 	if customerID > 0 {
-		q += ` WHERE o.customer_id=?`
+		q += ` AND o.customer_id=?`
 		args = append(args, customerID)
 	} else {
 		// El tablero no necesita los entregados/cancelados de hace más de 30 días.
-		q += ` WHERE o.status NOT IN ('entregado','cancelado') OR o.updated_at > datetime('now','-30 days')`
+		q += ` AND (o.status NOT IN ('entregado','cancelado') OR o.updated_at > ?)`
+		args = append(args, now().Add(-30*24*time.Hour))
 	}
 	q += ` ORDER BY o.position, o.id DESC`
 	rows, err := s.DB.QueryContext(ctx, q, args...)
@@ -157,7 +160,7 @@ func (s *Store) ListOrders(ctx context.Context, customerID int64) ([]*Order, err
 }
 
 func (s *Store) GetOrder(ctx context.Context, id int64) (*Order, error) {
-	o, err := scanOrder(s.DB.QueryRowContext(ctx, orderSelect+` WHERE o.id=?`, id))
+	o, err := scanOrder(s.DB.QueryRowContext(ctx, orderSelect+` WHERE o.id=? AND o.tenant_id=?`, id, s.tid))
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -177,13 +180,18 @@ func (s *Store) CreateOrder(ctx context.Context, o *Order) error {
 	if o.Status == "" {
 		o.Status = "consulta"
 	}
+	// La clienta tiene que ser de esta empresa (los ids son globales).
+	var one int
+	if err := tx.QueryRowContext(ctx, `SELECT 1 FROM customers WHERE id=? AND tenant_id=?`, o.CustomerID, s.tid).Scan(&one); err != nil {
+		return fmt.Errorf("cliente %d: %w", o.CustomerID, ErrNotFound)
+	}
 	o.Total = 0
 	for _, it := range o.Items {
 		o.Total += float64(it.Qty) * it.UnitPrice
 	}
-	res, err := tx.ExecContext(ctx, `INSERT INTO orders(customer_id,status,total,notes,source,customer_image,match_confidence,
-		location_lat,location_lng,location_text,position,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-		o.CustomerID, o.Status, o.Total, o.Notes, o.Source, o.CustomerImage, o.MatchConfidence,
+	res, err := tx.ExecContext(ctx, `INSERT INTO orders(tenant_id,customer_id,status,total,notes,source,customer_image,match_confidence,
+		location_lat,location_lng,location_text,position,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+		s.tid, o.CustomerID, o.Status, o.Total, o.Notes, o.Source, o.CustomerImage, o.MatchConfidence,
 		o.LocationLat, o.LocationLng, o.LocationText, -float64(time.Now().Unix()), now(), now())
 	if err != nil {
 		return err
@@ -192,24 +200,44 @@ func (s *Store) CreateOrder(ctx context.Context, o *Order) error {
 	for i := range o.Items {
 		it := &o.Items[i]
 		it.OrderID = o.ID
-		r, err := tx.ExecContext(ctx, `INSERT INTO order_items(order_id,product_id,variant_id,product_code,product_name,image,size,qty,unit_price)
-			VALUES(?,?,?,?,?,?,?,?,?)`, o.ID, it.ProductID, it.VariantID, it.ProductCode, it.ProductName, it.Image, it.Size, it.Qty, it.UnitPrice)
+		if err := s.checkItem(ctx, tx, it); err != nil {
+			return err
+		}
+		r, err := tx.ExecContext(ctx, `INSERT INTO order_items(tenant_id,order_id,product_id,variant_id,product_code,product_name,image,size,qty,unit_price)
+			VALUES(?,?,?,?,?,?,?,?,?,?)`, s.tid, o.ID, it.ProductID, it.VariantID, it.ProductCode, it.ProductName, it.Image, it.Size, it.Qty, it.UnitPrice)
 		if err != nil {
 			return err
 		}
 		it.ID, _ = r.LastInsertId()
 	}
 	if reservedStatuses[o.Status] {
-		if err := reserveStock(ctx, tx, o.ID, -1); err != nil {
+		if err := s.reserveStock(ctx, tx, o.ID, -1); err != nil {
 			return err
 		}
 	}
 	return tx.Commit()
 }
 
+// checkItem: el producto y la talla de un ítem tienen que ser de esta empresa.
+func (s *Store) checkItem(ctx context.Context, tx *sql.Tx, it *OrderItem) error {
+	var one int
+	if it.ProductID != nil {
+		if err := tx.QueryRowContext(ctx, `SELECT 1 FROM products WHERE id=? AND tenant_id=?`, *it.ProductID, s.tid).Scan(&one); err != nil {
+			return fmt.Errorf("producto %d: %w", *it.ProductID, ErrNotFound)
+		}
+	}
+	if it.VariantID != nil {
+		if err := tx.QueryRowContext(ctx, `SELECT 1 FROM product_variants WHERE id=? AND tenant_id=?`, *it.VariantID, s.tid).Scan(&one); err != nil {
+			return fmt.Errorf("talla %d: %w", *it.VariantID, ErrNotFound)
+		}
+	}
+	return nil
+}
+
 // reserveStock mueve el stock de los ítems del pedido: sign=-1 descuenta, +1 devuelve.
-func reserveStock(ctx context.Context, tx *sql.Tx, orderID int64, sign int) error {
-	rows, err := tx.QueryContext(ctx, `SELECT variant_id, qty, product_name, size FROM order_items WHERE order_id=? AND variant_id IS NOT NULL`, orderID)
+func (s *Store) reserveStock(ctx context.Context, tx *sql.Tx, orderID int64, sign int) error {
+	rows, err := tx.QueryContext(ctx, `SELECT variant_id, qty, product_name, size FROM order_items
+		WHERE order_id=? AND tenant_id=? AND variant_id IS NOT NULL`, orderID, s.tid)
 	if err != nil {
 		return err
 	}
@@ -230,20 +258,20 @@ func reserveStock(ctx context.Context, tx *sql.Tx, orderID int64, sign int) erro
 	rows.Close()
 	if sign < 0 {
 		// Al descontar el físico la reserva temporal ya cumplió su función.
-		if _, err := tx.ExecContext(ctx, `DELETE FROM stock_reservations WHERE order_id=?`, orderID); err != nil {
+		if _, err := tx.ExecContext(ctx, `DELETE FROM stock_reservations WHERE order_id=? AND tenant_id=?`, orderID, s.tid); err != nil {
 			return err
 		}
 	}
 	for _, l := range lines {
 		if sign < 0 {
-			res, err := tx.ExecContext(ctx, `UPDATE product_variants SET stock=stock-? WHERE id=? AND stock>=?`, l.qty, l.vid, l.qty)
+			res, err := tx.ExecContext(ctx, `UPDATE product_variants SET stock=stock-? WHERE id=? AND tenant_id=? AND stock>=?`, l.qty, l.vid, s.tid, l.qty)
 			if err != nil {
 				return err
 			}
 			if n, _ := res.RowsAffected(); n == 0 {
 				return fmt.Errorf("%w: %s talla %s", ErrNoStock, l.name, l.size)
 			}
-		} else if _, err := tx.ExecContext(ctx, `UPDATE product_variants SET stock=stock+? WHERE id=?`, l.qty, l.vid); err != nil {
+		} else if _, err := tx.ExecContext(ctx, `UPDATE product_variants SET stock=stock+? WHERE id=? AND tenant_id=?`, l.qty, l.vid, s.tid); err != nil {
 			return err
 		}
 	}
@@ -251,7 +279,7 @@ func reserveStock(ctx context.Context, tx *sql.Tx, orderID int64, sign int) erro
 	if sign < 0 {
 		reserved = 1
 	}
-	_, err = tx.ExecContext(ctx, `UPDATE orders SET stock_reserved=? WHERE id=?`, reserved, orderID)
+	_, err = tx.ExecContext(ctx, `UPDATE orders SET stock_reserved=? WHERE id=? AND tenant_id=?`, reserved, orderID, s.tid)
 	return err
 }
 
@@ -266,7 +294,7 @@ func (s *Store) UpdateOrderStatus(ctx context.Context, id int64, status string, 
 	}
 	defer tx.Rollback()
 	var reserved int
-	if err := tx.QueryRowContext(ctx, `SELECT status, stock_reserved FROM orders WHERE id=?`, id).Scan(&prev, &reserved); err != nil {
+	if err := tx.QueryRowContext(ctx, `SELECT status, stock_reserved FROM orders WHERE id=? AND tenant_id=?`, id, s.tid).Scan(&prev, &reserved); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", ErrNotFound
 		}
@@ -274,18 +302,18 @@ func (s *Store) UpdateOrderStatus(ctx context.Context, id int64, status string, 
 	}
 	want := reservedStatuses[status]
 	if want && reserved == 0 {
-		if err := reserveStock(ctx, tx, id, -1); err != nil {
+		if err := s.reserveStock(ctx, tx, id, -1); err != nil {
 			return prev, err
 		}
 	} else if !want && reserved == 1 {
-		if err := reserveStock(ctx, tx, id, +1); err != nil {
+		if err := s.reserveStock(ctx, tx, id, +1); err != nil {
 			return prev, err
 		}
 	}
 	if position != nil {
-		_, err = tx.ExecContext(ctx, `UPDATE orders SET status=?, position=?, updated_at=? WHERE id=?`, status, *position, now(), id)
+		_, err = tx.ExecContext(ctx, `UPDATE orders SET status=?, position=?, updated_at=? WHERE id=? AND tenant_id=?`, status, *position, now(), id, s.tid)
 	} else {
-		_, err = tx.ExecContext(ctx, `UPDATE orders SET status=?, updated_at=? WHERE id=?`, status, now(), id)
+		_, err = tx.ExecContext(ctx, `UPDATE orders SET status=?, updated_at=? WHERE id=? AND tenant_id=?`, status, now(), id, s.tid)
 	}
 	if err != nil {
 		return prev, err
@@ -294,13 +322,13 @@ func (s *Store) UpdateOrderStatus(ctx context.Context, id int64, status string, 
 }
 
 func (s *Store) UpdateOrderNotes(ctx context.Context, id int64, notes string) error {
-	_, err := s.DB.ExecContext(ctx, `UPDATE orders SET notes=?, updated_at=? WHERE id=?`, notes, now(), id)
+	_, err := s.DB.ExecContext(ctx, `UPDATE orders SET notes=?, updated_at=? WHERE id=? AND tenant_id=?`, notes, now(), id, s.tid)
 	return err
 }
 
 func (s *Store) SetOrderLocation(ctx context.Context, id int64, lat, lng *float64, text string) error {
-	_, err := s.DB.ExecContext(ctx, `UPDATE orders SET location_lat=?, location_lng=?, location_text=?, updated_at=? WHERE id=?`,
-		lat, lng, text, now(), id)
+	_, err := s.DB.ExecContext(ctx, `UPDATE orders SET location_lat=?, location_lng=?, location_text=?, updated_at=? WHERE id=? AND tenant_id=?`,
+		lat, lng, text, now(), id, s.tid)
 	return err
 }
 
@@ -311,18 +339,18 @@ func (s *Store) DeleteOrder(ctx context.Context, id int64) error {
 	}
 	defer tx.Rollback()
 	var reserved int
-	if err := tx.QueryRowContext(ctx, `SELECT stock_reserved FROM orders WHERE id=?`, id).Scan(&reserved); err != nil {
+	if err := tx.QueryRowContext(ctx, `SELECT stock_reserved FROM orders WHERE id=? AND tenant_id=?`, id, s.tid).Scan(&reserved); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrNotFound
 		}
 		return err
 	}
 	if reserved == 1 {
-		if err := reserveStock(ctx, tx, id, +1); err != nil {
+		if err := s.reserveStock(ctx, tx, id, +1); err != nil {
 			return err
 		}
 	}
-	if _, err := tx.ExecContext(ctx, `DELETE FROM orders WHERE id=?`, id); err != nil {
+	if _, err := tx.ExecContext(ctx, `DELETE FROM orders WHERE id=? AND tenant_id=?`, id, s.tid); err != nil {
 		return err
 	}
 	return tx.Commit()
@@ -338,7 +366,7 @@ type Stats struct {
 
 func (s *Store) Stats(ctx context.Context) (*Stats, error) {
 	st := &Stats{ByStatus: map[string]int{}}
-	rows, err := s.DB.QueryContext(ctx, `SELECT status, count(*) FROM orders GROUP BY status`)
+	rows, err := s.DB.QueryContext(ctx, `SELECT status, count(*) FROM orders WHERE tenant_id=? GROUP BY status`, s.tid)
 	if err != nil {
 		return nil, err
 	}
@@ -352,11 +380,13 @@ func (s *Store) Stats(ctx context.Context) (*Stats, error) {
 		st.ByStatus[k] = n
 	}
 	rows.Close()
-	_ = s.DB.QueryRowContext(ctx, `SELECT coalesce(sum(total),0) FROM orders WHERE stock_reserved=1
-		AND created_at >= datetime('now','start of month')`).Scan(&st.SalesMonth)
-	_ = s.DB.QueryRowContext(ctx, `SELECT count(*) FROM customers`).Scan(&st.Customers)
-	_ = s.DB.QueryRowContext(ctx, `SELECT count(*) FROM product_variants v JOIN products p ON p.id=v.product_id
-		WHERE p.active=1 AND v.stock<=1`).Scan(&st.LowStock)
+	t := now()
+	monthStart := time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, time.UTC)
+	_ = s.DB.QueryRowContext(ctx, `SELECT coalesce(sum(total),0) FROM orders WHERE tenant_id=? AND stock_reserved=1
+		AND created_at >= ?`, s.tid, monthStart).Scan(&st.SalesMonth)
+	_ = s.DB.QueryRowContext(ctx, `SELECT count(*) FROM customers WHERE tenant_id=?`, s.tid).Scan(&st.Customers)
+	_ = s.DB.QueryRowContext(ctx, `SELECT count(*) FROM product_variants v JOIN products p ON p.id=v.product_id AND p.tenant_id=v.tenant_id
+		WHERE v.tenant_id=? AND p.active=1 AND v.stock<=1`, s.tid).Scan(&st.LowStock)
 	st.OpenInquiries = st.ByStatus["consulta"]
 	return st, nil
 }
@@ -369,7 +399,7 @@ func (s *Store) ReplaceOrderItems(ctx context.Context, orderID int64, items []Or
 	}
 	defer tx.Rollback()
 	var reserved int
-	if err := tx.QueryRowContext(ctx, `SELECT stock_reserved FROM orders WHERE id=?`, orderID).Scan(&reserved); err != nil {
+	if err := tx.QueryRowContext(ctx, `SELECT stock_reserved FROM orders WHERE id=? AND tenant_id=?`, orderID, s.tid).Scan(&reserved); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrNotFound
 		}
@@ -378,18 +408,21 @@ func (s *Store) ReplaceOrderItems(ctx context.Context, orderID int64, items []Or
 	if reserved == 1 {
 		return errors.New("el pedido ya tiene stock reservado")
 	}
-	if _, err := tx.ExecContext(ctx, `DELETE FROM order_items WHERE order_id=?`, orderID); err != nil {
+	if _, err := tx.ExecContext(ctx, `DELETE FROM order_items WHERE order_id=? AND tenant_id=?`, orderID, s.tid); err != nil {
 		return err
 	}
 	total := 0.0
 	for _, it := range items {
 		total += float64(it.Qty) * it.UnitPrice
-		if _, err := tx.ExecContext(ctx, `INSERT INTO order_items(order_id,product_id,variant_id,product_code,product_name,image,size,qty,unit_price)
-			VALUES(?,?,?,?,?,?,?,?,?)`, orderID, it.ProductID, it.VariantID, it.ProductCode, it.ProductName, it.Image, it.Size, it.Qty, it.UnitPrice); err != nil {
+		if err := s.checkItem(ctx, tx, &it); err != nil {
+			return err
+		}
+		if _, err := tx.ExecContext(ctx, `INSERT INTO order_items(tenant_id,order_id,product_id,variant_id,product_code,product_name,image,size,qty,unit_price)
+			VALUES(?,?,?,?,?,?,?,?,?,?)`, s.tid, orderID, it.ProductID, it.VariantID, it.ProductCode, it.ProductName, it.Image, it.Size, it.Qty, it.UnitPrice); err != nil {
 			return err
 		}
 	}
-	if _, err := tx.ExecContext(ctx, `UPDATE orders SET total=?, updated_at=? WHERE id=?`, total, now(), orderID); err != nil {
+	if _, err := tx.ExecContext(ctx, `UPDATE orders SET total=?, updated_at=? WHERE id=? AND tenant_id=?`, total, now(), orderID, s.tid); err != nil {
 		return err
 	}
 	return tx.Commit()

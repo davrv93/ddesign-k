@@ -2,9 +2,13 @@ module github.com/davrv93/ddesign-k/backend
 
 go 1.26.0
 
-require modernc.org/sqlite v1.60.1
+require (
+	github.com/go-sql-driver/mysql v1.9.3
+	modernc.org/sqlite v1.60.1
+)
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect

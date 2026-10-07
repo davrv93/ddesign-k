@@ -7,18 +7,28 @@ import (
 	"time"
 )
 
-// Hub reparte avisos de cambios a los paneles abiertos (Server-Sent Events).
+// Hub reparte avisos de cambios a los paneles abiertos (Server-Sent Events). Cada panel escucha solo a su
+// empresa: un cambio de una empresa no llega a los paneles de otra.
 type Hub struct {
 	mu   sync.Mutex
-	subs map[chan string]struct{}
+	subs map[chan string]int64 // canal → empresa
 }
 
-func NewHub() *Hub { return &Hub{subs: map[chan string]struct{}{}} }
+func NewHub() *Hub { return &Hub{subs: map[chan string]int64{}} }
 
-func (h *Hub) Publish(topic string) {
+// Publish avisa a todos los paneles (despliegue de una sola tienda).
+func (h *Hub) Publish(topic string) { h.publish(0, topic) }
+
+// PublishTo avisa solo a los paneles de la empresa tid.
+func (h *Hub) PublishTo(tid int64, topic string) { h.publish(tid, topic) }
+
+func (h *Hub) publish(tid int64, topic string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	for ch := range h.subs {
+	for ch, t := range h.subs {
+		if tid != 0 && t != tid {
+			continue
+		}
 		select {
 		case ch <- topic:
 		default: // cliente lento: se salta el aviso, igual refresca en el siguiente
@@ -26,7 +36,11 @@ func (h *Hub) Publish(topic string) {
 	}
 }
 
-func (h *Hub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// ServeHTTP atiende un panel sin empresa (pruebas y despliegue de una tienda).
+func (h *Hub) ServeHTTP(w http.ResponseWriter, r *http.Request) { h.Serve(w, r, 0) }
+
+// Serve abre el stream de avisos de la empresa tid.
+func (h *Hub) Serve(w http.ResponseWriter, r *http.Request, tid int64) {
 	fl, ok := w.(http.Flusher)
 	if !ok {
 		http.Error(w, "streaming no soportado", http.StatusInternalServerError)
@@ -34,7 +48,7 @@ func (h *Hub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	ch := make(chan string, 16)
 	h.mu.Lock()
-	h.subs[ch] = struct{}{}
+	h.subs[ch] = tid
 	h.mu.Unlock()
 	defer func() {
 		h.mu.Lock()

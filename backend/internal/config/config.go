@@ -2,6 +2,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -49,6 +50,15 @@ type Config struct {
 	// CRMEventSecret protege POST /api/internal/crm/evento (el agente avisa los turnos del chat web). Vacío = la ruta
 	// no existe.
 	CRMEventSecret string
+
+	// Multiempresa (JMD Ventas). MULTITENANT=1: la empresa sale de la ruta (/<slug>/api/…), los usuarios viven en la
+	// base y no hay usuario del .env. DB_DRIVER=mysql usa MariaDB (DB_DSN, o DB_HOST/DB_PORT/DB_NAME/DB_USER/
+	// DB_PASSWORD); si no, la SQLite de DATA_DIR.
+	MultiTenant bool
+	DBDriver    string
+	DBDSN       string
+	// WhatsAppTenant: slug de la empresa dueña del WhatsApp de este backend (vacío = ninguna).
+	WhatsAppTenant string
 }
 
 // KommoListo: integración encendida y con credenciales.
@@ -95,11 +105,25 @@ func Load() *Config {
 		KommoPipeline:   env("KOMMO_PIPELINE_NAME", "Baruka · Ventas por WhatsApp"),
 		KommoTranscript: env("KOMMO_SYNC_TRANSCRIPT", "0") == "1",
 		CRMEventSecret:  strings.TrimSpace(env("CRM_EVENT_SECRET", "")),
+
+		MultiTenant:    env("MULTITENANT", "0") == "1",
+		DBDriver:       env("DB_DRIVER", "sqlite"),
+		DBDSN:          env("DB_DSN", ""),
+		WhatsAppTenant: strings.TrimSpace(env("WHATSAPP_TENANT", "")),
+	}
+	// EVOLUTION_URL=off: este backend no tiene WhatsApp (el stack nuevo, mientras el bot siga en el anterior).
+	switch strings.ToLower(c.EvolutionURL) {
+	case "off", "none", "0":
+		c.EvolutionURL = ""
+	}
+	if c.DBDriver == "mysql" && c.DBDSN == "" {
+		c.DBDSN = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", env("DB_USER", "jmd"), env("DB_PASSWORD", ""),
+			env("DB_HOST", "mariadb"), env("DB_PORT", "3306"), env("DB_NAME", "jmdventas"))
 	}
 	if c.MediaBaseURL == "" {
 		c.MediaBaseURL = c.WebhookBaseURL
 	}
-	if c.AdminPassword == "" {
+	if c.AdminPassword == "" && !c.MultiTenant {
 		log.Fatal("ADMIN_PASSWORD es obligatorio")
 	}
 	if c.JWTSecret == "" {

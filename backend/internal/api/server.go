@@ -35,6 +35,9 @@ type Server struct {
 	// Kommo es el sincronizador con el CRM (nil = apagado). Recibe los turnos del chat web y da el enlace «Ver en
 	// Kommo» de las conversaciones.
 	Kommo *kommo.Sincronizador
+	// BotTenant: en multiempresa, la empresa dueña del WhatsApp (el bot) de este backend; 0 = ninguna. Las demás
+	// empresas no envían ni reciben WhatsApp por este backend.
+	BotTenant int64
 }
 
 func New(cfg *config.Config, st *store.Store, evo *evolution.Client, aic *ai.Client, b *bot.Bot, a *auth.Auth, hub *Hub) *Server {
@@ -59,7 +62,7 @@ func (s *Server) Routes() http.Handler {
 
 	p := func(pattern string, h http.HandlerFunc) { mux.Handle(pattern, s.requireAuth(h)) }
 	p("GET /api/me", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, map[string]any{"ok": true}) })
-	p("GET /api/events", s.hub.ServeHTTP)
+	p("GET /api/events", func(w http.ResponseWriter, r *http.Request) { s.hub.Serve(w, r, s.tenantID(r)) })
 	p("GET /api/stats", s.stats)
 
 	p("GET /api/whatsapp/status", s.waStatus)
@@ -88,6 +91,9 @@ func (s *Server) Routes() http.Handler {
 	p("GET /api/settings", s.getSettings)
 	p("PUT /api/settings", s.putSettings)
 
+	if s.cfg.MultiTenant {
+		return logRequests(s.tenantRouter(mux))
+	}
 	return logRequests(mux)
 }
 
@@ -128,8 +134,15 @@ func (s *Server) requireAuth(h http.Handler) http.Handler {
 		if tok == "" {
 			tok = r.URL.Query().Get("token") // EventSource no permite cabeceras
 		}
-		if _, err := s.auth.Verify(tok); err != nil {
+		c, err := s.auth.Verify(tok)
+		if err != nil {
 			writeErr(w, http.StatusUnauthorized, err.Error())
+			return
+		}
+		// El token es de una empresa: no abre la de otra. Los tokens anteriores a la multiempresa (sin empresa)
+		// solo valen en el despliegue de una tienda.
+		if want := s.tenantID(r); c.Tenant != want && !(c.Tenant == 0 && !s.cfg.MultiTenant) {
+			writeErr(w, http.StatusUnauthorized, "la sesión es de otra empresa")
 			return
 		}
 		h.ServeHTTP(w, r)
@@ -145,7 +158,19 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "datos inválidos")
 		return
 	}
-	tok, err := s.auth.Login(in.User, in.Password)
+	var tok string
+	var err error
+	if s.cfg.MultiTenant {
+		// Usuarios de la empresa, en la base. El usuario del .env no entra en ninguna.
+		var u *store.User
+		if u, err = s.st(r).CheckUser(r.Context(), in.User, in.Password); err == nil {
+			tok = s.auth.Issue(u.Username, u.TenantID)
+		}
+	} else if tok, err = s.auth.Login(in.User, in.Password); err != nil {
+		if u, err2 := s.st(r).CheckUser(r.Context(), in.User, in.Password); err2 == nil {
+			tok, err = s.auth.Issue(u.Username, u.TenantID), nil
+		}
+	}
 	if err != nil {
 		time.Sleep(700 * time.Millisecond) // frena fuerza bruta
 		writeErr(w, 401, err.Error())
@@ -155,11 +180,16 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) publicInfo(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, 200, map[string]string{"business": s.cfg.BusinessName, "currency": s.cfg.Currency})
+	name, currency, _ := s.business(r)
+	out := map[string]string{"business": name, "currency": currency}
+	if t := TenantOf(r.Context()); t != nil {
+		out["empresa"] = t.Slug
+	}
+	writeJSON(w, 200, out)
 }
 
 func (s *Server) publicCatalog(w http.ResponseWriter, r *http.Request) {
-	products, err := s.store.ListProducts(r.Context(), true)
+	products, err := s.st(r).ListProducts(r.Context(), true)
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
@@ -184,7 +214,8 @@ func (s *Server) publicCatalog(w http.ResponseWriter, r *http.Request) {
 		}
 		out = append(out, pub{p.Code, p.Name, p.Description, p.Category, p.Color, p.Price, p.Image, sizes})
 	}
-	writeJSON(w, 200, map[string]any{"business": s.cfg.BusinessName, "currency": s.cfg.Currency, "whatsapp": s.cfg.WhatsAppNumber, "products": out})
+	name, currency, wa := s.business(r)
+	writeJSON(w, 200, map[string]any{"business": name, "currency": currency, "whatsapp": wa, "products": out})
 }
 
 // publicStock responde la disponibilidad real de uno o varios códigos (?codes=V05,VES-003):
@@ -218,7 +249,7 @@ func (s *Server) publicStock(w http.ResponseWriter, r *http.Request) {
 		Online   map[string]size        `json:"online"`
 		Branches []store.WarehouseStock `json:"branches"`
 	}
-	products, err := s.store.ListProducts(r.Context(), true)
+	products, err := s.st(r).ListProducts(r.Context(), true)
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
@@ -227,7 +258,7 @@ func (s *Server) publicStock(w http.ResponseWriter, r *http.Request) {
 	for _, p := range products {
 		byCode[strings.ToUpper(p.Code)] = p
 	}
-	branches, err := s.store.WarehouseStockByCode(r.Context(), codes)
+	branches, err := s.st(r).WarehouseStockByCode(r.Context(), codes)
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
@@ -250,21 +281,24 @@ func (s *Server) publicStock(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) media() http.Handler {
-	root := filepath.Join(s.cfg.DataDir, "media")
-	fs := http.StripPrefix("/media/", http.FileServer(http.Dir(root)))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/") { // sin listado de carpetas
 			http.NotFound(w, r)
 			return
 		}
 		w.Header().Set("Cache-Control", "public, max-age=86400")
-		fs.ServeHTTP(w, r)
+		// Cada empresa tiene su carpeta: una ruta de otra empresa no existe aquí.
+		http.StripPrefix("/media/", http.FileServer(http.Dir(s.mediaRoot(r)))).ServeHTTP(w, r)
 	})
 }
 
 func (s *Server) webhook(w http.ResponseWriter, r *http.Request) {
 	if subtle.ConstantTimeCompare([]byte(r.PathValue("secret")), []byte(s.cfg.WebhookSecret)) != 1 {
 		writeErr(w, 403, "forbidden")
+		return
+	}
+	if !s.waEnabled(r) { // multiempresa: el bot es de una sola empresa
+		http.NotFound(w, r)
 		return
 	}
 	body, err := io.ReadAll(io.LimitReader(r.Body, 64<<20))
@@ -319,7 +353,20 @@ func (s *Server) Bootstrap(ctx context.Context) {
 	}
 }
 
+// errNoWA: esta empresa no tiene WhatsApp en este backend (multiempresa sin vincular o sin evolution).
+func (s *Server) noWA(w http.ResponseWriter, r *http.Request) bool {
+	if s.waEnabled(r) {
+		return false
+	}
+	writeErr(w, http.StatusConflict, "WhatsApp no está habilitado para esta empresa")
+	return true
+}
+
 func (s *Server) waStatus(w http.ResponseWriter, r *http.Request) {
+	if !s.waEnabled(r) {
+		writeJSON(w, 200, map[string]any{"available": false, "error": "WhatsApp no está habilitado para esta empresa"})
+		return
+	}
 	st, err := s.evo.Status(r.Context())
 	if err != nil {
 		writeJSON(w, 200, map[string]any{"available": false, "error": err.Error()})
@@ -330,6 +377,9 @@ func (s *Server) waStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) waConnect(w http.ResponseWriter, r *http.Request) {
+	if s.noWA(w, r) {
+		return
+	}
 	if _, err := s.evo.EnsureInstance(r.Context()); err != nil {
 		writeErr(w, 502, err.Error())
 		return
@@ -338,11 +388,14 @@ func (s *Server) waConnect(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 502, err.Error())
 		return
 	}
-	s.hub.Publish("whatsapp")
+	s.pub(r, "whatsapp")
 	writeJSON(w, 200, map[string]bool{"ok": true})
 }
 
 func (s *Server) waQR(w http.ResponseWriter, r *http.Request) {
+	if s.noWA(w, r) {
+		return
+	}
 	qr, err := s.evo.QR(r.Context())
 	if err != nil {
 		writeJSON(w, 200, map[string]any{"pending": true, "error": err.Error()})
@@ -352,6 +405,9 @@ func (s *Server) waQR(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) waPair(w http.ResponseWriter, r *http.Request) {
+	if s.noWA(w, r) {
+		return
+	}
 	var in struct {
 		Phone string `json:"phone"`
 	}
@@ -382,11 +438,14 @@ func (s *Server) waPair(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) waLogout(w http.ResponseWriter, r *http.Request) {
+	if s.noWA(w, r) {
+		return
+	}
 	if err := s.evo.Logout(r.Context()); err != nil {
 		writeErr(w, 502, err.Error())
 		return
 	}
-	s.hub.Publish("whatsapp")
+	s.pub(r, "whatsapp")
 	writeJSON(w, 200, map[string]bool{"ok": true})
 }
 
@@ -394,7 +453,7 @@ func (s *Server) waLogout(w http.ResponseWriter, r *http.Request) {
 // productos
 
 func (s *Server) listProducts(w http.ResponseWriter, r *http.Request) {
-	products, err := s.store.ListProducts(r.Context(), false)
+	products, err := s.st(r).ListProducts(r.Context(), false)
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
@@ -418,7 +477,7 @@ func (s *Server) saveProduct(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		p.ID = id
-		if old, err := s.store.GetProduct(r.Context(), id); err == nil && p.Image == "" {
+		if old, err := s.st(r).GetProduct(r.Context(), id); err == nil && p.Image == "" {
 			p.Image = old.Image
 		}
 	} else {
@@ -428,16 +487,16 @@ func (s *Server) saveProduct(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "código y nombre son obligatorios")
 		return
 	}
-	if err := s.store.SaveProduct(r.Context(), &p); err != nil {
+	if err := s.st(r).SaveProduct(r.Context(), &p); err != nil {
 		code := 500
-		if strings.Contains(err.Error(), "UNIQUE") {
+		if strings.Contains(err.Error(), "UNIQUE") || strings.Contains(err.Error(), "Duplicate entry") {
 			code, err = 409, errors.New("ya existe un producto con ese código")
 		}
 		writeErr(w, code, err.Error())
 		return
 	}
-	saved, _ := s.store.GetProduct(r.Context(), p.ID)
-	s.hub.Publish("products")
+	saved, _ := s.st(r).GetProduct(r.Context(), p.ID)
+	s.pub(r, "products")
 	writeJSON(w, 200, saved)
 }
 
@@ -447,11 +506,11 @@ func (s *Server) deleteProduct(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "id inválido")
 		return
 	}
-	if err := s.store.DeleteProduct(r.Context(), id); err != nil {
+	if err := s.st(r).DeleteProduct(r.Context(), id); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
-	s.hub.Publish("products")
+	s.pub(r, "products")
 	writeJSON(w, 200, map[string]bool{"ok": true})
 }
 
@@ -482,7 +541,7 @@ func (s *Server) uploadProductImage(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "id inválido")
 		return
 	}
-	p, err := s.store.GetProduct(r.Context(), id)
+	p, err := s.st(r).GetProduct(r.Context(), id)
 	if err != nil {
 		writeErr(w, 404, "producto no encontrado")
 		return
@@ -496,7 +555,7 @@ func (s *Server) uploadProductImage(w http.ResponseWriter, r *http.Request) {
 	if ext == "" {
 		ext = ".jpg"
 	}
-	dir := filepath.Join(s.cfg.DataDir, "media", "products")
+	dir := filepath.Join(s.mediaRoot(r), "products")
 	_ = os.MkdirAll(dir, 0o755)
 	name := strings.ToLower(p.Code) + "-" + strconv.FormatInt(time.Now().Unix(), 36) + ext
 	if err := os.WriteFile(filepath.Join(dir, name), data, 0o644); err != nil {
@@ -511,12 +570,12 @@ func (s *Server) uploadProductImage(w http.ResponseWriter, r *http.Request) {
 		}
 		cancel()
 	}
-	if err := s.store.SetProductImage(r.Context(), id, "/media/products/"+name, tags); err != nil {
+	if err := s.st(r).SetProductImage(r.Context(), id, "/media/products/"+name, tags); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
-	saved, _ := s.store.GetProduct(r.Context(), id)
-	s.hub.Publish("products")
+	saved, _ := s.st(r).GetProduct(r.Context(), id)
+	s.pub(r, "products")
 	writeJSON(w, 200, saved)
 }
 
@@ -544,7 +603,7 @@ func (s *Server) describeImage(w http.ResponseWriter, r *http.Request) {
 // pedidos
 
 func (s *Server) listOrders(w http.ResponseWriter, r *http.Request) {
-	orders, err := s.store.ListOrders(r.Context(), 0)
+	orders, err := s.st(r).ListOrders(r.Context(), 0)
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
@@ -588,14 +647,14 @@ func (s *Server) createOrder(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "estado inválido")
 		return
 	}
-	cust, _, err := s.store.UpsertCustomer(r.Context(), phone+"@s.whatsapp.net", phone, in.Name)
+	cust, _, err := s.st(r).UpsertCustomer(r.Context(), phone+"@s.whatsapp.net", phone, in.Name)
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
 	o := &store.Order{CustomerID: cust.ID, Status: in.Status, Source: "manual", Notes: in.Notes, LocationText: in.Address}
 	if in.ProductID > 0 {
-		p, err := s.store.GetProduct(r.Context(), in.ProductID)
+		p, err := s.st(r).GetProduct(r.Context(), in.ProductID)
 		if err != nil {
 			writeErr(w, 404, "producto no encontrado")
 			return
@@ -611,7 +670,7 @@ func (s *Server) createOrder(w http.ResponseWriter, r *http.Request) {
 		o.Items = []store.OrderItem{{ProductID: &p.ID, VariantID: &v.ID, ProductCode: p.Code, ProductName: p.Name, Image: p.Image,
 			Size: v.Size, Qty: in.Qty, UnitPrice: p.Price}}
 	}
-	if err := s.store.CreateOrder(r.Context(), o); err != nil {
+	if err := s.st(r).CreateOrder(r.Context(), o); err != nil {
 		code := 500
 		if errors.Is(err, store.ErrNoStock) {
 			code = 409
@@ -619,9 +678,9 @@ func (s *Server) createOrder(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, code, err.Error())
 		return
 	}
-	s.hub.Publish("orders")
-	s.hub.Publish("products")
-	saved, _ := s.store.GetOrder(r.Context(), o.ID)
+	s.pub(r, "orders")
+	s.pub(r, "products")
+	saved, _ := s.st(r).GetOrder(r.Context(), o.ID)
 	writeJSON(w, 200, saved)
 }
 
@@ -643,14 +702,14 @@ func (s *Server) patchOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx := r.Context()
 	if in.Notes != nil {
-		if err := s.store.UpdateOrderNotes(ctx, id, *in.Notes); err != nil {
+		if err := s.st(r).UpdateOrderNotes(ctx, id, *in.Notes); err != nil {
 			writeErr(w, 500, err.Error())
 			return
 		}
 	}
 	changed := false
 	if in.Status != nil {
-		prev, err := s.store.UpdateOrderStatus(ctx, id, *in.Status, in.Position)
+		prev, err := s.st(r).UpdateOrderStatus(ctx, id, *in.Status, in.Position)
 		if err != nil {
 			code := 500
 			switch {
@@ -666,19 +725,20 @@ func (s *Server) patchOrder(w http.ResponseWriter, r *http.Request) {
 		}
 		changed = prev != *in.Status
 	}
-	o, err := s.store.GetOrder(ctx, id)
+	o, err := s.st(r).GetOrder(ctx, id)
 	if err != nil {
 		writeErr(w, 404, "pedido no encontrado")
 		return
 	}
-	if changed && (in.Notify == nil || *in.Notify) {
+	// El bot (WhatsApp y Kommo) es de una sola empresa: el pedido de otra nunca le llega.
+	if changed && s.waEnabled(r) && (in.Notify == nil || *in.Notify) {
 		go s.bot.NotifyStatus(context.Background(), o)
 	}
-	if changed {
+	if changed && s.isBotTenant(r) {
 		go s.bot.PedidoCambio(context.Background(), o) // CRM: pagado, enviado o cancelado desde el tablero
 	}
-	s.hub.Publish("orders")
-	s.hub.Publish("products")
+	s.pub(r, "orders")
+	s.pub(r, "products")
 	writeJSON(w, 200, o)
 }
 
@@ -688,17 +748,17 @@ func (s *Server) deleteOrder(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "id inválido")
 		return
 	}
-	if err := s.store.DeleteOrder(r.Context(), id); err != nil {
+	if err := s.st(r).DeleteOrder(r.Context(), id); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
-	s.hub.Publish("orders")
-	s.hub.Publish("products")
+	s.pub(r, "orders")
+	s.pub(r, "products")
 	writeJSON(w, 200, map[string]bool{"ok": true})
 }
 
 func (s *Server) stats(w http.ResponseWriter, r *http.Request) {
-	st, err := s.store.Stats(r.Context())
+	st, err := s.st(r).Stats(r.Context())
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
@@ -710,7 +770,7 @@ func (s *Server) stats(w http.ResponseWriter, r *http.Request) {
 // conversaciones
 
 func (s *Server) listConversations(w http.ResponseWriter, r *http.Request) {
-	convs, err := s.store.ListConversations(r.Context(), 200)
+	convs, err := s.st(r).ListConversations(r.Context(), 200)
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
@@ -727,12 +787,12 @@ func (s *Server) listMessages(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "id inválido")
 		return
 	}
-	conv, err := s.store.GetConversation(r.Context(), id)
+	conv, err := s.st(r).GetConversation(r.Context(), id)
 	if err != nil {
 		writeErr(w, 404, "conversación no encontrada")
 		return
 	}
-	msgs, err := s.store.ListMessages(r.Context(), id, 300)
+	msgs, err := s.st(r).ListMessages(r.Context(), id, 300)
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
@@ -741,16 +801,16 @@ func (s *Server) listMessages(w http.ResponseWriter, r *http.Request) {
 		msgs = []*store.Message{}
 	}
 	if conv.Unread > 0 {
-		_ = s.store.MarkRead(r.Context(), id)
-		s.hub.Publish("conversations")
+		_ = s.st(r).MarkRead(r.Context(), id)
+		s.pub(r, "conversations")
 	}
-	orders, _ := s.store.ListOrders(r.Context(), conv.CustomerID)
+	orders, _ := s.st(r).ListOrders(r.Context(), conv.CustomerID)
 	if orders == nil {
 		orders = []*store.Order{}
 	}
 	out := map[string]any{"conversation": conv, "messages": msgs, "orders": orders}
 	if s.Kommo != nil {
-		if lead := s.store.LeadKommoDeConversacion(r.Context(), id); lead > 0 {
+		if lead := s.st(r).LeadKommoDeConversacion(r.Context(), id); lead > 0 {
 			out["kommo_url"] = s.Kommo.Cliente().URLLead(lead)
 		}
 	}
@@ -802,9 +862,12 @@ func (s *Server) sendMessage(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "mensaje vacío")
 		return
 	}
-	conv, err := s.store.GetConversation(r.Context(), id)
+	conv, err := s.st(r).GetConversation(r.Context(), id)
 	if err != nil {
 		writeErr(w, 404, "conversación no encontrada")
+		return
+	}
+	if s.noWA(w, r) {
 		return
 	}
 	if err := s.bot.SendManual(r.Context(), conv, strings.TrimSpace(in.Text)); err != nil {
@@ -813,9 +876,9 @@ func (s *Server) sendMessage(w http.ResponseWriter, r *http.Request) {
 	}
 	// Si la asesora escribe, el bot se hace a un lado (salvo que pida lo contrario).
 	if in.PauseBot == nil || *in.PauseBot {
-		_ = s.store.SetBotPaused(r.Context(), id, true)
+		_ = s.st(r).SetBotPaused(r.Context(), id, true)
 	}
-	s.hub.Publish("conversations")
+	s.pub(r, "conversations")
 	writeJSON(w, 200, map[string]bool{"ok": true})
 }
 
@@ -832,11 +895,11 @@ func (s *Server) setBot(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "datos inválidos")
 		return
 	}
-	if err := s.store.SetBotPaused(r.Context(), id, in.Paused); err != nil {
+	if err := s.st(r).SetBotPaused(r.Context(), id, in.Paused); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
-	s.hub.Publish("conversations")
+	s.pub(r, "conversations")
 	writeJSON(w, 200, map[string]bool{"ok": true})
 }
 
@@ -851,7 +914,7 @@ var settingDefaults = map[string]string{
 }
 
 func (s *Server) getSettings(w http.ResponseWriter, r *http.Request) {
-	saved, err := s.store.Settings(r.Context())
+	saved, err := s.st(r).Settings(r.Context())
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
@@ -876,7 +939,7 @@ func (s *Server) putSettings(w http.ResponseWriter, r *http.Request) {
 		if _, ok := settingDefaults[k]; !ok {
 			continue
 		}
-		if err := s.store.SetSetting(r.Context(), k, v); err != nil {
+		if err := s.st(r).SetSetting(r.Context(), k, v); err != nil {
 			writeErr(w, 500, err.Error())
 			return
 		}

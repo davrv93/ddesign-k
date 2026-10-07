@@ -13,8 +13,9 @@ import (
 )
 
 type Claims struct {
-	User string `json:"u"`
-	Exp  int64  `json:"exp"`
+	User   string `json:"u"`
+	Tenant int64  `json:"t,omitempty"` // empresa (multiempresa); 0 = token de una sola tienda
+	Exp    int64  `json:"exp"`
 }
 
 type Auth struct {
@@ -30,12 +31,20 @@ func New(secret, user, password string) *Auth {
 
 // Login compara en tiempo constante y devuelve un token.
 func (a *Auth) Login(user, password string) (string, error) {
+	if a.password == "" { // sin usuario del .env (multiempresa): nadie entra por aquí
+		return "", errors.New("usuario o contraseña incorrectos")
+	}
 	okU := subtle.ConstantTimeCompare([]byte(user), []byte(a.user)) == 1
 	okP := subtle.ConstantTimeCompare([]byte(password), []byte(a.password)) == 1
 	if !okU || !okP {
 		return "", errors.New("usuario o contraseña incorrectos")
 	}
 	return a.sign(Claims{User: user, Exp: time.Now().Add(a.TTL).Unix()}), nil
+}
+
+// Issue firma un token para un usuario ya validado (contra la base) de la empresa tenant.
+func (a *Auth) Issue(user string, tenant int64) string {
+	return a.sign(Claims{User: user, Tenant: tenant, Exp: time.Now().Add(a.TTL).Unix()})
 }
 
 func (a *Auth) sign(c Claims) string {

@@ -22,8 +22,12 @@ type Decision struct {
 
 // SaveDecision registra una decisión. No falla la conversación si no se puede guardar (es un registro).
 func (s *Store) SaveDecision(ctx context.Context, d *Decision) error {
-	_, err := s.DB.ExecContext(ctx, `INSERT INTO decisiones(conversation_id, etapa, intent, caso, decision, razon, resultado, autor, created_at)
-		VALUES(?,?,?,?,?,?,?,?,?)`, d.ConversationID, d.Etapa, d.Intent, d.Caso, d.Decision, d.Razon, d.Resultado, d.Autor, now())
+	var one int
+	if err := s.DB.QueryRowContext(ctx, `SELECT 1 FROM conversations WHERE id=? AND tenant_id=?`, d.ConversationID, s.tid).Scan(&one); err != nil {
+		return ErrNotFound
+	}
+	_, err := s.DB.ExecContext(ctx, `INSERT INTO decisiones(tenant_id, conversation_id, etapa, intent, caso, decision, razon, resultado, autor, created_at)
+		VALUES(?,?,?,?,?,?,?,?,?,?)`, s.tid, d.ConversationID, d.Etapa, d.Intent, d.Caso, d.Decision, d.Razon, d.Resultado, d.Autor, now())
 	return err
 }
 
@@ -34,7 +38,7 @@ func (s *Store) DecisionsFor(ctx context.Context, intent string, limit int) ([]*
 		limit = 5
 	}
 	rows, err := s.DB.QueryContext(ctx, `SELECT id, conversation_id, etapa, intent, caso, decision, razon, resultado, autor, created_at
-		FROM decisiones WHERE intent=? ORDER BY id DESC LIMIT ?`, intent, limit)
+		FROM decisiones WHERE tenant_id=? AND intent=? ORDER BY id DESC LIMIT ?`, s.tid, intent, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +72,11 @@ func (s *Store) SaveParDPO(ctx context.Context, conversationID int64, p *ParDPO)
 	if p == nil || p.RespuestaBot == "" || p.RespuestaHumana == "" {
 		return nil
 	}
-	_, err := s.DB.ExecContext(ctx, `INSERT INTO pares_dpo(conversation_id, contexto, respuesta_bot, respuesta_humana, created_at)
-		VALUES(?,?,?,?,?)`, conversationID, p.Contexto, p.RespuestaBot, p.RespuestaHumana, now())
+	var one int
+	if err := s.DB.QueryRowContext(ctx, `SELECT 1 FROM conversations WHERE id=? AND tenant_id=?`, conversationID, s.tid).Scan(&one); err != nil {
+		return ErrNotFound
+	}
+	_, err := s.DB.ExecContext(ctx, `INSERT INTO pares_dpo(tenant_id, conversation_id, contexto, respuesta_bot, respuesta_humana, created_at)
+		VALUES(?,?,?,?,?,?)`, s.tid, conversationID, p.Contexto, p.RespuestaBot, p.RespuestaHumana, now())
 	return err
 }

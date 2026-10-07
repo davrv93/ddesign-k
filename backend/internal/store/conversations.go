@@ -43,17 +43,26 @@ type Message struct {
 // UpsertCustomer crea el cliente (y su conversación) si no existe y actualiza su nombre.
 func (s *Store) UpsertCustomer(ctx context.Context, jid, phone, name string) (*Customer, *Conversation, error) {
 	c := &Customer{}
-	err := s.DB.QueryRowContext(ctx, `INSERT INTO customers(jid, phone, name, created_at) VALUES(?,?,?,?)
-		ON CONFLICT(jid) DO UPDATE SET
+	up := `INSERT INTO customers(tenant_id, jid, phone, name, created_at) VALUES(?,?,?,?,?)
+		ON CONFLICT DO UPDATE SET
 			name = CASE WHEN excluded.name <> '' THEN excluded.name ELSE customers.name END,
-			phone = CASE WHEN excluded.phone <> '' THEN excluded.phone ELSE customers.phone END
-		RETURNING id, jid, phone, name, created_at`, jid, phone, name, now()).
-		Scan(&c.ID, &c.JID, &c.Phone, &c.Name, &c.CreatedAt)
-	if err != nil {
+			phone = CASE WHEN excluded.phone <> '' THEN excluded.phone ELSE customers.phone END`
+	convQ := `INSERT INTO conversations(tenant_id, customer_id, last_message_at) VALUES(?,?,?) ON CONFLICT DO NOTHING`
+	if s.mysql() {
+		up = `INSERT INTO customers(tenant_id, jid, phone, name, created_at) VALUES(?,?,?,?,?)
+		ON DUPLICATE KEY UPDATE
+			name = IF(VALUES(name) <> '', VALUES(name), name),
+			phone = IF(VALUES(phone) <> '', VALUES(phone), phone)`
+		convQ = `INSERT IGNORE INTO conversations(tenant_id, customer_id, last_message_at) VALUES(?,?,?)`
+	}
+	if _, err := s.DB.ExecContext(ctx, up, s.tid, jid, phone, name, now()); err != nil {
 		return nil, nil, err
 	}
-	if _, err := s.DB.ExecContext(ctx, `INSERT INTO conversations(customer_id, last_message_at) VALUES(?,?)
-		ON CONFLICT(customer_id) DO NOTHING`, c.ID, now()); err != nil {
+	if err := s.DB.QueryRowContext(ctx, `SELECT id, jid, phone, name, created_at FROM customers WHERE tenant_id=? AND jid=?`, s.tid, jid).
+		Scan(&c.ID, &c.JID, &c.Phone, &c.Name, &c.CreatedAt); err != nil {
+		return nil, nil, err
+	}
+	if _, err := s.DB.ExecContext(ctx, convQ, s.tid, c.ID, now()); err != nil {
 		return nil, nil, err
 	}
 	conv, err := s.conversationWhere(ctx, `c.customer_id=?`, c.ID)
@@ -62,7 +71,7 @@ func (s *Store) UpsertCustomer(ctx context.Context, jid, phone, name string) (*C
 
 const convSelect = `SELECT c.id, c.customer_id, c.state, c.context, c.bot_paused, c.unread, c.last_message, c.last_message_at,
 	cu.id, cu.jid, cu.phone, cu.name, cu.created_at
-	FROM conversations c JOIN customers cu ON cu.id=c.customer_id`
+	FROM conversations c JOIN customers cu ON cu.id=c.customer_id AND cu.tenant_id=c.tenant_id`
 
 func scanConv(sc interface{ Scan(...any) error }) (*Conversation, error) {
 	c := &Conversation{Customer: &Customer{}}
@@ -74,7 +83,7 @@ func scanConv(sc interface{ Scan(...any) error }) (*Conversation, error) {
 }
 
 func (s *Store) conversationWhere(ctx context.Context, where string, args ...any) (*Conversation, error) {
-	c, err := scanConv(s.DB.QueryRowContext(ctx, convSelect+` WHERE `+where, args...))
+	c, err := scanConv(s.DB.QueryRowContext(ctx, convSelect+` WHERE c.tenant_id=? AND `+where, append([]any{s.tid}, args...)...))
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -91,7 +100,7 @@ func (s *Store) ConversationByCustomer(ctx context.Context, customerID int64) (*
 
 func (s *Store) ListConversations(ctx context.Context, limit int) ([]*Conversation, error) {
 	// Sin mensajes (p. ej. cliente creado por un pedido manual) no se listan en la bandeja.
-	rows, err := s.DB.QueryContext(ctx, convSelect+` WHERE c.last_message <> '' ORDER BY c.last_message_at DESC LIMIT ?`, limit)
+	rows, err := s.DB.QueryContext(ctx, convSelect+` WHERE c.tenant_id=? AND c.last_message <> '' ORDER BY c.last_message_at DESC LIMIT ?`, s.tid, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -108,23 +117,23 @@ func (s *Store) ListConversations(ctx context.Context, limit int) ([]*Conversati
 }
 
 func (s *Store) SetConversationState(ctx context.Context, id int64, state, contextJSON string) error {
-	_, err := s.DB.ExecContext(ctx, `UPDATE conversations SET state=?, context=? WHERE id=?`, state, contextJSON, id)
+	_, err := s.DB.ExecContext(ctx, `UPDATE conversations SET state=?, context=? WHERE id=? AND tenant_id=?`, state, contextJSON, id, s.tid)
 	return err
 }
 
 func (s *Store) SetBotPaused(ctx context.Context, id int64, paused bool) error {
 	if paused {
-		_, err := s.DB.ExecContext(ctx, `UPDATE conversations SET bot_paused=1, paused_at=? WHERE id=?`, now(), id)
+		_, err := s.DB.ExecContext(ctx, `UPDATE conversations SET bot_paused=1, paused_at=? WHERE id=? AND tenant_id=?`, now(), id, s.tid)
 		return err
 	}
-	_, err := s.DB.ExecContext(ctx, `UPDATE conversations SET bot_paused=0, paused_at=NULL, state='', context='{}' WHERE id=?`, id)
+	_, err := s.DB.ExecContext(ctx, `UPDATE conversations SET bot_paused=0, paused_at=NULL, state='', context='{}' WHERE id=? AND tenant_id=?`, id, s.tid)
 	return err
 }
 
 // ResumeStalePaused reactiva el bot en conversaciones pausadas hace más de hours horas.
 func (s *Store) ResumeStalePaused(ctx context.Context, hours int) (int64, error) {
 	res, err := s.DB.ExecContext(ctx, `UPDATE conversations SET bot_paused=0, paused_at=NULL, state='', context='{}'
-		WHERE bot_paused=1 AND paused_at IS NOT NULL AND paused_at < ?`, now().Add(-time.Duration(hours)*time.Hour))
+		WHERE tenant_id=? AND bot_paused=1 AND paused_at IS NOT NULL AND paused_at < ?`, s.tid, now().Add(-time.Duration(hours)*time.Hour))
 	if err != nil {
 		return 0, err
 	}
@@ -132,7 +141,7 @@ func (s *Store) ResumeStalePaused(ctx context.Context, hours int) (int64, error)
 }
 
 func (s *Store) MarkRead(ctx context.Context, id int64) error {
-	_, err := s.DB.ExecContext(ctx, `UPDATE conversations SET unread=0 WHERE id=?`, id)
+	_, err := s.DB.ExecContext(ctx, `UPDATE conversations SET unread=0 WHERE id=? AND tenant_id=?`, id, s.tid)
 	return err
 }
 
@@ -142,7 +151,7 @@ func (s *Store) MessageExists(ctx context.Context, waID string) bool {
 		return false
 	}
 	var n int
-	_ = s.DB.QueryRowContext(ctx, `SELECT count(*) FROM messages WHERE wa_id=?`, waID).Scan(&n)
+	_ = s.DB.QueryRowContext(ctx, `SELECT count(*) FROM messages WHERE tenant_id=? AND wa_id=?`, s.tid, waID).Scan(&n)
 	return n > 0
 }
 
@@ -150,8 +159,13 @@ func (s *Store) AddMessage(ctx context.Context, m *Message) error {
 	if m.CreatedAt.IsZero() {
 		m.CreatedAt = now()
 	}
-	res, err := s.DB.ExecContext(ctx, `INSERT INTO messages(conversation_id, wa_id, direction, kind, body, media, author, status, created_at)
-		VALUES(?,?,?,?,?,?,?,?,?)`, m.ConversationID, m.WAID, m.Direction, m.Kind, m.Body, m.Media, m.Author, m.Status, m.CreatedAt)
+	// La conversación tiene que ser de esta empresa (los ids son globales).
+	var one int
+	if err := s.DB.QueryRowContext(ctx, `SELECT 1 FROM conversations WHERE id=? AND tenant_id=?`, m.ConversationID, s.tid).Scan(&one); err != nil {
+		return ErrNotFound
+	}
+	res, err := s.DB.ExecContext(ctx, `INSERT INTO messages(tenant_id, conversation_id, wa_id, direction, kind, body, media, author, status, created_at)
+		VALUES(?,?,?,?,?,?,?,?,?,?)`, s.tid, m.ConversationID, m.WAID, m.Direction, m.Kind, m.Body, m.Media, m.Author, m.Status, m.CreatedAt)
 	if err != nil {
 		return err
 	}
@@ -167,23 +181,23 @@ func (s *Store) AddMessage(ctx context.Context, m *Message) error {
 	if m.Direction == "in" {
 		unread = 1
 		// La clienta volvió: se reinicia el contador de recordatorios de seguimiento.
-		_, _ = s.DB.ExecContext(ctx, `DELETE FROM followups WHERE conversation_id=?`, m.ConversationID)
+		_, _ = s.DB.ExecContext(ctx, `DELETE FROM followups WHERE conversation_id=? AND tenant_id=?`, m.ConversationID, s.tid)
 	}
-	_, err = s.DB.ExecContext(ctx, `UPDATE conversations SET last_message=?, last_message_at=?, unread=unread+? WHERE id=?`,
-		preview, m.CreatedAt, unread, m.ConversationID)
+	_, err = s.DB.ExecContext(ctx, `UPDATE conversations SET last_message=?, last_message_at=?, unread=unread+? WHERE id=? AND tenant_id=?`,
+		preview, m.CreatedAt, unread, m.ConversationID, s.tid)
 	return err
 }
 
 // SetMessageDelivery registra el resultado del envío por WhatsApp.
 func (s *Store) SetMessageDelivery(ctx context.Context, id int64, waID, status string) error {
-	_, err := s.DB.ExecContext(ctx, `UPDATE messages SET wa_id=?, status=? WHERE id=?`, waID, status, id)
+	_, err := s.DB.ExecContext(ctx, `UPDATE messages SET wa_id=?, status=? WHERE id=? AND tenant_id=?`, waID, status, id, s.tid)
 	return err
 }
 
 func (s *Store) ListMessages(ctx context.Context, convID int64, limit int) ([]*Message, error) {
 	rows, err := s.DB.QueryContext(ctx, `SELECT * FROM (
 		SELECT id, conversation_id, wa_id, direction, kind, body, media, author, status, created_at
-		FROM messages WHERE conversation_id=? ORDER BY id DESC LIMIT ?) ORDER BY id`, convID, limit)
+		FROM messages WHERE conversation_id=? AND tenant_id=? ORDER BY id DESC LIMIT ?) AS ultimos ORDER BY id`, convID, s.tid, limit)
 	if err != nil {
 		return nil, err
 	}

@@ -91,9 +91,15 @@ func (s *Store) loadVariants(ctx context.Context, products []*Product) error {
 		p.Variants = []Variant{}
 		byID[p.ID] = p
 	}
+	// Solo las tallas de los productos pedidos, y siempre dentro de la empresa.
+	ids := make([]any, 0, len(products)+2)
+	ids = append(ids, now(), s.tid)
+	for _, p := range products {
+		ids = append(ids, p.ID)
+	}
 	rows, err := s.DB.QueryContext(ctx, `SELECT v.id, v.product_id, v.size, v.stock,
-		COALESCE((SELECT SUM(r.qty) FROM stock_reservations r WHERE r.variant_id=v.id AND r.expires_at>?), 0)
-		FROM product_variants v ORDER BY v.id`, now())
+		COALESCE((SELECT SUM(r.qty) FROM stock_reservations r WHERE r.variant_id=v.id AND r.tenant_id=v.tenant_id AND r.expires_at>?), 0)
+		FROM product_variants v WHERE v.tenant_id=? AND v.product_id IN (?`+repeat(",?", len(products)-1)+`) ORDER BY v.id`, ids...)
 	if err != nil {
 		return err
 	}
@@ -111,12 +117,12 @@ func (s *Store) loadVariants(ctx context.Context, products []*Product) error {
 }
 
 func (s *Store) ListProducts(ctx context.Context, onlyActive bool) ([]*Product, error) {
-	q := `SELECT ` + productCols + ` FROM products`
+	q := `SELECT ` + productCols + ` FROM products WHERE tenant_id=?`
 	if onlyActive {
-		q += ` WHERE active=1`
+		q += ` AND active=1`
 	}
 	q += ` ORDER BY code`
-	rows, err := s.DB.QueryContext(ctx, q)
+	rows, err := s.DB.QueryContext(ctx, q, s.tid)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +143,7 @@ func (s *Store) ListProducts(ctx context.Context, onlyActive bool) ([]*Product, 
 }
 
 func (s *Store) GetProduct(ctx context.Context, id int64) (*Product, error) {
-	p, err := scanProduct(s.DB.QueryRowContext(ctx, `SELECT `+productCols+` FROM products WHERE id=?`, id))
+	p, err := scanProduct(s.DB.QueryRowContext(ctx, `SELECT `+productCols+` FROM products WHERE id=? AND tenant_id=?`, id, s.tid))
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -149,7 +155,7 @@ func (s *Store) GetProduct(ctx context.Context, id int64) (*Product, error) {
 
 func (s *Store) GetProductByCode(ctx context.Context, code string) (*Product, error) {
 	p, err := scanProduct(s.DB.QueryRowContext(ctx,
-		`SELECT `+productCols+` FROM products WHERE upper(code)=upper(?)`, strings.TrimSpace(code)))
+		`SELECT `+productCols+` FROM products WHERE tenant_id=? AND upper(code)=upper(?)`, s.tid, strings.TrimSpace(code)))
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -161,7 +167,7 @@ func (s *Store) GetProductByCode(ctx context.Context, code string) (*Product, er
 
 func (s *Store) CountProducts(ctx context.Context) (int, error) {
 	var n int
-	err := s.DB.QueryRowContext(ctx, `SELECT count(*) FROM products`).Scan(&n)
+	err := s.DB.QueryRowContext(ctx, `SELECT count(*) FROM products WHERE tenant_id=?`, s.tid).Scan(&n)
 	return n, err
 }
 
@@ -179,23 +185,27 @@ func (s *Store) SaveProduct(ctx context.Context, p *Product) error {
 	}
 	p.Code = strings.ToUpper(strings.TrimSpace(p.Code))
 	if p.ID == 0 {
-		res, err := tx.ExecContext(ctx, `INSERT INTO products(code,name,description,category,color,price,image,ai_tags,active,created_at,updated_at)
-			VALUES(?,?,?,?,?,?,?,?,?,?,?)`, p.Code, p.Name, p.Description, p.Category, p.Color, p.Price, p.Image, p.AITags, active, now(), now())
+		res, err := tx.ExecContext(ctx, `INSERT INTO products(tenant_id,code,name,description,category,color,price,image,ai_tags,active,created_at,updated_at)
+			VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`, s.tid, p.Code, p.Name, p.Description, p.Category, p.Color, p.Price, p.Image, p.AITags, active, now(), now())
 		if err != nil {
 			return err
 		}
 		p.ID, _ = res.LastInsertId()
 	} else {
 		res, err := tx.ExecContext(ctx, `UPDATE products SET code=?,name=?,description=?,category=?,color=?,price=?,image=?,ai_tags=?,active=?,updated_at=?
-			WHERE id=?`, p.Code, p.Name, p.Description, p.Category, p.Color, p.Price, p.Image, p.AITags, active, now(), p.ID)
+			WHERE id=? AND tenant_id=?`, p.Code, p.Name, p.Description, p.Category, p.Color, p.Price, p.Image, p.AITags, active, now(), p.ID, s.tid)
 		if err != nil {
 			return err
 		}
+		// MySQL cuenta 0 filas si nada cambió: la existencia se comprueba aparte.
 		if n, _ := res.RowsAffected(); n == 0 {
-			return ErrNotFound
+			var one int
+			if err := tx.QueryRowContext(ctx, `SELECT 1 FROM products WHERE id=? AND tenant_id=?`, p.ID, s.tid).Scan(&one); err != nil {
+				return ErrNotFound
+			}
 		}
 	}
-	keep := []any{p.ID}
+	keep := []any{p.ID, s.tid}
 	placeholders := []string{}
 	for i := range p.Variants {
 		v := &p.Variants[i]
@@ -207,14 +217,23 @@ func (s *Store) SaveProduct(ctx context.Context, p *Product) error {
 			v.Stock = 0
 		}
 		v.ProductID = p.ID
-		if err := tx.QueryRowContext(ctx, `INSERT INTO product_variants(product_id,size,stock) VALUES(?,?,?)
-			ON CONFLICT(product_id,size) DO UPDATE SET stock=excluded.stock RETURNING id`, p.ID, v.Size, v.Stock).Scan(&v.ID); err != nil {
+		up := `INSERT INTO product_variants(tenant_id,product_id,size,stock) VALUES(?,?,?,?)
+			ON CONFLICT DO UPDATE SET stock=excluded.stock`
+		if s.mysql() {
+			up = `INSERT INTO product_variants(tenant_id,product_id,size,stock) VALUES(?,?,?,?)
+			ON DUPLICATE KEY UPDATE stock=VALUES(stock)`
+		}
+		if _, err := tx.ExecContext(ctx, up, s.tid, p.ID, v.Size, v.Stock); err != nil {
+			return err
+		}
+		if err := tx.QueryRowContext(ctx, `SELECT id FROM product_variants WHERE product_id=? AND size=? AND tenant_id=?`,
+			p.ID, v.Size, s.tid).Scan(&v.ID); err != nil {
 			return err
 		}
 		keep = append(keep, v.Size)
 		placeholders = append(placeholders, "?")
 	}
-	q := `DELETE FROM product_variants WHERE product_id=?`
+	q := `DELETE FROM product_variants WHERE product_id=? AND tenant_id=?`
 	if len(placeholders) > 0 {
 		q += ` AND size NOT IN (` + strings.Join(placeholders, ",") + `)`
 	}
@@ -225,12 +244,12 @@ func (s *Store) SaveProduct(ctx context.Context, p *Product) error {
 }
 
 func (s *Store) SetProductImage(ctx context.Context, id int64, image, aiTags string) error {
-	_, err := s.DB.ExecContext(ctx, `UPDATE products SET image=?, ai_tags=CASE WHEN ?='' THEN ai_tags ELSE ? END, updated_at=? WHERE id=?`,
-		image, aiTags, aiTags, now(), id)
+	_, err := s.DB.ExecContext(ctx, `UPDATE products SET image=?, ai_tags=CASE WHEN ?='' THEN ai_tags ELSE ? END, updated_at=? WHERE id=? AND tenant_id=?`,
+		image, aiTags, aiTags, now(), id, s.tid)
 	return err
 }
 
 func (s *Store) DeleteProduct(ctx context.Context, id int64) error {
-	_, err := s.DB.ExecContext(ctx, `DELETE FROM products WHERE id=?`, id)
+	_, err := s.DB.ExecContext(ctx, `DELETE FROM products WHERE id=? AND tenant_id=?`, id, s.tid)
 	return err
 }
