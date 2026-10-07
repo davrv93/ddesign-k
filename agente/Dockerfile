@@ -29,13 +29,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY data ./data
 COPY --from=setfit /out/setfit /models/setfit
-COPY app/__init__.py app/datos.py app/modelo.py app/entrenar.py ./app/
+COPY app/__init__.py app/datos.py app/modelo.py app/entrenar.py app/comprension.py ./app/
 # Descarga el modelo, entrena los clasificadores (sobre e5 y sobre e5+SetFit, y se queda con el que gana
 # en las pruebas; CLASIFICADOR=base|setfit lo fuerza), imprime las métricas y guarda el índice.
 # Sólo depende de los datos y de estos módulos: tocar main.py no obliga a re-entrenar.
 ARG CLASIFICADOR=auto
 ENV CLASIFICADOR=${CLASIFICADOR}
-RUN python -m app.entrenar && chmod -R a+rX /models /app/index
+RUN python -m app.entrenar && python -m app.comprension entrenar && chmod -R a+rX /models /app/index
 # Fotos del catálogo de 100 modelos (JPG 720 px, servidas en /media/catalogo/) y copia de las de la tienda.
 COPY imagenes ./imagenes
 # Búsqueda por foto: indexa las fotos con el modelo de imagen y calibra los umbrales.
@@ -51,7 +51,7 @@ COPY app ./app
 # La máquina de etapas (prospección → seguimiento → cierre) y la memoria de la conversación (pregunta
 # pendiente, extracción, siguiente pregunta) se prueban en cada build: si un cambio las rompe, la imagen no
 # se construye.
-RUN python -m app.prueba_etapas && python -m app.prueba_memoria && python -m app.prueba_estructurado && python -m app.prueba_crm && python -m app.prueba_v2 && python -m app.prueba_v2_activo && python -m app.prueba_v2_plantillas && python -m app.prueba_v2_temas && python -m app.prueba_v2_semantica && python -m app.prueba_v2_rag && python -m app.prueba_v2_lexico && python -m app.prueba_v2_rerank && python -m app.prueba_v2_medicion && python -m app.prueba_v2_fuentes && python -m app.prueba_v2_aclarar && python -m app.prueba_solicitud && python -m app.prueba_respuestas && python -m app.catalogos.prueba_catalogos
+RUN python -m app.prueba_etapas && python -m app.prueba_memoria && python -m app.prueba_estructurado && python -m app.prueba_crm && python -m app.prueba_v2 && python -m app.prueba_v2_activo && python -m app.prueba_v2_plantillas && python -m app.prueba_v2_temas && python -m app.prueba_v2_semantica && python -m app.prueba_v2_rag && python -m app.prueba_v2_lexico && python -m app.prueba_v2_rerank && python -m app.prueba_v2_medicion && python -m app.prueba_v2_fuentes && python -m app.prueba_v2_aclarar && python -m app.prueba_solicitud && python -m app.prueba_respuestas && python -m app.prueba_comprension && python -m app.catalogos.prueba_catalogos
 # El modelo ya está dentro: que nada intente bajarlo de Hugging Face al arrancar.
 ENV HF_HUB_OFFLINE=1
 

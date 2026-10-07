@@ -1,0 +1,996 @@
+{"mensaje": "Hola, cuánto cuesta el vestido Holly?", "si": ["precio"], "no": []}
+{"mensaje": "Oe, precio del conjunto Pandora?", "si": ["precio"], "no": []}
+{"mensaje": "Buenas, la blusa Kaylee a cómo sale?", "si": ["precio"], "no": []}
+{"mensaje": "Precio del vestido Irla xfa", "si": ["precio"], "no": []}
+{"mensaje": "Holi, me pasas el precio del conjunto Azra?", "si": ["precio"], "no": []}
+{"mensaje": "Cuánto está la Kendall?", "si": ["precio"], "no": []}
+{"mensaje": "El vestido Xela está en oferta o cómo?", "si": ["precio"], "no": []}
+{"mensaje": "Hola, precio de la blusa Kaylee al toque", "si": ["precio"], "no": []}
+{"mensaje": "Oe, cuánto me sale el conjunto Pandora con envío?", "si": ["precio"], "no": []}
+{"mensaje": "La Irla full precio?", "si": ["precio"], "no": []}
+{"mensaje": "Buenas, sólo consulta rápida, cuánto la Azra?", "si": ["precio"], "no": []}
+{"mensaje": "Precio del Holly? Es pa ya", "si": ["precio"], "no": []}
+{"mensaje": "Holi, me cotizas la Xela xfa", "si": ["precio"], "no": []}
+{"mensaje": "Oe causa, el vestido Kendall cuánto?", "si": ["precio"], "no": []}
+{"mensaje": "La blusa Kaylee está en descuento o nada?", "si": ["precio"], "no": []}
+{"mensaje": "Hola, precio del conjunto Irla por favor", "si": ["precio"], "no": []}
+{"mensaje": "Cuánto sale el Pandora? Es promoción?", "si": ["precio"], "no": []}
+{"mensaje": "Buenas, sólo quiero saber cuánto la Holly", "si": ["precio"], "no": []}
+{"mensaje": "Oe, el vestido Azra a cómo?", "si": ["precio"], "no": []}
+{"mensaje": "Precio de la Xela nomás, porfa", "si": ["precio"], "no": []}
+{"mensaje": "Hola, quisiera pedirte un color de la Holly que vi en tus historias pero no se como se llama", "si": [], "no": ["precio"]}
+{"mensaje": "Oye, esa Pandora que publicaste, se ve igual en la foto o es mas brillante?", "si": [], "no": ["precio"]}
+{"mensaje": "Para pedir la Kendall, solo es escribirte o hay que llenar algun formulario?", "si": [], "no": ["precio"]}
+{"mensaje": "Causa, todavia tienes la Azra en talla M o ya se acabo?", "si": [], "no": ["precio"]}
+{"mensaje": "Pe, me puedes decir de que material es la Xela que tiene mangas?", "si": [], "no": ["precio"]}
+{"mensaje": "Vi que cambiaste la foto de perfil, es nueva esa blusa o ya la tenias antes?", "si": [], "no": ["precio"]}
+{"mensaje": "Oye y si me llevo la Kaylee y la Irla juntas, tienen alguna promo?", "si": [], "no": ["precio"]}
+{"mensaje": "La modelo del vestido nuevo, es mas alta que yo o da igual la estatura para que me quede igual?", "si": [], "no": ["precio"]}
+{"mensaje": "Hola buenas tardes, la pollera Kendall talla M aun la tienen?", "si": ["talla"], "no": []}
+{"mensaje": "Oe, para saber si hay el conjunto Azra en S", "si": ["talla"], "no": []}
+{"mensaje": "La Holly en L hay o se agoto?", "si": ["talla"], "no": []}
+{"mensaje": "Hola! Queria preguntar por la blusa Xela, que tallas tienen disponible?", "si": ["talla"], "no": []}
+{"mensaje": "Preguntaba si la Pandora en talla M esta en stock", "si": ["talla"], "no": []}
+{"mensaje": "Hola, yo uso talla S, qué modelos me recomiendan que tengan?", "si": ["talla"], "no": []}
+{"mensaje": "Buenas, la Kaylee en tu talla L ya no hay cierto? :(", "si": ["talla"], "no": []}
+{"mensaje": "Ola, tienen la Irla? Y de que tallas?", "si": ["talla"], "no": []}
+{"mensaje": "Me quiero comprar el set Holly pero no se si tener la M o la L, qué talla me recomiendan?", "si": ["talla"], "no": []}
+{"mensaje": "Hola, solo para confirmar si llego stock de la Pandora en S", "si": ["talla"], "no": []}
+{"mensaje": "Causa, avisen si reponen la Kendall en L al toque", "si": ["talla"], "no": []}
+{"mensaje": "Hola, que talla seria para una 38? Es la M o la L? Es para el modelo Azra", "si": ["talla"], "no": []}
+{"mensaje": "Tienen el vestido Kaylee? Necesito talla M porfi", "si": ["talla"], "no": []}
+{"mensaje": "Buenas, hay promo si compro dos? Y de paso pregunto por la Xela en L", "si": ["talla"], "no": []}
+{"mensaje": "La pollera Kendall, solo la tienen en talla unica o hay de varias?", "si": ["talla"], "no": []}
+{"mensaje": "Oe, yo uso S normalmente, esa talla hay en todos los modelos o no?", "si": ["talla"], "no": []}
+{"mensaje": "Hola, queria saber si tienen la Holly en M, si hay paso a recogerla hoy mismo", "si": ["talla"], "no": []}
+{"mensaje": "Se agoto la L de Pandora? Qué mala suerte :(", "si": ["talla"], "no": []}
+{"mensaje": "Hola, tienes el conjunto Irla en stock? De que tallas disponen?", "si": ["talla"], "no": []}
+{"mensaje": "Pregunta rapida, la talla M de la blusa Xela ya esta disponible? Es que la necesito para el finde", "si": ["talla"], "no": []}
+{"mensaje": "Hola, quería saber si la Pandora me quedaría bien.", "si": [], "no": ["talla"]}
+{"mensaje": "Me hablaron de la Kaylee, pero no se si es mi estilo pe... Uds la recomiendan?", "si": [], "no": ["talla"]}
+{"mensaje": "Oye, la talla unica de la blusa Xela es muy grande o pequeña?", "si": [], "no": ["talla"]}
+{"mensaje": "Ya me decidí por el conjunto Holly, lo tienen para recoger hoy mismo? Al toque!", "si": [], "no": ["talla"]}
+{"mensaje": "Causa, vi el vestido Azra en una foto y esta divino, crees que me favoresca?", "si": [], "no": ["talla"]}
+{"mensaje": "La Kendall se ve ajustada, a ti como te fue con esa? jaja", "si": [], "no": ["talla"]}
+{"mensaje": "Uff, ese modelo de la Irla es justo lo que busco para una fiesta. Esta disponible ya?", "si": [], "no": ["talla"]}
+{"mensaje": "Osea que la Xela es corta? Es que no quiero algo muy largo nomás.", "si": [], "no": ["talla"]}
+{"mensaje": "Hola, una consulta, el vestido Pandora viene en negro?", "si": ["color"], "no": []}
+{"mensaje": "Oe, el conjunto Kaylee hay en azul?", "si": ["color"], "no": []}
+{"mensaje": "Hola, que colores tiene la blusa Irla?", "si": ["color"], "no": []}
+{"mensaje": "Buenas, para saber que colores tiene el modelo Holly, porfa", "si": ["color"], "no": []}
+{"mensaje": "El Azra en talla M hay en rojo o no?", "si": ["color"], "no": []}
+{"mensaje": "Pregunta rapida, el vestido Kendall viene en verde?", "si": ["color"], "no": []}
+{"mensaje": "Holi, me puedes decir los colores del conjunto Xela?", "si": ["color"], "no": []}
+{"mensaje": "Ola, el modelo Pandora en color mostaza hay?", "si": ["color"], "no": []}
+{"mensaje": "Causa, pasa la lista de colores de la Kaylee", "si": ["color"], "no": []}
+{"mensaje": "Hola buenas, una pregunta por el vestido Irla, que colores tienen?", "si": ["color"], "no": []}
+{"mensaje": "El Holly en beige ya no hay?", "si": ["color"], "no": []}
+{"mensaje": "Ey, consulta rapida, el Azra que colores tiene?", "si": ["color"], "no": []}
+{"mensaje": "Hola, solo quiero saber si la Xela viene en lila", "si": ["color"], "no": []}
+{"mensaje": "Pe, el conjunto Kendall en negro lo tienen?", "si": ["color"], "no": []}
+{"mensaje": "Oe, pasa los colores de la blusa Pandora al toque", "si": ["color"], "no": []}
+{"mensaje": "Holi, el vestido Kaylee en talla S que colores hay?", "si": ["color"], "no": []}
+{"mensaje": "Buenas, el modelo Irla en color vinota?", "si": ["color"], "no": []}
+{"mensaje": "Una pregunta porfa, el Azra solo tiene colores oscuros?", "si": ["color"], "no": []}
+{"mensaje": "Ola, me interesa el Xela, que colores hay ademas del negro?", "si": ["color"], "no": []}
+{"mensaje": "Hola, el conjunto Holly viene en azul marino o no?", "si": ["color"], "no": []}
+{"mensaje": "Oye, y el Pandora viene con algo mas o solo es el vestido?", "si": [], "no": ["color"]}
+{"mensaje": "Causa, la Holly se mancha facil o no?", "si": [], "no": ["color"]}
+{"mensaje": "Esa Kaylee es tela fria o me voy a morir de calor?", "si": [], "no": ["color"]}
+{"mensaje": "Pe, se puede agrandar el talle de la Irla o ya viene asi nomás?", "si": [], "no": ["color"]}
+{"mensaje": "El conjunto ese, el Azra, tiene bolsillos o es puro adorno?", "si": [], "no": ["color"]}
+{"mensaje": "La Kendall es para lavar a mano o si se puede meter a la lavadora?", "si": [], "no": ["color"]}
+{"mensaje": "Oye, y el Xela brilla en la oscuridad o es solo el nombre jaja?", "si": [], "no": ["color"]}
+{"mensaje": "Esa blusa, la que viste en insta, es transparente o le pones algo abajo?", "si": [], "no": ["color"]}
+{"mensaje": "Ola envían a Comas? Y cuánto sale el delivery", "si": ["envio"], "no": []}
+{"mensaje": "Hola, quiero saber si tienen delivery para SJL y en cuánto tiempo llega", "si": ["envio"], "no": []}
+{"mensaje": "Preguntaba si el vestido Kendall lo envian a mi casa por Villa Maria", "si": ["envio"], "no": []}
+{"mensaje": "Hola, cuánto demora el envio si pido hoy?", "si": ["envio"], "no": []}
+{"mensaje": "Oe causa, delivery a chorrillos? Cuanto cuesta", "si": ["envio"], "no": []}
+{"mensaje": "Hola, para puente piedra envian? O solo es recojo", "si": ["envio"], "no": []}
+{"mensaje": "Buenas, el envio a Lurín es gratis?", "si": ["envio"], "no": []}
+{"mensaje": "Ey, una consulta rapidita, a donde mas envian?", "si": ["envio"], "no": []}
+{"mensaje": "Hola, quiero pedir la blusa Azra pero necesito saber si llega mañana a Los Olivos", "si": ["envio"], "no": []}
+{"mensaje": "Hola, el delivery es al toque o se demora?", "si": ["envio"], "no": []}
+{"mensaje": "Pregunta, si pago ahora el envio demora mas?", "si": ["envio"], "no": []}
+{"mensaje": "Ola, para la molina tambien hacen envios? y cuanto se paga", "si": ["envio"], "no": []}
+{"mensaje": "Hola, mira, quiero saber si el envio a callao es aparte o ya esta en el precio", "si": ["envio"], "no": []}
+{"mensaje": "Hola, tengo prisa, el delivery mas rapido cual es?", "si": ["envio"], "no": []}
+{"mensaje": "Chevere, y si es para barranco, llegan?", "si": ["envio"], "no": []}
+{"mensaje": "Hola, una pregunta del delivery, hasta que hora reciben pedidos para que llegue el mismo dia?", "si": ["envio"], "no": []}
+{"mensaje": "Oi, envian a provincia? O solo lima?", "si": ["envio"], "no": []}
+{"mensaje": "Hola, el vestido Holly si lo envian a mi trabajo por san miguel?", "si": ["envio"], "no": []}
+{"mensaje": "Buenas, cuánto cobran de envio a ate?", "si": ["envio"], "no": []}
+{"mensaje": "Oe pe, el envio es gratis si pido dos prendas o no?", "si": ["envio"], "no": []}
+{"mensaje": "Oe ya enviaron la invitacion pal after? Necesito saber a donde llega", "si": [], "no": ["envio"]}
+{"mensaje": "Pueden enviarme una foto del vestido Kendall en negro? Esq no se si es el mismo que vi en ig", "si": [], "no": ["envio"]}
+{"mensaje": "A que hora envian el codigo de descuento? Lo vi en sus stories pero ya no esta", "si": [], "no": ["envio"]}
+{"mensaje": "Me enviaron la direccion completa de la tienda? No la encuentro en google maps", "si": [], "no": ["envio"]}
+{"mensaje": "El pago ya lo enviaron a mi banco? Esq me aparece como pendiente", "si": [], "no": ["envio"]}
+{"mensaje": "Enviaste el comprobante a mi correo? No me llega nada", "si": [], "no": ["envio"]}
+{"mensaje": "Causa ya te enviaron los datos para el deposito? Para hacerlo al toque", "si": [], "no": ["envio"]}
+{"mensaje": "Ese vestido Azra se enviara a la tienda o tengo que ir a buscarlo a otro lado?", "si": [], "no": ["envio"]}
+{"mensaje": "Hola! Donde queda su showroom?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Buenas, horario de atencion?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Oe, pasame la dire de la tienda xfa", "si": ["ubicacion"], "no": []}
+{"mensaje": "A que hora abren hoy?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Por donde estan?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Holas, abren el sabado?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Donde los encuentro?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Cierra a las 6?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Tienen local ahi por miraflores?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Pasan direccion?", "si": ["ubicacion"], "no": []}
+{"mensaje": "A que hora cierran el domingo?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hola, su direccion es en la av aviacion?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Estan cerca del metro?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Abren feriado?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Puedo pasar hoy a ver el vestido Kendall?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Donde es?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hasta que hora atienden?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Me pasas la ubicacion exacta?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hola, a que hora abren manana?", "si": ["ubicacion"], "no": []}
+{"mensaje": "El showroom esta por san borja?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Oye, el vestido Kendall queda en el showroom o solo online? es que lo vi en una publicacion", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Para ir a probarme el Holly, hay que sacar cita o llego nomas?", "si": [], "no": ["ubicacion"]}
+{"mensaje": "El horario de atencion de hoy es normal? es que quiero pasar x el conjunto Azra", "si": [], "no": ["ubicacion"]}
+{"mensaje": "En que parte de Lima tienen el modelo Pandora para verlo?", "si": [], "no": ["ubicacion"]}
+{"mensaje": "El showroom esta abierto hasta las 8? o cierran mas temprano", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Necesito ver la blusa Xela en persona, donde la tienen disponible?", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Hacen entregas hoy mismo si paso a recogerlo por ahi?", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Esa direccion que ponen en el perfil es donde esta la tienda fisica?", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Hola! Tienen la blusa Kendall en talla M? Quiero pasar a probarmela hoy en la tarde", "si": ["cita"], "no": []}
+{"mensaje": "Oye, la Holly esta disponible? Puedo ir mañana al toque", "si": ["cita"], "no": []}
+{"mensaje": "Hola, quiero ver el vestido Pandora, estaran abiertos el sabado?", "si": ["cita"], "no": []}
+{"mensaje": "La Kaylee en S hay? Paso en un rato a verla", "si": ["cita"], "no": []}
+{"mensaje": "Buenas, tienen la Irla? Puedo ir el viernes a primera hora", "si": ["cita"], "no": []}
+{"mensaje": "Hola! A que hora cierran? Quiero probarme la Azra hoy", "si": ["cita"], "no": []}
+{"mensaje": "Oye, la Xela esta en liquidacion? Paso mañana a verla", "si": ["cita"], "no": []}
+{"mensaje": "Hola, tienen la Kendall en negro? Puedo ir hoy mas tarde", "si": ["cita"], "no": []}
+{"mensaje": "La Pandora me encanta! Tienen talla L? Voy el sabado", "si": ["cita"], "no": []}
+{"mensaje": "Aun tienen la Holly? Paso mañana al mediodia", "si": ["cita"], "no": []}
+{"mensaje": "Hola, que hora es buena para ir a probarme vestidos? Quiero la Kaylee", "si": ["cita"], "no": []}
+{"mensaje": "Oye, la Irla en M hay? Voy hoy en la tarde sin falta", "si": ["cita"], "no": []}
+{"mensaje": "Buenas, estaran abiertos el domingo? Quiero ver la Azra", "si": ["cita"], "no": []}
+{"mensaje": "Hola! Tienen la Xela en rojo? Puedo ir ahora mismo", "si": ["cita"], "no": []}
+{"mensaje": "La Kendall con envío? Prefiero probarmela alla, paso mañana", "si": ["cita"], "no": []}
+{"mensaje": "Oye, a que hora abren manana? Quiero ver la Pandora", "si": ["cita"], "no": []}
+{"mensaje": "Hola, tienen la Holly en talla S? Voy el viernes a verla", "si": ["cita"], "no": []}
+{"mensaje": "La Kaylee esta disponible? Paso hoy al toque después del trabajo", "si": ["cita"], "no": []}
+{"mensaje": "Buenas, puedo ir a ver la Irla el sabado por la mañana?", "si": ["cita"], "no": []}
+{"mensaje": "Oye, la Azra en que colores esta? Paso mañana a probarmela", "si": ["cita"], "no": []}
+{"mensaje": "Oye y el vestido Pandora lo tienen en talla M? Es q vi una foto y quiero saber si es como en la pagina", "si": [], "no": ["cita"]}
+{"mensaje": "Pensaba pasarme hoy pero mejor mañana, abren temprano no?", "si": [], "no": ["cita"]}
+{"mensaje": "Jsjs justo vi las blusas y me acorde q tengo una parecida, la Kendall es escotada o no tanto?", "si": [], "no": ["cita"]}
+{"mensaje": "Me escribio mi amiga del conjunto Holly, q si ya lo habia probado. Ni he ido aun", "si": [], "no": ["cita"]}
+{"mensaje": "A q hora cierran el sabado? Es q capaz paso rapido", "si": [], "no": ["cita"]}
+{"mensaje": "La Irla en verde claro tienen? O solo en los colores de la foto", "si": [], "no": ["cita"]}
+{"mensaje": "Pensaba ir a la tienda de Miraflores, ahi tienen todas las prendas o algunas no?", "si": [], "no": ["cita"]}
+{"mensaje": "Oye y si voy y no me queda, puedo cambiar por otra talla al toque o como es?", "si": [], "no": ["cita"]}
+{"mensaje": "Hola! Quiero comprar la blusa Kendall, qué medios de pago tienen?", "si": ["pago"], "no": []}
+{"mensaje": "Oe, aceptan yape?", "si": ["pago"], "no": []}
+{"mensaje": "Pregunta rapida, se puede pagar con tarjeta de credito o solo efectivo?", "si": ["pago"], "no": []}
+{"mensaje": "Hola, quiero el vestido Azra. Como se paga?", "si": ["pago"], "no": []}
+{"mensaje": "Hola! Para pagar el conjunto Holly, tienen transferencia bancaria?", "si": ["pago"], "no": []}
+{"mensaje": "Aceptan pagos por Plin?", "si": ["pago"], "no": []}
+{"mensaje": "Buenas, me interesa la Xela. Como es el tema del pago?", "si": ["pago"], "no": []}
+{"mensaje": "Ola, tienen pago contraentrega?", "si": ["pago"], "no": []}
+{"mensaje": "Hola, para comprar por la pagina, que metodos de pago hay?", "si": ["pago"], "no": []}
+{"mensaje": "Hola! Me guista la Kaylee, aceptan visa?", "si": ["pago"], "no": []}
+{"mensaje": "Ey, pagan con tarjeta de debito?", "si": ["pago"], "no": []}
+{"mensaje": "Hola, una consulta rapida. Aceptan pago por agentes o solo transferencia?", "si": ["pago"], "no": []}
+{"mensaje": "Me interesa la Pandora, como le hago para pagar? Tengo bcp", "si": ["pago"], "no": []}
+{"mensaje": "Hola, aceptan pago con liqui? Jaja", "si": ["pago"], "no": []}
+{"mensaje": "Oe causa, para pagar el conjunto, tengo que ir hasta ahi o como?", "si": ["pago"], "no": []}
+{"mensaje": "Hola, quiero comprar la Irla. Tienen numero para hacerle un yape?", "si": ["pago"], "no": []}
+{"mensaje": "Aceptan pago con paypal o algo asi?", "si": ["pago"], "no": []}
+{"mensaje": "Buenas, el medio de pago es solo al recojer o puedo pagar antes?", "si": ["pago"], "no": []}
+{"mensaje": "Hola, me guistaron unas blusas. Qué metodos de pago manejan?", "si": ["pago"], "no": []}
+{"mensaje": "Oe, una preguntita. Si pago con tarjeta, hay recargo o no?", "si": ["pago"], "no": []}
+{"mensaje": "Hola, una consulta, el envío se paga aparte o ya está incluido en el precio que sale en la página?", "si": [], "no": ["pago"]}
+{"mensaje": "Oye, y si quiero el vestido Pandora, puedo pagarlo a cuotas o solo full?", "si": [], "no": ["pago"]}
+{"mensaje": "Hola, tengo una duda, mi hermana me quiere regalar el conjunto Holly, pero ella está en provincia, ella puede pagar y a mi me lo mandan a Lima?", "si": [], "no": ["pago"]}
+{"mensaje": "Porfa necesito saber si puedo pagar con mi tarjeta de credito pero en varias partes, es que no me alcanza el cash", "si": [], "no": ["pago"]}
+{"mensaje": "Hola, vi que tienen la blusa Kaylee, mi pregunta es si puedo pagar cuando me lo entreguen o tiene que ser si o si antes?", "si": [], "no": ["pago"]}
+{"mensaje": "Hola, una pregunta, aceptan pago con Yape? Es que no tengo efectivo.", "si": [], "no": ["pago"]}
+{"mensaje": "Oye, y si pago hoy, cuándo me lo envian? Es que lo necesito para el sabado.", "si": [], "no": ["pago"]}
+{"mensaje": "Hola, quiero el modelo Azra pero en la pagina no me deja elegir talla, como hago para pagar si no puedo completar la compra?", "si": [], "no": ["pago"]}
+{"mensaje": "Oye, el vestido Kaylee está hermoso pe, pero no me haces una rebajita?", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola! Me encanta la blusa Azra, pero a 120 soles está fuerte. Llevo 2, me dejas en 200?", "si": ["rebaja"], "no": []}
+{"mensaje": "Causa, precio al por mayor? Quiero 3 conjuntos Holly.", "si": ["rebaja"], "no": []}
+{"mensaje": "Buenas! Me das tu mejor precio por el modelo Pandora, xfa? Es pa hoy mismo.", "si": ["rebaja"], "no": []}
+{"mensaje": "Oe, y si pago cash, cuánto me bajas? Por el conjunto Kendall.", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola, tengo like 1 mes siguiéndote. Algún descuento por ser fan? Por el Irla 😅", "si": ["rebaja"], "no": []}
+{"mensaje": "Pensé que estaría más barato el Xela. No hay chance de un descuentito?", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola! Esa blusa la vi en otra tienda más barata. Me igualas el precio?", "si": ["rebaja"], "no": []}
+{"mensaje": "Oye, lo máximo que puedo pagar por el vestido es 90. Qué dices?", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola, me lo llevo al toque si me lo dejas en 100 soles. Es para regalo!", "si": ["rebaja"], "no": []}
+{"mensaje": "Causa, ya soy clienta, no me puedes hacer la palteada. Un descuento por fidelidad?", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola, quedan 2 del mismo modelo? Si me llevo los 2, me haces precio?", "si": ["rebaja"], "no": []}
+{"mensaje": "Precio de última temporada? Es por el conjunto Holly que está en exhibición.", "si": ["rebaja"], "no": []}
+{"mensaje": "Oe, y si te pago adelantado, cuánto me bajas? Necesito el Azra urgente.", "si": ["rebaja"], "no": []}
+{"mensaje": "Buenas, tienes cupón de descuento? Es que está un poco arriba de mi presupuesto.", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola! Es mi cumple la próxima semana, ningún detallito con el precio del vestido Pandora?", "si": ["rebaja"], "no": []}
+{"mensaje": "Ya no tienes descuento por comprar online? Antes hacías :(", "si": ["rebaja"], "no": []}
+{"mensaje": "Oye, veo que la talla se ve difícil de colocar. Si me lo llevo así nomás, cuánto me dejas?", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola, pagos con yape tienen descuento? O solo efectivo?", "si": ["rebaja"], "no": []}
+{"mensaje": "Pensaba que estaba en oferta. Si no es así, me avisas cuando baje el precio del Kendall, porfa!", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola! El vestido Kendall esta en oferta o full precio pe?", "si": [], "no": ["rebaja"]}
+{"mensaje": "Oye y si compro dos blusas hay alguna promo? Es que me encantaron la Azra y la Xela", "si": [], "no": ["rebaja"]}
+{"mensaje": "Tengo una duda, el precio de la Holly ya incluye algun descuento? O es tal cual", "si": [], "no": ["rebaja"]}
+{"mensaje": "Vi en ig que tenian liquidacion, aplica para los conjuntos tambien?", "si": [], "no": ["rebaja"]}
+{"mensaje": "Porfa me dices si la Kaylee entra en la venta de verano? Es que justo la quiero para salir", "si": [], "no": ["rebaja"]}
+{"mensaje": "Aprovecho y pregunto: si pago en efectivo te baja un poco el envio?", "si": [], "no": ["rebaja"]}
+{"mensaje": "El modelo Pandora lo vi mas barato en otra pagina, ustedes no igualan precios?", "si": [], "no": ["rebaja"]}
+{"mensaje": "Oye y si recojo en tienda, hay algun beneficio? O es lo mismo", "si": [], "no": ["rebaja"]}
+{"mensaje": "Hola! Me mostraron el vestido Kendall pero no me convence mucho, tienes otro modelo similar?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Oye, el conjunto Holly esta lindo pero quiero ver otras opciones, que mas tienes?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Pe, el Azra esta bonito pero busco algo mas casual, tienes otros modelos?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Hola! Vi el Kaylee en tu catalogo, pero quiero ver mas diseños, pasame fotos al toque", "si": ["otras_opciones"], "no": []}
+{"mensaje": "El vestido Pandora esta chevere pero no es mi talla, tienes otros colores o modelos?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Oye, me gusta el Irla pero quiero comparar con otro modelo, que me recomiendas?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Hola, tienes el Xela en otra talla? O sino otro modelo similar?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Pe, el conjunto que me mostraste esta nice pero quiero ver mas opciones, pasa fotos", "si": ["otras_opciones"], "no": []}
+{"mensaje": "El Kendall esta lindo pero busco algo mas formal, tienes otros modelos?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Oye, el Azra no es lo que busco, muestrame otros vestidos que tengas", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Hola! Me encanto el Holly pero quiero ver otros colores o diseños, que tienes?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Pe, el Pandora no me queda bien, tienes otro modelo parecido?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Oye, el vestido que vi no me convence, muestrame otras opciones al toque", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Hola, tienes el Kaylee en otra talla? O sino otro modelo que sea similar", "si": ["otras_opciones"], "no": []}
+{"mensaje": "El Irla esta bonito pero quiero ver mas estilos, que otros tienes?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Pe, el Xela no es lo mio, pasame fotos de otros conjuntos que tengas", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Oye, el conjunto Holly me gusto pero quiero comparar con otro, que me recomiendas?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Hola, tienes el Azra en otro color? O sino otro modelo que este chevere", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Pe, el vestido Kendall no me convence, muestrame otras opciones que tengas", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Oye, el Pandora esta lindo pero busco algo diferente, tienes otros modelos?", "si": ["otras_opciones"], "no": []}
+{"mensaje": "Ola, el vestido Kendall queda en talla M? Esq vi una chica en insta y lo quiero igual", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Pensaba q el modelo Holly era otro color, me puedes pasar mas fotos?", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Esa blusa Azra la tienen en otro estampado? O solo asi?", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Vi un reel con un conjunto parecido al Pandora pero con mas brillos, es el mismo?", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Uy no me di cuenta q el Irla era tan corto jaja, hay algo similar pero un poco mas largo?", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Me encanta el Kaylee! Pero en la foto se ve distinto el color, es celeste o verde?", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Oe causa, ese top Xela se puede usar con alguna falda q vendan? O solo asi tal cual", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Tienen alguna promo si llevo dos del mismo modelo? Esq quiero el Holly en dos colores diferentes pe", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Holaa, habrá promo en los vestidos Kendall? Es que me encanta pero esta un poco fuera de mi budget pe", "si": ["mas_barato"], "no": []}
+{"mensaje": "Oye, y la blusa Azra tiene precio x mayor? Quiero varias pero mas economico", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola! Hay alguna blusa similar a la Xela pero mas barata?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Precio de la Kaylee al por fa? Pero dime si tienes opcion mas economica tambien", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, vi el conjunto Holly en stories. Esta lindo pero no hay algo mas accesible?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Buenas, la Pandora sale carisima, no? Tienen algun modelo mas sencillo y barato", "si": ["mas_barato"], "no": []}
+{"mensaje": "Ola, me podrias decir cual es el dress mas economico que tengan? Es para una salida casual nomas", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, tienes la Irla en oferta? O algo parecido pero mas barato porfa", "si": ["mas_barato"], "no": []}
+{"mensaje": "Ei, causa, pasa tu mejor precio por el conjunto ese azul, toy corta de cash", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, sin ofender eh, pero el precio de la Kaylee es final? O hay chance de un descuentito?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hay sale? Es que quiero comprar pero busco algo mas economicon", "si": ["mas_barato"], "no": []}
+{"mensaje": "Oye, y esa blusa que vi, la rosa, no hay una version mas simple? La quiero pero no quiero gastar tanto", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, precio de la Holly al toque porfa. Y si tienes algo mas bajito en precio, tambien avisame", "si": ["mas_barato"], "no": []}
+{"mensaje": "No tendran flawed o con algun detalle chiquitito pa que sea mas barato?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola! Me encanto el vestido, pero solo es ese precio? No hay promocion por pagar en efectivo o algo?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Ey, esta lindo todo pero mi plata no me alcanza jaja. Que me recomiendas que sea bonito y mas economico?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, para mañana hay algun descuento relampago o algo? Quiero comprar pero necesito algo mas barato", "si": ["mas_barato"], "no": []}
+{"mensaje": "El modelo Pandora esta hermoso, pero no hay una segunda seleccion o algo asi mas accesible?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Ola, tienes alguna blusa en liquidacion? O algo que vayas a sacar mas barato?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, preguntaba si hacen descuento si me llevo dos conjuntos, pero que sean los mas economicos que tengan", "si": ["mas_barato"], "no": []}
+{"mensaje": "Holaa, oye la Pandora esta en oferta ahorita o sigue al mismo precio? es que vi una publicacion y no me quedo claro", "si": [], "no": ["mas_barato"]}
+{"mensaje": "causa una pregunta, el vestido Kaylee lo tienen en talla M? es que justo busco algo asi para una fiesta pero necesito ver si me ajusta", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Buenas! la blusa Irla en que colores esta disponible? es que no se si elegir el blanco o el negro para el trabajo", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Oye porfa me puedes contar si el conjunto Holly entra grande? es que a veces la talla L me queda justo y no quiero que me apriete", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Holi, para pedir el modelo Azra hay que esperar mucho? es que mi evento es la proxima semana y necesito saber si llega a tiempo", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Pe, una consulta rapida, el vestido Kendall es de vestir o es mas casual? es que en las fotos no se ve bien el material", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Hola! disculpa es que queria saber si el modelo Xela lo tienen disponible para ver en tienda? es que me gusta pero quiero probarmelo antes", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Ey, porfa me dices si la blusa Kaylee es de esas que no necesitan planchado? es que odio planchar jaja", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Hola! Tienen catálogo de vestidos pa ver?", "si": ["catalogo"], "no": []}
+{"mensaje": "Oe, pasen fotos de lo que tengan disponible pe", "si": ["catalogo"], "no": []}
+{"mensaje": "Quiero ver todas sus blusas, manden fotos al toque", "si": ["catalogo"], "no": []}
+{"mensaje": "Holi, me podrían mostrar su catálogo completo?", "si": ["catalogo"], "no": []}
+{"mensaje": "Tienen la colección nueva? Envíenme todo lo que tengan", "si": ["catalogo"], "no": []}
+{"mensaje": "Buenas! Muéstrenme sus conjuntos, porfa", "si": ["catalogo"], "no": []}
+{"mensaje": "Ola, me interesa ver todo lo que vendennn", "si": ["catalogo"], "no": []}
+{"mensaje": "Pasen fotos de las prendas que tengan, causa", "si": ["catalogo"], "no": []}
+{"mensaje": "Hola, tienen la Kaylee? Y envíen catálogo también", "si": ["catalogo"], "no": []}
+{"mensaje": "Quiero ver opciones de vestidos, manden todo nomás", "si": ["catalogo"], "no": []}
+{"mensaje": "Tienen la colección? Pasen fotos porfa", "si": ["catalogo"], "no": []}
+{"mensaje": "Oe, muestren lo nuevo que tengan en blusas", "si": ["catalogo"], "no": []}
+{"mensaje": "Holi, envíenme el catálogo porfas ✨", "si": ["catalogo"], "no": []}
+{"mensaje": "Pasen todo lo que tengan de conjuntos, al toque", "si": ["catalogo"], "no": []}
+{"mensaje": "Hay nueva colección? Quiero ver todo", "si": ["catalogo"], "no": []}
+{"mensaje": "Me muestran lo que tienen en stock?", "si": ["catalogo"], "no": []}
+{"mensaje": "Hola, me interesa ver sus diseños, pasen catálogo", "si": ["catalogo"], "no": []}
+{"mensaje": "Oe, envíen fotos de las prendas que tengan", "si": ["catalogo"], "no": []}
+{"mensaje": "Tienen la Irla? Y muestren más modelos porfa", "si": ["catalogo"], "no": []}
+{"mensaje": "Pasen catálogo completo, quiero ver todooo", "si": ["catalogo"], "no": []}
+{"mensaje": "Hola! El vestido Kendall lo tienen en talle M?", "si": [], "no": ["catalogo"]}
+{"mensaje": "Oye y el conjunto ese que vi en insta, el azul celeste, como se llama?", "si": [], "no": ["catalogo"]}
+{"mensaje": "Tienen la blusa Irla en otro color o solo negro?", "si": [], "no": ["catalogo"]}
+{"mensaje": "Me puedes pasar fotos de como luce la Pandora de cuerpo entero?", "si": [], "no": ["catalogo"]}
+{"mensaje": "El modelo Holly viene con esa faja o se vende aparte?", "si": [], "no": ["catalogo"]}
+{"mensaje": "Esos vestidos que estan en rebaja tambien estan en tu tienda fisica?", "si": [], "no": ["catalogo"]}
+{"mensaje": "La Kaylee es tela fresca o es calurosa?", "si": [], "no": ["catalogo"]}
+{"mensaje": "Causa, la Xela es entallada o suelta?", "si": [], "no": ["catalogo"]}
+{"mensaje": "Hola! Me mostraron el vestido Kendall y me encantó pe!", "si": ["elogio"], "no": []}
+{"mensaje": "Uy, la blusa Azra es una monería, al toque me enamoré", "si": ["elogio"], "no": []}
+{"mensaje": "Acabo de ver el conjunto Holly y es precioso, qué lindo color!", "si": ["elogio"], "no": []}
+{"mensaje": "El modelo Pandora me dejó loca, es demasiado lindo", "si": ["elogio"], "no": []}
+{"mensaje": "La Xela está hermosa, en serio!", "si": ["elogio"], "no": []}
+{"mensaje": "Qué bonita la Kaylee, me fascinó", "si": ["elogio"], "no": []}
+{"mensaje": "El Irla es una belleza, por favor!", "si": ["elogio"], "no": []}
+{"mensaje": "Me mostraron la prenda y quedé enamorada, es preciosa", "si": ["elogio"], "no": []}
+{"mensaje": "Qué lindo el vestido que vi, el de encaje, es una pasada!", "si": ["elogio"], "no": []}
+{"mensaje": "La blusa es una maravilla, me encantó!", "si": ["elogio"], "no": []}
+{"mensaje": "Uff, ese conjunto está divino, qué gusto!", "si": ["elogio"], "no": []}
+{"mensaje": "El diseño me robó el corazón, es precioso", "si": ["elogio"], "no": []}
+{"mensaje": "Qué hermosura de prenda, la quiero ya!", "si": ["elogio"], "no": []}
+{"mensaje": "Me fascinó el modelo, es tan elegante!", "si": ["elogio"], "no": []}
+{"mensaje": "Está precioso, qué lindo te quedó!", "si": ["elogio"], "no": []}
+{"mensaje": "Qué bonito color, me encantó!", "si": ["elogio"], "no": []}
+{"mensaje": "Es tan lindo, me quedo sin palabras!", "si": ["elogio"], "no": []}
+{"mensaje": "Qué churre esa blusa, está divina!", "si": ["elogio"], "no": []}
+{"mensaje": "El vestido es una belleza, me dejó loca!", "si": ["elogio"], "no": []}
+{"mensaje": "Me encantó, es justo lo que buscaba, precioso!", "si": ["elogio"], "no": []}
+{"mensaje": "Oye, y esa Holly que vi en stories esta semana? Es nueva?", "si": [], "no": ["elogio"]}
+{"mensaje": "Me acorde de la Pandora porque vi a una chica con algo similar en el centro, pero no era igual", "si": [], "no": ["elogio"]}
+{"mensaje": "Pensé que la Kaylee era de otro color, en la foto se veia mas clarita", "si": [], "no": ["elogio"]}
+{"mensaje": "Justo ayer fui a tu tienda pero tenian corto de luz, no pude ver nada", "si": [], "no": ["elogio"]}
+{"mensaje": "La Irla es con mangas o sin mangas? Es que no me acuerdo bien", "si": [], "no": ["elogio"]}
+{"mensaje": "Tengo una fiesta el sabado y aun no se que ponerme, pasas direccion otra vez?", "si": [], "no": ["elogio"]}
+{"mensaje": "Vi que subieron varias tallas, la 38 suele quedarme bien", "si": [], "no": ["elogio"]}
+{"mensaje": "El conjunto ese negro que tenian, es de tiro largo o corto?", "si": [], "no": ["elogio"]}
+{"mensaje": "Hola, una preguntita, el vestido Kendall de que material es? Parece franela pe", "si": ["tela"], "no": []}
+{"mensaje": "Oye, la blusa Azra es de algodon puro o tiene mezcla? Esq mi piel es sensible", "si": ["tela"], "no": []}
+{"mensaje": "Causa, el conjunto Holly de q material es? Para saber si es fresco pq hace calor", "si": ["tela"], "no": []}
+{"mensaje": "Pensaba comprar el Pandora pero necesito saber si es de punto o de otra tela, me ayudas?", "si": ["tela"], "no": []}
+{"mensaje": "Hola! La Xela es de drill? Es que busco algo que no se arrugue tanto", "si": ["tela"], "no": []}
+{"mensaje": "Disculpa, de q material es el modelo Kaylee? Gracias", "si": ["tela"], "no": []}
+{"mensaje": "Oeeeee, pasame el dato del material del Irla, para ver si me convence", "si": ["tela"], "no": []}
+{"mensaje": "Hola buenas, esa blusa holly es de licra? Q tenga algo de elastano porfa", "si": ["tela"], "no": []}
+{"mensaje": "Pe, el vestido azul (no recuerdo el nombre) es de poliester? O es algodon?", "si": ["tela"], "no": []}
+{"mensaje": "Ey, una consulta rapida, el material del Kendall es tela jean? O es como gabardina?", "si": ["tela"], "no": []}
+{"mensaje": "Hola, estoy interesada en el modelo Pandora. Podrias decirme el porcentaje de algodon xfa?", "si": ["tela"], "no": []}
+{"mensaje": "Causa, esa tela del Azra se ve delicada, es seda natural o es un poliester?", "si": ["tela"], "no": []}
+{"mensaje": "Oye y el material del conjunto ese de lentejuelas, es pesado? O livianito?", "si": ["tela"], "no": []}
+{"mensaje": "Hola! Antes de comprar, q material es el Xela? Es crepe? Saludos", "si": ["tela"], "no": []}
+{"mensaje": "Pregunta solo por el material de la Kaylee, es de lino? O puro algodon?", "si": ["tela"], "no": []}
+{"mensaje": "Buenas, el Irla es de punto frio? O de otra tela?", "si": ["tela"], "no": []}
+{"mensaje": "Hey, de q esta hecho el Holly? Es tela que no transparente porfa dime", "si": ["tela"], "no": []}
+{"mensaje": "Hola, queria saber si el vestido Kendall es de fibrana o algodon, para lavarlo bien", "si": ["tela"], "no": []}
+{"mensaje": "Oe, el material del Azra es tela que no se encoge? Esq a veces talla L me queda M", "si": ["tela"], "no": []}
+{"mensaje": "Hola, una ultima consulta, la blusa Pandora es de viscosa? O de que?", "si": ["tela"], "no": []}
+{"mensaje": "Hola, disculpa esa faldita Pandora de la foto... la tela es pesada o se marca todo? para saber", "si": [], "no": ["tela"]}
+{"mensaje": "Oye y el vestido Holly lo tienes en otro tono? tipo arena, no el crudo que se ve duro", "si": [], "no": ["tela"]}
+{"mensaje": "La blusa Kendall se ve delgadita, no sera transparente? jaja", "si": [], "no": ["tela"]}
+{"mensaje": "Al toque me dices si el conjunto Irla tiene forro porfa", "si": [], "no": ["tela"]}
+{"mensaje": "Causa, ese material de la Azra parece felpa, es asi o es puro efecto de la foto?", "si": [], "no": ["tela"]}
+{"mensaje": "Una preguntita, la Xela no es de esa tela que se arruga al toque verdad?", "si": [], "no": ["tela"]}
+{"mensaje": "Me encanta el Kaylee pero en la foto se ve como plastificado, es brilloso o es la luz?", "si": [], "no": ["tela"]}
+{"mensaje": "Oye y ese detalle del escote de la Pandora es transparente o es solo un bordado?", "si": [], "no": ["tela"]}
+{"mensaje": "Muchas gracias x la ayuda, ya te aviso si paso x la tienda!", "si": ["despedida"], "no": []}
+{"mensaje": "Oki, perfecto. Gracias x todo pe", "si": ["despedida"], "no": []}
+{"mensaje": "Bueno, me avisas cuando llegue el modelo Holly, ahí me escribes al toque", "si": ["despedida"], "no": []}
+{"mensaje": "Listo, entonces mañana paso a recogerlo. Gracias!", "si": ["despedida"], "no": []}
+{"mensaje": "Dale, mil gracias por la paciencia causa, hablamos", "si": ["despedida"], "no": []}
+{"mensaje": "Super, te agradezco un monton. Chao!", "si": ["despedida"], "no": []}
+{"mensaje": "Ya, gracias. Bye", "si": ["despedida"], "no": []}
+{"mensaje": "Genial, entonces quedamos así. Gracias!", "si": ["despedida"], "no": []}
+{"mensaje": "Buenazo, ya te escribo la prox. Gracias x la info", "si": ["despedida"], "no": []}
+{"mensaje": "Perfecto, gracias. Ahi estare al pendiente", "si": ["despedida"], "no": []}
+{"mensaje": "Dale, te agradezco. Nos vemos!", "si": ["despedida"], "no": []}
+{"mensaje": "Listo, muchas gracias x resolver mis dudas", "si": ["despedida"], "no": []}
+{"mensaje": "Joyita, gracias. Chao!", "si": ["despedida"], "no": []}
+{"mensaje": "Buenisimo, ya sabes, cualquier cosa te escribo. Gracias!", "si": ["despedida"], "no": []}
+{"mensaje": "Super, mil gracias por todo. Hablamos", "si": ["despedida"], "no": []}
+{"mensaje": "Ya, gracias. Ahi vere si puedo ir hoy mas tarde", "si": ["despedida"], "no": []}
+{"mensaje": "Dale, gracias. Que tengas buen dia!", "si": ["despedida"], "no": []}
+{"mensaje": "Perfect, gracias x todo. Bye bye", "si": ["despedida"], "no": []}
+{"mensaje": "Listo, te agradezco la onda. Chau!", "si": ["despedida"], "no": []}
+{"mensaje": "Ya, muchas gracias. Nos escribimos", "si": ["despedida"], "no": []}
+{"mensaje": "Dale causa, entonces paso a recoger el vestido Pandora mañana al toque, abren temprano no?", "si": [], "no": ["despedida"]}
+{"mensaje": "Oye y la blusa Kaylee en talla M tienen para probarme nomas?", "si": [], "no": ["despedida"]}
+{"mensaje": "Voy a ver si me alcanza para el conjunto Irla y la blusa tambien pe", "si": [], "no": ["despedida"]}
+{"mensaje": "Es que mi amiga tambien quiere el modelo Azra pero en otro color, tienen?", "si": [], "no": ["despedida"]}
+{"mensaje": "Ya te mando el comprobante nomas y me guardas el Holly que vi ayer", "si": [], "no": ["despedida"]}
+{"mensaje": "A que hora cierran hoy? Para pasar a ver las prendas despues de la pega", "si": [], "no": ["despedida"]}
+{"mensaje": "Porfa fijate si les queda el Xela en S que en ig lo vi recien", "si": [], "no": ["despedida"]}
+{"mensaje": "Oye y hacen delivery hasta San Miguel o solo recojo en tienda?", "si": [], "no": ["despedida"]}
+{"mensaje": "Ya hice la transferencia, pe. Te paso el comprobante al toque.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola! Recién yapeé por el vestido Pandora, ya te debe llegar.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Causa, ya pagué. Avisa si te llega el yape de la Kaylee.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Listo, ya transferí. En un rato te mando el voucher porfa guardame la Holly!", "si": ["ya_pago"], "no": []}
+{"mensaje": "Yape hecho! Por el conjunto Azra, ya sabes.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola, buenas tardes. Ya realicé el pago, te mando la captura.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Ya te yapeé el monto, ojo que es desde otro nombre, es de mi marido.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Causa, pagué. Avisa si te llega nomás.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola! Te mandé el yape por la blusa Irla, con el interés de ayer.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Transferencia realizada al toque. Guardame la Kendall porfa!", "si": ["ya_pago"], "no": []}
+{"mensaje": "Listo ya pagué, todo correcto. Te llega el comprobante?", "si": ["ya_pago"], "no": []}
+{"mensaje": "Ya yapeé, pe. Es por el vestido que te escribí ayer.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola, ya hice la transferencia por el conjunto. Te mando el screenshot.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Causa, yape listo. Avisa si te llega el pago de la Xela.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Buenas! Te acabo de yapear, fíjate si te llegó la plata.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Ya transferí todo. Ahí te va el voucher para que veas.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Pagué al toque. Es por la blusa negra, la Holly.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Listo mi pago. Ya te mandé el yape, avísame cualquier cosa.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Ya te yapeé, pe. Espero que te llegue rápido para coordinar la entrega.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola, recién pagué. Te mando el comprobante por aquí mismo.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola, ya esta listo mi pedido? Ya pase a la tienda y me dijeron q revisen su wsp", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Oe, ya me llego el yape de la promo de ayer? Es q no me aparece en movil", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Acabo de mandar un audio, se escucha? Es del color del vestido Kaylee", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Me acorde recien, ya pague la delivery, ya esta todo?", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Ya vi q tienen nuevo numero, ya mande alli mi direccion para el courier", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Ya hice el deposito pero a la cuenta de la semana pasada, esta bien?", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Ya pase por el corte, al toque mando el pantallazo del voucher", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Ya esta, mi hermana ya fue a recogerlo, con el comprobante de pago de ayer", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Oe ya no me manden mas fotos de otros modelos xfa", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Causa ya me decidí nomás, no me sigan enviando fotos", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Pta ya no quiero ver más modelos, solo quiero el holly", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Al toque ya no manden más opciones, voy x el azra y punto", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Señoritas porfa, suficiente con las fotos, ya elegí", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Basta de fotos, ya me canse de ver modelos", "si": ["no_mostrar"], "no": []}
+{"mensaje": "No insistan con mas fotos xfa, ya no quiero", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Recién te digo, cero fotos adicionales ya", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Mira ya vi todo, no necesito mas imagenes", "si": ["no_mostrar"], "no": []}
+{"mensaje": "X el amor de Dios, paren de mandarme fotos de vestidos", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Ya fue, cerrame la venta sin enviarme nada mas", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Te juro que si me mandas una foto mas me voy", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Solo confirmame el stock del kendall y ya, sin fotos", "si": ["no_mostrar"], "no": []}
+{"mensaje": "No quiero ver el pandora ni el irla, ya me decidí", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Porfa ya no, mi celular ya no aguanta mas fotos", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Avisame nomas si llego el xela sin enviar foto", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Déjame asi nomás, sin mas modelos porfa", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Ya corta, la siguiente foto que mandes la ignoro", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Confirmame la compra y no me mandes ni una foto mas", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Listo, ya no necesito ver nada, solo comprar", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Hola, ya no me mandes msj pq estoy en el trabajo, pero si llega el vestido Kendall en talla M avisame al toque pe", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Oye y si mejor paso por la tienda? Asi veo todo de una vez y no me bombardeas con fotos por aca jaja", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Mejor dime si el modelo Azra tiene para probador, quiero ver como me queda en persona y no por foto.", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "A mi hermana le encanto el Holly que le mandaste, pero no le muestres mas opciones que se vuelve loca eligiendo.", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Solo confirmame si ya esta listo mi pedido, pq con tantos msj se me pierde la info importante.", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Para la proxima venta, puedes poner las fotos todas en un solo link? Asi no saturas el chat con tantos archivos.", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Oye, de todos los modelos que vi, solo me quedo con el Pandora. Ni me menciones los otros ya.", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Pensandolo bien, mejor no me actualizes con nuevos ingresos hasta la prox temporada, que ya gaste bastante.", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Hola pe, cuánto sale el vestido Kendall y tienen en L?", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Oe, la blusa Azra, precio? Y qué tallas tienen disponible?", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Buenas, me interesa el conjunto Holly. Precio y tienen talla M?", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Hola! El vestido Pandora, cuánto está? Necesito talla S, hay?", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Ola, la Kaylee a cómo? Y qué tallas les queda, uso S", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Causa, la Irla cuesta? Y si hay en talla L me avisas al toque pe", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Hola pe, quiero saber cto sale el vestido Kendall y si hacen envio a Surco?", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Oye, la blusa Azra a como esta? Y el delivery a La Molina cuesta extra o ya esta incluido?", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Holi, me puedes dar el precio del conjunto Holly y tambien si envian a mi casa en San Juan de Lurigancho?", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Causa, cto sale la Xela? Y el envio a Comas demora mucho o al toque?", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Buenas, precio de la Kaylee porfa. Y el delivery a Los Olivos es gratis o como funciona?", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Oe, la Irla esta en oferta? Y si pido hoy, el envio a Barranco llega mañana o como es?", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Oye y la blusa Kendall de que material es? Y hacen envio a Surco?", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Hola, la Holly es de algodon? Envian a mi casa en La Molina y cuánto cuesta el delivery?", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Pe, la Pandora es polyester? Y si pido hoy, el envio a Comas demora mucho?", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Causa, la Xela es de tela fresca? Y el delivery a San Juan de Lurigancho cuánto sale?", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Hola, consulta: la Kaylee es de lycra? Y envían a Villa El Salvador? Cuanto demora mas o menos?", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Oye y la Irla, que material es? Y el envio a Los Olivos, tiene costo adicional o algo?", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Hola! El vestido Kendall, tendran talla M? Y cuanto sale el envio a Surco?", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Oe, para el conjunto Azra hay talla L? Envian a La Molina y en cuanto tiempo llega?", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Hola, quiero la blusa Pandora en S. Hacen delivery? Cuanto cuesta por Cercado?", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Causa, consulta rapida: el modelo Holly en M y si envian a Miraflores y cuanto demora mas o menos?", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Buenas! La Xela en talla L, llegan a San Miguel? Y el costo del envio?", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Hola, me interesa el vestido Irla. Usao talla S. Envian a Barranco y al toque o demoran?", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Hola pe, la Holly en rojo? Cuanto esta y que otros colores tienen?", "si": ["precio", "color"], "no": []}
+{"mensaje": "Oe, la Kaylee viene en negro? Cuanto cuesta y hay otros colores?", "si": ["precio", "color"], "no": []}
+{"mensaje": "Buenas, la Pandora en talla M, precio? Y que colores tienen disponible?", "si": ["precio", "color"], "no": []}
+{"mensaje": "La Irla en azul? Cuanto y si tienen en otros colores tambien?", "si": ["precio", "color"], "no": []}
+{"mensaje": "Holi, la Kendall cuanto esta y viene en verde? Que colores hay?", "si": ["precio", "color"], "no": []}
+{"mensaje": "Ola, la Xela en negro? Precio y que otros colores tienen disponible?", "si": ["precio", "color"], "no": []}
+{"mensaje": "Ola, vi el vestido Kendall. A cuanto esta? Y abren hoy sabado? Pasaría al toque pe", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Holi, me encanto la blusa Azra. Precio? Tienen probador? Puedo ir mañana domingo?", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Buenas, la holly en que tallas esta? Y cuanto? Podria pasar el miercoles en la tarde", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Oe, la Xela esta en oferta? A como? Quiero probarmela, voy hoy mismo?", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Hola, precio del conjunto Pandora porfa. Y tienen hora para probarlo? Ire el viernes", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Ei, la Kaylee tiene descuento? Cuanto? Quiero probarmela, puedo ir ahora pe", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Oeee, y el vestido Pandora tiene promo? es q esta lindo pero me gustaria saber si aunq sea un descuentito pe", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Hola! Una preguntita, cuanto esta la blusa Kaylee? Es para ver si me puedes hacer un buen precio porque me encanto", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Buenas, pasa el precio de la Holly y si le bajas un poquito, te lo compro al toque", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Causa, la falda Irla cuanto cuesta? Aprovecha y dime si hay alguna oferta ahi mismo", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Hola, me podrias decir el precio del conjunto Azra y si hay chance de regateo? Es q esta un toque alto", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Ola, vi el modelo Xela en ig, cuanto sale? Y si le haces descuento ya mismo te lo pido nomás", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Hola pe, la Kendall viene en negro? Y tienen talla M?", "si": ["color", "talla"], "no": []}
+{"mensaje": "Oe, la Azra hay en rojo? Y talla S disponible?", "si": ["color", "talla"], "no": []}
+{"mensaje": "Hola, consulta por la Holly. Tienen en verde? Y que tallas hay?", "si": ["color", "talla"], "no": []}
+{"mensaje": "La Pandora viene en azul? Yo uso S, hay?", "si": ["color", "talla"], "no": []}
+{"mensaje": "Buenas! La Xela en beige? Y que tallas tienen?", "si": ["color", "talla"], "no": []}
+{"mensaje": "Ola, la Irla hay en lila? Y talla M disponible?", "si": ["color", "talla"], "no": []}
+{"mensaje": "Hola pe, donde estan ubicados? Quiero pasar hoy al toque a probarme el vestido Kendall", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Buenas! Cual es su horario? Para ir mañana a ver la blusa Azra y probarmela", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Oye y abren el sabado? Quiero agendar para ir a medirme el conjunto Holly", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Hola, me pasan la dire del showroom? Para pasar esta tarde a ver la Xela", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Hola! A que hora cierran? Quiero ir hoy mismo a probarme el modelo Pandora", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Donde quedan? Para agendar una visita el viernes y ver la Kaylee al toque", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Ola! Me encanto la Kendall que mostraron ayer, esta preciosa! Cuanto sale?", "si": ["elogio", "precio"], "no": []}
+{"mensaje": "Pense en la Pandora y me enamoro pe, cuanto esta?", "si": ["elogio", "precio"], "no": []}
+{"mensaje": "Ayyy la Holly es una belleza! A cuanto?", "si": ["elogio", "precio"], "no": []}
+{"mensaje": "La Irla me vuelve loca, es tan linda! Precio?", "si": ["elogio", "precio"], "no": []}
+{"mensaje": "Esa Azra es un amor, me encanto! Cuanto cuesta?", "si": ["elogio", "precio"], "no": []}
+{"mensaje": "La Xela esta divina causa, cuanto vale?", "si": ["elogio", "precio"], "no": []}
+{"mensaje": "Hola, buenas tardes! Una consulta, vi el conjunto Kendall en su IG y me encanto para una fiesta q tengo en dos semanas. Podrian decirme el precio xfa?", "si": ["precio"], "no": []}
+{"mensaje": "Oye, una amiga me comento de los vestidos Holly. Es q busco algo elegante pero no tan caro, pasame el precio porfa pa ver si me animo.", "si": ["precio"], "no": []}
+{"mensaje": "Uy, me encanto la blusa Pandora! Esta para usarla con jeans. Cuanto sale? Espero no sea un ojo de la cara jeje", "si": ["precio"], "no": []}
+{"mensaje": "Hola! Quiero comprarle un regalo a mi hermana y le gustan mucho sus blusas. Cuanto cuesta la Azra? Es su talla M.", "si": ["precio"], "no": []}
+{"mensaje": "Buenasss, vi la promo de los conjuntos en stories. Me interesa el Irla, podrian confirmarme el precio final con envio a Surco?", "si": ["precio"], "no": []}
+{"mensaje": "Oe causa, una pregunta rapidita. La Kaylee en color negro, tienes en stock? Y sobre todo, cuanto vale? Para pasar a recojer al toque.", "si": ["precio"], "no": []}
+{"mensaje": "Hola, disculpa la molestia. Estoy buscando un vestido para una boda y el Xela me parecio precioso. Seria para talla L. Podrian darme el precio, por favor?", "si": ["precio"], "no": []}
+{"mensaje": "Holii, escribo para preguntar por el conjunto Pandora. Es q vi una publi vieja y no se si el precio sigue igual. Me lo podrian confirmar? Gracias!", "si": ["precio"], "no": []}
+{"mensaje": "Buen dia! Tengo una entrevista de trabajo la prox semana y necesito una blusa formal. La Kendall es adecuada? Y sobre todo, cual es su precio?", "si": ["precio"], "no": []}
+{"mensaje": "Oye, pasa q mi novio me quiere llevar a cenar y no tengo q ponerme. El vestido Holly esta hermoso. Me dicen cuanto cuesta? A ver si me lo juego.", "si": ["precio"], "no": []}
+{"mensaje": "Hola, soy clienta antes. Me compre la Azra y quiero otra igual pero en otro color. Sigue al mismo precio? O hay alguna promo? Avisenme :)", "si": ["precio"], "no": []}
+{"mensaje": "Ufff, acabo de ver el nuevo lanzamiento en IG. Ese conjunto Irla es una locura! Porfa mandenme el precio para ver si lo puedo comprar hoy mismo.", "si": ["precio"], "no": []}
+{"mensaje": "Hola, buenas. Una consulta especifica: la blusa Xela en talla S, cuento sale? Y tienen disponible para llevar ya? Es q urge un poco.", "si": ["precio"], "no": []}
+{"mensaje": "Oe, pe. Vi su tienda y me gusto el vestido Kaylee. Pero mi budget esta ajustado. Cuanto es lo menos q me lo dejan? Hablamos?", "si": ["precio"], "no": []}
+{"mensaje": "Hola! Es mi primera vez comprando. Me encanto el conjunto Azra, pero no veo el precio en la web. Me lo podrian facilitar? Gracias!", "si": ["precio"], "no": []}
+{"mensaje": "Buenas tardes! Estoy interesada en la blusa Pandora. Solo queria confirmar el precio antes de decidirme. Muchas gracias por la info!", "si": ["precio"], "no": []}
+{"mensaje": "Oye, tengo una duda. El vestido Holly para una graduacion, esta bien? Y lo mas importante, cuanto me saldria con el envio incluido?", "si": ["precio"], "no": []}
+{"mensaje": "Hola! Espero q esten bien. Pregunto por el precio del conjunto Kendall, es para una ocasion especial. Pueden darme mas detalles de la tela tambien?", "si": ["precio"], "no": []}
+{"mensaje": "Uy, porfin pague mis deudas y me quiero dar un gusto. Me hice fan de la Kaylee. Dime cuanto cuesta para transferirte al toque, pe.", "si": ["precio"], "no": []}
+{"mensaje": "Hola, disculpa, se q es muy temprano jaja. Pero no me podria sacar la duda del precio del vestido Xela? Es q hoy es mi dia libre y quiero ir a probarmelo.", "si": ["precio"], "no": []}
+{"mensaje": "Hola! Oye, vi en sus historias el conjunto ese que brilla, como se llama? Es que tengo una fiesta este finde y no se que ponerme pe", "si": [], "no": ["precio"]}
+{"mensaje": "Me encanta la Kendall! Pero es que no se si me va a quedar, soy talla M normalmente, creen que haya para probarmela? O es solo delivery?", "si": [], "no": ["precio"]}
+{"mensaje": "Una consulta, el vestido Azra viene en otro color? O solo en ese rojo que vi? Es que no me convence mucho para el evento", "si": [], "no": ["precio"]}
+{"mensaje": "Tengo una duda, la blusa Holly se ve super fresca pero no se si sea muy transparente? Para usarla con algo debajo o no?", "si": [], "no": ["precio"]}
+{"mensaje": "Hola! A una amiga le regalaron la Xela pero le quedo grande, hacen cambios? O saben si puedo yo comprarsela? Esta nueva con etiqueta", "si": [], "no": ["precio"]}
+{"mensaje": "Oye, y el conjunto Pandora es tela que no se arruga mucho? Es que viajo y no quiero llegar toda chuca a la fiesta", "si": [], "no": ["precio"]}
+{"mensaje": "Vi que tienen la Kaylee en las fotos, pero no la veo en la pagina. Aun la tienen disponible o ya no? Es que me reenganche", "si": [], "no": ["precio"]}
+{"mensaje": "Una preguntita, la Irla se ve larga en las fotos. Para alguien bajita como yo, creen que me quede bien o mejor busco otra opcion? Es que me encanto el diseño", "si": [], "no": ["precio"]}
+{"mensaje": "Hola! Mira, tengo una fiesta este sabado y quiero comprarme el vestido Kendall que vi en su IG. Soy talla M normalmente, pero no se si me quedara porque a veces con las tallas varía. Me podrian decir si lo tienen en M? Gracias!", "si": ["talla"], "no": []}
+{"mensaje": "Ola, consulta rapidita. El conjunto Holly en color negro, tienen en talla L? Es q justo lo necesito para el viernes y quiero pasar a recojerlo al toque si hay.", "si": ["talla"], "no": []}
+{"mensaje": "Buenas! Me encanto la blusa Azra. Soy talla S, creen que me quede bien o me recomiendan otra talla? Porfa diganme q tallas tienen disponibles.", "si": ["talla"], "no": []}
+{"mensaje": "Pe, una preguntita. El modelo Pandora en talla M hay? Es para ver si paso hoy mas tarde, gracias!", "si": ["talla"], "no": []}
+{"mensaje": "Hola, buenos dias! Queria saber si el vestido Irla esta disponible en talla XL. Es para una ocasion especial y me enamore de ese modelo.", "si": ["talla"], "no": []}
+{"mensaje": "Causa, necesito tu ayuda. Vi el conjunto Xela y esta precioso, pero no se q talla pedir. Mido 1.60 y peso como 65 kilos, q talla me recomiendan? Y tienen en stock?", "si": ["talla"], "no": []}
+{"mensaje": "Oiee, escribo para preguntar por la blusa Kaylee. Tienen en S? Es que justo voy para por alla y queria comprarmela.", "si": ["talla"], "no": []}
+{"mensaje": "Hola! Tengo una duda con las tallas del vestido Kendall. La ultima vez me compre una M y me quedo bien, pero ahora no se si cambiaron el tallaje. Sigue siendo igual? Porfa confirmenme para pedir otra vez.", "si": ["talla"], "no": []}
+{"mensaje": "Buenas tardes, queria consultar por el conjunto Holly. Que tallas tienen en stock? Para ver si la L aun esta disponible. Gracias!", "si": ["talla"], "no": []}
+{"mensaje": "Pe, se q es muy temprano jaja pero es q ya quiero comprar. El modelo Azra en talla M hay? Avisenme porfa para ir haciendo el pedido.", "si": ["talla"], "no": []}
+{"mensaje": "Hola! Mira, es mi primera compra con ustedes y me interesa el vestido Irla. Soy talla L normalmente, pero no se como son sus tallas. Me podrian guiar un poco y decirme q tallas les queda?", "si": ["talla"], "no": []}
+{"mensaje": "Ola, pregunta rapida. La blusa Pandora en color nude, tienen en talla S? Es q la vi en una amiga y quedo divina, porfa dime si hay.", "si": ["talla"], "no": []}
+{"mensaje": "Causa, ayuda! Tengo una cena importante el viernes y necesito el conjunto Xela si o si. Tengo dudas con la talla, soy M pero a veces me ajusta en las caderas. Que me recomiendan? Y tienen disponible?", "si": ["talla"], "no": []}
+{"mensaje": "Hola buenas, queria saber si el vestido Kendall lo tienen en talla XL. Porfa necesito una respuesta rapida para coordinar la compra. Gracias!", "si": ["talla"], "no": []}
+{"mensaje": "Oiee, escribo para preguntar por la blusa Kaylee en talla M. Tienen stock? Para pasar a recojerlo hoy mismo en la tarde.", "si": ["talla"], "no": []}
+{"mensaje": "Hola! Tengo una duda especifica. El modelo Irla, lo quiero para una boda. Uso talla S pero con los brazos a veces me aprieta. Es ajustado en las mangas? Q tallas tienen para probarme?", "si": ["talla"], "no": []}
+{"mensaje": "Pe, consulta. El conjunto Holly en talla L hay stock? Es que no quiero quedarme sin él, me encanto demasiado.", "si": ["talla"], "no": []}
+{"mensaje": "Buenas tardes, queria saber si el vestido Azra esta disponible en talla M. Y de paso, si me pueden decir q otras tallas hay por si acaso. Gracias!", "si": ["talla"], "no": []}
+{"mensaje": "Hola! Mira, estoy entre dos tallas en el modelo Pandora, entre la S y la M. Me podrian decir como es la talla? Y que tallas tienen en stock ahorita para decidirme.", "si": ["talla"], "no": []}
+{"mensaje": "Ola, una preguntita al toque. La blusa Xela en talla L, ya no hay? Es q la necesito y en la publi sale agotada, pero queria confirmar por si acaso. Gracias!", "si": ["talla"], "no": []}
+{"mensaje": "Hola pe! Una consulta, para el vestido Pandora, tengo una duda con la talla. Es que lo vi en la foto y se ve un poco ajustado en la cintura, pero en el pecho yo creo que me queda. No sé si es talle grande o chico. Me puedes orientar? Gracias!", "si": [], "no": ["talla"]}
+{"mensaje": "Oye, paso por la tienda hoy mas tarde, quiero probarme el conjunto Holly, pero no se si lo tienen para probar o solo es por pedido. Es que quiero ver como me queda en la talla que creo que soy, para no equivocarme.", "si": [], "no": ["talla"]}
+{"mensaje": "Buenas! Mira, me paso siempre lo mismo. Compre una blusa y quedo perfecta, pero luego pido la misma talla en otro modelo y me queda enorme. Con el modelo Kaylee, como es? Es de esos que ajustan bien o es mas sueltico? Es para saber si me juego por mi talla usual o pido otra.", "si": [], "no": ["talla"]}
+{"mensaje": "Hola! Una preguntita, el vestido Azra en la foto se ve super largo. Yo mido 1.60 mas o menos, crees que me quede rozando el piso o esta bien? Es que no quiero verme tapada, sino que me quede a la medida.", "si": [], "no": ["talla"]}
+{"mensaje": "Oye causa, estuve viendo las fotos del conjunto Irla y tengo una duda existencial. Ese tipo de tela stretch, despues de lavarlo se encoge o se estira? Es que si se encoge tal vez me convenga una talla mas, pero no quiero que quede flojo luego.", "si": [], "no": ["talla"]}
+{"mensaje": "Hola! Te cuento, tengo una fiesta el sabado y me encanto el modelo Kendall. Mi amiga lo tiene y es talla M, pero ella es un poquito mas grande que yo de espalda. Crees que si pido la M me quede bien o mejor la S? Es que no quiero que me quede apretado.", "si": [], "no": ["talla"]}
+{"mensaje": "Buenas tardes! Una consulta sobre el modelo Xela. Vi que tiene un corte recto. Yo tengo mas cadera, sabes? Ese modelo es generoso en esa parte o es muy preciso? Para ver si me conviene o busco otro diseño que se adapte mejor a mi cuerpo.", "si": [], "no": ["talla"]}
+{"mensaje": "Hola pe! Mira, quiero comprar el Pandora pero para regalar. Es para mi hermana, es un poco mas llenita que yo, especialmente de busto. El vestido tiene algo de elastano o es puro algodon rigido? Para saber si le va a servir con su talla o si se le va a hacer incomodo.", "si": [], "no": ["talla"]}
+{"mensaje": "Hola! Mira, tengo una fiesta este sabado y quiero comprarme el vestido Pandora. Para no equivocarme, me puedes decir si lo tienes en color negro? Es que con unos tacones que tengo quedaria genial", "si": ["color"], "no": []}
+{"mensaje": "Oye, una consulta rapida. El conjunto Holly viene en rojo? Es para regalarle a mi hermana y ese es su color favorito", "si": ["color"], "no": []}
+{"mensaje": "Buenas! Vi en sus historias el modelo Kendall y esta precioso. Tienen ese en azul? O en que colores viene?", "si": ["color"], "no": []}
+{"mensaje": "Hola, pe! Me encanto la blusa Azra. Tienen en verde? O que otros colores manejan?", "si": ["color"], "no": []}
+{"mensaje": "Causa, una pregunta. Esa blusa Xela que publicaron, la tienen en color mostaza? Es que necesito algo para combinar con un jean", "si": ["color"], "no": []}
+{"mensaje": "Oye, estoy interesada en el vestido Irla. Solo lo vi en beige en la publicacion, pero tienen en otros colores?", "si": ["color"], "no": []}
+{"mensaje": "Hola! Quiero comprar el conjunto Kaylee para una despedida. Tienen en rosa? O en que colores esta disponible?", "si": ["color"], "no": []}
+{"mensaje": "Buenas tardes! Porfa, me podrian decir si el modelo Pandora viene en lila? Es mi color favorito y quiero verme bien en la fiesta", "si": ["color"], "no": []}
+{"mensaje": "Mira, necesito el vestido Holly urgente para el viernes. Tienen en talla M y en color negro? Es que es el unico que me queda bien", "si": ["color"], "no": []}
+{"mensaje": "Hola! Me encantan sus disenos. Una pregunta, la blusa Azra viene en blanco? O solo en los colores que vi en las fotos?", "si": ["color"], "no": []}
+{"mensaje": "Oye, pe, el conjunto Kendall que colores tiene? Es para usarlo en una boda y no quiero irme muy colorida", "si": ["color"], "no": []}
+{"mensaje": "Hola! Vi que tienen el modelo Irla. Tienen en azul marino? Es que busco algo mas sobrio para la oficina", "si": ["color"], "no": []}
+{"mensaje": "Buenas! Queria saber si la blusa Xela viene en estampado animal print o solo en colores lisos?", "si": ["color"], "no": []}
+{"mensaje": "Oye, una consulta. El vestido Kaylee lo tienen en rojo? Es para un evento especial y quiero llamar la atencion", "si": ["color"], "no": []}
+{"mensaje": "Hola! Me podrian decir si el conjunto Pandora viene en color nude? Es que tengo una piel muy clara y no me quiero ver palida", "si": ["color"], "no": []}
+{"mensaje": "Mira, esoty por comprar el vestido Holly. Pero no se si elegir el negro o el azul. Tienen ambos en talla L?", "si": ["color"], "no": []}
+{"mensaje": "Hola! Tienen la blusa Azra en amarillo? O que colores vibrantes manejan?", "si": ["color"], "no": []}
+{"mensaje": "Oye, pe, el modelo Kendall viene en verde esmeralda? Vi uno similar en otra tienda pero me gusto mas el de ustedes", "si": ["color"], "no": []}
+{"mensaje": "Buenas tardes! Queria preguntar por el vestido Irla. Tienen en gris? O solo en los colores que muestran en linea?", "si": ["color"], "no": []}
+{"mensaje": "Hola! Estoy interesada en el conjunto Kaylee. Me podrian decir que colores tienen disponibles? Es para ver cual me convence mas", "si": ["color"], "no": []}
+{"mensaje": "Hola! Mira, esq vi el vestido Kendall en sus historias y me encanto pe, pero esq en la foto se ve como rosadito y yo quiero algo mas fuerte para una fiesta. No se si es la luz nomas o asi es?", "si": [], "no": ["color"]}
+{"mensaje": "Oye, tengo una duda con el conjunto Holly. Mi amiga lo tiene en negro y yo quiero comprarmelo pero no quiero quedar igual que ella jaja. Tienen en otro tono? Esq no se si el que vi es el mismo.", "si": [], "no": ["color"]}
+{"mensaje": "Hola! Una consulta, el modelo Pandora que publicaron ayer... esq lo vi en beige y en una pagina vi uno parecido en azul, ese es de ustedes o es otro? Me confundi un poco.", "si": [], "no": ["color"]}
+{"mensaje": "Buenas! Me paso algo raro con la blusa Azra. La compre hace como dos semanas en gris y ahora veo una foto y se ve celeste. Es el mismo modelo o han sacado nueva temporada? Esq no entiendo si es el mismo.", "si": [], "no": ["color"]}
+{"mensaje": "Oye causa, una preguntita. El vestido Xela que vi en su perfil, esq en la foto de la chica morena se veia como color vino y en la otra foto se ve mas rojo. Cual es el color real? Esq para ver si combina con mis zapatos.", "si": [], "no": ["color"]}
+{"mensaje": "Hola! Esq queria saber de la Kaylee. Vi un reel donde salia en un color mostaza super lindo, pero cuando fui a la seccion de la pagina solo sale en negro y blanco. Ya no lo tienen en ese color o era edicion?", "si": [], "no": ["color"]}
+{"mensaje": "Mira, tengo esta duda: la Irla que tienen en exhibicion en la tienda, esq fui y juraria que era verde musgo, pero ahora en las fotos de instagram se ve turquesa. Han cambiado las luces o es otro lote?", "si": [], "no": ["color"]}
+{"mensaje": "Hola! Una consulta rapidita. El conjunto que mostraron en el live el miercoles, el que era tipo tweed... esq mi hermana jura que es gris y yo digo que es huevo de pata. Nos podemos pasar hoy a verlo en persona para salir de dudas?", "si": [], "no": ["color"]}
+{"mensaje": "Hola buenas, una preguntita, envian a Surco? Es q vi un vestido Kaylee que me encanto pero necesito saber si llega para el fin de semana", "si": ["envio"], "no": []}
+{"mensaje": "Oe causa, una consulta rapidita. Vi en ig el conjunto Holly y quiero pedirlo pa mi cumple. Envian a San Juan de Lurigancho? Y mas o menos cuanto se demora el envio", "si": ["envio"], "no": []}
+{"mensaje": "Buenas! Me podrian decir si hacen envios a provincia? Es para Ica. Y de paso cuanto seria el costo mas o menos para saber mi budget", "si": ["envio"], "no": []}
+{"mensaje": "Hola, quiero comprar la blusa Irla pero soy de Comas. Envian para aca? Cuanto es lo minimo para delivery gratis o como funciona", "si": ["envio"], "no": []}
+{"mensaje": "Hola, una pregunta sobre el delivery. Soy de Pueblo Libre, cuanto demora mas o menos y hasta que hora reciben pedidos para que llegue al dia siguiente?", "si": ["envio"], "no": []}
+{"mensaje": "Ola, envian a La Molina? Es q tengo una fiesta el sabado y necesito si me llega el vestido Pandora para esa fecha. Avisenme porfa", "si": ["envio"], "no": []}
+{"mensaje": "Hola! Me encanto el conjunto Azra. Pero soy de Barranco. Envian para aca? Y cuanto cuesta el envio normalmente? Gracias", "si": ["envio"], "no": []}
+{"mensaje": "Buenas tardes, consulta rapida. Envian a Jesus Maria? Y si pido hoy, cuando mas o menos me llegaria? Es para un regalo urgente", "si": ["envio"], "no": []}
+{"mensaje": "Hola, soy de Los Olivos y quiero pedir la blusa Xela. Envian para aca? Necesito saber el costo del envio y si puedo pagar contraentrega", "si": ["envio"], "no": []}
+{"mensaje": "Oe pe, una pregunta. El envio a San Miguel cuanto demora? Y hasta que direccion llegan? Es q mi casa es algo escondida jaja", "si": ["envio"], "no": []}
+{"mensaje": "Hola, vi sus cosas y estan bonitas. Envian a Chorrillos? Y cuanto es el tiempo de espera normalmente? Es para ver si me animo a comprar", "si": ["envio"], "no": []}
+{"mensaje": "Buenas, una consulta sobre el delivery. Soy de Miraflores, si hago el pedido hoy en la tarde, hay chance de que llegue mañana? Urge un poco", "si": ["envio"], "no": []}
+{"mensaje": "Hola, me podrian decir si envian a SMP? Y tambien si saben mas o menos cuanto se tarda el courrier. Gracias de antemano", "si": ["envio"], "no": []}
+{"mensaje": "Ola, envian a La Perla en Callao? Quiero la blusa Kendall pero necesito saber si llega aca y mas o menos en cuanto tiempo", "si": ["envio"], "no": []}
+{"mensaje": "Hola buenas, queria preguntar por los envios. A Villa El Salvador envian? Y cuanto cuesta el envio? Es para regalarle a mi hermana", "si": ["envio"], "no": []}
+{"mensaje": "Hola, tengo una duda. Envian a Lince? Y si pido mas de un item, el envio sigue siendo el mismo precio o cambia? Pregunto por dos vestidos", "si": ["envio"], "no": []}
+{"mensaje": "Oe causa, al toque si pueden. Envian a San Borja? Y cuanto es lo minimo de compra para que el envio sea gratis? Es para saber", "si": ["envio"], "no": []}
+{"mensaje": "Hola, soy nueva comprando con ustedes. Envian a Breña? Y que tal es el servicio de courrier, son puntuales con la entrega? Jaja gracias", "si": ["envio"], "no": []}
+{"mensaje": "Buenas, una preguntita del delivery. A Magdalena envian? Y normalmente en que horario llegan los paquetes? Para avisar en casa", "si": ["envio"], "no": []}
+{"mensaje": "Hola, quiero comprar el conjunto Holly pero soy de Surquillo. Envian para aca? Y si pido hoy, para cuando me llegaria mas o menos? Gracias", "si": ["envio"], "no": []}
+{"mensaje": "Hola buenas tardes, una pregunta tienen el modelito que subieron en stories, el de rayas? me encantooo para enviar de regalo a mi hermana que vive en provincia, porque aca en Lima ya no la veo ni en pintura pe", "si": [], "no": ["envio"]}
+{"mensaje": "Oye que bonitas esas blusas de mangas largas, la Kendall es preciosa. Me la podrias enviar a la oficina, pero soy un desastre y siempre olvido dar la direccion completa, pasamela porfa para copiarla y pegarla cuando pida", "si": [], "no": ["envio"]}
+{"mensaje": "Aprovecho que estoy en el trabajo con la compu, tienen el set Holly en talla M? Quiero ver si me queda bien para la foto que me van a tomar cuando me entreguen el reconocimiento, es que el envio de la invitacion lo vi recien", "si": [], "no": ["envio"]}
+{"mensaje": "Hola, mi enamorado me dijo que me iba a enviar un regalo de la tienda, pero es un distraido. Uds me pueden decir si ya hizo el pedido? Porque no me quiere dar pistas y yo quiero estar pendiente pa recibirlo", "si": [], "no": ["envio"]}
+{"mensaje": "Chicas, una consulta rapida. Mi amiga acaba de encargar el vestido Pandora y dice que quedo en enviarme la confirmacion por correo, pero no me llega nada. Será que puso mal mi mail? Me da pena preguntarle", "si": [], "no": ["envio"]}
+{"mensaje": "Oye, vi que tienes modelos nuevos! Me interesa el azra. Por cierto, mi prima trabaja en una empresa de envios internacionales, si alguna vez necesitan apoyo con eso, avisenme :)", "si": [], "no": ["envio"]}
+{"mensaje": "Hola, quería saber si el vestido Xela tiene envío de las mangas así sueltas o es solo así en la foto? Es que lo vi en una publicación y no sé si es el mismo", "si": [], "no": ["envio"]}
+{"mensaje": "Holii, una amiga me comentó que hicieron un live ayer mostrando los nuevos conjuntos. Yo justo estaba enviando unos documentos importantes y no pude verlo. Lo repiten?", "si": [], "no": ["envio"]}
+{"mensaje": "Hola buenas! Una consulta, quiero ir a probarme un vestido para un matrimonio. Me recomiendan mucho el modelo Pandora. Donde queda su tienda fisica? O es solo showroom con cita?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Oe causa, pasa la dire de tu local. Estoy por jesus maria y quiero pasar hoy mismo a ver las blusas que tienes en tus historias, al toque.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Holii, he visto tus publicaciones de los conjuntos Kaylee y me encantaron. Para poder ir, me podrias decir tu direccion y desde que hora atienden? Gracias!", "si": ["ubicacion"], "no": []}
+{"mensaje": "Buenas tardes, una pregunta, queda cerca de plaza norte su showroom? O por que zona exactamente? Es que no soy de lima y me voy a desplazar especialmente para visitarlos.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hola, quiero comprarle un regalo a mi hermana y vi el conjunto Irla que le quedaria perfecto. Pero necesito saber si tienen local abierto al publico o como es la modalidad, porque quisiera que se lo pruebe.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Oe pe, trabajan hoy sabado? Y hasta que hora? Quiero pasar despues del trabajo, tipo 7, pero no se si ya cerraste. Avisenme!", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hola, disculpa la molestia. Vi el vestido Azra en instagram y estoy enamorada. Pero soy de provincia y voy a lima la otra semana. Podrias pasarme la direccion completa de donde los puedo visitar? Para organizarme.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hola buenos dias! Sus horarios de atencion por favor? Y si aceptan yape? Es que quiero comprar el modelo Kendall pero primero quiero verlo en persona.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Mira, estoy interesada en el modelo Holly. Pero antes de decidirme quiero ver la tela y el color. Tienen pagina web para ver stock o es mejor que vaya al local? Donde queda?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hola, una consulta rapida. Atienden el lunes? Es que ese dia es mi libre y podria ir a ver las prendas. Pasen dire porfa.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Oe causa, mi jefa me recomendo tu tienda para un vestido de fiesta. Donde carajos queda el showroom? Jaja perdon la franqueza pero estoy perdida en el mapa.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hola, escribo porque mi amiga compro un conjunto ahi y quedo fascinada. Quisiera saber la ubicacion exacta para ir este fin de semana. Tienen parking cerca?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Buenas, me podrian dar su horario de atencion? Y tambien si para ir al showroom necesito agendar cita o puedo llegar asi nomas. Gracias!", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hola, veo que tienes modelos lindismos. Pero no veo la dire en el perfil. Podrias indicarme porfa? Quedo atenta.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Oe pe, trabajan hasta las 6? O mas tarde? Es que salgo de mi chamba a las 5:30 y me queda lejos. Pero muero por ir a ver el modelo Xela.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hola, soy de ate y quiero conocer su tienda. Por que zona de lima queda? Para ver si me queda cerca y me animo a pasar uno de estos dias.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Buen dia, una pregunta sobre su local. Tienen probadores? O solo es muestra? Es que soy talla un poco complicada y necesito probarme las cosas.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hola, me encanto el conjunto que vi en tus historias! Ya se borro y no vi la dire. Me la pasas de nuevo? Y los horarios? Quiero ir mañana.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Oe, el showroom queda por san miguel? O me confundo con otra tienda? Pasa la dire clarita porque quiero ir hoy en la tarde.", "si": ["ubicacion"], "no": []}
+{"mensaje": "Hola, espero que esten bien. Quisiera saber si atienden los domingos. Tengo un evento de urgencia y necesito un vestido ya, y me han hablado maravillas de sus diseños. Donde los encuentro?", "si": ["ubicacion"], "no": []}
+{"mensaje": "Oee, una consulta pe. Vi el vestido Kendall en sus historias pero no se si me va a llegar pa este viernes? Es que tengo una fiesta y estoy decidida", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Holii, queria saber si el conjunto Azra viene con esa faja o es aparte? Es que en las fotos no me queda claro y necesito saber para coordinar los zapatos", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Buenas! Mira, me encanto la blusa Holly pero quiero usarla con un pantalon blanco. No se si mancha o algo? Es que he tenido malas experiencias y por eso pregunto antes de comprar", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Oiga, una pregunta. El vestido Pandora en talla M mide lo mismo que las otras prendas? Es que a veces varía y no quiero quedar apretada. Gracias de antemano", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Hola, espero esten bien. Queria pedirles un consejo: me gusta el conjunto Irla pero no se si me quedara bien porque soy algo chata. Creen que me podria funcionar?", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Holi, se que es domingo pero quería preguntarles: el modelo Kaylee es tela fresca? Es que soy de provincia y aca hace mucho calor, no quiero morir sofocada", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Buenas tardes, una duda. Vi que tienen la Xela en oferta pero no se si es la ultima talla o tienen mas stock. No quiero que se me acabe justo la que necesito", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Oe causa, una consulta rapida. Esa blusa que publicaron ayer, la de rayas, se puede usar con jeans rotos o queda muy cargada? Es para un plan casual pero cute", "si": [], "no": ["ubicacion"]}
+{"mensaje": "Hola! Estoy buscando un vestido para una boda el mes que viene y vi el modelo Pandora en IG. Me encantooo. Quiero ir a probarmelo, estan por tomas valle hoy? A que hora cierran?", "si": ["cita"], "no": []}
+{"mensaje": "Oe causa, mi mejor amiga me dijo que tienen unos conjuntos bacanes. Quiero ir a ver el Holly pero necesito saber si tienen talla M para probar, paso mañana al toque.", "si": ["cita"], "no": []}
+{"mensaje": "Buenas! Tengo una cena super importante en una semana y no tengo nada que ponerme jaja. Vi el modelo Azra y me parece hermoso. Podria ir el viernes en la tarde a probarmelo? Que hora me recomiendan?", "si": ["cita"], "no": []}
+{"mensaje": "Holii, escribo porque tengo una fiesta el sabado y estoy desesperada. Tienen el vestido Kendall en negro? Quiero pasar hoy mismo a verlo, porfa avisenme si esta disponible.", "si": ["cita"], "no": []}
+{"mensaje": "Oe, mi hermana compro un conjunto ahi y quedo super feliz. Yo quiero ir a ver los modelos nuevos, el Xela me llama la atencion. Puedo ir el miercoles en la mañana? Abren a las 10?", "si": ["cita"], "no": []}
+{"mensaje": "Hola buenos dias! Estoy de visita en Lima solo hasta el domingo y me urgen unas blusas. Tienen la Kaylee en colores claros? Podria pasar hoy en la tarde, tipo 5pm. Aceptan yape por si me gusta?", "si": ["cita"], "no": []}
+{"mensaje": "Ey, que tal! Vi sus historias y el vestido Irla es divino. Para probarmelo, necesito agendar cita o llego nomas? Prefiero el sabado por la manana si se puede.", "si": ["cita"], "no": []}
+{"mensaje": "Hola, tengo una duda. Me encanto el conjunto Pandora pero no se mi talla exacta. Podria ir este jueves a mediodia a que me asesoren y probarmelo? Gracias!", "si": ["cita"], "no": []}
+{"mensaje": "Oe causa, una consulta rapida. Estoy por la zona de tomas valle y quiero pasar a ver el modelo Holly. Estan atendiendo ahorita? O ya cerraron? Jalo al toque si estan.", "si": ["cita"], "no": []}
+{"mensaje": "Buenas tardes! Espero que esten bien. Quiero sorprender a mi esposa para nuestro aniversario con el vestido Azra. Podria ir el viernes a primera hora a verlo y comprarlo si le queda bien. Confirmenme porfa!", "si": ["cita"], "no": []}
+{"mensaje": "Hola! Tengo una entrevista de trabajo importante y quiero verme impecable. Me interesa el conjunto Kendall. Tienen talla S para probar? Podria pasar mañana martes a las 11am.", "si": ["cita"], "no": []}
+{"mensaje": "Oe, escribo por el vestido Xela que vi en facebook. Esta bonito pe. Quiero ir a probarmelo hoy mas tarde, como a las 6pm. Todavia estaran abiertos? Avisen!", "si": ["cita"], "no": []}
+{"mensaje": "Hola, que tal? Mi cumpleanos es este fin de semana y no he encontrado nada que ponerme. Vi el modelo Kaylee y parece ideal. Seria posible ir el jueves por la tarde, despues de las 4pm, a probarmelo? Gracias!", "si": ["cita"], "no": []}
+{"mensaje": "Ey, una pregunta. Tienen el modelo Irla en color verde? Es para una graduacion. Quiero pasar el sabado con mi mama a verlo, tenemos que agendar o llegamos nomas?", "si": ["cita"], "no": []}
+{"mensaje": "Buenos dias! Estoy organizando un viaje y necesito un vestido elegante. El Pandora me parece perfecto. Podria ir el miercoles en la mañana, como a las 10:30? Tienen probadores?", "si": ["cita"], "no": []}
+{"mensaje": "Oe, mi prima me recomendo mucho su tienda. Quiero ver el conjunto Holly para un evento. Puedo ir hoy en la tarde? A que hora hay menos gente para probarme tranquila?", "si": ["cita"], "no": []}
+{"mensaje": "Hola, espero que esten bien. Tengo una reunion familiar y quiero comprarme algo lindo. El modelo Azra me encanto. Podria visitarlos el viernes alrededor de las 3pm? Necesito saber si aceptan tarjetas.", "si": ["cita"], "no": []}
+{"mensaje": "Oe causa, estoy aburrida de mi ropa y quiero renovarme. Vi sus fotos y el vestido Kendall se ve genial. Paso mañana al mediodia a ver que tal me queda, ok? Avisen si tienen stock.", "si": ["cita"], "no": []}
+{"mensaje": "Hola buenas! Tengo una pregunta sobre el modelo Xela. Lo vi en linea y quiero probarmelo con calma. Puedo ir el domingo? O no abren? Si abren, a que hora me recomiendan pasar?", "si": ["cita"], "no": []}
+{"mensaje": "Ey, escribo para confirmar. Quiero el vestido Kaylee para una boda. Puedo ir el jueves a las 2pm a probarmelo? Necesito saber si debo llevar algo en especial o voy nomas. Gracias!", "si": ["cita"], "no": []}
+{"mensaje": "Hola pe! Mira, estaba viendo el vestido Kendall en insta y me encanto, pero queria saber si me podrias ayudar con una duda, es que no se si me quedara bien por lo de mi talla, sabes?", "si": [], "no": ["cita"]}
+{"mensaje": "Oye causa, una consulta rapida: el conjunto Holly que tienen en stories, ese color hueso es igualito que en la foto o es mas claro? Es que para un evento quiero verme bien y no mandarme un error con el color, me entiendes?", "si": [], "no": ["cita"]}
+{"mensaje": "Hola! Disculpa la molestia pero es que vi la blusa Azra y me parece super bonita, pero no se si sera muy escotada o no. No quiero llegar a la oficina y que me miren raro, ya me ha pasado antes jaja", "si": [], "no": ["cita"]}
+{"mensaje": "Buenas! Mira, mi amiga compro el vestido Pandora la semana pasada y me dijo que la tela es un poco pesada. Es cierto? Es que yo sufro mucho con el calor de Lima y no quiero derretirme en la fiesta", "si": [], "no": ["cita"]}
+{"mensaje": "Oye, una preguntita: el modelo Xela que tienen, se ve que tiene unos tirantes bien delgados. Crees que aguantara bien? Es que no quiero que se me rompa en mitad de la reunion, seria super vergonzoso", "si": [], "no": ["cita"]}
+{"mensaje": "Hola! Espero no molestar, es que queria preguntarte por el conjunto Irla. Vi que tiene unos detalles de lentejuelas, se le desprenden facil o esta bien firme? Es para regalarle a mi hermana y que no se arrepienta", "si": [], "no": ["cita"]}
+{"mensaje": "Pe, una consulta: la blusa Kaylee, esa que es transparente, le podre poner un top debajo de otro color o se notara mucho? Es que no quiero verme como 'estilo reciclado' sino elegante nomas", "si": [], "no": ["cita"]}
+{"mensaje": "Hola! Disculpa, es que estoy enamorada del modelo Azra pero no se si el largo me quedara bien porque soy bajita. Me da miedo comprarlo y luego verme como niña con vestido de mama, tu me entiendes, no?", "si": [], "no": ["cita"]}
+{"mensaje": "Hola! Mira, quiero comprar el vestido Kendall para una fiesta este sabado pero antes necesito saber como puedo pagar? Aceptan yape?", "si": ["pago"], "no": []}
+{"mensaje": "Oye, una consulta rapida pe. Estoy interesada en el conjunto Holly y quiero saber que medios de pago manejan, transferencia bancaria aceptan?", "si": ["pago"], "no": []}
+{"mensaje": "Buenas! Vi la blusa Azra en sus historias y me encanto. Para comprarla, que opciones de pago tienen? Tarjeta de credito?", "si": ["pago"], "no": []}
+{"mensaje": "Hola, quiero hacer una compra pero necesito saber si aceptan pago por transferencia BBVA? Es que no tengo yape ni tarjetas", "si": ["pago"], "no": []}
+{"mensaje": "Oye, me gusta el vestido Pandora. Una amiga me recomendo su pagina pero no se como pagan. Aceptan deposito en agentes?", "si": ["pago"], "no": []}
+{"mensaje": "Hola! Tengo una duda antes de comprar la blusa Xela. Aceptan pagos con tarjeta de debito? O solo efectivo?", "si": ["pago"], "no": []}
+{"mensaje": "Mira, quiero sorprender a mi hermana con el conjunto Irla para su cumple. Como puedo pagar si estoy en Miraflores?", "si": ["pago"], "no": []}
+{"mensaje": "Hola! Me encanto el vestido Kaylee pero necesito saber si aceptan pago con tarjeta de credito o solo al contado?", "si": ["pago"], "no": []}
+{"mensaje": "Oye pe, una consulta rapida. Quiero comprar la blusa Azra pero no se que medios de pago aceptan. Puedo pagar con app del banco?", "si": ["pago"], "no": []}
+{"mensaje": "Hola! Estoy interesada en el conjunto Holly para un evento. Aceptan pago por Plin o solo Yape? Es que no tengo Plin", "si": ["pago"], "no": []}
+{"mensaje": "Buenas, quiero comprar el vestido Kendall pero necesito saber si puedo pagar con transferencia interbancaria. Me pueden pasar el numero de cuenta?", "si": ["pago"], "no": []}
+{"mensaje": "Oye, una pregunta sobre medios de pago. Quiero la blusa Xela pero no tengo tarjetas. Aceptan pago con efectivo en tienda?", "si": ["pago"], "no": []}
+{"mensaje": "Hola! Me gusta mucho el vestido Pandora y quiero comprarlo hoy mismo. Que opciones de pago tienen? Aceptan Visa?", "si": ["pago"], "no": []}
+{"mensaje": "Mira, necesito el conjunto Irla urgente para el viernes. Como puedo pagar? Tengo BCP y Interbank nomas", "si": ["pago"], "no": []}
+{"mensaje": "Hola! Una consulta antes de comprar. Aceptan pago con tarjeta de credito de otros paises? Soy peruana pero vivo en el extranjero", "si": ["pago"], "no": []}
+{"mensaje": "Oye pe, quiero regalarle la blusa Kaylee a mi mama. Que medios de pago aceptan? Puedo pagar con deposito en el banco?", "si": ["pago"], "no": []}
+{"mensaje": "Hola! Vi sus diseños en Instagram y me encantaron. Para comprar el vestido Azra, que formas de pago manejan? Aceptan Yape?", "si": ["pago"], "no": []}
+{"mensaje": "Buenas, estoy interesada en el conjunto Holly pero no se como se paga. Aceptan pago con tarjeta de debito BCP?", "si": ["pago"], "no": []}
+{"mensaje": "Oye, una pregunta rapida. Quiero comprar la blusa Xela y necesito saber si aceptan pago por transferencia a Banco de la Nacion", "si": ["pago"], "no": []}
+{"mensaje": "Hola! Me gusta el vestido Kendall y quiero comprarlo hoy. Que medios de pago tienen? Puedo pagar con efectivo si recojo en tienda?", "si": ["pago"], "no": []}
+{"mensaje": "Oye una consulta, vi el vestido Kendall en insta y quiero saber si tiene ese detalle dorado en el cinturon o es solo la luz de la foto? Es que para una fiesta y quiero que quede al toque", "si": [], "no": ["pago"]}
+{"mensaje": "Hola! Estuve viendo la blusa Azra pero no me queda claro si es manga larga o tres cuartos... es que sufro del frio en la oficina y no quiero pasar helada", "si": [], "no": ["pago"]}
+{"mensaje": "Hola, quiero el conjunto Holly pero necesito saber si la talla M es talle entero o mas bien ajustado? Porque a veces me queda justo y otras me sobra, que mal ride", "si": [], "no": ["pago"]}
+{"mensaje": "A ver, una pregunta rapida: el vestido Pandora tiene forro o es transparente? Es que lo vi en las stories pero no se nota bien y quiero evitar sustos", "si": [], "no": ["pago"]}
+{"mensaje": "Oeeeee, esa blusa Xela viene con ese cinturon o hay que comprarlo aparte? Es que en una foto lo trae y en otra no, que enredo", "si": [], "no": ["pago"]}
+{"mensaje": "Hola buenas tardes, me encanto el conjunto Irla pero quiero saber si la falda es mas corta de lo que parece o es solo la modelo? Para ver si lo uso en una despedida", "si": [], "no": ["pago"]}
+{"mensaje": "Pregunta: el vestido Kaylee es de esos que se manchan facil o no? Es que soy un desastre comiendo y no quiero gastar en algo que se va arruinar al toque", "si": [], "no": ["pago"]}
+{"mensaje": "Hola, vi que tienen la coleccion nueva y queria saber si el Holly viene en otro color que no sea verde? Es que no me favorito ese tono para la boda de mi hermana", "si": [], "no": ["pago"]}
+{"mensaje": "Hola buenas tardes, vi el vestido Kendall en sus historias y me encantó pe. Pero esta un poco fuera de mi presupuesto, habra algun descuentito? Es para una fiesta importante de mi hermano", "si": ["rebaja"], "no": []}
+{"mensaje": "Oye, me recontra enamoré de la blusa Azra que publicaron. No tendran como hacerme un precio por ser cliente frecuente? La verdad es que la quiero mucho pero justo estoy corta de plata este mes", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola! Consulta, el conjunto Holly tiene descuento si lo compro junto con otra prenda? Es que quiero ver si me lo llevo con la Kaylee que tambien me gusta para mi cumpleaños", "si": ["rebaja"], "no": []}
+{"mensaje": "Buenas! Mira, la verdad es que he visto el modelo Pandora en varias tiendas pero me gusta mas el de ustedes. Si me lo dejan a un mejor precio me lo llevo al toque hoy mismo, porque sino mi esposo me mata por gastar jaja", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola, soy de las que siempre comenta en sus publicaciones. Me encantó el vestido Xela, habra forma de que me hagan una rebajita? Se los juro que les prometo publicar fotos etiquetandolos", "si": ["rebaja"], "no": []}
+{"mensaje": "Oye causa, el conjunto Irla esta precioso pero 180 soles me parece mucho. Si me lo dejas en 150 te transfiero ahora mismo, es que es para una cena familiar y quiero verme bien", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola! Es que justo vi que tenian la Kaylee en oferta la semana pasada y no pude comprarla. No podrian hacerme el mismo precio? Es para mi graduacion y seria mi regalo de mi mama", "si": ["rebaja"], "no": []}
+{"mensaje": "Buenas, escribo porque quiero comprar tres blusas de las que tienen en outlet. Si me hacen un precio por todas me las llevo, es que necesito renovar mi guardarropa completo para el trabajo", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola! Mira, es mi primera compra con ustedes y me encantan sus diseños. No habra algun codigo de descuento para nuevas clientas? Me interesa mucho el modelo Azra", "si": ["rebaja"], "no": []}
+{"mensaje": "Oye pe, ya se que el precio esta fijo pero es que amo el vestido Kendall. No me lo dejan en 200? Es que ademas tengo que pagar el envio a mi casa y se me sube mucho el precio", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola, estoy interesada en el conjunto Holly pero vi que en otra tienda lo tienen mas barato. Prefiero comprarselo a ustedes porque me gusta mas la calidad, igualan el precio?", "si": ["rebaja"], "no": []}
+{"mensaje": "Buenas tardes! Es mi cumpleaños este fin de semana y quiero comprarme el Pandora de regalo. No tendran algun descuento especial por cumpleaños? Les paso mi DNI para verificar", "si": ["rebaja"], "no": []}
+{"mensaje": "Oye, ya te escribi antes por el vestido Xela. Mira, te soy sincera, es el unico que me queda bien de todos los que probé. Si me lo dejas a 180 en lugar de 200 te juro que me lo llevo ya", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola! Quiero comprar el conjunto Irla para mi viaje a la playa. Si me lo dejan a mejor precio me lo llevo hoy mismo y les prometo subir fotos bonitas desde el resort etiquetandolos", "si": ["rebaja"], "no": []}
+{"mensaje": "Buenas, he estado esperando que el vestido Kaylee entre en oferta pero no pasa. No podrian hacerme un descuento de colaboradora? Soy influencer y tengo bastantes seguidoras que podrian interesarse", "si": ["rebaja"], "no": []}
+{"mensaje": "Oye pe, ya se que es mucho pedir pero es que amo la blusa Azra. No me la dejan a 120? Es que justo hoy es mi aniversario y quiero sorprender a mi esposo con algo bonito", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola! Vi que tienen el conjunto Holly en dos colores. Si me llevo los dos, me hacen precio por mayor? Es para mi hermana y para mi, vamos a una boda el mes siguiente", "si": ["rebaja"], "no": []}
+{"mensaje": "Buenas tardes, me encanta el vestido Pandora pero es mi primera compra online y me da un poco de miedo. Si me hacen un descuentito me animo a comprarlo hoy mismo", "si": ["rebaja"], "no": []}
+{"mensaje": "Oye, ya vi el vestido Kendall en persona y es precioso. No me lo dejan en 170 si pago en efectivo? Asi se ahorran la comision de la tarjeta y yo me ahorro un poco", "si": ["rebaja"], "no": []}
+{"mensaje": "Hola! Es que mi hija se gradua y quiero comprarle el conjunto Irla como regalo. No tendran algun descuento para madres orgullosas? Juro que les mando fotos el dia de la ceremonia", "si": ["rebaja"], "no": []}
+{"mensaje": "hola buenas tardes, vi en sus historias el vestido pandora en color verde y queria saber si me lo pueden dejar apartado nomás hasta el viernes? es que recien cobro ese dia y me encanto para una fiesta", "si": [], "no": ["rebaja"]}
+{"mensaje": "Oye una consulta rapidisima, el conjunto holly que precio tiene en talla M? es que mi hermana quiere uno pero no le gusta preguntar ella, ya sabes como es jaja", "si": [], "no": ["rebaja"]}
+{"mensaje": "Buenas! Mira, tengo una duda con la blusa kendall. En la foto se ve un poco translucida, es asi o es por la luz? es que la quiero para la oficina y no se si sea muy casual", "si": [], "no": ["rebaja"]}
+{"mensaje": "Hola, pregunto por el modelo azra. Lo vi en la pagina pero no sale las tallas que tienen disponibles. Podrian decirme si tienen la L? Es que a veces me queda la M y a veces la L y no quiero equivocarme", "si": [], "no": ["rebaja"]}
+{"mensaje": "pe, tengo una reunion importante el sabado y necesito un conjunto que me haga ver poderosa jaja. cual me recomiendan de los que tienen en tienda? algo como el modelo xela pero no se si sera muy llamativo", "si": [], "no": ["rebaja"]}
+{"mensaje": "Hola, escribo porque compre el vestido irla la semana pasada y me encanta, pero quería saber si tienen en otro color aparte del negro. Es que quiero comprar otro igual pero no sale en la web", "si": [], "no": ["rebaja"]}
+{"mensaje": "Oye causa, una pregunta sobre el kaylee. Ese tipo de tela se arruga mucho? es que voy a viajar y quiero llevarlo en la maleta pero no quiero llegar con todo arrugado, me entiendes", "si": [], "no": ["rebaja"]}
+{"mensaje": "Buenas tardes, disculpe la molestia. Estoy interesada en el conjunto que publicaron ayer, el de rayas. Pero en la descripcion no sale de que material es. Podria decirme si es fresquito? es que soy de las que siempre tiene calor", "si": [], "no": ["rebaja"]}
+{"mensaje": "Hola! Oye pasaba por aqui y me acorde que mi amiga compro un vestido el mes pasado, creo que era el Pandora. Me dijo que la calidad esta super bien, pero no me acuerdo si era ese nombre. Sabes cual es el que tiene tirantes delgados?", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Buenas! Una consulta rapidita nomás. Vi en sus historias de IG un conjunto que era como beige, pero no le puse mucho cuidado. Era para una fiesta que tengo el sabado. Me podrias decir como se llama? Es que no lo anote pe", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Oye, me ayudas? Estaba viendo la pagina y hay una blusa que se parece a una que vi en otra tienda, la de ustedes tiene mejor pinta la verdad. Tiene unos botones dorados. Cual es? Es que no la encuentro", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Hola! Tengo una duda sobre la talla. Compre la Kaylee hace como dos meses y ahora quiero una parecida pero no se si tienen el mismo ajuste. La que tengo es talla M y me queda perfecto. Cual me recomiendas?", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Holii, disculpa la molestia. Estaba contandole a mi hermana de las blusas que tienen, le mostre una que compre hace tiempo pero ya no esta en la pagina. Se llamaba igual que una actriz, no me acuerdo. Tenian algo asi ahora?", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Buenas tardes! Una pregunta, el conjunto Holly es solo para salir de dia o se puede usar de noche tambien? Es que vi una foto y no se bien para que ocasiones es. Gracias!", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Oye causa, pasaba por tu perfil y vi un vestido que lo tenias en azul, pero en la pagina solo esta en negro. Es el mismo modelo? Es que el azul esta hermoso, no se si es que ya no hay", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Hola! Espero no molestar. Me encanto la Xela que publique hoy, pero es para una fiesta en la playa. No se si el material es fresco o si es mas caliente. Me podrias decir?", "si": [], "no": ["otras_opciones"]}
+{"mensaje": "Hola! Vi el vestido Pandora en IG y me encanto pe, pero esta un poco caro para mi presupuesto. Habra alguna promocion o descuento?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Oye, me gusta el conjunto Holly, pero busco algo mas economico. Tienen algo similar en otra tela o asi?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Causa, vi las blusas y estan bonitas, pero ando corta de plata. Hay alguna en oferta o de segunda?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, queria saber si el modelo Kendall tiene version mas barata. Es que lo necesito para una fiesta pero no puedo gastar tanto.", "si": ["mas_barato"], "no": []}
+{"mensaje": "Oye, me encanta el Azra pero esta fuera de mi rango. Tienen algo parecido pero mas accesible?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola! Estoy interesada en el Xela, pero vi el precio y diay. Habra descuento por pagar en efectivo o algo?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Pe, tengo una reunion importante y quiero el Kaylee, pero esta fuerte el precio. No tendran algo mas economico?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, busco un vestido para una boda pero no quiero gastar mucho. El Irla esta lindo pero muy caro. Recomiendan otro?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Oye, causa, el conjunto que muestran en FB esta genial pero mi budget es ajustado. Hay algo similar mas barato?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, me gusta la blusa Holly, pero quiero algo mas economico. Tienen en colores que esten en rebaja?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Pe, el vestido Pandora es hermoso pero no llego a ese precio. No habra una version sin mangas o algo mas simple?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Oye, ando buscando algo lindo pero barato para salir. El Kendall me fascina pero esta caro. Que me sugieres?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, vi el Azra en la vitrina y es precioso, pero mi presupuesto es limitado. Tienen algo parecido en otra gama?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Causa, necesito un conjunto para el trabajo, pero no muy costoso. El Xela esta genial pero busco mas economico.", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, el Kaylee es justo lo que quiero, pero esta arriba de lo que puedo pagar. Habra chance de descuento pronto?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Oye, pe, me encanto el Irla pero esta caro. No tendran una imitacion o algo de menor calidad?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, busco una blusa para diario, bonita pero no cara. La Holly esta linda pero quiero gastar menos.", "si": ["mas_barato"], "no": []}
+{"mensaje": "Causa, el vestido Pandora es mi sueño, pero la realidad es otra. Hay algo similar mas en cuenta?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Oye, ando cazando ofertas. El conjunto Kendall esta en promocion o algo? Es que me urge pero no tengo mucho.", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola, me gusta el Azra pero necesito algo mas economico. Tienen en liquidacion o con descuento por temporada?", "si": ["mas_barato"], "no": []}
+{"mensaje": "Hola buenas! Mira, queria ver el vestido Kendall en talla M pero es que para fin de mes se me ha complicado la plata, hay opciones de pago que me faciliten la vida? O sea, algun descuentito por transferencia o algo asi? Es para una ocasion especial", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Oye una consulta rapidisima, el conjunto Azra que vi en IG esta en oferta o es ese siempre su precio? Es que lo amo pero mi sueldo llega recien la otra semana y no se si esperar jaja", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Hola! Estaba mirando la blusa Pandora y esta preciosa, pero es que justo gaste mas de lo planeado en otras cosas. Tienen algun modelo parecido que haya salido antes y que por ahi este en remate? O algo de tela mas fresquita que sea mas accesible?", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Pe, consulta. El modelo Holly esta hermoso pero viendo mi closet creo que ya tengo varios vestidos negros. No tendran algo en ese estilo pero que sea un poco mas simple? Digo, para no gastar tanto en algo muy similar", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Buenas! Queria saber si el modelo Irla en color azul tiene envio gratis o algun costo adicional? Es que con todo incluido se me va un poco del presupuesto que tenia pensado para un regalo", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Hola, mira es que me encanto el conjunto Kaylee pero es para un evento el sabado. Tienen la posibilidad de entregas express? Porque si tengo que pagar envio rapido mas el producto, la verdad se me complica un poquito la economia esta semana", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Oye, una pregunta sobre el vestido Xela. Vi que es de temporada, crees que para el proximo mes podria haber una segunda linea o algo asi? No es que no me guste, solo quiero ver si sale algo con un corte diferente que se ajuste mas a mi estilo (y por ahi a mi bolsillo tambien je)", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Holaa, escribo porque me interesa la blusa Pandora pero en la foto se ve un tejido delicado. Requerira mucho cuidado? Es que si tengo que mandarla a lavanderia siempre, a la larga es un gasto extra que no se si podre mantener", "si": [], "no": ["mas_barato"]}
+{"mensaje": "Ola buenas tardes pe, acabo de llegar de la U y tengo una fiesta este finde. No tengo nada que ponerme y mi amiga me dijo que sus vestidos son bacanes. Podrian mostrarme todo lo que tienen? Gracias!", "si": ["catalogo"], "no": []}
+{"mensaje": "Holiii, estaba viendo sus historias y me encanto un vestido verde que vi pasar, creo que era el Azra. Tienen catálogo para ver todos los modelos y colores que tienen de esa linea? Es que lo necesito para una boda 🙏", "si": ["catalogo"], "no": []}
+{"mensaje": "Buenas! Mi hermana cumplio años y quiero regalarle algo lindo, ella usa talla M. Podrian pasarme el catalogo completo de blusas y conjuntos? Para ver que le puede quedar bien. Gracias de antemano!", "si": ["catalogo"], "no": []}
+{"mensaje": "Pe, causa, ayuda. Tengo una cita super importante y quiero verte bien. Me pasan todo lo que tengan de vestidos cortos? Osea, el catalogo entero mejor, pa ver tranquila. Se los agradezco un monton!", "si": ["catalogo"], "no": []}
+{"mensaje": "Hola, disculpa la hora es que recien tengo un momento. Estoy buscando un conjunto para usar en un concierto, algo comodo pero que se vea chevere. Tienen algun catalogo online o algo donde pueda ver todas sus prendas? Mil gracias!", "si": ["catalogo"], "no": []}
+{"mensaje": "Oe, una preguntita rapida. Vi un anuncio suyo del vestido Pandora pero no encuentro mas fotos. Tienen un catalogo con todo lo que tienen disponible ahorita? Es que quiero comparar modelos antes de decidir.", "si": ["catalogo"], "no": []}
+{"mensaje": "Buenas tardes! Espero que esten bien. Estoy organizando un evento y necesito ver opciones de vestidos elegantes para mis invitadas. Seria posible que me envien un catalogo completo con precios? Para hacer una cotizacion. Gracias!", "si": ["catalogo"], "no": []}
+{"mensaje": "Hola! Es mi primera vez comprando aca y me dio curiosidad. Podrian mostrarme su catalogo de blusas? Es que trabajo en oficina y busco cosas lindas para variar el look. De preferencia todo lo que tengan 🙌", "si": ["catalogo"], "no": []}
+{"mensaje": "Ola pe, se que cierran pronto pero es una emergencia! Se me cayo el vestido que iba a usar manana y no tengo backup. Por fa, pasenme su catalogo al toque para ver si hay algo que me pueda servir, talla L. Los amo!", "si": ["catalogo"], "no": []}
+{"mensaje": "Hola, que tal! Estoy de visita en Lima solo esta semana y queria aprovechar para comprar un recuerdo bonito. Me podrian compartir su catalogo completo? Para ver si encuentro un conjunto o blusa que me guste. Saludos!", "si": ["catalogo"], "no": []}
+{"mensaje": "Buenos dias! Estaba mirando en su pagina pero no veo todas las prendas. Tienen un catalogo mas actualizado con los modelos nuevos como el Kaylee? Me encantaria verlo todo junto. Gracias!", "si": ["catalogo"], "no": []}
+{"mensaje": "Holaaa, tengo una reunion familiar el domingo y quiero sorprender a todas con un look nuevo jaja. Pueden pasarme fotos de todo su stock? Vestidos y conjuntos, para ver que me queda mejor. Mil gracias 😊", "si": ["catalogo"], "no": []}
+{"mensaje": "Oe, una consulta rapida. Vi el vestido Holly en una amiga y esta precioso. Tienen un catalogo donde pueda ver ese y los otros modelos que tienen? Y los precios tambien. Es para un regalo.", "si": ["catalogo"], "no": []}
+{"mensaje": "Hola, buenas! Estoy aburrida de mi ropa y quiero renovar el closet. Me pasan su catalogo mas completo? Para ver blusas, vestidos, todo lo que tengan. Ojala con precios incluidos. Gracias!", "si": ["catalogo"], "no": []}
+{"mensaje": "Pe, al toque necesito ayuda. Es el cumple de mi jefe y quiero comprar algo elegante. Podrian enviarme el catalogo de vestidos de noche o tusos formales? Es para manana mismo, porfa!", "si": ["catalogo"], "no": []}
+{"mensaje": "Hola, disculpe la molestia. Estoy interesada en la blusa Irla pero quiero ver que mas tienen en estilo similar. Seria posible que me envien un enlace o fotos del catalogo completo? Se los agradezco.", "si": ["catalogo"], "no": []}
+{"mensaje": "Buenas noches! Perdon por escribir tarde, es que trabajo hasta noche. Queria pedirles si pueden compartirme su catalogo de conjuntos. Estoy buscando algo para usar en el dia a dia. Gracias!", "si": ["catalogo"], "no": []}
+{"mensaje": "Ola! Mi prima se casa en un mes y soy dama. Necesito ver opciones de vestidos largos en colores claros. Tienen un catalogo donde pueda ver todo su stock de ese tipo? De preferencia con tallas. Thanks!", "si": ["catalogo"], "no": []}
+{"mensaje": "Hola, que tal! Me mude hace poco y no conozco muchas tiendas. Una vecina me recomendo sus productos. Podrian mostrarme su catalogo general? Para conocer lo que ofrecen. Saludos cordiales!", "si": ["catalogo"], "no": []}
+{"mensaje": "Oe pe, al fin me dio mi suelto y quiero gastarmelo en algo lindo jaja. Mandenme todo lo que tengan en el catalogo, vestidos, blusas, conjuntos, todo! Pa darme un gusto. Gracias de antemano!", "si": ["catalogo"], "no": []}
+{"mensaje": "Oye, estaba pensando en ir a la playa este fin y no se que llevarme, me recomiendas algo?", "si": [], "no": ["catalogo"]}
+{"mensaje": "Mi hermana me comento de ustedes, que tienen cosas bonitas, y queria ver que me dices para una fiesta el sabado", "si": [], "no": ["catalogo"]}
+{"mensaje": "Holi, una consulta, de casualidad no tienen algo que combine con unos zapatos rojos que tengo? Es que no se que ponerme", "si": [], "no": ["catalogo"]}
+{"mensaje": "Estoy buscando un vestido que vi en una publicacion tuya, era como beige y tenia unos tirantes finitos, pero no me acuerdo del nombre, me ayudas?", "si": [], "no": ["catalogo"]}
+{"mensaje": "Pasa que tengo un evento y quiero algo que me marque la cintura, tienes algo asi?", "si": [], "no": ["catalogo"]}
+{"mensaje": "Oe, vi que una chica en insta llevaba un conjunto azul que decia que era de ustedes, y queria saber si aun lo tienen", "si": [], "no": ["catalogo"]}
+{"mensaje": "Necesito algo urgente para hoy mismo, hay alguna forma de que me muestres que tienes en tienda? Es que no se que elegir", "si": [], "no": ["catalogo"]}
+{"mensaje": "Me encanto la Holly que publicaron, pero no se si me quedara, tienen otras tallas o algo similar?", "si": [], "no": ["catalogo"]}
+{"mensaje": "Hola! Recien vi en sus historias el vestido Pandora en color verde y wow, me encanto demasiado. Justo estoy buscando algo asi para una boda el mes que viene y ese color es perfecto.", "si": ["elogio"], "no": []}
+{"mensaje": "Oye, no puedo parar de pensar en la blusa Kaylee que publicaron ayer. Es demasiado bonita, me encanta el estilo oversize. Queda increible.", "si": ["elogio"], "no": []}
+{"mensaje": "Acabo de revisar la nueva coleccion y el conjunto Holly esta divino, en serio. Me guardo la publicacion para cuando me paguen porque es justo lo que necesito para el trabajo.", "si": ["elogio"], "no": []}
+{"mensaje": "Amo el vestido Azra! Lo vi en una amiga y quede enamorada. Que lindo corte tiene, super elegante sin ser exagerado.", "si": ["elogio"], "no": []}
+{"mensaje": "Hola, solo pasaba para decirles que la blusa Irla es una preciosidad. La vi en las fotos etiquetadas y se ve de muy buena calidad, el color nude es un amor.", "si": ["elogio"], "no": []}
+{"mensaje": "Wow, el conjunto Kendall es lo mas lindo que he visto. Ese estilo sport pero a la vez elegante me tiene loca. Definitivamente mi proxima compra.", "si": ["elogio"], "no": []}
+{"mensaje": "Pensando en el vestido Xela desde que lo vi en su catalogo. Me encanta ese estilo vintage, es tan unico y especial. Felicitaciones por el diseño.", "si": ["elogio"], "no": []}
+{"mensaje": "Oe, esa blusa de mangas abullonadas que tienen (creo que es la Kaylee) es una belleza. Quiero una en cada color, en serio.", "si": ["elogio"], "no": []}
+{"mensaje": "Hola! Les escribo porque me fascino el vestido largo que mostraron en las stories, el Azra creo. Se ve tan fluido y comodo, ideal para el verano.", "si": ["elogio"], "no": []}
+{"mensaje": "No suelo escribir mucho pero tenia que decirles que el conjunto Holly es una joya. Me encanta como combina las piezas, se ve super versatil.", "si": ["elogio"], "no": []}
+{"mensaje": "Acabo de ver el ultimo reel y el vestido Pandora queda espectacular en movimiento. Esa tela se ve de primera, que lujo.", "si": ["elogio"], "no": []}
+{"mensaje": "Causa, esa blusa blanca con detalles (creo que la Irla) es lo mas lindo que tienen. La vi en una chica en un restaurant y casi le pregunto donde la compro, pero ya se que es de ustedes!", "si": ["elogio"], "no": []}
+{"mensaje": "Hola, espero que esten bien. Solo queria elogiar el vestido Xela, es una obra de arte. El diseño es tan original, me encanto.", "si": ["elogio"], "no": []}
+{"mensaje": "El conjunto Kendall me parece super practico y a la vez tan chic. Lo amo para el dia a dia, se ve que se puede armar muchos looks diferentes.", "si": ["elogio"], "no": []}
+{"mensaje": "Nomas paso a decir que la blusa Kaylee es preciosa. El detalle en la espalda es lo mas lindo que he visto, quedo enamorada.", "si": ["elogio"], "no": []}
+{"mensaje": "Vi el vestido Azra en las fotos de la pasarela y quede sin palabras. Que prenda tan elegante y femenina, es simplemente perfecto.", "si": ["elogio"], "no": []}
+{"mensaje": "Oe, me encanta el nuevo conjunto Holly. Los colores son preciosos y se ve super comodo, ideal para pasear sin sacrificar estilo.", "si": ["elogio"], "no": []}
+{"mensaje": "Hola! Revisando su tienda online y el vestido Pandora es una maravilla. Ese corte es tan favorecedor, me encanta.", "si": ["elogio"], "no": []}
+{"mensaje": "La blusa Irla es tal vez la prenda mas bonita que he visto este mes. El tejido y los detalles se ven de una calidad impresionante.", "si": ["elogio"], "no": []}
+{"mensaje": "No puedo con lo lindo que esta el vestido Xela. Es tan diferente a todo lo que hay, me encanta su estilo unico y bohemio. Una verdadera pasada.", "si": ["elogio"], "no": []}
+{"mensaje": "Hola! Ya vi las fotos que subieron a su Instagram. Tengo una fiesta el viernes y no tengo NADA que ponerme. Vi un vestido negro que me podria salvar la vida. Me podrian decir si tienen la Holly en talla M?", "si": [], "no": ["elogio"]}
+{"mensaje": "Oye una consulta, a mi amiga le regalaron el conjunto Azra y esta hermoso. Quiero saber si tienen descuento por pagar en efectivo o como funciona esa promo que vi en sus historias.", "si": [], "no": ["elogio"]}
+{"mensaje": "Me encanto el ultimo reel que hicieron con el vestido Kendall! Se ve super elegante. Para una boda en diciembre, creen que sea muy pronto para comprarlo o mejor espero a que salgan modelos nuevos?", "si": [], "no": ["elogio"]}
+{"mensaje": "Buenas tardes, estuve viendo su pagina y tengo una duda con las tallas. La Pandora es ajustada o suelta? Es que a veces la M me queda bien y a veces necesito la L, no quiero equivocarme.", "si": [], "no": ["elogio"]}
+{"mensaje": "Hola, espero que esten bien. Queria preguntarles si el modelo Xela viene en otros colores ademas del verde? Es que justo busco uno en azul marino para una ocasion especial.", "si": [], "no": ["elogio"]}
+{"mensaje": "Ola! Disculpen la molestia. Vi que tenian una blusa blanca con unos detalles bonitos en las mangas, creo que es la Kaylee. Tienen mas fotos de como se ve puesta? Para ver la caida.", "si": [], "no": ["elogio"]}
+{"mensaje": "Pe, pasa que mi hermana quiere el conjunto Irla para su graduacion. Pero no estamos en Lima. Hacen envios a provincia? Arequipa, especificamente. Y cuanto se demoraria?", "si": [], "no": ["elogio"]}
+{"mensaje": "Holii, una preguntita rapida. Si hoy hago el pedido del vestido negro, para cuando estaria listo para recojo? Es que el sabado viajo y me urgiria tenerlo antes.", "si": [], "no": ["elogio"]}
+{"mensaje": "Holiiis, oye una consulta rapidita. Vi el vestido Kendall en tus historias y me enamoré pe. Para una fiestita que tengo este finde. Pero quería saber de qué material es? Es fresco? Porque sino sufro con el calorcito", "si": ["tela"], "no": []}
+{"mensaje": "Oeeeee, causa. La blusa Azra que tienes en promo, es de algodón o algo sintético? Es que mi piel es re sensible y no quiero que me dé alergia nomás", "si": ["tela"], "no": []}
+{"mensaje": "Buenas! Me encantó el conjunto Holly que publicaste. Pero antes de decidirme, me podrías decir cómo es la tela? Se arruga mucho? Es que odio planchar la verdad jaja", "si": ["tela"], "no": []}
+{"mensaje": "Hola! Consulta sobre el vestido Pandora. De qué material está hecho? Es que busco algo que no se encoja porque lavo a máquina siempre y ya he tenido malas experiencias", "si": ["tela"], "no": []}
+{"mensaje": "Oye, una preguntita sobre la blusa Xela. Es transpirable el material? Para usarla en la oficina porque ahí pega el sol fuerte y me achicharro", "si": ["tela"], "no": []}
+{"mensaje": "Holi! Vi el conjunto Irla y está hermoso. La tela tiene elastán? Es que necesito que sea re ajustable para poder comer sin culpa jajaja", "si": ["tela"], "no": []}
+{"mensaje": "Buenas tardes! Una consulta sobre el vestido Kaylee. El material es pesado o livianito? Para ver si me sirve para viajar a la sierra donde hace frío", "si": ["tela"], "no": []}
+{"mensaje": "Oeeeee, me interesa la blusa Azra. La tela es de esas que manchan fácil? Es que soy un desastre comiendo y siempre me salpico jaja", "si": ["tela"], "no": []}
+{"mensaje": "Hola! Qué tal? Mira, quiero comprar el conjunto Holly pero necesito saber si la tela es de calidad. Se ve bien en las fotos pero uno nunca sabe pe", "si": ["tela"], "no": []}
+{"mensaje": "Hey! Consulta rápida: el vestido Kendall, es de poliéster? Es que a veces ese material me da mucho calor y prefiero algodón", "si": ["tela"], "no": []}
+{"mensaje": "Holi! Oye, sobre la blusa Xela, el material es de esos que se destiñen? Para lavarlo aparte y que no arruine otras prendas", "si": ["tela"], "no": []}
+{"mensaje": "Buenas! Me encantó el vestido Pandora. La tela es elástica? Es que tengo un cuerpo un poco curvilíneo y necesito que se ajuste bien", "si": ["tela"], "no": []}
+{"mensaje": "Oe causa, una preguntita. El conjunto Irla, es de tela fresca? Para usarlo en el verano de aquí que parece inferno jaja", "si": ["tela"], "no": []}
+{"mensaje": "Hola! Mira, quiero regalarle el vestido Kaylee a mi hermana. Es de buena tela? Que no se vaya a malograr al primer lavado", "si": ["tela"], "no": []}
+{"mensaje": "Oye, sé que es domingo pero espero no molestar. El vestido Kendall, es de tela gruesa? O sea, se me podrían marcar los ganchos? Jaja sorry la preguntita", "si": ["tela"], "no": []}
+{"mensaje": "Holi! Consulta sobre la blusa Azra. El material es suave? O sea, que no raspe porque lo quiero para usar todo el día", "si": ["tela"], "no": []}
+{"mensaje": "Buenas! Una duda sobre el conjunto Holly. La tela es de importación? Es que se ve de buena calidad pero prefiero confirmar", "si": ["tela"], "no": []}
+{"mensaje": "Oeeeee, causa. El vestido Pandora, es de esa tela que no necesita planchado? Porque soy bien floja para planchar la verdad", "si": ["tela"], "no": []}
+{"mensaje": "Hola! Qué tal? Oye, rápido. La blusa Xela, el material es delicado? O sea, lo puedo lavar a máquina sin problema?", "si": ["tela"], "no": []}
+{"mensaje": "Holiiis! Me gustó mucho el conjunto Irla. La tela es calientita? O sea, para usarlo en las noches que ya está haciendo frío", "si": ["tela"], "no": []}
+{"mensaje": "Hola! Mira, mi amiga compro el conjunto Kaylee y ahora quiero uno igual para una boda pero no se si sera muy abrigador para la playa. Me entiendes? Ahi muero de calor si es muy cerrado pe", "si": [], "no": ["tela"]}
+{"mensaje": "Tengo una consulta con el vestido Azra. Vi que en las fotos tiene como unos hilitos brillantes, sera que se engancha facil con los aretes o algo asi? Es que soy medio distraida y no quiero dañarlo la primera vez que me lo ponga", "si": [], "no": ["tela"]}
+{"mensaje": "Oye, la blusa Holly, la que es tipo oversize... mi hermana me dijo que se le ensucio con una mancha de aceite y que salio super facil. Es verdad? Quiero una asi de practica para el dia a dia, pero no se si la que vio ella es la misma, porque hay modelos parecidos", "si": [], "no": ["tela"]}
+{"mensaje": "Hablando de la Pandora, esa faldita... se puede meter a la lavadora sin que se arruine? O tengo que lavarla a mano si o si? Es que no tengo mucho tiempo y la necesito para usar seguido", "si": [], "no": ["tela"]}
+{"mensaje": "Hola, buenas tardes! Estaba mirando el modelo Xela y me encanta, pero no se si sea muy transparente. Es para ir a una fiesta en la noche y quiero saber si necesito forrarlo o algo, porque en las fotos se ve un poco claro", "si": [], "no": ["tela"]}
+{"mensaje": "Causa, una preguntita sobre el Irla. Lo vi en la tienda de tu amiga en megaplaza y me gusto caleta, pero no se si sea el mismo que publicaste en historias. Tiene algo en la espalda o es liso? Es que no me acuerdo bien y no quiero llevarme una sorpresa", "si": [], "no": ["tela"]}
+{"mensaje": "Pe, el vestido Kendall... se le hacen bolas con el uso? O sea, como que se le levanta la tela en algunas partes. Porque tengo un vestido de otra marca que parece peluchito ya y no quiero que pase lo mismo con este, que es mas caro", "si": [], "no": ["tela"]}
+{"mensaje": "Hola! Mira, te escribo porque quiero el conjunto ese que tiene top y falda, el que parece deportivo pero es elegante. La cosa es que soy talla M pero a veces me queda justo en los brazos. Crees que si pido la L se va a ver muy suelta? O tiene algo de elastano para que se ajuste?", "si": [], "no": ["tela"]}
+{"mensaje": "Hola buenas tardes! Es una lastima que no haya talla de la Holly en S, la estaba buscando para una fiesta el sabado pero bueno, gracias por la info pe, voy a seguir revisando a ver si sale otra oportunidad. Chao!", "si": ["despedida"], "no": []}
+{"mensaje": "Oe muchas gracias por la rapidez causa, ya vi las fotos de los modelos y me re convenciste con el Pandora. Al toque te confirmo la compra apenas llegue a casa. Que estes bien!", "si": ["despedida"], "no": []}
+{"mensaje": "Listo, ya esta todo pagado. Mil gracias por la paciencia, es que a veces la billetera virtual se pone tonta jaja. Avísame cuando lo mandes porfa. Chau, gracias de nuevo!", "si": ["despedida"], "no": []}
+{"mensaje": "Perfecto, acabo de pasar a recogerlo y quedo genial! La tela es super bonita, tal cual como en la foto. Muchas gracias por todo, quedo super contenta. Nos vemos!", "si": ["despedida"], "no": []}
+{"mensaje": "Que pena que ya no tengan el conjuntito azul, lo vi muy tarde. Buena onda por avisarme de las nuevas colecciones, le estare echando un ojo. Gracias por todo, suerte!", "si": ["despedida"], "no": []}
+{"mensaje": "Oe causa, te juro que pense que me habias dejado en visto jaja. Gracias por responder recien, ya me quedo claro lo de las tallas. Cualquier cosa te escribo de nuevo. Chao, cuídate!", "si": ["despedida"], "no": []}
+{"mensaje": "Muchisimas gracias! En serio, super agradecida por la ayuda, me sacaste de un apuro con el vestido para la boda. Quedo espectacular. Te recomiendo al toque. Chau!", "si": ["despedida"], "no": []}
+{"mensaje": "Bueno, entonces ya no vuelven a tener la Kaylee en negro? Que mala suerte la mia. Igual te agradezco un monton por buscar en el stock. Gracias por la onda. Hasta pronto!", "si": ["despedida"], "no": []}
+{"mensaje": "Joya, ya vi que el pedido esta en camino. Te agradezco un monton por todo el seguimiento, se nota que te importa tu trabajo. Cualquier cosa al tiro te escribo. Chao!", "si": ["despedida"], "no": []}
+{"mensaje": "Oe, al final si habia la talla! Me salvaste la vida, en serio. Pasa la cuenta y al toque te pago, no me lo quiten porfa. Mil gracias, eres un sol. Hablamos!", "si": ["despedida"], "no": []}
+{"mensaje": "Bueno, como no me contestaste acerca del color hueso, supongo que ya no queda. Igual muchas gracias, tal vez para la proxima. Que tengas linda tarde!", "si": ["despedida"], "no": []}
+{"mensaje": "Listo, ya transferí. Gracias por ser tan detallista con las medidas, ojala todas las tiendas fueran asi. Espero el paquete con ansias. Chau, gracias!", "si": ["despedida"], "no": []}
+{"mensaje": "Una pena lo del retraso, pero entiendo, cosas que pasan. Gracias por ser transparente y avisarme a tiempo. Cualquier novedad me avisas. Te lo agradezco, chau!", "si": ["despedida"], "no": []}
+{"mensaje": "Oe, gracias por la recomendacion de la Xela, la vi y me encanto mas que la que yo queria al principio. Voy a pedirla. Buenisima la atencion, en serio. Chao!", "si": ["despedida"], "no": []}
+{"mensaje": "Bueno, me decis entonces si llega la reposicion de la blusa Irla? Te agradeceria un monton. Porfa avisame para no perdermela otra vez. Gracias, hablamos!", "si": ["despedida"], "no": []}
+{"mensaje": "Mil disculpas por la demora en responder, se me corto el internet. Ya vi todo, perfecto. Muchas gracias por esperarme. Confirmo entonces. Chao!", "si": ["despedida"], "no": []}
+{"mensaje": "Que rapido llego el paquete! Acabo de abrirlo y esta todo impecable, la calidad se ve buenaza. Super agradecida, de verdad. Sigan asi! Chau!", "si": ["despedida"], "no": []}
+{"mensaje": "Oe, al final me decido por el conjunto verde. Gracias por aclararme todas las dudas, tenias razon, combina mas con mis zapatos. Ya pago. Chao, gracias!", "si": ["despedida"], "no": []}
+{"mensaje": "Bueno, ya veo que es muy complicado lo del cambio de talla. No hay problema, gracias por intentarlo. Avisame si por ahi alguien devuelve una S. Chau!", "si": ["despedida"], "no": []}
+{"mensaje": "Muchas gracias por todo en serio, desde la paciencia hasta la rapidez. Quede encantada con la compra. Seguro vuelvo a comprar pronto. Que te vaya super bien! Chau!", "si": ["despedida"], "no": []}
+{"mensaje": "Oye pe, al final no me decido entre el vestido Kendall y el conjunto Azra para el matrimonio de mi hermana. Me encantaria probarmelos para ver cual me queda mejor, tienen probadores?", "si": [], "no": ["despedida"]}
+{"mensaje": "Causa, mi amiga compro el Holly la semana pasada y quedo fascinada. Tienen en talla M todavía? Es que justo hoy es mi aniversario y quiero sorprender a mi esposo", "si": [], "no": ["despedida"]}
+{"mensaje": "Aprovecho que paso por el centro el miercoles, tienen el modelo Xela en color negro? Es que vi unas manchas en el que tengo y no tengo que ponerme para la cena de mañana", "si": [], "no": ["despedida"]}
+{"mensaje": "Pe, una consulta: el vestido Pandora es talle grande? Es que a veces la talla L me queda muy justa y no quiero pasar pena en la fiesta", "si": [], "no": ["despedida"]}
+{"mensaje": "Me puedes guardar el conjunto Irla hasta el viernes? Es que recien cobro ese dia y no quiero que se acabe, lo vi en tus stories y esta tooopado", "si": [], "no": ["despedida"]}
+{"mensaje": "Oye, el modelo Kaylee tiene enganche atras o es solo tirantes? Es que voy a una despedida y quiero algo seguron para bailar", "si": [], "no": ["despedida"]}
+{"mensaje": "La blusa que compre la semana pasada me encanto pero es un poquito transparente. Que me recomiendas poner abajo para que no se me vea nada?", "si": [], "no": ["despedida"]}
+{"mensaje": "A mi prima le encanto el conjunto que me compre y quiere saber si tienen puntos de venta por Miraflores o solo por tienda online?", "si": [], "no": ["despedida"]}
+{"mensaje": "Hola causa, una consulta rapidita. Recién acabo de yapear por el conjunto Holly que vi en sus historias. Mi correo es ana.rios@gmail.com por si acaso, para que me manden la confirmación al toque pe.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Buenas tardes! Recién hice la transferencia por el vestido Kendall talla M, ya les mandé el comprobante al correo de contacto. Quedo atenta nomás, mi nombre es Luciana Fernández.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola! Disculpen la molestia pero quería avisar que ya pagué el vestido Pandora. Fue con yape, les llegó? Es que lo necesito para el sábado, espero no haya problema.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Oe, ya yapeé por la blusa Azra en azul. Mi número es este mismo, avísennme cuando lo despachan pe, porfa.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Buenas! Soy María Paz. Acabo de realizar la transferencia por los dos conjuntos que habíamos hablado, el Irla y el Xela. Les adjunto el voucher en la siguiente foto. Gracias!", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola, espero que estén bien. Les escribo para confirmarles que ya hice el pago por el vestido Kaylee. Fue por yape, desde el número 999888777. Avisen cualquier cosa.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Ola! Ya transferí la seña por el conjunto Holly, justo hoy me pagaron asi que al toque me animé jaja. Ahí les mandé el comprobante al Whatsapp empresarial.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola, buenos días. Quería avisar que el pago por la blusa Kendall ya está hecho. Lo hice por transferencia BBVA, debería llegar en un ratito. Mi nombre es Camila Rojas.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Pe, ya yapeé el monto completo por el vestido Pandora. Espero que esté todo ok para que me lo envíen hoy, si? Porfa avísenme.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola! Soy Gabriela. Acabo de mandar el yape por el conjunto Azra talla L. Ahí les llega el comprobante al correo? O lo necesitan por aquí?", "si": ["ya_pago"], "no": []}
+{"mensaje": "Buenas tardes, ya realicé el pago integro del vestido Kaylee via transferencia interbancaria. Mi correo es florgarcia@hotmail.com por si necesitan confirmar. Gracias!", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola, disculpen la hora pero quería avisar que ya yapeé por la blusa Xela. Fueron S/ 120, espero que esté bien. Quedo pendiente de la confirmación.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Oe, ya te mandé el yape por el conjunto Irla. A nombre de Sofia Mendoza. Avisa cuando lo tengas pe para saber cuándo pasa el courier.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Buen día! Ya hice la transferencia por el vestido Pandora como acordamos. Les mandé el voucher al correo de ventas. Por favor confirmen recepción. Gracias!", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola, espero estén bien. Les comento que ya pagué con yape la blusa Kendall. Mi número es este mismo, así que anyadánme a la lista de espera jaja. Saludos!", "si": ["ya_pago"], "no": []}
+{"mensaje": "Ola! Ya está hecha la transferencia por el conjunto Holly. Mi nombre es Daniela Villanueva. Cualquier cosa me avisan, porfa. Gracias!", "si": ["ya_pago"], "no": []}
+{"mensaje": "Buenas! Ya yapeé el adelanto por el vestido Azra. Quería saber si ya con eso puedo elegir la talla o cómo es el proceso. Avisenme :)", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola, soy Valeria. Acabo de mandar el comprobante de pago por el conjunto Kaylee al correo que me dijeron. Espero su confirmación, porfa.", "si": ["ya_pago"], "no": []}
+{"mensaje": "Pe, ya transferí todo por el vestido Irla. Ahí te mando captura del comprobante por si acaso. Avísame cuando lo despachan!", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola buenas tardes! Ya realicé el pago vía Yape por la blusa Xela talla S. Mi correo es carlossanchez@gmail.com. Gracias por todo!", "si": ["ya_pago"], "no": []}
+{"mensaje": "Hola buenas, una consulta pe. Ya te hice la transferencia por el vestido Holly pero queria ver si me puedes cambiar la talla, esque lo pense y quiero la M en vez de la S", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Oye causa, justo ayer fui al banco y pague pero era para otra cosa jaja. Pero ya que te escribo, el conjunto Azra entra talle 36?", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Me acorde de ti porque recien le estuve haciendo un yape a mi hermana y dije ah ya voy a molestar a Baruka. Cuando van a tener mas colores del modelo Pandora?", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Al toque me dices, estoy apurada. Recien vi el comprobante de la transfer que hice y creo que puse mal el monto, pero era para mi colegio de mi hija. De paso, el vestido Kaylee tiene enganche?", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Oiee, sabes que? Mi marido me acaba de pedir el numero para yapearte por mi cumple pero le dije que mejor voy a ir a la tienda. La blusa Irla se puede probar?", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Justo estaba revisando mis movimientos y vi que me descontaron pero era el netflix jajaja. Aprovecho, la falda del conjunto Kendall es larga o corta?", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Holis, te escribo porque mi amiga me pidio tu numero para transferirte pero le dije que mejor te escribo yo primero. Tienen el modelo Xela en talla L? Es que ella quiere uno", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Uy perdon, te mande un mensaje de voz sin querer. Es que estaba explicandole a mi prima como hacer una transferencia y apreté aca. De casualidad tienes el vestido rojo que vi en stories?", "si": [], "no": ["ya_pago"]}
+{"mensaje": "Hola pe! Mira, ya vi todos los modelos en la pagina y la verdad es que ya me decidi por el vestido Kendall. No me mandes mas fotos de otros modelos xfa, ya se cual quiero!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Oye, consulta rapida. Me encanto el conjunto Holly que vi en insta, pero ya no quiero ver mas opciones. Puedes confirmarme si tienen talla M? No me muestres otros modelos, ya se que quiero ese.", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Causa, paso a pagar el vestido Pandora que reserve la semana pasada. No me enseñes nada mas eh, solo quiero ese y ya!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Hola! Es que ya he estado mirando tooooda la semana y me canse de ver fotos. Quiero el Azra en negro, talla L. Porfa no me mandes mas imagenes de otros modelos, ya estoy segura.", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Oye, mi amiga me recomendo la blusa Xela. Tienen en color beige? Es solo eso lo que quiero ver, no me envies fotos de otras blusas porfa.", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Hola! Ya se que a veces mandan alternativas pero es que ya vi todo en la web y me decidi por el Kaylee. No necesito ver mas, solo quiero saber como es el proceso de compra.", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Mira, tengo una fiesta este sabado y ya no tengo tiempo de estar viendo mas opciones. Quiero el Irla en rojo, talla S. No me muestres otro modelo, porfa!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Hola! Recien vi tus mensajes. Mira, ya elegi el conjunto que quiero, el Holly. Puedes decirme si tienen delivery para hoy? Y no, no quiero ver nada mas!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Oye pe, ya estoy hasta el moño de decidir. Me quedo con el Pandora y punto. No me tientes con otros modelos, jaja!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Hola! Es para una ocasion especial y ya se exactamente cual quiero: el vestido Kendall. Porfa no me bombardees con mas fotos, solo dime si lo tienen en talla M.", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Causa, ya me enamore del Azra que vi en tu perfil. No necesito ver mas, solo dime si lo tienen para probar en tienda hoy.", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Hola! Mira, soy super indecisa pero por una vez en mi vida ya se que quiero el Xela. No me mandes mas info de otros vestidos, me confundo!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Oye, paso a recoger el conjunto que reserve ayer, el Irla. No me muestren nada nuevo cuando vaya, porque me tentare y gaste de mas!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Hola! Ya vi todos tus estados de WhatsApp y me decidi por el Kaylee. Porfa, no me envies fotos de otros modelos, ya se cual quiero!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Mira, es para regalarle a mi hermana y ella ya me dijo especificamente el modelo Holly. No me muestres otros, porque luego se enoja!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Hola! Recien sali de tu tienda y ya compre el Pandora. No me escribas con novedades de otros modelos, porque ya gaste mi presupuesto!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Oye pe, ya he comprado antes y siempre me sales con mas opciones. Esta vez quiero el Kendall y punto. No me muestres nada mas!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Hola! Es que mi marido ya me ayudo a elegir el Azra. Si me muestras otro, se arma discusion en casa jaja. Solo ese!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Mira, ya tengo like 50 screenshots de tus publicaciones y me canse. Elijo el Irla. No me mandes mas fotos, al toque!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Hola! Solo una consulta rapida: el vestido Xela en talla L, tienen? Es solo eso, no necesito ver otros modelos. Gracias!", "si": ["no_mostrar"], "no": []}
+{"mensaje": "Hola! Mira, es que vi el vestido Pandora en sus historias y me encanto pe... pero quiero ver como me queda en talla M, tienes foto de como luce en alguien de mi contextura? Es que a veces me mandan fotos de otros modelos y no se ve igual", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Oye, ya me decidí por el conjunto Holly que vi la semana pasada. Solo necesito que me confirmes si tienen en color negro en stock, porque la vez pasada me mostraron uno azul y no era lo que buscaba", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Causa, una consulta sobre la blusa Kendall: vi que en la foto se ve translúcida, pero en persona es igual? Es que para usarla en la oficina no quiero que se vea todo", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Hola! Quiero comprar el vestido Azra para una boda, pero necesito saber si es talle entero o ajustado. La ultima vez me enviaron fotos de un modelo que no era y casi compro algo que no me servia", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Oye, ya vi todos tus estados y me enamore del conjunto Irla. Solo dime si tiene algun tipo de estampado o es liso, porque en algunas fotos se ve con puntos y en otras no", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Pe, una preguntita sobre el modelo Xela: el material es pesado o liviano? Es que para viaje necesito algo que no arrugue mucho, ya tuve malas experiencias con fotos que no mostraban la tela real", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Hola! Mira, es que quiero regalarle la blusa Kaylee a mi hermana pero no se su talla exacta. Puedes contarme como viene la talla? Si es normal o pequeña, porque no quiero equivocarme como la vez pasada que me enviaron algo que no era", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Oye, ya me decidi por el vestido de terciopelo que publicaste ayer. Solo confirmame si es de mangas largas o cortas, porque en una foto se veia diferente y no quiero llevarme sorpresas", "si": [], "no": ["no_mostrar"]}
+{"mensaje": "Hola! Oe, vi un vestido Kaylee en sus historias y esta reee lindo pe 🥺 Cuanto sale? Y habra en talla M? Es que justo tengo una fiesta este finde", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Buenas! Me encanto el conjunto Holly que publicaron, pero no se si tendran mi talla. Uso S. Y a how much esta? Pa ver si me ajusta el budget", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Oe causa, una consulta rapidita. El vestido Azra cuanto esta? Y que tallas tienen disponible? Es que justo quiero comprarle algo a mi flaca y no se su talla exacto pero es como M", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Holi! Estuve mirando en su pag y el top Xela esta precioso. Cuanto cuesta? Y tienen en L? Es que a veces me queda justo o me aprieta 🙈", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Hola! Una preguntita, el conjunto Pandora que vi en su ig esta en cuanto? Y que tallas les queda? Yo uso S pero a veces la M me queda mejor si es ajustado", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Oe! Me re gusta la blusa Irla, cuanto esta? Y dime si tienen talla M porque justo necesito para el jueves ya causa, al toque si pueden confirmarme 😬", "si": ["precio", "talla"], "no": []}
+{"mensaje": "Hola! Mira, estoy enamorada del vestido Kendall que vi en sus redes. Para una fiesta este finde pe, me urge! Cuanto sale? Y otra cosa, envían a La Molina? O es solo delivery en Lima nomas? Cuanto demora mas o menos?", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Oye, una consulta rapida. Me encanto la blusa Azra para usar con unos jeans. Tienen en talla M? Cuanto cuesta? Y el envio a Surco cuanto sale y en cuanto tiempo llega? Es que lo necesito para el viernes si se puede!", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Buenas! Vi el conjunto Holly y esta hermoso causa. Para una reunion familiar. Cuanto esta? Y envian a provincia? Arequipa pe. O es solo para Lima? Cuanto sale el envio y demora?", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Hola! Que tal? Me interesa el vestido Pandora. Tienen en color negro? Cuanto vale? Y el delivery para Comas cuanto cuesta y en cuanto tiempo me llegaria? Es que no quiero pedirlo y que se demore mucho", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Oye, una preguntita. La blusa Xela esta preciosa! Cuanto sale? Y hacen envios a Miraflores? Cuanto cobran por el delivery y mas o menos en cuanto tiempo llega? Para saber si me da tiempo para el evento del sabado", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Hola! Me encanto el conjunto Irla para una salida. Cuanto esta? Y envian a San Juan de Lurigancho? Cuanto sale el envio y que tan rapido llega? Es que para el domingo necesito si o si pe", "si": ["precio", "envio"], "no": []}
+{"mensaje": "Hola buenas tardes una consulta porfa, vi el conjunto Kendall en su IG y esta super lindo pe. Para saber de q material es xq mi piel es re sensible. Y otra cosa, hacen delivery a Comas? Cuanto sale y mas o menos en cuanto tiempo llega?", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Oe causa, me re interesa el vestido Azra, pero necesito saber si es de algodon o algo fresco xq es para una fiesta en La Molina y hace calor ahi. Tambien mi amiga vive en Surco, ahi tb envian? Y cuantos dias demora mas o menos? Grax", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Pe, una preguntita rapida. La blusa Xela es de tejido que no se encoge? Es q la quiero para el dia a dia. Y el envio a mi casa en San Juan de Lurigancho cuanto cuesta y si es al toque o demoran? Para saber si me animo ya mismo", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Buenas! Me encanto el modelo Holly que publicaron ayer. Primero, la tela tiene elastico? Es para usarlo comoda. Y segundo, soy de provincia, de Huacho, hay forma de que me lo envien? Cuanto me cobrarian y en cuantos dias estaria llegando? Gracias :)", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Hola, queria hacerle dos consultas del vestido Irla. Una es sobre la tela, si es pesada o liviana para ver si sirve para esta temporada. Y la otra es si tienen envio gratis o cuanto cuesta mandarlo a Villa El Salvador, y si lo puedo recibir mañana porque lo necesito urgente.", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Oe oye, vi el conjunto Pandora y esta brutal. Antes de comprar, me dicen de q material es porfa, xq no quiero q se destiña. Y lo otro, el delivery a Miraflores es rapido? Osea, si pido hoy llega mañana? Y mas o menos cuanto es el costo? Para calcular todo junto.", "si": ["tela", "envio"], "no": []}
+{"mensaje": "Hola pe! Mira, quiero comprar el vestido Kendall para un matrimonio el otro mes. Uso talla M normalmente. Envian a Surco? Y cuánto sale el delivery mas o menos? Gracias!", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Oye causa, me encanto la blusa Azra que vi en IG. Hay en talla L? Y si pido hoy, para cuando me llegaria a La Molina? Es que lo necesito para el finde 🙏", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Buenas! Estoy interesada en el conjunto Holly, uso S. Envian a provincia? Es que soy de Huacho y quiero saber si llegan hasta aca y mas o menos cuanto demora el envio 🥺", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Hola! Una consulta rapida, el vestido Pandora hay en talla M? Y el delivery a San Miguel cuánto cuesta y en cuanto tiempo llega? Para saber si me animo a comprarlo 😊", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Oeeeee, vi la blusa Xela y ta dura. Hay en XL? Es que a veces me queda justo la L. Envian a Comas? Y cuánto cobran por el envio? Para hacer la compra ya mismo pe", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Hola! Que tal? Me gusta el conjunto Irla, necesito talla M. Envian a Jesus Maria? Y cuánto demora mas o menos el delivery? Es para un evento importante la otra semana 😅", "si": ["talla", "envio"], "no": []}
+{"mensaje": "Hola pe! Mira, tengo una fiesta este finde y necesito un vestido que me vuele la cabeza. Vi el modelo Kendall en tus historias y esta recontra bonito. Cuanto esta? Y viene en color negro? Es que quiero verme re chic para la fiesta", "si": ["precio", "color"], "no": []}
+{"mensaje": "Buenas! Oye, me encanto el conjunto Holly que publicaron. Mi hermana se casa y quiero usarlo para la cena de ensayo. Me puedes decir el precio? Tambien dime si lo tienen en rojo o que colores tienen, porfa", "si": ["precio", "color"], "no": []}
+{"mensaje": "Hola! Estoy buscando una blusa para el trabajo, vi la Azra y parece super comoda. Cuanto cuesta? Y que colores manejan? Necesito algo que no sea blanco porque se mancha facil con el cafe jaja", "si": ["precio", "color"], "no": []}
+{"mensaje": "Oye causa, una consulta rapida. El vestido Pandora que vi en tu perfil esta genial para un evento. Precio? Y mas importante, lo tienes en verde esmeralda o que colores hay? Es que es mi color favorito", "si": ["precio", "color"], "no": []}
+{"mensaje": "Hola! Espero que esten bien. Queria preguntar por el modelo Irla, me parece super elegante. Cuanto sale? Y viene en azul marino? Es que tengo una reunion importante y quiero verme profesional pero a la moda", "si": ["precio", "color"], "no": []}
+{"mensaje": "Buenaas! Necesito su ayuda urgente. El conjunto Xela me enamoro. Cuanto esta? Y dime si lo tienen en rosado o que colores disponibles hay, es para un cumpleanos y quiero sorprender a todos", "si": ["precio", "color"], "no": []}
+{"mensaje": "Hola pe! Mira, tengo una fiesta el sabado y me encantaria probarme el vestido Kendall que vi en ig. Esta disponible para probarse? A cuento esta? Pasa la dire para pasar hoy en la tarde o mañana al toque.", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Ola! Una consulta rapida, el conjunto Azra tiene talla M? Y cuanto sale? Quiero ver si paso a probarmelo el viernes en la mañana porque ando por por alla, me confirmas si estadis abiertos?", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Buenasss, cuanto cuesta la blusa Pandora en talla L? Es que quiero ir a verla hoy mismo pero no se si aun estas en el jiron o te mudastes. Avísame si puedo caer mas tarde como a las 5pm.", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Chevere la pagina! Me interesa el modelo Holly pero necesito saber el precio y sobretodo si puedo ir a probarmelo, mi hermanita tiene quinceañer y quiero verme bien jeje. Podria ir el domingo? O como manejas las citas?", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Causa, una preguntita, el vestido Irla esta en oferta? Vi un reel y esta divino. Cuanto esta? Y mas importante, puedo ir ya a la tienda? Es que salgo del trabajo a la 1pm y me queda cerca.", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Hola! Disculpa la hora, es que ando desesperada por un conjunto para una despedida. El modelo Xela, que precio tiene y si hay chance de agendar una cita para probarmelo mañana viernes tipo 11am? Porfa dime que si.", "si": ["precio", "cita"], "no": []}
+{"mensaje": "Hola buenas! Mira, es que tengo una fiesta este viernes y me encanta el vestido Kendall que vi en ig, pero esta un pokito fuera de mi presupuesto. Hay promo o algo? Aproposito, la blusa Azra tambien esta bonita, cuanto esta esa?", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Oye causa, quiero comprarle un regalo a mi hermana y me enamore del conjunto Holly. Pero dime, no habra chance de un descuentito? Pq tambien estoy viendo el modelo Pandora y no se cual elegir, cuesta lo mismo? Ayudame a decidir!", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Hola, escribo pq me urge un vestido para el sabado. Vi el modelo Irla y es precioso, pero el precio me duele un poco la verdad jaja. No habra forma de que me lo sueltes mas bajito? Y de paso, la Xela que vi en stories, esa en cuanto esta?", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Buenas! Te consulto, el vestido Kaylee esta hermoso pero mi sueldo no da para tanto pe. No tendras algun codigo de descuento o algo para ayudarme? Y ya que estamos, la blusa Azra tambien me interesa, pasame los precios de las dos para ver q hago.", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Oye, estoy queriendo comprar el conjunto Pandora hace rato pero esta carisimo. No me puedes hacer una rebajita? Pq si no, capaz me compro la blusa Kendall nomas que debe salir menos, cuanto cuesta esa? Avisame para pasar x la tienda al toque.", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Hola! Mira, mi prima y yo queremos comprar dos vestidos, el Holly y el Irla. Si nos hacemos de dos, no nos puedes hacer un precio especial? Es q tambien estamos mirando la blusa Xela y se nos va el sueldo en una sola compra jaja. Cuanto esta la Xela de paso?", "si": ["rebaja", "precio"], "no": []}
+{"mensaje": "Hola pe! Mira, tengo una fiesta este finde y me encantaria el vestido Kendall. Me podrias decir si lo tienen en color negro? Y de talla, uso M, hay disponible?", "si": ["color", "talla"], "no": []}
+{"mensaje": "Oye, estaba viendo en ig el conjunto Holly y esta super lindo. Tienen en azul? Y de tallas, que tallas tienen en stock? Es que uso S normalmente.", "si": ["color", "talla"], "no": []}
+{"mensaje": "Buenas! Me enamore de la blusa Azra que vi en su pagina. Para una ocasion especial. Tienen en rojo? Y de talla, uso L, hay?", "si": ["color", "talla"], "no": []}
+{"mensaje": "Hola! Consulta rapida por el vestido Pandora. Vi que lo tienen en varios colores pero me gustaria saber si lo tienen en verde? Y de talla, M, disponible?", "si": ["color", "talla"], "no": []}
+{"mensaje": "Oye causa, una preguntita por el conjunto Irla. Esta en oferta? Me interesa en color nude. Y que tallas tienen? Porque a veces cambio entre M y L.", "si": ["color", "talla"], "no": []}
+{"mensaje": "Hola! Espero que bien. Queria consultar por la blusa Xela, para usarla con unos jeans. La tienen en blanco? Y que tallas hay? Porque uso S pero a veces me quedo justa.", "si": ["color", "talla"], "no": []}
+{"mensaje": "Ola! Pe, quiero ir a probarme el vestido Kendall que vi en IG, me enamoré. Pero no sé dónde son exactamente? Y qué horario tienen? Quisiera pasar mañana sabado tipo 4pm, se puede?", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Buenas! Una consulta, me urge una blusa para el viernes. Tienen showroom? En qué parte de Lima? Y horarios? Quiero ir el miercoles en la tarde a ver la Irla, abren hasta tarde?", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Causa, vi los conjuntos Azra y necesito probármelos ya. Pasa que tengo una boda el otro semana. Donde queda la tienda? Atienden domingos? Quiero ir este domingo si se puede, sino el lunes al toque.", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Hola! Estoy interesada en el modelo Holly. Me podrian decir la dirección exacta del showroom y si tengo que agendar cita o voy nomás? Mi idea es ir hoy mismo en la tarde, tipo 5pm, estarán?", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Oe, una preguntita. Ami me gusta mucho el vestido Xela pa una fiesta. Pero no sé donde es la tienda. Y qué días atienden? Quisiera ir el viernes desde las 11am, porque solo tengo esa hora libre. Avísenme!", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Hola buenos dias! Queria saber si tienen local a la vista y el horario de atención. Es que vi la Kaylee y quiero probármela urgente para ver si me queda. Podria ir hoy mas tardecita, después de las 6pm, está bien?", "si": ["ubicacion", "cita"], "no": []}
+{"mensaje": "Hola buenas tardes pe, porfa una consulta. Vi en sus historias el conjunto Holly y me ENCANTO, esta tremendamente lindo. Me podrian decir el precio? Gracias", "si": ["elogio", "precio"], "no": []}
+{"mensaje": "Oe causa, una preguntita. La blusa Kendall que publicaron ayer esta divina, me encanto el color. A cuanto sale? Para ver si me animo", "si": ["elogio", "precio"], "no": []}
+{"mensaje": "Holaa, queria hacer una consulta sobre el vestido Pandora. Me parecio super lindo la verdad, quedo enamorada. Cuanto cuesta? Esque tengo una fiesta y estoy buscando algo asi", "si": ["elogio", "precio"], "no": []}
+{"mensaje": "Buenas! Recien veo sus historias y el conjunto Irla esta precioso, me encanto el diseño. Aprox a cuanto esta? Para tener una idea nomas", "si": ["elogio", "precio"], "no": []}
+{"mensaje": "Hola, disculpe la molestia. Vi el modelo Azra y me parecio hermoso, la verdad me encanto. Podrian pasarme el precio porfa? Es para un evento importante", "si": ["elogio", "precio"], "no": []}
+{"mensaje": "Oe pe, una preguntita rapida. Esa blusa Xela que tienen en las fotos de perfil esta re linda, me encanto. Cuanto cuesta? Es que justo necesito una asi para salir", "si": ["elogio", "precio"], "no": []}

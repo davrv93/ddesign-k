@@ -50,25 +50,27 @@ RE_CALCULA = re.compile(r"\bcuanto (es|da|sale)\b|\bcalcul|\bresuelv")
 def hechos(c) -> dict:
     """Hechos con nombre sobre el mensaje y el contexto `c` (lo arma `main.respaldo_codigo`)."""
     p, i, preg = c.plano, c.intent, "?" in c.mensaje
+    clf = getattr(c, "clf", frozenset())      # lo que detecta app/comprension.py (vacío si no está activo)
     habla_envio = bool(RE_ENVIO.search(p))
     return {
         "pregunta": preg,
-        "pregunta_precio": i == "consulta_precio" or bool(RE_PRECIO.search(p)),
+        "pregunta_precio": i == "consulta_precio" or bool(RE_PRECIO.search(p)) or "precio" in clf,
         "habla_envio": habla_envio,
-        "pide_envio": habla_envio or (i == "consulta_delivery" and preg),
-        "pide_tallas": i in ("consulta_talla", "consulta_disponibilidad") or bool(RE_TALLAS.search(p)),
-        "pide_color": i == "consulta_color" or c.pregunta_variante,
+        "pide_envio": habla_envio or (i == "consulta_delivery" and preg) or "envio" in clf,
+        "pide_tallas": i in ("consulta_talla", "consulta_disponibilidad") or bool(RE_TALLAS.search(p)) or "talla" in clf,
+        "pide_color": i == "consulta_color" or c.pregunta_variante or "color" in clf,
         "elogia": i == "interesado" or (c.sol.elogia and not preg),
         "nombra_sin_preguntar": (i == "consulta_producto" and not preg and bool(c.nombrados) and not RE_PREGUNTONA.search(p)),
         "pide_detalle": i == "consulta_producto" and preg,
         "menciona_descuento": (bool(RE_DESCUENTO.search(p)) and not c.datos.get("ocasion")) or c.sol.pide_rebaja,
-        "pide_ubicacion": (i in ("consulta_ubicacion", "consulta_horario") and preg and not c.nombrados) or bool(RE_UBICACION.search(p)),
+        "pide_ubicacion": ((i in ("consulta_ubicacion", "consulta_horario") and preg and not c.nombrados) or bool(RE_UBICACION.search(p))
+                           or "ubicacion" in clf),
         "pregunta_tiempo": bool(RE_TIEMPO.search(p)),
-        "pide_pago": i == "consulta_pago" and preg and c.etapa != "venta_confirmada",
+        "pide_pago": (i == "consulta_pago" and preg or "pago" in clf) and c.etapa != "venta_confirmada",
         "duda": (i in ("objecion", "objecion_precio") and c.nivel == "alta" and not c.sol.pide_rebaja
                  and not any(c.datos.get(k) for k in ("ocasion", "fecha", "horario", "prenda", "nombre", "presupuesto"))
                  and not RE_PRESUPUESTO.search(p)),
-        "despide": i == "despedida",
+        "despide": i == "despedida" or "despedida" in clf,
         "groseria": (c.cl_intencion == "censura" and c.cl_confianza >= c.k.UMBRAL_ACCION
                      and not RE_DUDA.search(p) and not RE_PEDIDO_APURADO.search(p)),
         "fuera_de_giro": (c.cl_intencion == "pregunta_general" and c.cl_confianza >= c.k.UMBRAL_ACCION and not c.lectura.get("respondio")
@@ -174,7 +176,14 @@ EXPLICITO = {
 }
 
 
+# Un dato extra también es explícito si lo detecta el clasificador entrenado (precisión validada ≥ 80 %).
+_CLF_DE_REGLA = {"precio": "precio", "talla_dicha": "talla", "tallas": "talla", "color": "color", "tela": "tela",
+                 "descuento": "rebaja", "envio": "envio", "showroom": "ubicacion"}
+
+
 def _explicito(r, c, h) -> bool:
+    if _CLF_DE_REGLA.get(r.id) in getattr(c, "clf", frozenset()):
+        return True
     ok = EXPLICITO.get(r.id)
     if ok is None or not ok(c, h):
         return False

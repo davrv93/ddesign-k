@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 import os
+import dataclasses
 import re
 from types import SimpleNamespace
 import threading
@@ -28,7 +29,7 @@ import base64
 import json
 from contextvars import ContextVar
 
-from . import datos, etapas, jev, memoria, respuestas, venta
+from . import comprension, datos, etapas, jev, memoria, respuestas, venta
 from . import animo, crm, estructurado, gasto, rerank
 from .solicitud import (RE_CATALOGO, RE_MAS_BARATO, RE_MAS_OPCIONES, RE_OTRAS, RE_PIDE_COLOR_VERBO, _color_txt, _de_color, _raiz_color,
                         color_dicho, color_pedido, color_que_pide, interpretar)
@@ -275,6 +276,24 @@ def _limpio(t: str) -> str:
 # La memoria del mensaje en curso, para las funciones que miran «lo ya mostrado» o la prenda en foco sin
 # recibirla por parámetro. Cada petición corre en su propio contexto: no se mezclan conversaciones.
 _mem_actual: ContextVar[dict | None] = ContextVar("_mem_actual", default=None)
+# Lo que el clasificador entrenado (app/comprension.py) detecta que PIDE el mensaje de este turno. Vacío si COMPRENSION no es «activo».
+_clf_actual: ContextVar[frozenset] = ContextVar("_clf_actual", default=frozenset())
+# etiqueta del clasificador → campo de SolicitudCliente que activa
+_CLF_A_SOLICITUD = {"cita": "pide_cita", "rebaja": "pide_rebaja", "otras_opciones": "mas_opciones", "mas_barato": "mas_barato",
+                    "catalogo": "catalogo", "elogio": "elogia", "ya_pago": "avisa_pago", "no_mostrar": "no_mostrar"}
+
+
+def solicitud_de(req: "ChatIn"):
+    """Lo que pide el mensaje: las reglas (`interpretar`) O el clasificador entrenado. Medido el 07-10 sobre 418 frases nuevas:
+    reglas 66 % → reglas + clasificador 82 %, con +2 falsas alarmas."""
+    s = interpretar(req.mensaje)
+    labs = _clf_actual.get()
+    extra = {campo: True for et, campo in _CLF_A_SOLICITUD.items() if et in labs and not getattr(s, campo)}
+    return dataclasses.replace(s, **extra) if extra else s
+
+
+def no_mostrar_m(req: "ChatIn") -> bool:
+    return memoria.no_mostrar(req.mensaje) or "no_mostrar" in _clf_actual.get()
 # La pregunta que estaba pendiente ANTES de leer este mensaje (la memoria ya la limpió si se respondió).
 _pend_previa: ContextVar[str | None] = ContextVar("_pend_previa", default=None)
 
@@ -891,7 +910,7 @@ def acepta_oferta(req: ChatIn) -> bool:
     pend = _pend_previa.get()
     if pend is None:
         pend = memoria.pregunta_de("\n\n".join(reversed(_ultimos_del_bot(req))))
-    if pend != "otras_opciones" or "?" in req.mensaje or nombrados(req.mensaje) or memoria.no_mostrar(req.mensaje):
+    if pend != "otras_opciones" or "?" in req.mensaje or nombrados(req.mensaje) or no_mostrar_m(req):
         # «Ok, ¿el vestido Irla qué precio tiene?» empieza por «ok» y no es un sí a la oferta: pregunta por el Irla
         # (chat real: se le mandaron tres vestidos que no pidió).
         return False
@@ -911,11 +930,11 @@ def pregunta_variante(req: ChatIn) -> bool:
 
 
 def pide_mas_barato(req: ChatIn) -> bool:
-    return interpretar(req.mensaje).mas_barato
+    return solicitud_de(req).mas_barato
 
 
 def pide_mas(req: ChatIn) -> bool:
-    sol = interpretar(req.mensaje)      # una sola lectura del texto (app/solicitud.py); aquí se combina con lo que se sabe de la conversación
+    sol = solicitud_de(req)      # una sola lectura del texto (app/solicitud.py); aquí se combina con lo que se sabe de la conversación
     if sol.no_otro:
         return False   # «no quiero otro vestido, quiero el Holly»: pide ESA prenda, no más
     if sol.regatea_comparando:
@@ -1077,7 +1096,7 @@ def pide_foto_de(req: ChatIn):
 def quiere_opciones(req: ChatIn, cl: dict) -> bool:
     """¿Toca mandar fotos de otros modelos? Una vendedora no saca más prendas cuando la clienta pregunta
     dónde queda la tienda o sigue hablando del vestido que ya vio: solo si pide opciones o abre otra búsqueda."""
-    if memoria.no_mostrar(req.mensaje):
+    if no_mostrar_m(req):
         return False
     if RE_MAS_OPCIONES.search(req.mensaje):
         return True
@@ -1484,6 +1503,9 @@ def conversar(req: ChatIn) -> dict:
         consulta = f"{previo}\n{req.mensaje}" if previo else consulta
     cl = clasificar(req.mensaje)
     qv = E.emb([consulta])[0] if consulta != req.mensaje else cl["vector"]
+    modo_clf = comprension.modo()
+    clf_detecta = frozenset(comprension.detecta(cl["vector"], req.mensaje)) if modo_clf != "0" else frozenset()
+    _clf_actual.set(clf_detecta if modo_clf == "activo" else frozenset())
     # Memoria: lo que ya sabemos de ella y la pregunta que el bot dejó pendiente. Se lee el mensaje PRIMERO
     # como respuesta a esa pregunta (memoria.leer, más abajo, cuando Jev ya opinó).
     mem = _memoria_de(req)
@@ -1525,6 +1547,8 @@ def conversar(req: ChatIn) -> dict:
             jev.sombra(st_jev, com, req.conversacion, reglas)
     ahora = memoria.ahora_lima()
     lectura = memoria.leer(mem, req.mensaje, jev_mem, ahora=ahora)
+    if "cita" in _clf_actual.get() and not lectura.get("es_cita"):
+        lectura["es_cita"] = True      # quiere ir a probárselo, dicho con palabras que RE_CITA no tiene (app/comprension.py)
     # Método de venta: sin anuncio ni prenda concreta, primero se indaga la necesidad (ocasión → fecha → día/noche).
     # Mientras tanto no se muestran prendas y la conversación sigue en prospección.
     anuncio = bool(req.desde_anuncio or req.anuncio)
@@ -1718,7 +1742,7 @@ def conversar(req: ChatIn) -> dict:
         respuesta = venta.texto_pago() + "\n\nCuando hagas el pago, mándame la foto del comprobante por aquí y programo tu envío 🙌"
         modelo, forzar = "flujo_pago", "voucher"
         mem["preguntado"] += ["pago_enviado", "pago"]
-    elif etapa == "venta_confirmada" and pend == "voucher" and (memoria.afirma(req.mensaje) or interpretar(req.mensaje).avisa_pago):
+    elif etapa == "venta_confirmada" and pend == "voucher" and (memoria.afirma(req.mensaje) or solicitud_de(req).avisa_pago):
         respuesta, modelo, forzar = "¡Perfecto! 🙌 Aquí espero tu comprobante para programar el envío.", "flujo_pago", "voucher"
     elif foco and etapa == "venta_confirmada" and dec["transicion"]:
         # Dijo «sí» a «¿Confirmamos tu pedido?». En WhatsApp ese SI lo recibe el bot Go (estado de
@@ -1859,7 +1883,7 @@ def conversar(req: ChatIn) -> dict:
             cl = dict(cl, intencion="producto_recomendacion")   # describe la prenda que vio: es una búsqueda
         mas_barato = bool(pide and foco is not None and foco.precio is not None and pide_mas_barato(req))
         una_opcion = (mejor_opcion(mem, req) if (necesidad and not foto_pedida and not indagando and not logistica and not no_hay
-                                                 and not memoria.no_mostrar(req.mensaje)) else None)
+                                                 and not no_mostrar_m(req)) else None)
         if pide and mem["sabemos"].get("color") and not color_dicho(req.mensaje):
             mem["sabemos"]["color"] = None      # «sí, muéstrame otras»: acepta ver de otro color
         if (una_opcion is not None and etapa in ("prospeccion", "seguimiento") and pend != "cita"
@@ -1910,7 +1934,8 @@ def conversar(req: ChatIn) -> dict:
         if foco and not pide and not es_catalogo and not nombrados(req.mensaje):
             fichas = [foco] + [f for f in fichas if f is not foco]     # la primera ficha es de la que se habla
         # Con confianza baja la intención no cuenta («es de noche» salía como material con 0.38).
-        pide_tela = bool(foco and venta.pregunta_material(req.mensaje, dec["intent"] if dec["nivel"] != "baja" else ""))
+        pide_tela = bool(foco and (venta.pregunta_material(req.mensaje, dec["intent"] if dec["nivel"] != "baja" else "")
+                                   or "tela" in _clf_actual.get()))
         if pide_tela:
             lamina = venta.imagen_material(foco.codigo)
         if necesidad and (indagando or una_opcion is not None):
@@ -2017,7 +2042,7 @@ def conversar(req: ChatIn) -> dict:
                 no_hay=no_hay, no_hay_viene=no_hay_viene, es_bot=es_bot, una_opcion=una_opcion, sugeridas=sugeridas, pide=pide,
                 es_catalogo=es_catalogo, describiendo=describiendo, esperando_cual=esperando_cual, mas_barato=mas_barato,
                 foco=foco, ref=f"*{foco.codigo}* {foco.nombre}" if foco is not None else "",
-                nombrados=nombrados(req.mensaje), sol=interpretar(req.mensaje), pide_tela=pide_tela,
+                nombrados=nombrados(req.mensaje), sol=solicitud_de(req), pide_tela=pide_tela, clf=_clf_actual.get(),
                 cat_p=categoria_pedida(req.mensaje), cat_foco=categoria_de(foco) if foco is not None else None,
                 libres=[x["talla"] for x in tallas_de(foco) if x["disponible"]] if foco is not None else [],
                 pregunta_variante=pregunta_variante(req), ofrecer=ofrecer,
@@ -2196,7 +2221,7 @@ def conversar(req: ChatIn) -> dict:
                 sugeridas = [foco]
             else:
                 respuesta = "\n\n".join(x for x in (RE_PROMESA_FOTOS.sub("", p).strip() for p in respuesta.split("\n\n")) if re.search(r"\w", x)) or respuesta
-    if accion == "responder" and sugeridas and memoria.no_mostrar(req.mensaje):
+    if accion == "responder" and sugeridas and no_mostrar_m(req):
         sugeridas = []          # «no me muestres nada todavía»
         respuesta = "\n\n".join(x for x in (RE_PROMESA_FOTOS.sub("", p).strip() for p in respuesta.split("\n\n")) if re.search(r"\w", x)) or respuesta
     # Si el texto habla de una prenda, la nombra (regla del dueño, 05-10-2026). En producción, al primer mensaje salió
@@ -2260,7 +2285,8 @@ def conversar(req: ChatIn) -> dict:
         "lectura": {k: lectura[k] for k in ("pendiente", "respondio", "espera", "datos", "fuente")} | {"jev": (jev_mem or {}).get("_probs")},
         "stock_fuente": E.stock.ultima_fuente,
         "costo_usd": gasto.total(),
-        "solicitud": interpretar(req.mensaje).a_dict(),     # lo que pide el texto (app/solicitud.py), para la traza y para V2
+        "solicitud": solicitud_de(req).a_dict(),
+        "comprension": {"modo": modo_clf, "detecta": sorted(clf_detecta)} if modo_clf != "0" else None,     # lo que pide el texto (app/solicitud.py), para la traza y para V2
         "ms": int((time.time() - t0) * 1000),
     }
 

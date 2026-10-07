@@ -434,3 +434,30 @@ La respuesta que arma el código cuando no redacta el LLM ya no es una cadena de
 | dato_tienda (colectar) | `despedida` | se despide | sin la pregunta siguiente |
 | dato_tienda (colectar) | `groseria` | mensaje grosero (no una duda ni un pedido apurado) |  |
 | acuse (primera) | `acuse` | respondió la pregunta pendiente y no hay otro texto |  |
+
+
+---
+
+## Comprensión entrenada (`app/comprension.py`, 07-10-2026)
+
+Qué PIDE el mensaje, multi-etiqueta, con el e5 del agente congelado + una regresión logística por pedido (la
+estandarización plegada en los pesos). Se entrena en el build (`python -m app.comprension entrenar`, ~1.000 frases de
+`data/comprension_entrenamiento.jsonl`); el umbral de cada pedido sale de validación cruzada (F0,5, precisión ≥ 80 %).
+
+**Medición** (`python3 -m app.medir_comprension evaluar --sistema reglas|clf|ambos`, sobre `data/comprension_prueba.jsonl`:
+418 frases que ni las reglas ni el modelo vieron):
+
+| Sistema | Detecta | Falsas alarmas |
+|---|---|---|
+| Reglas solas | 66 % | 22 % |
+| Clasificador solo (todas las etiquetas) | 60 % | 5 % |
+| Reglas + clasificador (todas) | 82 % | 23 % |
+| **Reglas + clasificador (las ACTIVAS, lo que usa el bot)** | **78 %** | 23 % |
+
+**ACTIVAS** = «ya pagué», despedida, tela, elogio, cita, color, más barato. Fuera, decidido con la repetición de las 613
+frases de las 100 conversaciones: `no_mostrar` (quitaba las fotos pedidas), `otras_opciones` y `catalogo` (mandaban fotos y
+se perdía el precio), `ubicacion` (metía el showroom en «quiero ver conjuntos»), y las que las reglas ya resuelven (talla,
+envío, pago). Precio y rebaja: el modelo se abstiene. La despedida no cuenta si el mensaje es un saludo.
+
+En el bot: `solicitud_de(req)` (reglas O modelo) alimenta `SolicitudCliente`, los hechos de la tabla de respuestas, la tela y
+la cita. `COMPRENSION=activo` (defecto) · `sombra` (solo traza) · `0` (apagado). Traza: `comprension` en cada respuesta.
