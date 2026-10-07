@@ -77,6 +77,8 @@ func (s *Server) Routes() http.Handler {
 	p("DELETE /api/products/{id}", s.deleteProduct)
 	p("POST /api/products/{id}/image", s.uploadProductImage)
 	p("POST /api/products/describe", s.describeImage)
+	p("GET /api/products/{id}/ficha", s.getFicha)
+	p("PUT /api/products/{id}/ficha", s.putFicha)
 
 	p("GET /api/orders", s.listOrders)
 	p("POST /api/orders", s.createOrder)
@@ -577,6 +579,58 @@ func (s *Server) uploadProductImage(w http.ResponseWriter, r *http.Request) {
 	saved, _ := s.st(r).GetProduct(r.Context(), id)
 	s.pub(r, "products")
 	writeJSON(w, 200, saved)
+}
+
+// getFicha: la ficha técnica del producto (null si aún no tiene).
+func (s *Server) getFicha(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		writeErr(w, 400, "id inválido")
+		return
+	}
+	f, err := s.st(r).GetFicha(r.Context(), id)
+	if errors.Is(err, store.ErrNotFound) {
+		writeErr(w, 404, "producto no encontrado")
+		return
+	} else if err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 200, map[string]any{"ficha": f})
+}
+
+// putFicha guarda la ficha editada en el panel. Lo que cambió queda con fuente «tienda»; lo demás conserva la suya.
+func (s *Server) putFicha(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		writeErr(w, 400, "id inválido")
+		return
+	}
+	var in store.Ficha
+	if err := readJSON(r, &in); err != nil {
+		writeErr(w, 400, "ficha inválida")
+		return
+	}
+	st := s.st(r)
+	prev, err := st.GetFicha(r.Context(), id)
+	if errors.Is(err, store.ErrNotFound) {
+		writeErr(w, 404, "producto no encontrado")
+		return
+	} else if err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	f, err := store.NormalizarFicha(prev, &in)
+	if err != nil {
+		writeErr(w, 400, err.Error())
+		return
+	}
+	if err := st.SetFicha(r.Context(), id, f); err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	s.pub(r, "products")
+	writeJSON(w, 200, map[string]any{"ficha": f})
 }
 
 func (s *Server) describeImage(w http.ResponseWriter, r *http.Request) {

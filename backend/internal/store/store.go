@@ -357,6 +357,7 @@ func (s *Store) migrateSQLite() error {
 		{"tenants", "orden", "INTEGER NOT NULL DEFAULT 100"},
 		{"tenants", "color", "TEXT NOT NULL DEFAULT ''"},
 		{"tenants", "logo", "TEXT NOT NULL DEFAULT ''"},
+		{"products", "ficha", "TEXT NOT NULL DEFAULT ''"},
 	} {
 		if has, err := s.sqliteHasColumn(c[0], c[1]); err != nil {
 			return err
@@ -625,6 +626,8 @@ func (s *Store) migrateMySQL() error {
 		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS orden INT NOT NULL DEFAULT 100`,
 		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS color VARCHAR(16) NOT NULL DEFAULT ''`,
 		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS logo VARCHAR(500) NOT NULL DEFAULT ''`,
+		// Ficha técnica de la prenda (JSON, store/ficha.go).
+		`ALTER TABLE products ADD COLUMN IF NOT EXISTS ficha MEDIUMTEXT NOT NULL DEFAULT ''`,
 	} {
 		if _, err := s.DB.Exec(q); err != nil {
 			return err

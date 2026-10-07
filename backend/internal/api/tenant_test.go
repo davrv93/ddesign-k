@@ -194,3 +194,71 @@ func TestEmpresasAisladasPorHTTP(t *testing.T) {
 }
 
 func itoa(n int64) string { b, _ := json.Marshal(n); return string(b) }
+
+// Ficha técnica por HTTP: se lee y se guarda en el producto de la empresa; lo editado queda con fuente «tienda» y la
+// ficha de una empresa no se toca con el token de otra.
+func TestFichaPorHTTP(t *testing.T) {
+	h, st, _ := servidorMulti(t)
+	ctx := context.Background()
+	sfx := strings.ReplaceAll(time.Now().Format("150405.000000"), ".", "")
+	ids := map[string]int64{}
+	toks := map[string]string{}
+	for _, slug := range []string{"fx" + sfx, "fy" + sfx} {
+		tn := &store.Tenant{Slug: slug, Name: slug}
+		if err := st.UpsertTenant(ctx, tn); err != nil {
+			t.Fatal(err)
+		}
+		ts := st.ForTenant(tn.ID)
+		_ = ts.UpsertUser(ctx, "admin", "clave-"+slug, "", "")
+		p := &store.Product{Code: "V35", Name: "Irla", Active: true, Variants: []store.Variant{{Size: "M", Stock: 1}}}
+		if err := ts.SaveProduct(ctx, p); err != nil {
+			t.Fatal(err)
+		}
+		if err := ts.SetFicha(ctx, p.ID, &store.Ficha{Codigo: "V35", Atributos: map[string]*store.Dato{
+			"tela": {Valor: "roma", Fuente: "diners"}, "largo": {Valor: "a la rodilla", Fuente: "ambas"}}}); err != nil {
+			t.Fatal(err)
+		}
+		ids[slug] = p.ID
+		toks[slug] = login(t, h, slug, "clave-"+slug)
+	}
+	x, y := "fx"+sfx, "fy"+sfx
+	id := itoa(ids[x])
+
+	w := llamar(h, "GET", "/"+x+"/api/products/"+id+"/ficha", toks[x], "")
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `"roma"`) {
+		t.Fatalf("GET ficha: %d %s", w.Code, w.Body)
+	}
+	w = llamar(h, "PUT", "/"+x+"/api/products/"+id+"/ficha", toks[x],
+		`{"atributos":{"tela":{"valor":"crepé","fuente":"diners"},"largo":{"valor":"a la rodilla","fuente":"foto"},"forro":{"valor":"sí, forrado"}},"cuidados":"lavar a mano","pendiente_tienda":["medidas por talla"]}`)
+	if w.Code != 200 {
+		t.Fatalf("PUT ficha: %d %s", w.Code, w.Body)
+	}
+	f, _ := st.ForTenant(mustTenant(t, st, x)).GetFicha(ctx, ids[x])
+	if f.Atributos["tela"].Fuente != store.FuenteManual || f.Atributos["forro"].Fuente != store.FuenteManual ||
+		f.Atributos["largo"].Fuente != "ambas" || f.Cuidados == nil {
+		t.Fatalf("fuentes tras editar: tela %+v forro %+v largo %+v", f.Atributos["tela"], f.Atributos["forro"], f.Atributos["largo"])
+	}
+	// La lista de productos trae la ficha (el panel la muestra).
+	if w := llamar(h, "GET", "/"+x+"/api/products", toks[x], ""); !strings.Contains(w.Body.String(), `"crepé"`) {
+		t.Fatalf("lista sin ficha: %s", w.Body)
+	}
+	// Otra empresa: ni con su token en la ruta ajena, ni con el id ajeno en su ruta.
+	if w := llamar(h, "PUT", "/"+x+"/api/products/"+id+"/ficha", toks[y], `{"atributos":{}}`); w.Code != 401 {
+		t.Fatalf("token de otra empresa: %d", w.Code)
+	}
+	if w := llamar(h, "PUT", "/"+y+"/api/products/"+id+"/ficha", toks[y], `{"atributos":{}}`); w.Code != 404 {
+		t.Fatalf("id de otra empresa: %d", w.Code)
+	}
+	if w := llamar(h, "PUT", "/"+x+"/api/products/"+id+"/ficha", toks[x], `{"atributos":{"precio":{"valor":"9"}}}`); w.Code != 400 {
+		t.Fatalf("atributo desconocido: %d", w.Code)
+	}
+}
+
+func mustTenant(t *testing.T, st *store.Store, slug string) int64 {
+	t.Helper()
+	tn, err := st.TenantBySlug(context.Background(), slug)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return tn.ID
+}

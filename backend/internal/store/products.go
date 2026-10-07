@@ -38,6 +38,8 @@ type Product struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	Variants    []Variant `json:"variants"`
+	// Ficha técnica (store/ficha.go). Solo se cambia con SetFicha: guardar el producto no la toca.
+	Ficha *Ficha `json:"ficha"`
 }
 
 // TotalStock suma el stock físico de todas las tallas.
@@ -69,16 +71,18 @@ func (p *Product) VariantBySize(size string) *Variant {
 	return nil
 }
 
-const productCols = `id, code, name, description, category, color, price, image, ai_tags, active, created_at, updated_at`
+const productCols = `id, code, name, description, category, color, price, image, ai_tags, active, created_at, updated_at, ficha`
 
 func scanProduct(sc interface{ Scan(...any) error }) (*Product, error) {
 	p := &Product{}
 	var active int
+	var ficha string
 	if err := sc.Scan(&p.ID, &p.Code, &p.Name, &p.Description, &p.Category, &p.Color, &p.Price,
-		&p.Image, &p.AITags, &active, &p.CreatedAt, &p.UpdatedAt); err != nil {
+		&p.Image, &p.AITags, &active, &p.CreatedAt, &p.UpdatedAt, &ficha); err != nil {
 		return nil, err
 	}
 	p.Active = active == 1
+	p.Ficha = parseFicha(ficha)
 	return p, nil
 }
 

@@ -8,6 +8,9 @@
 //	    Posición de la empresa en la portada /jmdventas/ (menor primero). El alta solo la fija al crearla (--orden).
 //	jmd marca --empresa baruka [--color #rrggbb] [--logo https://…]
 //	    Color del monograma (vacío = derivado del slug) y logo de la tarjeta (vacío = monograma).
+//	jmd fichas --empresa baruka --archivo fichas_producto.json
+//	    Carga las fichas técnicas (el JSON del agente, rama feat/agente-v2) en los productos de la empresa, por código.
+//	    Repetible: reemplaza la ficha de cada código del archivo; los demás productos no se tocan.
 //	jmd empresas
 //	    Lista las empresas con sus conteos por tabla.
 //	jmd migrar-sqlite --origen /ruta/crm.db --empresa baruka
@@ -21,6 +24,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -46,6 +50,8 @@ func main() {
 		err = orden(ctx, os.Args[2:])
 	case "marca":
 		err = marca(ctx, os.Args[2:])
+	case "fichas":
+		err = fichas(ctx, os.Args[2:])
 	case "migrar-sqlite":
 		err = migrar(ctx, os.Args[2:])
 	default:
@@ -61,6 +67,7 @@ func uso() {
 	fmt.Fprintln(os.Stderr, "uso: jmd alta --slug S --nombre N [--moneda S/] [--whatsapp 51…] [--usuario admin]  (clave en JMD_CLAVE)")
 	fmt.Fprintln(os.Stderr, "     jmd orden --empresa SLUG --orden N")
 	fmt.Fprintln(os.Stderr, "     jmd marca --empresa SLUG [--color #rrggbb] [--logo URL]")
+	fmt.Fprintln(os.Stderr, "     jmd fichas --empresa SLUG --archivo fichas_producto.json")
 	fmt.Fprintln(os.Stderr, "     jmd empresas")
 	fmt.Fprintln(os.Stderr, "     jmd migrar-sqlite --origen crm.db --empresa SLUG")
 	os.Exit(2)
@@ -150,6 +157,60 @@ func marca(ctx context.Context, args []string) error {
 		return fmt.Errorf("%s: %w", *slug, err)
 	}
 	fmt.Printf("%s → color %q, logo %q\n", *slug, *color, *logo)
+	return nil
+}
+
+func fichas(ctx context.Context, args []string) error {
+	fs := flag.NewFlagSet("fichas", flag.ExitOnError)
+	slug := fs.String("empresa", "", "slug")
+	archivo := fs.String("archivo", "", "fichas_producto.json")
+	_ = fs.Parse(args)
+	if *slug == "" || *archivo == "" {
+		uso()
+	}
+	raw, err := os.ReadFile(*archivo)
+	if err != nil {
+		return err
+	}
+	var lista []store.Ficha
+	if err := json.Unmarshal(raw, &lista); err != nil {
+		return fmt.Errorf("%s: %w", *archivo, err)
+	}
+	st, err := abrir()
+	if err != nil {
+		return err
+	}
+	defer st.DB.Close()
+	t, err := st.TenantBySlug(ctx, *slug)
+	if err != nil {
+		return fmt.Errorf("empresa %q: %w", *slug, err)
+	}
+	ts := st.ForTenant(t.ID)
+	cargadas, faltan := 0, []string{}
+	for i := range lista {
+		f := &lista[i]
+		if f.Codigo == "" {
+			continue
+		}
+		if f.Atributos == nil {
+			f.Atributos = map[string]*store.Dato{}
+		}
+		err := ts.SetFichaPorCodigo(ctx, f.Codigo, f)
+		if errors.Is(err, store.ErrNotFound) {
+			faltan = append(faltan, f.Codigo)
+			continue
+		} else if err != nil {
+			return fmt.Errorf("%s: %w", f.Codigo, err)
+		}
+		n, total := f.Datos()
+		fmt.Printf("%s  %2d/%d datos  %d pendientes  %d contradicciones\n", f.Codigo, n, total, len(f.PendienteTienda), len(f.Discrepancias))
+		cargadas++
+	}
+	fmt.Printf("fichas cargadas en «%s»: %d de %d", t.Slug, cargadas, len(lista))
+	if len(faltan) > 0 {
+		fmt.Printf(" · sin producto con ese código: %s", strings.Join(faltan, ", "))
+	}
+	fmt.Println()
 	return nil
 }
 
