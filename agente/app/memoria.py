@@ -675,6 +675,11 @@ RE_CITA = re.compile(
     r"|\b(agend\w+|program\w+)\b[^.?!]{0,30}\b(hoy|manana|pasado manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b"
     r"|\b(hoy|manana|pasado manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b[^.?!]{0,30}\b(te parece|te queda|te acomoda|le parece)\b"
     r"|\b(te parece|te queda|te acomoda|le parece|quedamos|nos vemos)\b[^.?!]{0,30}\b(hoy|manana|pasado manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b"
+    # «¿lo puedo probar antes?», «¿a qué hora puedo pasar?», «¿voy un día a probármelo?», «¿puedo pasarlo a probar?»: visitar es pedir cita
+    r"|\b(puedo|podria|podre)\s+(probar\w*|ver\w*)\b[^.?!]{0,25}\b(antes|en persona|en tienda|ahi|alla)\b"
+    r"|\ba que hora (puedo|podria|podre|debo|tengo que)\s+(pasar|ir|llegar|venir)\b"
+    r"|\b(voy|ire|iria|pasare|pasaria)\s+(un dia\s+)?a\s+prob\w+"
+    r"|\b(puedo|podria|podre)\s+(pasarl[oa]s?|irl[oa]s?)\s+a\s+prob\w+"
     r"|\b(puedo|podria|podre|podrias|quisiera|quiero|voy a|ire|iria|paso|pasaria|pasare|me acerco|me acercaria)\s+(ir|pasar|pasarme|pasarte|venir|visitar|acercarme|llegar)\b"
     r"[^.?!]{0,30}\b(hoy|manana|pasado manana|lunes|martes|miercoles|jueves|viernes|sabado|domingo|a las \d|\d{1,2}\s?(am|pm|a\. ?m|p\. ?m)|\d{1,2}:\d{2})")
 # Cuenta una necesidad sin nombrar prenda: «tengo un evento», «busco algo para una boda».

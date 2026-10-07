@@ -105,13 +105,28 @@ RE_MAS_OPCIONES = re.compile(r"\b(otr[oa]s? (modelos?|opci|vestid|colou?r|prenda
                              r"|^\W*(y\s+)?otr[oa]s?\W*$|(tienes|tienen|hay|ten[eé]s|muestr\w*|pas\w*|ens[eé][nñ]\w*) (algun(os|as)? )?otr[oa]s?\b"
                              r"|m[aá]s (modelos|opciones|colores)|qu[eé] m[aá]s|alternativa|parecid|"
                              r"diferente|distint|mu[eé]str|ens[eé][nñ]|ver (los|m[aá]s|otr))\w*", re.I)
-RE_CATALOGO = re.compile(r"\bcat[aá]logo|\b(ver|mu[eé]str[ae]me|ens[eé][nñ][ae]me)\s+(los|tus|sus|todos los)\s+modelos\b", re.I)
+RE_CATALOGO = re.compile(r"\bcat[aá]logo|\b(ver|mu[eé]str[ae]me|ens[eé][nñ][ae]me)\s+(los|tus|sus|todos los)\s+modelos\b"
+                         # «¿qué hay de nuevo?», «solo dime qué hay»: quiere ver qué tienen, no «otras opciones» (06-10: contestado con «escribe *4*»)
+                         r"|\bqu[eé] hay de nuevo\b|\bnovedades\b|\blo nuevo\b|\bqu[eé] (hay|tienen|tienes) (nuevo|ahora|disponible)\b"
+                         r"|\bsolo dime (nom[aá]s )?qu[eé] (hay|tienen|tienes)\b", re.I)
 RE_OTRAS = re.compile(r"\b(otr[oa]s?|m[aá]s|parecid|alternativ|diferente|distint)", re.I)
 RE_MAS_BARATO = re.compile(r"\bmas (barat|economic|comod|bajo)\w*|\bmenos precio\b|\balgo (barat|economic)\w*|\bde menor precio\b")
-RE_NO_OTRO = re.compile(r"\bno (quiero|busco|necesito|me interesa|deseo|quisiera)\b[^.?!]{0,20}\botr[oa]s?\b|\bsolo (quiero|me interesa|busco)\b[^.?!]{0,12}\b(el|la|ese|esa|este|esta)\b")
+RE_NO_OTRO = re.compile(r"\bno (quiero|busco|necesito|me interesa|deseo|quisiera)\b[^.?!]{0,20}\botr[oa]s?\b|\bno (x|por|para)\s+otr[oa]s?\b|\bsolo (quiero|me interesa|busco)\b[^.?!]{0,12}\b(el|la|ese|esa|este|esta)\b")
 RE_COMPARA_TIENDA = re.compile(r"\b(gamarra|mesa redonda|otra tienda|otras tiendas|en otro lado|en otros lados|por internet|shein|saga|ripley)\b")
 RE_PIDE_EXPLICITO = re.compile(r"\b(muestr|ensen|pasame|mandame|enviame|otras? opcion|otros? modelo|ver (otr|mas))\w*")
 RE_BUSCA_CAMBIO = re.compile(r"\b(busco|quiero|necesito|prefiero|mejor|no me sirve|no me gusta)\b")
+# Pide rebaja o descuento: «¿me lo dejas en 250?», «¿hay descuento si llevo dos?». El descuento NO lo da el bot: lo confirma una asesora.
+# («promoción» y «oferta» NO: «la gala de mi promoción» es la clienta, no el precio.)
+RE_REBAJA = re.compile(r"\b(descuent\w*|rebaj\w*|precio especial)\b"
+                       r"|\b(me lo|lo|me la|la) (dejas|dejan|das|dan|rebajas|bajas)\b|\b(dejas|dejan|das|dan)\b[^.?!]{0,12}\ben \d{2,4}\b"
+                       r"|\b(baja|bajas|bajar|bajen)\w* (el )?precio\b")
+# Alaba la prenda: «me encantó el Pandora», «qué lindo». No pide nada: se agradece y se sigue.
+RE_ELOGIO = re.compile(r"\bme (encant|gust|fascin|enamor)\w*|\b(que|qué) (lindo|linda|bonito|bonita|hermoso|hermosa|precioso|preciosa)\b"
+                       r"|\best[aá] (lindo|linda|bonito|bonita|hermoso|hermosa)\b|\bse ve (lindo|linda|bonito|bonita|hermoso|hermosa|precioso|preciosa)\b", re.I)
+# Avisa que va a pagar: «ahorita te paso el comprobante», «voy a yapear». Con el pedido confirmado se le espera, no se le deja sin respuesta.
+RE_AVISA_PAGO = re.compile(r"\b(ahorita|ya|en un rato|en un momento) te (paso|mando|envio)\b[^.?!]{0,25}\b(comprobante|captura|voucher|foto)\b"
+                           r"|\bvoy a (yapear|pagar|depositar|transferir|hacer (el|mi) (pago|yape|deposito|transferencia))\b"
+                           r"|\bya (voy a )?(yapeo|deposito|transfiero)\b|\bdame un (toque|momento|momentito|ratito|segundito)\b[^.?!]{0,25}\b(yape|pag|deposit|transfer)")
 
 
 # ---------------------------------------------------------------------------
@@ -135,6 +150,10 @@ class SolicitudCliente:
     regatea_comparando: bool = False   # «en Gamarra encuentro parecidos» sin pedir ver nada
     busca_cambio: bool = False  # «busco / quiero / prefiero…»: puede estar cambiando de prenda
     no_mostrar: bool = False    # «no me muestres nada todavía»
+    # Dinero y trato
+    pide_rebaja: bool = False   # «¿me lo dejas en 250?», «¿hay descuento?»
+    elogia: bool = False        # «me encantó el Pandora» (no pregunta nada)
+    avisa_pago: bool = False    # «ahorita te paso el comprobante»
 
     def a_dict(self) -> dict:
         d = asdict(self)
@@ -159,4 +178,7 @@ def interpretar(mensaje: str) -> SolicitudCliente:
         regatea_comparando=bool(RE_COMPARA_TIENDA.search(t) and not RE_PIDE_EXPLICITO.search(t)),
         busca_cambio=bool(RE_BUSCA_CAMBIO.search(t)),
         no_mostrar=bool(memoria.no_mostrar(mensaje or "")),
+        pide_rebaja=bool(RE_REBAJA.search(t)),
+        elogia=bool(RE_ELOGIO.search(mensaje or "")),
+        avisa_pago=bool(RE_AVISA_PAGO.search(t)),
     )

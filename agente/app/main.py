@@ -1410,7 +1410,7 @@ def _y(xs: list[str]) -> str:
 RE_PIDE_ESTADO = re.compile(r"\b(pedido|orden|compra|env[ií]o|paquete|lleg[oóa]|estado|seguimiento|tracking|rastre)\w*", re.I)
 RE_PIDE_PAGO = re.compile(r"\b(datos|pasos|formas?|medios?|m[eé]todos?) (de|del|para el) pago|\bc[oó]mo (te |le |les )?(pago|deposito|yapeo|transfiero)|"
                           r"\ba qu[eé] (n[uú]mero|cuenta)|\bd[oó]nde (te |les )?(deposito|pago|yapeo)|\b(tu|su|el|pasa\w*) (yape|plin|n[uú]mero de cuenta)|"
-                          r"\bcuenta (bcp|interbank|bbva)|\bn[uú]mero de yape", re.I)
+                          r"\bcuenta (bcp|interbank|bbva)|\bn[uú]mero de yape|\b(dame|pasame|mandame|enviame|pasa|manda|dime)\s+(los|tus|sus|el)\s+(datos|n[uú]mero|yape)\b", re.I)
 RE_PROMETE_PAGO = re.compile(r"[^.!?\n]*\bte (paso|env[ií]o|mando|comparto|dejo)\b[^.!?\n]*\bdatos\b[^.!?\n]*\bpago\b[^.!?\n]*[.!]?", re.I)
 # «¿cómo es?» pide verla; «¿cómo es el corte?» o «¿cómo es la tela?» pregunta un detalle (no se reenvía la foto).
 RE_QUIERE_FOTO = re.compile(r"\bfotos?\b|\bim[aá]gen(es)?\b|\bquiero verl[oa]\b|\bmu[eé]stra(me)?l[oa]\b|"
@@ -1705,7 +1705,7 @@ def conversar(req: ChatIn) -> dict:
         respuesta = venta.texto_pago() + "\n\nCuando hagas el pago, mándame la foto del comprobante por aquí y programo tu envío 🙌"
         modelo, forzar = "flujo_pago", "voucher"
         mem["preguntado"] += ["pago_enviado", "pago"]
-    elif etapa == "venta_confirmada" and pend == "voucher" and memoria.afirma(req.mensaje):
+    elif etapa == "venta_confirmada" and pend == "voucher" and (memoria.afirma(req.mensaje) or interpretar(req.mensaje).avisa_pago):
         respuesta, modelo, forzar = "¡Perfecto! 🙌 Aquí espero tu comprobante para programar el envío.", "flujo_pago", "voucher"
     elif foco and etapa == "venta_confirmada" and dec["transicion"]:
         # Dijo «sí» a «¿Confirmamos tu pedido?». En WhatsApp ese SI lo recibe el bot Go (estado de
@@ -1770,6 +1770,14 @@ def conversar(req: ChatIn) -> dict:
     # Pide una prenda o un color que no hay: se dice y se pregunta si quiere ver otra cosa. Ninguna foto en su lugar, y
     # tampoco «¿para qué ocasión es?» como si lo hubiera («¿tienen vestidos verdes?» → «para mostrarte los vestidos…»).
     no_hay = "" if (respuesta or foto_pedida or nombrados(req.mensaje) or esperando_cual or describiendo) else lo_que_no_hay(req, mem, foco)
+    no_hay_viene = ""     # de qué color SÍ viene la prenda nombrada («viene en negro»)
+    if (not no_hay and not respuesta and not foto_pedida and (col_n := color_que_pide(req.mensaje)) and (noms_c := nombrados(req.mensaje))
+            and not re.search(r"\bcomo (el|la|ese|esa|este|esta)\b|parecid|similar", plano_m)):   # «un vestido COMO el Irla pero en vino» pide otro, no el Irla
+        fichas_c = [E.fichas[E.por_codigo[c]] for c in noms_c if c in E.por_codigo]
+        if fichas_c and not any(_de_color(f, _raiz_color(col_n)) for f in fichas_c):
+            # Nombró una prenda y pidió un color que esa prenda no tiene (06-10: «¿el Irla lo tienen en rojo?» → «¡Sí, tenemos el Irla!»).
+            no_hay = f"{_art(fichas_c[0])} {fichas_c[0].nombre} en {_color_txt(col_n)}"
+            no_hay_viene = fichas_c[0].color or ""
     categorias = []
     opcion = MENU_WEB.get(req.mensaje.strip()) if (req.canal == "web" and not respuesta) else None
     if opcion and opcion != "catalogo":
@@ -1993,7 +2001,7 @@ def conversar(req: ChatIn) -> dict:
             habla_envio = bool(re.search(r"\b(envi\w+|delivery|mandan|despach\w+|demora\w*|tarda\w*|llega\w*)\b", plano_m))
             cuerpo = []
             if no_hay:
-                cuerpo.append(f"Por ahora no tengo {no_hay} 😔")
+                cuerpo.append(f"Por ahora no tengo {no_hay} 😔" + (f" Viene en color {no_hay_viene}." if no_hay_viene else ""))
             elif es_bot:
                 cuerpo.append(f"Soy la asistente virtual de {req.negocio or NEGOCIO} 😊 Si prefieres que te atienda una asesora, escribe *4*.")
             elif (cl["intencion"] == "pregunta_general" and cl["confianza"] >= UMBRAL_ACCION and not lectura.get("respondio")
@@ -2047,14 +2055,19 @@ def conversar(req: ChatIn) -> dict:
                             f"{_art(foco).capitalize()} {ref} está agotado por ahora 😔")
                 elif (intent == "consulta_color" or pregunta_variante(req)) and foco.color:
                     dato = f"{_art(foco).capitalize()} {ref} viene en color {foco.color}."
-                elif intent == "interesado" and not cuerpo and not q:
+                elif (intent == "interesado" or (interpretar(req.mensaje).elogia and "?" not in req.mensaje)) and not cuerpo and not q:
                     dato = f"¡Qué bueno que te guste {_art(foco)} {ref}! 😊"
+                elif (intent == "consulta_producto" and "?" not in req.mensaje and not cuerpo and not q and not sugeridas
+                      and nombrados(req.mensaje) and foco.precio is not None
+                      and not re.search(r"\b(si|como|cual|cuales|cuanto|cuanta|que|donde|cuando|porque|pregunt\w*|saber|dime|decir|apretad\w*|suelt\w*|largo|corto)\b", plano_m)):
+                    dato = f"{_art(foco).capitalize()} {ref} está a *{MONEDA} {foco.precio:.2f}* 😊"     # lo nombró y no preguntó nada: el precio abre la charla
                 elif intent == "consulta_producto" and "?" in req.mensaje and foco.detalle and not sugeridas:
                     dato = f"Te cuento de{'l' if _art(foco) == 'el' else ' la'} {ref}: " + (estructurado._frases(foco.detalle) or [foco.detalle])[0][:220]
             sr, envios = venta.SHOWROOM, (venta.VENTA.get("envio") or {})
             pregunta_m = "?" in req.mensaje       # la intención sola no basta para contestar datos de la tienda
             if not dato and not no_hay and not es_bot:
-                if re.search(r"\b(descuent\w*|rebaj\w*|promo(cion(es)?)?|ofertas?|precio especial)\b", plano_m) and not datos_l.get("ocasion"):
+                if (re.search(r"\b(descuent\w*|rebaj\w*|promo(cion(es)?)?|ofertas?|precio especial)\b", plano_m) and not datos_l.get("ocasion")) \
+                        or interpretar(req.mensaje).pide_rebaja:
                     dato = AVISO_DESCUENTO
                 elif (habla_envio or (intent == "consulta_delivery" and pregunta_m)) and envios:
                     zona = datos_l.get("envio") or mem["sabemos"].get("envio")
@@ -2071,7 +2084,7 @@ def conversar(req: ChatIn) -> dict:
                             f"{sr.get('horario', '')}.")
                 elif intent == "consulta_pago" and pregunta_m and etapa != "venta_confirmada":
                     dato = "El pago se hace antes del envío y me compartes el comprobante por aquí. Los datos te los paso cuando confirmemos tu pedido 😊"
-                elif (intent in ("objecion", "objecion_precio") and dec["nivel"] == "alta" and not cuerpo
+                elif (intent in ("objecion", "objecion_precio") and dec["nivel"] == "alta" and not cuerpo and not interpretar(req.mensaje).pide_rebaja
                       and not any(datos_l.get(k) for k in ("ocasion", "fecha", "horario", "prenda", "nombre", "presupuesto"))
                       and not re.search(r"\bpresupuesto\b|\bmaximo\b|\bhasta \d{2,4}\b|\b\d{3} soles\b", plano_m)):
                     dato, q = "Te entiendo, sin apuro 😊 Cuando lo decidas, aquí estoy.", ""     # no se empuja a quien duda
@@ -2093,8 +2106,11 @@ def conversar(req: ChatIn) -> dict:
             partes_r = [" ".join(x for x in [cab] + cuerpo[:1] if x)] + cuerpo[1:] + [q]
             partes_r = [x for x in partes_r if x]
             if not partes_r:
+                sustancial = (len(plano_m.split()) >= 4 and not no_hay and not es_bot
+                              and (dec["intent"] == "consulta_producto" or memoria.RE_NECESIDAD.search(plano_m) or memoria.RE_BUSCA_ROPA.search(plano_m)))
                 partes_r = ["¡Claro! 😊" if ofrecer else
                             "Ese dato te lo confirma una asesora: escribe *4* 😊" if (pregunta_m and re.search(r"\w", req.mensaje))
+                            else ("¡Claro! 😊\n\n" + (OFERTA if req.canal == "web" else OFERTA + " Responde *SI*")) if sustancial
                             else "¡Dale! 😊 Aquí estoy para lo que necesites."]
             return "\n\n".join(partes_r)
 
@@ -2219,8 +2235,8 @@ def conversar(req: ChatIn) -> dict:
         if pide and not sugeridas:
             respuesta = respuesta or "Por ahora eso es todo lo que tenemos en esa línea 😊 ¿Te ayudo con algo más?"
         # Botones de talla cuando se habla de UNA prenda concreta y la respuesta va de tallas.
-        if foco and len(sugeridas) <= 1 and (len(nombrados(req.mensaje)) == 1 or re.search(r"talla", respuesta, re.I)):
-            tallas_boton = tallas_de(foco)
+        if foco and len(sugeridas) <= 1 and not no_hay_viene and (len(nombrados(req.mensaje)) == 1 or re.search(r"talla", respuesta, re.I)):
+            tallas_boton = tallas_de(foco)       # (no si dijo que no lo tiene en ese color: no se le pide talla de lo que no quiere)
         if pregunta_variante(req):   # quiere alternativas a ESA prenda: la pregunta va sola, sin botones de talla
             tallas_boton = []
         # Un solo llamado a la acción: si ya van los botones de talla, sobra «¿Quieres ver otras opciones?».
@@ -2235,7 +2251,8 @@ def conversar(req: ChatIn) -> dict:
     #    pedido ver varias. Si no pidió varias y el texto no nombra ninguna, como mucho una foto.
     #  - Si promete una foto y no hay ninguna que mandar, se manda la de la prenda en foco o se quita la promesa.
     #  - Si promete los datos de pago (con el pedido confirmado), van en ese mismo mensaje.
-    if accion == "responder" and respuesta and etapa != "venta_confirmada" and modelo not in ("pide_cual", "espera_cual"):
+    if accion == "responder" and respuesta and etapa != "venta_confirmada" and modelo not in ("pide_cual", "espera_cual") and not no_hay_viene:
+        # (no_hay_viene: dijo que NO tiene esa prenda en ese color; que la respuesta nombre la prenda no es motivo para mandar su foto)
         quiere_varias = bool(pide or es_catalogo or describiendo or (esperando_cual and sugeridas) or categorias)
         nombradas_r = nombradas_en_respuesta(respuesta, foco)
         if indagando and nombradas_r and modelo not in ("respaldo_codigo", "indaga_antes_de_ver", "flujo_cita", "flujo_cierre"):

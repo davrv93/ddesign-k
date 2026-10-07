@@ -60,6 +60,20 @@ caso("«muéstrame tu catálogo» es catálogo, no «otras»", interpretar("mué
 caso("«no me muestres nada todavía»", interpretar("no me muestres nada todavía").no_mostrar, True)
 caso("«busco un vestido» puede ser cambio de prenda", interpretar("busco un vestido").busca_cambio, True)
 
+# Dinero y trato
+for msg, reb in [("la gala de mi promoción es en octubre", False), ("hay alguna oferta?", False), ("el holly, me lo dejas en 250 o no?", True), ("si llevo dos, me haces descuento?", True), ("¿me puedes bajar el precio?", True),
+                 ("cuánto cuesta el holly?", False), ("me dejas pasar mañana?", False)]:
+    caso(f"rebaja «{msg}»", interpretar(msg).pide_rebaja, reb)
+for msg, elo in [("¡Ay qué lindo! Me encantó el vestido Pandora 😍", True), ("Gracias por la foto, está bonito.", True), ("¿es bonito el material?", False)]:
+    caso(f"elogio «{msg}»", interpretar(msg).elogia, elo)
+for msg, av in [("ya listo, ahorita te paso el comprobante, voy a yapear", True), ("dame un toque que voy a yapear", True), ("¿cómo pago?", False)]:
+    caso(f"avisa pago «{msg}»", interpretar(msg).avisa_pago, av)
+for msg, cat in [("¿qué hay de nuevo?", True), ("solo dime nomás qué hay, ¿ya?", True), ("muéstrame tu catálogo", True), ("¿qué hay en la talla M?", False)]:
+    caso(f"catálogo «{msg}»", interpretar(msg).catalogo, cat)
+for msg, cita in [("¿y lo puedo probar antes? ¿a qué hora puedo pasar?", True), ("¿te lo separo o voy un día a probármelo mejor?", True),
+                  ("¿puedo pasarlo a probar este finde?", True), ("¿me lo separas para el sábado?", False)]:
+    caso(f"cita «{msg}»", interpretar(msg).pide_cita, cita)
+
 # Contrato
 s = interpretar("algun vestido rojo ?")
 caso("a_dict solo trae lo que pide", sorted(s.a_dict()), ["color", "color_raiz", "pide_color"])
