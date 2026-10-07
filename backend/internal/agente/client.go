@@ -103,7 +103,8 @@ type V2Info struct {
 }
 
 type Comercial struct {
-	Intent string `json:"intent"`
+	Intent    string  `json:"intent"`
+	Confianza float64 `json:"confianza"`
 }
 
 type Sugerencia struct {

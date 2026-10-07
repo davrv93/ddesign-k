@@ -51,8 +51,12 @@ const (
 // y YaIntervinoHumano son obligatorios; el resto puede quedar en su valor neutro.
 type Entrada struct {
 	Etapa     string  // prospeccion | seguimiento | cierre | venta_confirmada
-	Intent    string  // intención del clasificador comercial
-	Confianza float64 // 0..1
+	Intent    string  // intención del clasificador comercial (objecion_precio, intencion_compra, consulta_pago…)
+	Confianza float64 // 0..1, la del clasificador comercial
+	// IntentTienda: la intención del clasificador de la tienda (saludo, asesora, censura…), con su confianza.
+	// Solo sirve de respaldo para lo que el comercial no nombra: pedir una persona y la grosería.
+	IntentTienda    string
+	ConfianzaTienda float64
 	// Accion propuesta por el agente: responder | catalogo | foto | pedido_estado |
 	// asesora | codigo | pedido.
 	Accion string
@@ -82,13 +86,13 @@ const umbralConfianza = 0.60
 
 // intentsRiesgoAlto: la ejecución involucra dinero, stock, una promesa o una queja.
 var intentsRiesgoAlto = map[string]bool{
-	"intencion_compra":     true,
-	"confirmacion_compra":  true,
-	"cancelacion":          true,
-	"consulta_pago":        true,
-	"objecion_precio":      true,
-	"objecion":             true,
-	"censura":              true,
+	"intencion_compra":    true,
+	"confirmacion_compra": true,
+	"cancelacion":         true,
+	"consulta_pago":       true,
+	"objecion_precio":     true,
+	"objecion":            true,
+	"censura":             true,
 }
 
 // intentsRiesgoMedio: hablan de stock o de una promesa concreta, sin cerrar la venta.
@@ -125,16 +129,15 @@ func RiesgoDe(accion, intent string) Riesgo {
 func Decidir(e Entrada) Salida {
 	riesgo := RiesgoDe(e.Accion, e.Intent)
 
-	// 1. Derivar a humano: la clienta lo pide, hay una queja, o una negociación
-	//    (precio) que el bot no debe cerrar solo.
-	if e.Accion == "asesora" {
+	// 1. Derivar a humano: la clienta pide una persona o hay una queja.
+	//    El regateo NO se deriva: la política de la tienda (07-10-2026) es que no hay descuentos para nadie,
+	//    y el agente ya lo contesta. Pedir rebaja no es pedir a una persona.
+	tiendaSegura := e.ConfianzaTienda >= umbralConfianza
+	if e.Accion == "asesora" || (e.IntentTienda == "asesora" && tiendaSegura) {
 		return Salida{Derivar, riesgo, "la clienta pidió una asesora"}
 	}
-	switch e.Intent {
-	case "censura":
+	if e.Intent == "censura" || (e.IntentTienda == "censura" && tiendaSegura) {
 		return Salida{Derivar, riesgo, "queja o mensaje agresivo: lo atiende una persona"}
-	case "objecion_precio":
-		return Salida{Derivar, riesgo, "negociación de precio: no se descuenta sin criterio"}
 	}
 
 	// 2. Sentimiento muy negativo: aunque no sea queja, cambia de manos.

@@ -47,22 +47,31 @@ func juicioLog(convID int64, etapa, intent string, confianza, sentimiento, urgen
 // juzgar calcula la decisión de la Capa de Juicio para la propuesta del agente y la registra.
 func (b *Bot) juzgar(ctx context.Context, conv *store.Conversation, cc *convContext, r *agente.Reply) juicio.Salida {
 	etapa := firstNonEmpty(r.Etapa, cc.Etapa)
+	// Las reglas del Juicio hablan el vocabulario del clasificador COMERCIAL (objecion_precio, intencion_compra,
+	// consulta_pago…). Hasta el 07-10-2026 recibían la intención de la tienda (saludo, catalogo…), que no lo usa:
+	// el riesgo salía siempre «bajo» y la decisión siempre «enviar» (80 de 80). La de la tienda va de respaldo.
+	intent, confianza := r.Intencion, r.Confianza
+	if r.Comercial != nil && r.Comercial.Intent != "" {
+		intent, confianza = r.Comercial.Intent, r.Comercial.Confianza
+	}
 	e := juicio.Entrada{
-		Etapa:       etapa,
-		Intent:      r.Intencion,
-		Confianza:   r.Confianza,
-		Accion:      r.Accion,
-		Sentimiento: r.Sentimiento, // F2: ánimo y urgencia por reglas (agente/app/animo.py)
-		Urgencia:    r.Urgencia,
+		Etapa:           etapa,
+		Intent:          intent,
+		Confianza:       confianza,
+		IntentTienda:    r.Intencion,
+		ConfianzaTienda: r.Confianza,
+		Accion:          r.Accion,
+		Sentimiento:     r.Sentimiento, // F2: ánimo y urgencia por reglas (agente/app/animo.py)
+		Urgencia:        r.Urgencia,
 	}
 	e.Conversion = juicio.EstimarConversion(e) // F4: probabilidad de cierre (heurística)
 	s := juicio.Decidir(e)
 	if juicioObserva() {
-		if reg := juicioLog(conv.ID, etapa, r.Intencion, r.Confianza, r.Sentimiento, r.Urgencia, e.Conversion, r.Accion, s); reg != "" {
+		if reg := juicioLog(conv.ID, etapa, intent, confianza, r.Sentimiento, r.Urgencia, e.Conversion, r.Accion, s); reg != "" {
 			log.Printf("[JUICIO] %s", reg)
 		}
 		// Memoria de criterio: qué se decidió, con qué caso y por qué (autor «bot»).
-		_ = b.store.SaveDecision(ctx, &store.Decision{ConversationID: conv.ID, Etapa: etapa, Intent: r.Intencion,
+		_ = b.store.SaveDecision(ctx, &store.Decision{ConversationID: conv.ID, Etapa: etapa, Intent: intent,
 			Caso: r.Intencion, Decision: string(s.Accion), Razon: s.Motivo, Autor: "bot"})
 	}
 	return s

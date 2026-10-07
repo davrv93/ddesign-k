@@ -49,14 +49,21 @@ func TestRiesgoDe(t *testing.T) {
 
 func TestDecidir(t *testing.T) {
 	casos := []struct {
-		nombre  string
-		in      Entrada
-		quiero  Accion
-		riesgo  Riesgo
+		nombre string
+		in     Entrada
+		quiero Accion
+		riesgo Riesgo
 	}{
 		{"asesora pedida por la clienta", Entrada{Accion: "asesora", Confianza: 0.9}, Derivar, RiesgoAlto},
 		{"queja", Entrada{Intent: "censura", Confianza: 0.9}, Derivar, RiesgoAlto},
-		{"negociación de precio", Entrada{Intent: "objecion_precio", Confianza: 0.95}, Derivar, RiesgoAlto},
+		{"regateo no se deriva: no hay descuentos y el agente lo contesta", Entrada{Intent: "objecion_precio", Confianza: 0.95}, Enviar, RiesgoAlto},
+		{"regateo con poca confianza se revisa", Entrada{Intent: "objecion_precio", Confianza: 0.4}, Sugerir, RiesgoAlto},
+		{"asesora según el clasificador de la tienda", Entrada{Intent: "otro", Confianza: 0.9, IntentTienda: "asesora", ConfianzaTienda: 0.95}, Derivar, RiesgoBajo},
+		{"asesora dudosa del clasificador de la tienda no deriva", Entrada{Intent: "otro", Confianza: 0.9, IntentTienda: "asesora", ConfianzaTienda: 0.4}, Enviar, RiesgoBajo},
+		{"grosería según el clasificador de la tienda", Entrada{Intent: "otro", Confianza: 0.9, IntentTienda: "censura", ConfianzaTienda: 0.9}, Derivar, RiesgoBajo},
+		{"«pásamelos al toque» leído como grosería dudosa no deriva", Entrada{Intent: "consulta_pago", Confianza: 0.9, IntentTienda: "censura", ConfianzaTienda: 0.5}, Enviar, RiesgoAlto},
+		{"intención de compra con confianza", Entrada{Intent: "intencion_compra", Confianza: 0.9}, Enviar, RiesgoAlto},
+		{"intención de compra dudosa se revisa", Entrada{Intent: "intencion_compra", Confianza: 0.5}, Sugerir, RiesgoAlto},
 		{"sentimiento negativo", Entrada{Intent: "consulta_talla", Confianza: 0.9, Sentimiento: -0.7}, Derivar, RiesgoMedio},
 		{"venta confirmada no se deriva por sentimiento", Entrada{Etapa: "venta_confirmada", Intent: "consulta_talla", Confianza: 0.9, Sentimiento: -0.7}, Enviar, RiesgoMedio},
 		{"riesgo alto y poca confianza", Entrada{Accion: "pedido", Confianza: 0.4}, Sugerir, RiesgoAlto},

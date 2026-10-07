@@ -236,6 +236,11 @@ respuesta del agente pasa por `gateJuicio` (`bot/juicio.go`), que evalúa etapa,
 - **Modo** (`JUICIO_MODO`): `off` = no hace nada; `sombra` (por defecto) = registra `[JUICIO]` y guarda la
   decisión en la tabla `decisiones`, sin cambiar lo que se envía; `activo` = además deriva y calla. Va en
   sombra a propósito: se mide antes de dejarle decidir, como se hizo con Jev.
+- **Intención:** decide con la **comercial** (`comercial.intent`: `objecion_precio`, `intencion_compra`,
+  `consulta_pago`…); la de la tienda (`intencion`: `saludo`, `asesora`, `censura`…) solo cuenta como respaldo para
+  pedir una persona o la grosería, y con confianza ≥ 0,60. Hasta el 07-10-2026 recibía solo la de la tienda y decidió
+  «enviar» en 80 de 80 turnos: lo registrado antes de esa fecha no sirve para evaluarla.
+- **El regateo no se deriva:** no hay descuentos para nadie (política del 07-10-2026) y el agente ya lo contesta.
 - **Ánimo y urgencia**: por reglas, en el agente (`agente/app/animo.py`, `python3 -m app.prueba_animo`), y
   viajan en cada respuesta (`sentimiento`, `urgencia`).
 - **Conversión**: `juicio.EstimarConversion`, heurística transparente sobre etapa, reincidencia, urgencia y
