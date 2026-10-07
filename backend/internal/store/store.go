@@ -120,7 +120,7 @@ func withParams(dsn string, params map[string]string) string {
 var TenantTables = []string{
 	"products", "product_variants", "customers", "conversations", "messages", "orders", "order_items",
 	"stock_reservations", "warehouses", "warehouse_stock", "settings", "followups", "decisiones", "pares_dpo",
-	"kommo_vinculos", "users",
+	"kommo_vinculos", "notas", "tareas", "actividad", "cliente_etiquetas", "users",
 }
 
 const schemaSQLite = `
@@ -315,6 +315,46 @@ CREATE TABLE IF NOT EXISTS kommo_vinculos (
 	updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY(tenant_id, clave)
 );
+-- CRM (store/crm.go): notas internas, tareas, actividad de la clienta y etiquetas.
+CREATE TABLE IF NOT EXISTS notas (
+	id          INTEGER PRIMARY KEY AUTOINCREMENT,
+	tenant_id   INTEGER NOT NULL DEFAULT 1,
+	customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+	order_id    INTEGER REFERENCES orders(id) ON DELETE CASCADE,
+	texto       TEXT NOT NULL,
+	autor       TEXT NOT NULL DEFAULT '',
+	autor_id    INTEGER NOT NULL DEFAULT 0,
+	created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS tareas (
+	id             INTEGER PRIMARY KEY AUTOINCREMENT,
+	tenant_id      INTEGER NOT NULL DEFAULT 1,
+	customer_id    INTEGER REFERENCES customers(id) ON DELETE CASCADE,
+	order_id       INTEGER REFERENCES orders(id) ON DELETE SET NULL,
+	titulo         TEXT NOT NULL,
+	vence          DATETIME,
+	responsable_id INTEGER NOT NULL DEFAULT 0,
+	hecha          INTEGER NOT NULL DEFAULT 0,
+	hecha_at       DATETIME,
+	creada_por     TEXT NOT NULL DEFAULT '',
+	created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS actividad (
+	id          INTEGER PRIMARY KEY AUTOINCREMENT,
+	tenant_id   INTEGER NOT NULL DEFAULT 1,
+	customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+	tipo        TEXT NOT NULL,
+	texto       TEXT NOT NULL DEFAULT '',
+	autor       TEXT NOT NULL DEFAULT '',
+	ref_id      INTEGER NOT NULL DEFAULT 0,
+	created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS cliente_etiquetas (
+	tenant_id   INTEGER NOT NULL DEFAULT 1,
+	customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+	etiqueta    TEXT NOT NULL,
+	PRIMARY KEY(customer_id, etiqueta)
+);
 `
 
 // Índices: van después de añadir tenant_id a una base anterior (si no, fallarían).
@@ -331,6 +371,13 @@ CREATE INDEX IF NOT EXISTS idx_decisiones_intent ON decisiones(intent, id);
 CREATE INDEX IF NOT EXISTS idx_decisiones_conv ON decisiones(conversation_id, id);
 CREATE INDEX IF NOT EXISTS idx_pares_conv ON pares_dpo(conversation_id, id);
 CREATE INDEX IF NOT EXISTS idx_kommo_conv ON kommo_vinculos(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_notas_cliente ON notas(tenant_id, customer_id, id);
+CREATE INDEX IF NOT EXISTS idx_notas_pedido ON notas(tenant_id, order_id);
+CREATE INDEX IF NOT EXISTS idx_tareas_tenant ON tareas(tenant_id, hecha, vence);
+CREATE INDEX IF NOT EXISTS idx_tareas_cliente ON tareas(tenant_id, customer_id);
+CREATE INDEX IF NOT EXISTS idx_actividad_cliente ON actividad(tenant_id, customer_id, id);
+CREATE INDEX IF NOT EXISTS idx_etiquetas_tenant ON cliente_etiquetas(tenant_id, etiqueta);
+CREATE INDEX IF NOT EXISTS idx_customers_etapa ON customers(tenant_id, etapa);
 `
 
 // migrateSQLite crea las tablas y, en una base de una sola tienda anterior a la multiempresa, añade tenant_id
@@ -358,6 +405,13 @@ func (s *Store) migrateSQLite() error {
 		{"tenants", "color", "TEXT NOT NULL DEFAULT ''"},
 		{"tenants", "logo", "TEXT NOT NULL DEFAULT ''"},
 		{"products", "ficha", "TEXT NOT NULL DEFAULT ''"},
+		// CRM (store/crm.go): ficha de la clienta, embudo y asignación.
+		{"customers", "email", "TEXT NOT NULL DEFAULT ''"},
+		{"customers", "ciudad", "TEXT NOT NULL DEFAULT ''"},
+		{"customers", "etapa", "TEXT NOT NULL DEFAULT ''"},
+		{"customers", "etapa_fijada", "INTEGER NOT NULL DEFAULT 0"},
+		{"customers", "asesora_id", "INTEGER NOT NULL DEFAULT 0"},
+		{"orders", "asesora_id", "INTEGER NOT NULL DEFAULT 0"},
 	} {
 		if has, err := s.sqliteHasColumn(c[0], c[1]); err != nil {
 			return err
@@ -371,8 +425,10 @@ func (s *Store) migrateSQLite() error {
 		return err
 	}
 	// La tienda de siempre es la empresa 1.
-	_, err := s.DB.Exec(`INSERT OR IGNORE INTO tenants(id, slug, name) VALUES(1, 'default', 'Tienda')`)
-	return err
+	if _, err := s.DB.Exec(`INSERT OR IGNORE INTO tenants(id, slug, name) VALUES(1, 'default', 'Tienda')`); err != nil {
+		return err
+	}
+	return s.rellenarEtapas()
 }
 
 func (s *Store) sqliteHasColumn(table, col string) (bool, error) {
@@ -610,6 +666,59 @@ var schemaMySQL = []string{
 	KEY idx_kommo_conv (tenant_id, conversation_id),
 	FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
 )`,
+	// CRM (store/crm.go): notas internas, tareas, actividad de la clienta y etiquetas.
+	`CREATE TABLE IF NOT EXISTS notas (
+	id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+	tenant_id   BIGINT NOT NULL,
+	customer_id BIGINT NOT NULL,
+	order_id    BIGINT NULL,
+	texto       TEXT NOT NULL,
+	autor       VARCHAR(100) NOT NULL DEFAULT '',
+	autor_id    BIGINT NOT NULL DEFAULT 0,
+	created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	KEY idx_notas_cliente (tenant_id, customer_id, id),
+	KEY idx_notas_pedido (tenant_id, order_id),
+	FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+	FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+)`,
+	`CREATE TABLE IF NOT EXISTS tareas (
+	id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+	tenant_id      BIGINT NOT NULL,
+	customer_id    BIGINT NULL,
+	order_id       BIGINT NULL,
+	titulo         VARCHAR(300) NOT NULL,
+	vence          DATETIME NULL,
+	responsable_id BIGINT NOT NULL DEFAULT 0,
+	hecha          TINYINT NOT NULL DEFAULT 0,
+	hecha_at       DATETIME NULL,
+	creada_por     VARCHAR(100) NOT NULL DEFAULT '',
+	created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	KEY idx_tareas_tenant (tenant_id, hecha, vence),
+	KEY idx_tareas_cliente (tenant_id, customer_id),
+	FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+	FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+	FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL
+)`,
+	`CREATE TABLE IF NOT EXISTS actividad (
+	id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+	tenant_id   BIGINT NOT NULL,
+	customer_id BIGINT NOT NULL,
+	tipo        VARCHAR(20) NOT NULL,
+	texto       TEXT NOT NULL DEFAULT '',
+	autor       VARCHAR(100) NOT NULL DEFAULT '',
+	ref_id      BIGINT NOT NULL DEFAULT 0,
+	created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	KEY idx_actividad_cliente (tenant_id, customer_id, id),
+	FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+)`,
+	`CREATE TABLE IF NOT EXISTS cliente_etiquetas (
+	tenant_id   BIGINT NOT NULL,
+	customer_id BIGINT NOT NULL,
+	etiqueta    VARCHAR(40) NOT NULL,
+	PRIMARY KEY (customer_id, etiqueta),
+	KEY idx_etiquetas_tenant (tenant_id, etiqueta),
+	FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+)`,
 }
 
 func (s *Store) migrateMySQL() error {
@@ -628,12 +737,20 @@ func (s *Store) migrateMySQL() error {
 		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS logo VARCHAR(500) NOT NULL DEFAULT ''`,
 		// Ficha técnica de la prenda (JSON, store/ficha.go).
 		`ALTER TABLE products ADD COLUMN IF NOT EXISTS ficha MEDIUMTEXT NOT NULL DEFAULT ''`,
+		// CRM (store/crm.go): ficha de la clienta, embudo y asignación.
+		`ALTER TABLE customers ADD COLUMN IF NOT EXISTS email VARCHAR(200) NOT NULL DEFAULT ''`,
+		`ALTER TABLE customers ADD COLUMN IF NOT EXISTS ciudad VARCHAR(120) NOT NULL DEFAULT ''`,
+		`ALTER TABLE customers ADD COLUMN IF NOT EXISTS etapa VARCHAR(30) NOT NULL DEFAULT ''`,
+		`ALTER TABLE customers ADD COLUMN IF NOT EXISTS etapa_fijada TINYINT NOT NULL DEFAULT 0`,
+		`ALTER TABLE customers ADD COLUMN IF NOT EXISTS asesora_id BIGINT NOT NULL DEFAULT 0`,
+		`ALTER TABLE orders ADD COLUMN IF NOT EXISTS asesora_id BIGINT NOT NULL DEFAULT 0`,
+		`CREATE INDEX IF NOT EXISTS idx_customers_etapa ON customers (tenant_id, etapa)`,
 	} {
 		if _, err := s.DB.Exec(q); err != nil {
 			return err
 		}
 	}
-	return nil
+	return s.rellenarEtapas()
 }
 
 func now() time.Time { return time.Now().UTC() }

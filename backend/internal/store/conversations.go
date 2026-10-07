@@ -118,6 +118,9 @@ func (s *Store) ListConversations(ctx context.Context, limit int) ([]*Conversati
 
 func (s *Store) SetConversationState(ctx context.Context, id int64, state, contextJSON string) error {
 	_, err := s.DB.ExecContext(ctx, `UPDATE conversations SET state=?, context=? WHERE id=? AND tenant_id=?`, state, contextJSON, id, s.tid)
+	if err == nil {
+		s.etapaDelBot(ctx, id, contextJSON) // el embudo del CRM sigue la etapa del agente (store/crm.go)
+	}
 	return err
 }
 
