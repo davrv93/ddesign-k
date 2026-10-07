@@ -1636,8 +1636,14 @@ def conversar(req: ChatIn) -> dict:
             dia, hora = mem["sabemos"]["cita"].split("T")
             t_c = talla_conocida(req)
             nombre = (req.cliente or "").split()[0] if (req.cliente or "").strip() else ""
-            respuesta = venta.cita_ok(dia, hora, hoy, f"*{foco.codigo}* {foco.nombre}" if foco is not None else "", t_c, nombre)
-            forzar = "talla" if (foco is not None and not t_c) else ""
+            # La talla se pregunta a lo sumo dos veces: con la retoma de V2 la cita la pedía una tercera (07-10). La retoma no
+            # queda en `preguntado` de V1, así que se cuentan las preguntas de talla que ya salieron en el historial.
+            talla_ya = sum(1 for t in (req.historial or []) if t.rol == "bot"
+                           for p in memoria.preguntas_en(t.texto) if memoria.clave_de(p) == "talla")
+            pedir_talla = max(talla_ya, memoria.veces(mem, "talla")) < 2
+            respuesta = venta.cita_ok(dia, hora, hoy, f"*{foco.codigo}* {foco.nombre}" if foco is not None else "", t_c, nombre,
+                                      pedir_talla=pedir_talla)
+            forzar = "talla" if (foco is not None and not t_c and pedir_talla) else ""
         elif cita_l.get("error"):
             respuesta = venta.cita_invalida(cita_l["error"], cita_l.get("dia"), cita_l.get("hora"), hoy,
                                             mem["sabemos"].get("fecha_iso"), cita_l.get("alterno"))
@@ -1645,6 +1651,10 @@ def conversar(req: ChatIn) -> dict:
         else:
             respuesta = venta.cita_pide(cita_l.get("dia"), cita_l.get("hora"), hoy, primera=pend != "cita")
             forzar = "cita"
+        if (foco is not None and foco.precio is not None and f"{foco.precio:.2f}" not in respuesta
+                and re.search(r"\b(precio|cuanto (cuesta|sale|esta|vale|es)|que precio|a cuanto)\b", _sin_tildes(req.mensaje.lower()))):
+            # Preguntó el precio Y si puede ir: se contestan las dos (07-10: solo salía el showroom y el precio se perdía).
+            respuesta = f"{_art(foco).capitalize()} *{foco.codigo}* {foco.nombre} está a *{MONEDA} {foco.precio:.2f}* 😊\n\n" + respuesta
         modelo = "flujo_cita"
     elif (cita_hecha and dec["intent"] == "despedida" and "?" not in req.mensaje and not compra_explicita):
         dia, hora = mem["sabemos"]["cita"].split("T")
@@ -2032,7 +2042,8 @@ def conversar(req: ChatIn) -> dict:
                 cuerpo.append(f"¡Claro! 😊 Te paso la foto de{'l' if _art(f0) == 'el' else ' la'} *{f0.codigo}* {f0.nombre}.")
             elif cat_p and "?" in req.mensaje and foco is None:
                 cuerpo.append(f"¡Sí, tenemos {PLURAL.get(cat_p, cat_p)}! 😊")
-            elif foco is not None and nombrados(req.mensaje) and intent in ("", "otro", "interesado", "consulta_ubicacion"):
+            elif (foco is not None and nombrados(req.mensaje) and intent in ("", "otro", "interesado", "consulta_ubicacion")
+                  and not interpretar(req.mensaje).pide_rebaja):     # «¿el Holly en 250 no puede?» no se contesta con «¡Sí, tenemos!» (07-10)
                 cuerpo.append(f"¡Sí, tenemos {_art(foco)} {ref}! 😊" if "?" in req.mensaje or intent != "interesado" else "¡Buena elección! 😊")
             # Lo que preguntó de la prenda de la que se habla, con datos de su ficha y del stock de ahora.
             dato = ""
@@ -2095,7 +2106,9 @@ def conversar(req: ChatIn) -> dict:
                 elif intent == "despedida" and not cuerpo:
                     dato, q = "¡Gracias a ti! 😊 Cualquier cosa, me escribes por aquí.", ""
                 elif (cl["intencion"] == "censura" and cl["confianza"] >= UMBRAL_ACCION
-                      and not re.search(r"\bno s[eé]\b|\bno (tengo|estoy) (claro|segura)|\bno se que\b|\baun no\b|\btodavia no\b|\bsolo (estoy )?viendo\b|\bnada\b", plano_m)):
+                      and not re.search(r"\bno s[eé]\b|\bno (tengo|estoy) (claro|segura)|\bno se que\b|\baun no\b|\btodavia no\b|\bsolo (estoy )?viendo\b|\bnada\b", plano_m)
+                      # «Pásamelos al toque, ps, y te mando el comprobante» pide algo con apuro: no se le pide disculpas (07-10)
+                      and not re.search(r"\b(pas[ae]\w*|mand[ae]\w*|envi[ae]\w*|dame|damelos|dejame|al toque|rapido|comprobante|yape\w*|pago|datos|cuenta)\b", plano_m)):
                     # «mmm no sé aún qué busco» no es una grosería: no se le pide disculpas, se sigue con su necesidad
                     dato = "Disculpa si algo te incomodó 🙏 Estoy aquí para ayudarte con lo que necesites de la tienda."
             if dato:

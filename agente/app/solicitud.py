@@ -27,9 +27,33 @@ def _sin_tildes(t: str) -> str:
 # ---------------------------------------------------------------------------
 # Color
 
+# Un color que ya vio o que rechaza no es el que busca: «ya vi la foto del negro, pero yo busco uno rojo» pide ROJO
+# (07-10: se tomaba el primero, «negro», y le mandaban vestidos negros, el Irla incluido).
+_VISTO_ANTES = re.compile(r"(ya )?(vi|visto|mostraste|mandaste|enviaste|pasaste)[^.?!,;]*$")
+_NO_ANTES = re.compile(r"no\s+(quiero\s+|me gusta\s+)?(el\s+|en\s+|nada\s+)?$")
+
+
+def _color_buscado(t: str):
+    """El color que busca entre los que nombra (texto ya en plano): el primero que no vio ni rechaza, y entre esos el que
+    lleva un verbo de pedir en su misma frase («busco uno rojo»). None si no nombra ninguno o los rechaza todos."""
+    candidatos = []
+    for m in memoria.RE_COLOR.finditer(t):
+        c, antes = m.group(1), t[max(0, m.start() - 40):m.start()]
+        if re.match(r"\w*\s+no\b", t[m.end():]) or _NO_ANTES.search(antes) or _VISTO_ANTES.search(antes):
+            continue
+        candidatos.append(m)
+    if not candidatos:
+        return None
+    for m in candidatos:
+        clausula = re.split(r"[.?!,;]|\bpero\b", t[:m.start()])[-1]
+        if RE_PIDE_COLOR_VERBO.search(clausula) or RE_ANTES_DEL_COLOR.search(clausula):
+            return m
+    return candidatos[0]
+
+
 def color_pedido(texto: str) -> str:
     """La raíz del color que pide («azul», «roj», «ros»…), '' si no pide ninguno. «palo rosa» y «rosado» son «ros»."""
-    m = memoria.RE_COLOR.search(memoria._plano(texto or ""))
+    m = _color_buscado(memoria._plano(texto or ""))
     if not m:
         return ""
     c = m.group(1)
@@ -59,13 +83,8 @@ def _de_color(f, raiz: str) -> bool:
 def color_dicho(texto: str) -> str:
     """El color que pide, con su nombre («rojo»); '' si no pide ninguno o lo descarta («rojo no»)."""
     t = memoria._plano(texto or "")
-    m = memoria.RE_COLOR.search(t)
-    if not m:
-        return ""
-    c = m.group(1)
-    if re.search(rf"\b{c}\w*\s+no\b|\bno\s+(quiero\s+|me gusta\s+)?(el\s+|en\s+|nada\s+)?{c}", t):
-        return ""
-    return c
+    m = _color_buscado(t)
+    return m.group(1) if m else ""
 
 
 # Un color cuenta si lo está pidiendo («¿tienen en rojo?», «busco uno verde», «¿y en azul?»), no si lo comenta
@@ -86,7 +105,7 @@ def color_que_pide(texto: str) -> str:
     if not color:
         return ""
     t = memoria._plano(texto)
-    m = memoria.RE_COLOR.search(t)
+    m = _color_buscado(t)
     sin_verbo = bool(m and RE_ANTES_DEL_COLOR.search(t[:m.start()]))
     return color if (RE_PIDE_COLOR_VERBO.search(t) or sin_verbo) else ""
 
@@ -119,7 +138,9 @@ RE_BUSCA_CAMBIO = re.compile(r"\b(busco|quiero|necesito|prefiero|mejor|no me sir
 # («promoción» y «oferta» NO: «la gala de mi promoción» es la clienta, no el precio.)
 RE_REBAJA = re.compile(r"\b(descuent\w*|rebaj\w*|precio especial)\b"
                        r"|\b(me lo|lo|me la|la) (dejas|dejan|das|dan|rebajas|bajas)\b|\b(dejas|dejan|das|dan)\b[^.?!]{0,12}\ben \d{2,4}\b"
-                       r"|\b(baja|bajas|bajar|bajen)\w* (el )?precio\b")
+                       r"|\b(baja|bajas|bajar|bajen)\w* (el )?precio\b"
+                       # «¿entonces el Holly en 250 no puede?», «¿en 280 se podría?»: un precio con «puede/podría» (07-10: «¡Sí, tenemos el Holly!»)
+                       r"|\ben \d{2,4}\b[^.?!]{0,20}\b(puede|podr\w+|se puede|sale|queda)\b|\b(puede|podr\w+)\b[^.?!]{0,20}\ben \d{2,4}\b")
 # Alaba la prenda: «me encantó el Pandora», «qué lindo». No pide nada: se agradece y se sigue.
 RE_ELOGIO = re.compile(r"\bme (encant|gust|fascin|enamor)\w*|\b(que|qué) (lindo|linda|bonito|bonita|hermoso|hermosa|precioso|preciosa)\b"
                        r"|\best[aá] (lindo|linda|bonito|bonita|hermoso|hermosa)\b|\bse ve (lindo|linda|bonito|bonita|hermoso|hermosa|precioso|preciosa)\b", re.I)

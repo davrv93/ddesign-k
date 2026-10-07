@@ -279,8 +279,9 @@ def cita_invalida(error: str, dia: str | None, hora: str | None, hoy, evento: st
     return "Esa fecha ya pasó 😅\n\n¿Qué día te acomoda venir?"
 
 
-def cita_ok(dia: str, hora: str, hoy, prenda: str = "", talla: str = "", nombre: str = "") -> str:
-    """Confirma la cita con la dirección y la referencia, y que tendrá la prenda separada en su talla."""
+def cita_ok(dia: str, hora: str, hoy, prenda: str = "", talla: str = "", nombre: str = "", pedir_talla: bool = True) -> str:
+    """Confirma la cita con la dirección y la referencia, y que tendrá la prenda separada en su talla.
+    `pedir_talla=False`: la talla ya se preguntó dos veces; no se insiste una tercera."""
     saludo = f"¡Listo, {nombre}! 🗓️" if nombre else "¡Listo! 🗓️"
     txt = (f"{saludo} Te esperamos {dia_humano(dia, hoy)} a las *{hora_humana(hora)}* en nuestro showroom: "
            f"*{SHOWROOM.get('direccion', '')}* ({SHOWROOM.get('referencia', '')})."
@@ -288,7 +289,8 @@ def cita_ok(dia: str, hora: str, hoy, prenda: str = "", talla: str = "", nombre:
     if prenda and talla:
         txt += f"\n\nTe tendré separado el {prenda} en talla *{talla}* para que te lo pruebes 💙"
     elif prenda:
-        txt += f"\n\nTe tendré separado el {prenda} para que te lo pruebes 💙\n\n¿Qué talla usas? Así te lo tengo listo."
+        txt += (f"\n\nTe tendré separado el {prenda} para que te lo pruebes 💙"
+                + ("\n\n¿Qué talla usas? Así te lo tengo listo." if pedir_talla else ""))
     else:
         txt += "\n\nTe tendremos listos los modelos para tu evento 💙"
     return txt
