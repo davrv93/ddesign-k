@@ -1,0 +1,101 @@
+# JMD Ventas · el CRM de kddesign, multiempresa, sobre MariaDB. https://proyectopostventa.site/jmdventas/<empresa>/
+#
+# Proyecto aparte de `kddesign` (no toca sus contenedores ni sus volúmenes). Tres servicios con nombres propios
+# (jmd-*): en landing_default, la red del borde, un servicio llamado «backend» o «frontend» se cruzaría con los alias
+# de kddesign (el agente resuelve «backend» por nombre).
+#
+#   jmd-mariadb   base de todas las empresas (volumen jmdventas_mariadb_data)
+#   jmd-backend   API Go con MULTITENANT=1 (fotos por empresa en jmdventas_backend_data)
+#   jmd-frontend  panel Qwik + nginx que resuelve la empresa de la ruta (nginx.jmdventas.conf)
+#
+# Secretos en dos archivos junto a este, fuera de git: .env (backend: JWT_SECRET, WEBHOOK_SECRET, DB_PASSWORD,
+# GEMINI_API_KEY opcional) y mariadb.env (MARIADB_PASSWORD = DB_PASSWORD, MARIADB_ROOT_PASSWORD).
+# WhatsApp: apagado (EVOLUTION_URL=off). El número sigue en el backend de /baruka/ hasta que se decida el corte.
+
+name: jmdventas
+
+services:
+  jmd-mariadb:
+    image: docker.io/library/mariadb:11.4
+    container_name: jmdventas_mariadb
+    restart: unless-stopped
+    env_file: mariadb.env
+    environment:
+      MARIADB_DATABASE: jmdventas
+      MARIADB_USER: jmd
+      MARIADB_AUTO_UPGRADE: "1"
+      TZ: UTC
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --innodb-buffer-pool-size=96M
+      - --performance-schema=OFF
+      - --skip-name-resolve
+      - --max-connections=40
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 60s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    mem_limit: 384m
+    networks: [jmd]
+
+  jmd-backend:
+    build: ../../backend
+    image: jmdventas/backend:local
+    container_name: jmdventas_backend
+    restart: unless-stopped
+    depends_on:
+      - jmd-mariadb
+    env_file: .env
+    environment:
+      PORT: "8080"
+      DATA_DIR: /data
+      MULTITENANT: "1"
+      DB_DRIVER: mysql
+      DB_HOST: jmd-mariadb
+      DB_NAME: jmdventas
+      DB_USER: jmd
+      EVOLUTION_URL: "off"
+      WEBHOOK_BASE_URL: http://jmd-backend:8080
+      # El agente de kddesign (uno solo en la máquina), por su nombre en landing_default. Sin WhatsApp no se usa.
+      AGENT_URL: http://kddesign_agente:8000
+      SEED_CATALOG: "false"
+      KOMMO_ENABLED: "0"
+      PUBLIC_URL: https://proyectopostventa.site/jmdventas
+      BUSINESS_NAME: JMD Ventas
+      TZ: America/Lima
+    volumes:
+      - backend_data:/data
+    mem_limit: 128m
+    networks: [jmd, landing]
+
+  jmd-frontend:
+    build:
+      context: ../../frontend
+      args:
+        PUBLIC_URL: https://proyectopostventa.site
+        BASE_PATH: /jmdventas/XEMPRESAX/
+        MARCA: JMD Ventas
+        NGINX_CONF: nginx.jmdventas.conf
+    image: jmdventas/frontend:local
+    container_name: jmdventas_frontend
+    restart: unless-stopped
+    depends_on:
+      - jmd-backend
+    mem_limit: 64m
+    networks: [jmd, landing]
+
+volumes:
+  mariadb_data:
+  backend_data:
+
+networks:
+  jmd:
+    name: jmdventas_net
+  landing:
+    name: landing_default
+    external: true

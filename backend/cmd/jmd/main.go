@@ -166,7 +166,9 @@ func migrar(ctx context.Context, args []string) error {
 	if _, err := os.Stat(*origen); err != nil {
 		return err
 	}
-	src, err := sql.Open("sqlite", "file:"+*origen+"?mode=ro&_pragma=busy_timeout(5000)")
+	// Lectura y escritura a propósito: es una copia, y así SQLite aplica el -wal que venga con ella (con mode=ro y
+	// sin -shm escribible no abriría). Por eso nunca se apunta a la base viva.
+	src, err := sql.Open("sqlite", "file:"+*origen+"?_pragma=busy_timeout(5000)")
 	if err != nil {
 		return err
 	}
