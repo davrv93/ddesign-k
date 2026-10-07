@@ -420,6 +420,7 @@ def correr_una(conv: dict, url: str, clave: str, modelo_clienta: str, cuenta: Cu
                 "foto_caso": (j.get("foto") or {}).get("caso"),
                 # Para la prueba web de 100: la traza V2 íntegra y las tarjetas tal cual salieron (no cambian las reglas).
                 "v2": j.get("v2"), "version": j.get("version"),
+                "reglas_codigo": j.get("reglas_codigo"),   # tabla de app/respuestas.py: reglas elegidas y colisiones
                 "tarjetas": [{"codigo": s.get("codigo"), "nombre": s.get("nombre"), "pie": s.get("pie"), "tallas": s.get("tallas")} for s in sug],
                 "botones": j.get("botones"), "categorias": j.get("categorias"), "ofrecer_opciones": j.get("ofrecer_opciones"),
             })

@@ -386,3 +386,51 @@ Columnas: nombre · `archivo:línea` · comentario del código (si lo tiene) · 
 |---|---|---|---|
 | `SALUDO` | 14 | Saludo, presentación y la invitación o el «Así te digo…» que V1 pone junto a su pregunta («Cuéntame y te ayudo»). | `re.compile(r"^\W*(hola\|holi\|buen[oa]s?\|bienvenid\|soy\s+\w+\|qu[eé] gusto\|mucho gusto\|as[i` |
 | `CORTE` | 15 |  | `re.compile(r"(?<=[.!?])\s+\|\n+")` |
+
+
+---
+
+## Tabla de respuestas del código (`app/respuestas.py`, 07-10-2026)
+
+La respuesta que arma el código cuando no redacta el LLM ya no es una cadena de `if/elif` dentro de `main.py`: son
+**hechos con nombre** (`hechos()`, el mensaje se lee una vez) y una **tabla de reglas por grupo**. Se regenera con
+`python3 -m app.respuestas`; la integridad la prueba `python3 -m app.prueba_respuestas` (corre en el build).
+
+- **Políticas:** `encabezado` y `acuse` → la primera que dispara. **Datos** (de la prenda y de la tienda) → se
+  **colectan**: varias preguntas en un mensaje, varias respuestas (`MAX_DATOS` = 3). `EXCLUYE` = una regla cubre a otra;
+  `SOLO` = solo valen sin otro dato; un dato **extra** solo entra si el texto lo pide explícitamente (`EXPLICITO`), y lo que
+  la clienta niega («no me digas talla») no se le dice. `RESPUESTAS_COLECTAR=0` vuelve a «la primera gana» en todo.
+- **Cómo se decidió (medido, no a ojo):** el refactor dio la MISMA salida en los 613 mensajes de las 100 conversaciones
+  web (0 diferencias). La traza de colisiones mostró ~20 respuestas que perdían una pregunta; con «colectar» cambian 17
+  respuestas, revisadas a mano (precio + talla, tela + envío, talla + envío, precio + color, precio + descuento).
+- **La traza** viaja en cada respuesta: `reglas_codigo` = reglas elegidas y las que también disparaban (`colisiones`).
+
+| Grupo | Regla | Dispara cuando | Efecto |
+|---|---|---|---|
+| encabezado (primera) | `no_hay` | pidió algo que no tenemos (color, prenda, talla) |  |
+| encabezado (primera) | `es_bot` | pregunta si es un bot |  |
+| encabezado (primera) | `fuera_de_giro` | pregunta general ajena a la tienda | responde solo esto |
+| encabezado (primera) | `cuenta` | pide una cuenta («cuánto es 25 x 4») | responde solo esto |
+| encabezado (primera) | `una_opcion` | el método de venta eligió UNA prenda para recomendar |  |
+| encabezado (primera) | `vitrina` | hay fotos y pidió ver opciones, el catálogo o está describiendo una prenda |  |
+| encabezado (primera) | `sin_mas_opciones` | pidió más opciones y no quedan |  |
+| encabezado (primera) | `foto` | va una foto sugerida |  |
+| encabezado (primera) | `tenemos_categoria` | pregunta por un tipo de prenda sin una en foco («¿tienen blusas?») |  |
+| encabezado (primera) | `tenemos_prenda` | nombra la prenda en foco sin pedir otra cosa (y no regatea) |  |
+| dato_prenda (colectar) | `tela` | pregunta la tela |  |
+| dato_prenda (colectar) | `envio_no_es_precio` | habla de envío: «¿cuánto sale el envío?» no pregunta el precio de la prenda |  |
+| dato_prenda (colectar) | `precio` | pregunta el precio |  |
+| dato_prenda (colectar) | `talla_dicha` | dijo o preguntó una talla concreta |  |
+| dato_prenda (colectar) | `tallas` | pregunta tallas o stock |  |
+| dato_prenda (colectar) | `color` | pregunta el color o por otra variante |  |
+| dato_prenda (colectar) | `elogio` | elogia la prenda y no hay nada más que decir |  |
+| dato_prenda (colectar) | `precio_al_nombrar` | la nombró sin preguntar nada: el precio abre la charla |  |
+| dato_prenda (colectar) | `detalle` | pregunta algo de la prenda que no es precio, talla, tela ni color |  |
+| dato_tienda (colectar) | `descuento` | pide descuento o rebaja (política: no hay para nadie) |  |
+| dato_tienda (colectar) | `envio` | pregunta por el envío |  |
+| dato_tienda (colectar) | `showroom` | pregunta dónde están o el horario |  |
+| dato_tienda (colectar) | `pago` | pregunta cómo pagar sin pedido confirmado |  |
+| dato_tienda (colectar) | `duda` | duda o pospone (sin regatear ni dar datos) | sin la pregunta siguiente |
+| dato_tienda (colectar) | `despedida` | se despide | sin la pregunta siguiente |
+| dato_tienda (colectar) | `groseria` | mensaje grosero (no una duda ni un pedido apurado) |  |
+| acuse (primera) | `acuse` | respondió la pregunta pendiente y no hay otro texto |  |
