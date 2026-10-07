@@ -56,6 +56,14 @@
     "#jmd-intro .ji-sep{width:44px;height:1px;background:rgba(255,255,255,.55);margin:20px 0 16px}",
     "#jmd-intro .ji-l2{font:400 clamp(17px,2.4vw,24px)/1 'Bodoni Moda',Didot,serif;letter-spacing:.02em;color:#e9e6ff}",
     "#jmd-intro .ji-l2 b{font:600 .78em/1 Inter,system-ui,sans-serif;letter-spacing:.42em;margin-left:.5em;color:#fff}",
+    /* Cierre con la empresa (login de cada tienda): su logo o monograma, su nombre y, en pequeño, la consultora. */
+    "#jmd-intro .ji-mono{display:grid;place-items:center;color:#fff;font:600 clamp(26px,3.6vw,36px)/1 'Bodoni Moda',Didot,serif;letter-spacing:.02em}",
+    "#jmd-intro .ji-emp{font:700 clamp(40px,7vw,80px)/.98 'Bodoni Moda',Didot,serif;letter-spacing:-.015em;max-width:11em;text-shadow:0 2px 34px rgba(40,10,60,.65)}",
+    "#jmd-intro .ji-sub2{font:italic 400 clamp(19px,2.6vw,27px)/1.25 'Bodoni Moda',Didot,serif;color:#ece8ff;margin-top:14px;max-width:18em}",
+    "#jmd-intro .ji-por{display:inline-flex;align-items:center;gap:9px;font:600 11px/1 Inter,system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.82)}",
+    "#jmd-intro .ji-por img{width:24px;height:24px;border-radius:50%;background:#fff}",
+    /* Logo de tienda (suele ser un wordmark horizontal): placa blanca, no círculo. */
+    "#jmd-intro .ji-placa{display:block;box-sizing:border-box;width:clamp(150px,16vw,200px);height:auto;background:#fff;border-radius:14px;padding:12px 20px;margin-bottom:22px;object-fit:contain}",
     "#jmd-intro .ji-skip{position:absolute;right:max(16px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:3;appearance:none;border:1px solid rgba(255,255,255,.45);background:rgba(10,8,30,.35);color:#fff;font:600 13px/1 Inter,system-ui,sans-serif;letter-spacing:.08em;padding:11px 16px;border-radius:999px;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);mix-blend-mode:normal}",
     "#jmd-intro .ji-skip:hover{background:rgba(255,255,255,.14)}",
     "#jmd-intro .ji-skip:focus-visible{outline:2px solid #fff;outline-offset:2px}"
@@ -87,6 +95,55 @@
   var cap = root.querySelector(".ji-cap"), mast = root.querySelector(".ji-mast"), letras = mast.querySelectorAll("span");
   var regla = root.querySelector(".ji-rule"), sub = root.querySelector(".ji-sub"), fin = root.querySelector(".ji-fin");
   var logo = root.querySelector(".ji-logo"), skip = root.querySelector(".ji-skip");
+
+  // En el login de una tienda (/jmdventas/<slug>/login/) la protagonista del cierre es ESA tienda: su logo (o su
+  // monograma con su color) y su nombre, de /jmdventas/api/empresas. La consultora queda como firma pequeña. En la
+  // portada, o si no se puede leer la tienda, el cierre es el de Consultoría Digital.
+  var slugTienda = (location.pathname.match(/^\/jmdventas\/([a-z0-9][a-z0-9-]{1,39})\/login\/?$/) || [])[1];
+  function rgba(hex, a) {
+    var n = parseInt(hex.slice(1), 16);
+    return "rgba(" + (n >> 16 & 255) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + a + ")";
+  }
+  function cierreTienda(e) {
+    var color = /^#[0-9a-fA-F]{6}$/.test(e.color || "") ? e.color : "#6d1f45";
+    var ini = String(e.nombre || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0]; }).join("").toUpperCase();
+    var marca;
+    function monograma() {
+      var m = document.createElement("div");
+      m.className = "ji-logo ji-mono";
+      m.style.background = color;
+      m.textContent = ini;
+      return m;
+    }
+    if (e.logo && /^(https:\/\/|\/)/.test(e.logo)) {
+      marca = document.createElement("img");
+      marca.className = "ji-placa";
+      marca.alt = e.nombre;
+      marca.src = e.logo;
+      marca.onerror = function () { var m = monograma(); m.style.transform = marca.style.transform; marca.replaceWith(m); logo = m; };
+    } else marca = monograma();
+    marca.style.boxShadow = "0 0 0 1px rgba(255,255,255,.4),0 0 46px 8px " + rgba(color, .6);
+    var nombre = document.createElement("div"); nombre.className = "ji-emp"; nombre.textContent = e.nombre;
+    var sub2 = document.createElement("div"); sub2.className = "ji-sub2"; sub2.textContent = "Inteligencia Artificial a tu servicio";
+    var sep = document.createElement("div"); sep.className = "ji-sep";
+    var por = document.createElement("div"); por.className = "ji-por";
+    var cd = document.createElement("img"); cd.alt = ""; cd.src = base + "consultoria-digital.jpg";
+    por.appendChild(cd); por.appendChild(document.createTextNode("por Consultoría Digital"));
+    fin.textContent = "";
+    [marca, nombre, sub2, sep, por].forEach(function (x) { fin.appendChild(x); });
+    logo = marca;
+  }
+  if (slugTienda) {
+    fin.style.visibility = "hidden"; // hasta saber qué tienda es (sobra tiempo: el cierre llega a los ~6 s)
+    fetch("/jmdventas/api/empresas", { headers: { Accept: "application/json" } })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (lista) {
+        var e = (lista || []).filter(function (x) { return x.slug === slugTienda; })[0];
+        if (e) cierreTienda(e);
+      })
+      .catch(function () { /* queda el cierre de Consultoría Digital */ })
+      .then(function () { fin.style.visibility = ""; });
+  }
 
   // ---------------------------------------------------------------- utilidades
   function cl(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
