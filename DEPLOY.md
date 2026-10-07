@@ -471,15 +471,26 @@ de una base; si un id ya es de otra empresa, falla sin escribir nada.
 
 ### 12.6 Portada e intro (`frontend/jmdventas/`)
 
-`index.html` es la portada (tarjetas desde `GET /jmdventas/api/empresas`: solo slug, nombre, orden, color, logo y
-productos activos). `intro.js` es la intro animada (apertura editorial en blanco y negro, constelaciones que dibujan tres
-vestidos sobre azul profundo y púrpura, y «Inteligencia Artificial a tu servicio · Consultoría DIGITAL» con
-`consultoria-digital.jpg`). Corre en la portada y en el login de cada empresa, una vez por sesión, con «Saltar» y
-Escape; con `prefers-reduced-motion` no aparece. Todo va dentro de la imagen del panel (`COPY jmdventas/` →
+`index.html` es la portada, con estética de revista: cabecera didona «JMD Ventas», titular «Elige tu tienda», un
+figurín de línea fina que se dibuja solo (SVG, `stroke-dashoffset`) y cada tienda como una portada («Nº 01», su nombre
+como cabecera, monograma, productos activos y los botones). A la izquierda (en el teléfono, una franja arriba) un
+quiosco de cabeceras **inventadas** que rotan (SILUETA, ATELIER, LUMIÈRE, MAISON, COUTURE, PASARELA): nunca nombres
+de revistas reales. Las tiendas salen de `GET /jmdventas/api/empresas` (solo slug, nombre, orden, color, logo y
+productos activos).
+
+`intro.js` es la intro animada: apertura editorial en blanco y negro; constelaciones sobre azul profundo y púrpura
+que dibujan tres figurines de moda de ~9 cabezas en contraposto (gala con capa, lápiz de un hombro, falda con
+volantes); y «Inteligencia Artificial a tu servicio · Consultoría DIGITAL» con `consultoria-digital.jpg`. Sale en
+**cada carga** (también con F5) de la portada y del login de cada empresa, con «Saltar» y Escape; con
+`prefers-reduced-motion` no aparece. No bloquea: la página carga debajo. Los figurines viven en `intro.js`
+(`window.JMDFiguras`) y la portada los reutiliza en SVG. Todo va dentro de la imagen del panel (`COPY jmdventas/` →
 `/usr/share/nginx/jmd/`, servido en `/jmdventas/_jmd/`): se despliega horneando `jmd-frontend` (§12.1).
 
-Para verla de nuevo o revisar un instante: `/jmdventas/?intro=1` la fuerza y `/jmdventas/?intro_t=4.2` congela ese
-segundo (así se hacen las capturas).
+Para revisar: `/jmdventas/?intro=1` la fuerza (aun con movimiento reducido), `?intro=0` la omite y
+`?intro_t=4.2` congela ese segundo (así se hacen las capturas).
+
+El color de cada portada es el de la empresa (`jmd marca`); Baruka va en su vino de marca:
+`ssh -i $K $H "sudo podman exec jmdventas_backend jmd marca --empresa baruka --color '#6d1f45'"`.
 
 ### 12.7 Fichas técnicas (`products.ficha`)
 

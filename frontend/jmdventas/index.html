@@ -4,173 +4,261 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>JMD Ventas</title>
-<meta name="description" content="JMD Ventas · CRM de pedidos por WhatsApp. Elige tu empresa.">
-<meta name="theme-color" content="#f5f3ee" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e0e10" media="(prefers-color-scheme: dark)">
+<meta name="description" content="JMD Ventas · CRM de pedidos de moda por WhatsApp. Elige tu tienda.">
+<meta name="theme-color" content="#f3efe7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0e0d" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2316161a'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='17' fill='%23f5f3ee' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;0,6..96,900;1,6..96,400;1,6..96,500;1,6..96,700&family=Inter:wght@400;500;600&family=Anton&family=Cormorant+Garamond:wght@300;400&family=Italiana&family=Six+Caps&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23141414'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-weight='bold' font-size='19' fill='%23f3efe7' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
 <style>
   :root {
-    --bg: #f5f3ee;
-    --bg-2: #ece8df;
-    --card: #ffffff;
-    --ink: #16161a;
-    --ink-2: #4a4a52;
-    --muted: #7a7a83;
-    --line: rgba(22, 22, 26, .09);
-    --line-2: rgba(22, 22, 26, .16);
-    --btn: #16161a;
-    --btn-ink: #f5f3ee;
-    --shadow: 0 1px 2px rgba(22, 22, 26, .04), 0 8px 24px -12px rgba(22, 22, 26, .12);
-    --shadow-hover: 0 1px 2px rgba(22, 22, 26, .05), 0 22px 44px -18px rgba(22, 22, 26, .26);
-    --serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+    --papel: #f3efe7;
+    --papel-2: #ebe5da;
+    --tinta: #141414;
+    --tinta-2: #3e3a35;
+    --suave: #7a736a;
+    --linea: rgba(20, 20, 20, .13);
+    --linea-2: rgba(20, 20, 20, .28);
+    --vino: #6d1f45;
+    --oliva: #7c7d43;
+    --didona: "Bodoni Moda", "Didot", "Bodoni 72", "Bodoni MT", Georgia, serif;
     --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0e0e10;
-      --bg-2: #17171a;
-      --card: #161619;
-      --ink: #f2f0ea;
-      --ink-2: #c3c1bb;
-      --muted: #8d8b86;
-      --line: rgba(255, 255, 255, .08);
-      --line-2: rgba(255, 255, 255, .16);
-      --btn: #f2f0ea;
-      --btn-ink: #0e0e10;
-      --shadow: 0 1px 2px rgba(0, 0, 0, .3);
-      --shadow-hover: 0 24px 48px -20px rgba(0, 0, 0, .7);
+      --papel: #0f0e0d;
+      --papel-2: #171513;
+      --tinta: #f1ece2;
+      --tinta-2: #cdc6ba;
+      --suave: #948c80;
+      --linea: rgba(241, 236, 226, .12);
+      --linea-2: rgba(241, 236, 226, .26);
+      --oliva: #a7a86a;
     }
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
-  body {
-    margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink);
-    font: 400 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased;
-    background-image: radial-gradient(1200px 520px at 50% -180px, var(--bg-2), transparent 70%);
-    background-repeat: no-repeat;
-  }
+  body { margin: 0; background: var(--papel); color: var(--tinta); font: 400 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
   a { color: inherit; }
-  .wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 16px; }
-  @media (min-width: 720px) { .wrap { padding: 0 32px; } }
 
-  /* Barra */
-  header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 0; }
-  .wordmark { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
-  .wordmark .sello {
-    width: 30px; height: 30px; border-radius: 8px; background: var(--ink); color: var(--bg);
-    display: grid; place-items: center; font: 600 17px/1 var(--serif);
-  }
-  .wordmark b { font: 600 19px/1 var(--serif); letter-spacing: -.01em; }
-  .top small { color: var(--muted); font-size: 13px; text-align: right; }
+  /* ------------------------------------------------------------ estructura */
+  .pagina { display: grid; grid-template-columns: 1fr; min-height: 100vh; }
+  @media (min-width: 1000px) { .pagina { grid-template-columns: 264px minmax(0, 1fr); } }
+  main { min-width: 0; padding: 0 16px; }
+  @media (min-width: 720px) { main { padding: 0 40px; } }
+  .ancho { max-width: 1120px; margin: 0 auto; }
 
-  /* Titular */
-  .hero { padding: 40px 0 28px; }
-  @media (min-width: 720px) { .hero { padding: 72px 0 40px; } }
-  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
-  h1 {
-    font: 500 clamp(36px, 7.4vw, 60px)/1.04 var(--serif); letter-spacing: -.025em; margin: 0;
-    font-variation-settings: "opsz" 144;
+  /* ------------------------------------------------------------ quiosco (barra lateral) */
+  .quiosco { display: none; }
+  @media (min-width: 1000px) {
+    .quiosco {
+      display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; padding: 28px 24px;
+      border-right: 1px solid var(--linea); background: var(--papel-2); overflow: hidden;
+    }
   }
-  .hero p { color: var(--ink-2); font-size: 17px; max-width: 34em; margin: 16px 0 0; }
+  .q-et { font: 600 10.5px/1 var(--sans); letter-spacing: .28em; text-transform: uppercase; color: var(--suave); }
+  .pila { position: relative; height: 342px; margin: 26px 0 18px; }
+  .mini {
+    position: absolute; left: 0; right: 0; top: 0; margin: 0 auto; width: 196px; height: 268px; border-radius: 3px;
+    padding: 14px 14px 12px; overflow: hidden; color: var(--mi, #141414); background: var(--mf, #f1ece2);
+    box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 18px 34px -18px rgba(0,0,0,.45);
+    transition: transform .9s cubic-bezier(.2,.75,.2,1), opacity .9s, filter .9s;
+    will-change: transform, opacity; display: flex; flex-direction: column;
+  }
+  .mini .cab { line-height: .86; text-align: center; white-space: nowrap; }
+  .mini .num { display: flex; justify-content: space-between; font: 600 7.5px/1 var(--sans); letter-spacing: .2em; text-transform: uppercase; opacity: .75; margin-top: 6px; }
+  .mini svg { flex: 1; width: 100%; min-height: 0; margin-top: 4px; }
+  .mini .linea-cap { font: italic 400 12px/1.2 var(--didona); text-align: left; margin-top: auto; padding-top: 4px; }
+  .q-actual { font: italic 400 15px/1.3 var(--didona); color: var(--tinta-2); min-height: 40px; margin: 0 0 14px; }
+  .q-indice { list-style: none; margin: 0; padding: 12px 0 0; border-top: 1px solid var(--linea-2); display: grid; gap: 2px; }
+  .q-indice li { display: flex; align-items: baseline; gap: 10px; color: var(--suave); transition: color .5s, transform .5s; }
+  .q-indice li small { font: 600 9.5px/1 var(--sans); letter-spacing: .14em; min-width: 22px; }
+  .q-indice li span { line-height: 1.25; }
+  .q-indice li.activa { color: var(--vino); transform: translateX(4px); }
+  @media (prefers-color-scheme: dark) { .q-indice li.activa { color: #d27aa2; } }
+  .q-indice .c-silueta { font-size: 19px; } .q-indice .c-atelier { font-size: 21px; } .q-indice .c-lumiere { font-size: 15px; }
+  .q-indice .c-maison { font-size: 16px; } .q-indice .c-couture { font-size: 18px; } .q-indice .c-pasarela { font-size: 27px; }
+  .q-pie { margin-top: auto; font-size: 12px; color: var(--suave); line-height: 1.5; }
 
-  /* Tarjetas */
-  .grid { display: grid; gap: 16px; grid-template-columns: 1fr; padding: 8px 0 56px; }
-  @media (min-width: 720px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
-  @media (min-width: 1040px) { .grid.tres { grid-template-columns: repeat(3, 1fr); } }
+  /* Cabeceras inventadas, cada una con su tipografía */
+  .c-silueta { font: 900 34px/1 var(--didona); letter-spacing: -.02em; }
+  .c-atelier { font: 400 40px/1 "Anton", Impact, sans-serif; letter-spacing: .01em; }
+  .c-lumiere { font: 300 24px/1 "Cormorant Garamond", Georgia, serif; letter-spacing: .3em; padding-left: .3em; }
+  .c-maison { font: 400 27px/1 "Italiana", var(--didona); letter-spacing: .22em; padding-left: .22em; }
+  .c-couture { font: italic 700 32px/1 var(--didona); letter-spacing: -.01em; }
+  .c-pasarela { font: 400 54px/.9 "Six Caps", "Anton", sans-serif; letter-spacing: .08em; }
 
-  .card {
-    --c: #555;
-    position: relative; overflow: hidden; background: var(--card); border: 1px solid var(--line);
-    border-radius: 20px; padding: 24px; box-shadow: var(--shadow);
-    display: flex; flex-direction: column; gap: 22px; min-height: 236px;
-    transition: transform .35s cubic-bezier(.2, .7, .2, 1), box-shadow .35s, border-color .35s;
-    opacity: 0; transform: translateY(14px);
-    animation: entra .7s cubic-bezier(.2, .7, .2, 1) forwards;
+  /* Franja de cabeceras en el teléfono */
+  .franja { overflow: hidden; border-bottom: 1px solid var(--linea); background: var(--tinta); color: var(--papel); height: 46px; display: flex; align-items: center; }
+  @media (min-width: 1000px) { .franja { display: none; } }
+  .franja-cinta { display: flex; gap: 26px; align-items: center; white-space: nowrap; padding-left: 26px; animation: cinta 26s linear infinite; }
+  .franja-cinta span { line-height: 1; }
+  .franja-cinta .c-silueta { font-size: 21px; } .franja-cinta .c-atelier { font-size: 23px; } .franja-cinta .c-lumiere { font-size: 16px; }
+  .franja-cinta .c-maison { font-size: 17px; } .franja-cinta .c-couture { font-size: 20px; } .franja-cinta .c-pasarela { font-size: 30px; }
+  .franja-cinta i { font-style: normal; opacity: .4; }
+  @keyframes cinta { to { transform: translateX(-50%); } }
+
+  /* ------------------------------------------------------------ cabecera de revista */
+  .cabecera { padding-top: 22px; }
+  .regla { display: flex; justify-content: space-between; gap: 12px; border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--tinta); padding: 7px 0; font: 600 10.5px/1.2 var(--sans); letter-spacing: .22em; text-transform: uppercase; }
+  .regla span:nth-child(2) { display: none; }
+  @media (min-width: 720px) { .regla span:nth-child(2) { display: inline; } }
+  .marca {
+    font: 900 clamp(54px, 13.2vw, 168px)/.84 var(--didona); letter-spacing: -.035em; text-align: center; margin: 16px 0 6px;
+    font-variation-settings: "opsz" 96; white-space: nowrap;
   }
-  .card::before { /* halo con el color de la empresa */
-    content: ""; position: absolute; inset: -40% -30% auto auto; width: 70%; aspect-ratio: 1;
-    background: radial-gradient(closest-side, color-mix(in srgb, var(--c) 16%, transparent), transparent);
-    pointer-events: none;
+  .marca em { font-style: italic; font-weight: 400; letter-spacing: -.04em; }
+  .bajada { text-align: center; font: italic 400 clamp(15px, 2vw, 19px)/1.3 var(--didona); color: var(--tinta-2); padding-bottom: 14px; border-bottom: 1px solid var(--linea-2); }
+
+  /* ------------------------------------------------------------ titular + ilustración */
+  .hero { display: grid; grid-template-columns: 1fr; gap: 8px; align-items: center; padding: 28px 0 8px; }
+  @media (min-width: 860px) { .hero { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 32px; padding: 44px 0 16px; } }
+  .antetitulo { font: 600 11px/1 var(--sans); letter-spacing: .3em; text-transform: uppercase; color: var(--vino); margin: 0 0 14px; }
+  @media (prefers-color-scheme: dark) { .antetitulo { color: #d27aa2; } }
+  h1 { font: italic 500 clamp(46px, 8.6vw, 104px)/.92 var(--didona); letter-spacing: -.03em; margin: 0; }
+  h1 b { font-style: normal; font-weight: 900; letter-spacing: -.04em; display: block; }
+  .entradilla { font-size: 17px; color: var(--tinta-2); max-width: 30em; margin: 20px 0 0; }
+  .lineas-portada { list-style: none; padding: 0; margin: 26px 0 0; border-top: 1px solid var(--linea-2); }
+  .lineas-portada li { display: flex; gap: 14px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--linea); }
+  .lineas-portada b { font: 900 22px/1 var(--didona); min-width: 34px; }
+  .lineas-portada span { font: 400 15px/1.35 var(--sans); color: var(--tinta-2); }
+  .figurin { position: relative; display: flex; justify-content: center; }
+  .figurin svg { width: min(78vw, 420px); height: auto; overflow: visible; }
+  @media (min-width: 860px) { .figurin svg { width: 100%; max-width: 440px; } }
+  .figurin figcaption { position: absolute; right: 0; bottom: 4%; font: italic 400 13px/1.3 var(--didona); color: var(--suave); writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: .04em; }
+
+  .trazo { fill: none; stroke: var(--tinta); stroke-linecap: round; stroke-linejoin: round; }
+  .relleno { fill: var(--oliva); opacity: 0; transition: opacity 1.4s ease .2s; }
+  .dibujado .relleno { opacity: .2; }
+
+  /* ------------------------------------------------------------ portadas de empresa */
+  .seccion { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-top: 2px solid var(--tinta); margin-top: 36px; padding-top: 10px; }
+  .seccion h2 { font: 900 clamp(26px, 3.4vw, 38px)/1 var(--didona); letter-spacing: -.02em; margin: 0; }
+  .seccion span { font: 600 10.5px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--suave); }
+  .portadas { display: grid; grid-template-columns: 1fr; gap: 22px; padding: 22px 0 56px; }
+  @media (min-width: 640px) { .portadas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1280px) { .portadas.tres { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  .portada {
+    --c: #555; position: relative; overflow: hidden; border-radius: 4px; color: #fbf8f2;
+    background: radial-gradient(120% 90% at 85% 10%, color-mix(in srgb, var(--c) 70%, #fff 6%), var(--c) 55%, color-mix(in srgb, var(--c) 72%, #000));
+    min-height: 520px; padding: 18px 20px 20px; display: flex; flex-direction: column;
+    box-shadow: 0 1px 0 rgba(0,0,0,.06), 0 28px 50px -30px rgba(0,0,0,.55);
+    opacity: 0; transform: translateY(18px); animation: entra .9s cubic-bezier(.2,.7,.2,1) forwards;
+    transition: transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s;
   }
-  .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); border-color: color-mix(in srgb, var(--c) 35%, var(--line)); }
+  @media (min-width: 640px) { .portada { aspect-ratio: 3 / 4; min-height: 0; } }
+  .portada:hover { transform: translateY(-4px); box-shadow: 0 1px 0 rgba(0,0,0,.06), 0 36px 60px -30px rgba(0,0,0,.6); }
   @keyframes entra { to { opacity: 1; transform: none; } }
-
-  .card-top { display: flex; align-items: flex-start; justify-content: space-between; position: relative; }
-  .mono {
-    width: 60px; height: 60px; border-radius: 16px; background: var(--c); color: #fff;
-    display: grid; place-items: center; font: 600 23px/1 var(--serif); letter-spacing: .01em;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 6px 16px -8px var(--c);
+  .p-sup { display: flex; justify-content: space-between; align-items: baseline; font: 600 10.5px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; opacity: .85; position: relative; z-index: 2; }
+  .p-sup b { font: 900 15px/1 var(--didona); letter-spacing: .02em; }
+  .p-cab {
+    position: relative; z-index: 2; margin: 10px 0 0; font: 900 clamp(40px, 11vw, 64px)/.86 var(--didona); letter-spacing: -.03em;
+    text-transform: uppercase; overflow-wrap: anywhere; font-variation-settings: "opsz" 96;
   }
-  .mono img { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; background: #fff; }
-  .num { font: 500 13px/1 var(--sans); color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: .06em; }
-
-  .card h2 { font: 500 27px/1.12 var(--serif); letter-spacing: -.015em; margin: 0; position: relative; }
-  .dato { display: flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 14.5px; margin-top: 8px; }
-  .dato i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); flex: none; }
-  .dato.vacio { color: var(--muted); }
-  .dato.vacio i { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
-
-  .acciones { display: flex; gap: 10px; margin-top: auto; position: relative; }
-  .btn {
-    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    min-height: 46px; padding: 0 16px; border-radius: 12px; text-decoration: none;
-    font: 600 15px/1 var(--sans); transition: background .2s, color .2s, border-color .2s, transform .2s;
+  @media (min-width: 640px) { .p-cab { font-size: clamp(38px, 4.6vw, 62px); } }
+  .p-cab small { display: block; font: italic 400 .36em/1.2 var(--didona); text-transform: none; letter-spacing: 0; opacity: .85; margin-top: 8px; }
+  .p-fig { position: absolute; right: -2%; bottom: 84px; height: 58%; z-index: 1; opacity: .9; pointer-events: none; }
+  .p-fig .trazo { stroke: rgba(255, 252, 245, .78); }
+  .p-fig .relleno { fill: #fff; }
+  .p-fig.dibujado .relleno { opacity: .07; }
+  .p-mono {
+    position: relative; z-index: 2; width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; margin-top: 18px;
+    border: 1px solid rgba(255,255,255,.55); font: 600 21px/1 var(--didona); letter-spacing: .02em; background: rgba(255,255,255,.06);
   }
-  .btn:active { transform: scale(.98); }
-  .btn-1 { background: var(--btn); color: var(--btn-ink); }
-  .btn-1:hover { background: color-mix(in srgb, var(--btn) 86%, var(--c)); }
-  .btn-1 svg { transition: transform .2s; }
-  .btn-1:hover svg { transform: translateX(2px); }
-  .btn-2 { border: 1px solid var(--line-2); color: var(--ink); }
-  .btn-2:hover { border-color: var(--ink); }
-  .btn:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+  .p-mono img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; background: #fff; }
+  .p-lineas { position: relative; z-index: 2; margin-top: auto; max-width: 60%; }
+  .p-dato { font: 900 46px/.9 var(--didona); letter-spacing: -.02em; }
+  .p-dato-t { font: 600 10.5px/1.3 var(--sans); letter-spacing: .2em; text-transform: uppercase; opacity: .85; margin-top: 6px; }
+  .p-dato.vacio { font: italic 400 24px/1.1 var(--didona); }
+  .p-botones { position: relative; z-index: 2; display: flex; gap: 10px; margin-top: 18px; }
+  .boton {
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 14px;
+    border-radius: 999px; text-decoration: none; font: 600 14px/1 var(--sans); letter-spacing: .04em; transition: background .2s, color .2s, transform .2s;
+  }
+  .boton:active { transform: scale(.98); }
+  .b1 { background: #fbf8f2; color: #141414; }
+  .b1:hover { background: #fff; }
+  .b1 svg { transition: transform .2s; }
+  .b1:hover svg { transform: translateX(3px); }
+  .b2 { border: 1px solid rgba(255, 255, 255, .6); color: #fbf8f2; }
+  .b2:hover { background: rgba(255, 255, 255, .12); }
+  .boton:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
-  /* Cargando / error */
-  .card.sk { animation: none; opacity: 1; transform: none; }
-  .sk .bar { background: var(--bg-2); border-radius: 8px; animation: pulso 1.4s ease-in-out infinite; }
-  @keyframes pulso { 50% { opacity: .55; } }
-  .aviso { grid-column: 1 / -1; color: var(--muted); padding: 24px 0; }
+  .esqueleto { background: var(--papel-2); animation: none; opacity: 1; transform: none; box-shadow: none; }
+  .aviso { grid-column: 1 / -1; color: var(--suave); padding: 24px 0; }
 
-  footer { border-top: 1px solid var(--line); padding: 22px 0 36px; color: var(--muted); font-size: 13px;
-    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  footer { border-top: 1px solid var(--linea-2); padding: 18px 0 34px; color: var(--suave); font-size: 12.5px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 
   @media (prefers-reduced-motion: reduce) {
-    .card { animation: none; opacity: 1; transform: none; transition: none; }
-    .sk .bar { animation: none; }
+    .portada { animation: none; opacity: 1; transform: none; }
+    .franja-cinta { animation: none; }
+    .mini { transition: none; }
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <a class="wordmark" href="/jmdventas/" aria-label="JMD Ventas, inicio"><span class="sello">J</span><b>JMD Ventas</b></a>
-    <small>CRM de pedidos por WhatsApp</small>
-  </header>
+<div class="franja" aria-hidden="true"><div class="franja-cinta" id="cinta"></div></div>
+<div class="pagina">
+  <aside class="quiosco" aria-label="Quiosco de cabeceras">
+    <span class="q-et">En el quiosco</span>
+    <div class="pila" id="pila" aria-hidden="true"></div>
+    <p class="q-actual" id="q-actual" aria-live="off"></p>
+    <ol class="q-indice" id="q-indice" aria-hidden="true"></ol>
+    <p class="q-pie">Cabeceras de muestra, inventadas para JMD Ventas.</p>
+  </aside>
 
-  <section class="hero">
-    <p class="eyebrow">Empresas</p>
-    <h1>Elige tu tienda</h1>
-    <p>Cada empresa tiene su panel de pedidos, conversaciones y stock, y un catálogo público para compartir con sus clientas.</p>
-  </section>
+  <main>
+    <div class="ancho">
+      <header class="cabecera">
+        <div class="regla"><span id="edicion">Edición Nº 01</span><span>CRM de moda por WhatsApp</span><span>Consultoría Digital</span></div>
+        <div class="marca" aria-label="JMD Ventas">JMD <em>Ventas</em></div>
+        <p class="bajada">Pedidos, conversaciones y stock de cada tienda, en un solo lugar.</p>
+      </header>
 
-  <main id="empresas" class="grid" aria-live="polite">
-    <div class="card sk" aria-hidden="true"><div class="bar" style="width:60px;height:60px;border-radius:16px"></div><div><div class="bar" style="width:62%;height:26px"></div><div class="bar" style="width:40%;height:14px;margin-top:12px"></div></div><div class="bar" style="height:46px;margin-top:auto"></div></div>
-    <div class="card sk" aria-hidden="true"><div class="bar" style="width:60px;height:60px;border-radius:16px"></div><div><div class="bar" style="width:52%;height:26px"></div><div class="bar" style="width:36%;height:14px;margin-top:12px"></div></div><div class="bar" style="height:46px;margin-top:auto"></div></div>
+      <section class="hero">
+        <div>
+          <p class="antetitulo">En portada</p>
+          <h1>Elige <b>tu tienda</b></h1>
+          <p class="entradilla">Cada empresa tiene su panel de pedidos, conversaciones y stock, y un catálogo público para compartir con sus clientas.</p>
+          <ul class="lineas-portada">
+            <li><b>01</b><span>Tablero de pedidos y stock por talla</span></li>
+            <li><b>02</b><span>Conversaciones de WhatsApp con la asesora</span></li>
+            <li><b>03</b><span>Fichas técnicas de cada prenda</span></li>
+          </ul>
+        </div>
+        <figure class="figurin" style="margin:0">
+          <svg id="figurin" viewBox="0 0 72 104" role="img" aria-label="Figurín de moda dibujado a línea"></svg>
+          <figcaption>Figurín · gala con capa</figcaption>
+        </figure>
+      </section>
+
+      <div class="seccion"><h2>Las tiendas</h2><span id="cuenta">En portada</span></div>
+      <section id="empresas" class="portadas" aria-live="polite">
+        <div class="portada esqueleto" aria-hidden="true"></div>
+        <div class="portada esqueleto" aria-hidden="true"></div>
+      </section>
+
+      <footer>
+        <span>JMD Ventas · Consultoría Digital</span>
+        <span>¿Tu tienda aún no está? Pide tu acceso a tu administrador.</span>
+      </footer>
+    </div>
   </main>
-
-  <footer>
-    <span>JMD Ventas</span>
-    <span>¿Eres de una empresa nueva? Pide tu acceso a tu administrador.</span>
-  </footer>
 </div>
 
+<!-- Intro (en cada carga, «Saltar», nada con movimiento reducido) y figurines compartidos (window.JMDFiguras). -->
+<script src="/jmdventas/_jmd/intro.js"></script>
 <script>
 (function () {
-  var cont = document.getElementById("empresas");
-  var flecha = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9m-3.5-4L12 8l-3.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  var F = window.JMDFiguras;
+  var calmo = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  var hoy = new Date();
+  document.getElementById("edicion").textContent = "Edición Nº 01 · " + meses[hoy.getMonth()] + " " + hoy.getFullYear();
 
   function el(tag, cls, txt) {
     var e = document.createElement(tag);
@@ -178,66 +266,195 @@
     if (txt != null) e.textContent = txt;
     return e;
   }
+
+  // Dibuja un figurín en un <svg viewBox="0 0 72 104">; con «animar», cada trazo se dibuja (stroke-dashoffset).
+  function figurin(svg, nombre, grosor, animar, retraso) {
+    if (!F) return;
+    svg.textContent = "";
+    var rel = document.createElementNS(NS, "path");
+    rel.setAttribute("class", "relleno");
+    rel.setAttribute("d", F.svgPath(F.rellenos[nombre], 100, 36, 1.5) + " Z");
+    svg.appendChild(rel);
+    var trazos = F.figuras[nombre], paths = [];
+    trazos.forEach(function (t) {
+      var p = document.createElementNS(NS, "path");
+      p.setAttribute("class", "trazo");
+      p.setAttribute("d", F.svgPath(t.p, 100, 36, 1.5));
+      p.setAttribute("stroke-width", (grosor * t.w).toFixed(3));
+      svg.appendChild(p);
+      paths.push(p);
+    });
+    if (!animar || calmo) { svg.classList.add("dibujado"); return; }
+    var t0 = retraso || 0;
+    paths.forEach(function (p, i) {
+      var L = p.getTotalLength();
+      p.style.strokeDasharray = L + " " + L;
+      p.style.strokeDashoffset = L;
+      p.getBoundingClientRect();
+      var dur = Math.min(1.4, .35 + L / 110);
+      p.style.transition = "stroke-dashoffset " + dur.toFixed(2) + "s cubic-bezier(.45,.05,.3,1) " + (t0 + i * .11).toFixed(2) + "s";
+      requestAnimationFrame(function () { p.style.strokeDashoffset = "0"; });
+    });
+    setTimeout(function () { svg.classList.add("dibujado"); }, (t0 + paths.length * .11 + 1) * 1000);
+  }
+
+  // La ilustración del titular se dibuja cuando se ve (si la intro está encima, espera a que se vaya).
+  var heroSvg = document.getElementById("figurin");
+  function dibujarHero() { figurin(heroSvg, "gala", .32, true, .1); }
+  var espera = setInterval(function () {
+    if (!document.getElementById("jmd-intro")) { clearInterval(espera); dibujarHero(); }
+  }, 120);
+
+  // ------------------------------------------------------------ quiosco: cabeceras inventadas
+  var CABS = [
+    { n: "SILUETA", c: "c-silueta", f: "#efe9de", i: "#141414", fig: "lapiz", l: "El arte del corte" },
+    { n: "ATELIER", c: "c-atelier", f: "#141414", i: "#f3efe7", fig: "gala", l: "Gala de temporada" },
+    { n: "LUMIÈRE", c: "c-lumiere", f: "#6d1f45", i: "#fbf3f6", fig: "volantes", l: "Luz, seda y volantes" },
+    { n: "MAISON", c: "c-maison", f: "#e3d6c6", i: "#3a2a1f", fig: "lapiz", l: "Casa y costura" },
+    { n: "COUTURE", c: "c-couture", f: "#1d2a44", i: "#f2e8d6", fig: "gala", l: "Capas que caen" },
+    { n: "PASARELA", c: "c-pasarela", f: "#7c7d43", i: "#f7f4e8", fig: "volantes", l: "Lo que viene" }
+  ];
+  var cinta = document.getElementById("cinta");
+  for (var r = 0; r < 2; r++) {
+    CABS.forEach(function (c) { cinta.appendChild(el("span", c.c, c.n)); cinta.appendChild(el("i", "", "✦")); });
+  }
+
+  var pila = document.getElementById("pila"), actual = document.getElementById("q-actual");
+  if (getComputedStyle(pila.parentNode).display !== "none") {
+    var minis = CABS.map(function (c, i) {
+      var m = el("div", "mini");
+      m.style.setProperty("--mf", c.f);
+      m.style.setProperty("--mi", c.i);
+      m.appendChild(el("div", "cab " + c.c, c.n));
+      var num = el("div", "num");
+      num.appendChild(el("span", "", "Nº " + String(7 + i).padStart(2, "0")));
+      num.appendChild(el("span", "", meses[hoy.getMonth()]));
+      m.appendChild(num);
+      var s = document.createElementNS(NS, "svg");
+      s.setAttribute("viewBox", "0 0 72 104");
+      s.setAttribute("preserveAspectRatio", "xMidYMax meet");
+      s.style.color = c.i;
+      m.appendChild(s);
+      figurin(s, c.fig, .55, false);
+      s.querySelectorAll(".trazo").forEach(function (p) { p.style.stroke = c.i; });
+      s.querySelector(".relleno").style.fill = c.i;
+      m.appendChild(el("div", "linea-cap", c.l));
+      pila.appendChild(m);
+      return m;
+    });
+    var indice = document.getElementById("q-indice");
+    var filas = CABS.map(function (c, i) {
+      var li = el("li");
+      li.appendChild(el("small", "", String(7 + i).padStart(2, "0")));
+      li.appendChild(el("span", c.c, c.n));
+      indice.appendChild(li);
+      return li;
+    });
+    var orden = minis.map(function (_, i) { return i; });
+    function colocar(sale) {
+      orden.forEach(function (idx, pos) {
+        var m = minis[idx];
+        if (pos === 0 && sale) return;
+        var vis = pos < 4;
+        var rot = [0, 4, -3.2, 2.2][pos] || 0;
+        m.style.zIndex = String(10 - pos);
+        m.style.opacity = vis ? "1" : "0";
+        m.style.filter = "brightness(" + (1 - Math.min(pos, 3) * .07).toFixed(2) + ")";
+        m.style.transform = "translate(" + [0, 14, -10, 8][Math.min(pos, 3)] + "px," + (Math.min(pos, 3) * 22) + "px) rotate(" + rot + "deg) scale(" + (1 - Math.min(pos, 3) * .04) + ")";
+      });
+      filas.forEach(function (li, i) { li.classList.toggle("activa", i === orden[0]); });
+      actual.textContent = CABS[orden[0]].n.charAt(0) + CABS[orden[0]].n.slice(1).toLowerCase() + " · " + CABS[orden[0]].l;
+    }
+    colocar(false);
+    if (!calmo) {
+      setInterval(function () {
+        var primero = minis[orden[0]];
+        primero.style.transform = "translate(-46px,-30px) rotate(-9deg) scale(.96)";
+        primero.style.opacity = "0";
+        setTimeout(function () {
+          orden.push(orden.shift());
+          primero.style.transition = "none";
+          primero.style.transform = "translate(8px,66px) rotate(2.2deg) scale(.88)";
+          primero.getBoundingClientRect();
+          primero.style.transition = "";
+          colocar(false);
+        }, 650);
+      }, 2800);
+    }
+  }
+
+  // ------------------------------------------------------------ empresas como portadas de revista
+  var cont = document.getElementById("empresas");
+  var flecha = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9m-3.5-4L12 8l-3.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function iniciales(nombre) {
     var p = String(nombre).split(/\s+/).filter(Boolean);
     return ((p[0] || "?")[0] + (p[1] ? p[1][0] : "")).toUpperCase();
   }
   function color(c) { return /^#[0-9a-fA-F]{6}$/.test(c || "") ? c : "#555555"; }
+  var LOOKS = ["volantes", "gala", "lapiz"];
 
-  function tarjeta(e, i) {
+  function portada(e, i) {
     var base = "/jmdventas/" + encodeURIComponent(e.slug) + "/";
-    var card = el("article", "card");
-    card.style.setProperty("--c", color(e.color));
-    card.style.animationDelay = (90 + i * 80) + "ms";
+    var a = el("article", "portada");
+    a.style.setProperty("--c", color(e.color));
+    a.style.animationDelay = (120 + i * 110) + "ms";
 
-    var top = el("div", "card-top");
-    var mono = el("div", "mono");
+    var sup = el("div", "p-sup");
+    var nro = el("span"); nro.appendChild(el("b", "", "Nº " + String(i + 1).padStart(2, "0")));
+    sup.appendChild(nro);
+    sup.appendChild(el("span", "", "JMD Ventas"));
+    a.appendChild(sup);
+
+    var cab = el("h3", "p-cab", e.nombre);
+    cab.appendChild(el("small", "", "Edición de la tienda"));
+    a.appendChild(cab);
+
+    var mono = el("div", "p-mono");
     mono.setAttribute("aria-hidden", "true");
     if (e.logo && /^(https:\/\/|\/)/.test(e.logo)) {
       var img = el("img"); img.src = e.logo; img.alt = ""; img.loading = "lazy";
       img.onerror = function () { mono.textContent = iniciales(e.nombre); };
       mono.appendChild(img);
-    } else {
-      mono.textContent = iniciales(e.nombre);
-    }
-    top.appendChild(mono);
-    top.appendChild(el("span", "num", String(i + 1).padStart(2, "0")));
-    card.appendChild(top);
+    } else mono.textContent = iniciales(e.nombre);
+    a.appendChild(mono);
 
-    var cuerpo = el("div");
-    cuerpo.appendChild(el("h2", "", e.nombre));
+    var s = document.createElementNS(NS, "svg");
+    s.setAttribute("viewBox", "0 0 72 104");
+    s.setAttribute("class", "p-fig");
+    s.setAttribute("aria-hidden", "true");
+    a.appendChild(s);
+
+    var lin = el("div", "p-lineas");
     var n = e.productos | 0;
-    var dato = el("p", "dato" + (n ? "" : " vacio"));
-    dato.appendChild(el("i"));
-    dato.appendChild(document.createTextNode(n ? n + (n === 1 ? " producto activo" : " productos activos") : "Catálogo en preparación"));
-    cuerpo.appendChild(dato);
-    card.appendChild(cuerpo);
+    lin.appendChild(el("div", "p-dato" + (n ? "" : " vacio"), n ? String(n) : "Catálogo en preparación"));
+    if (n) lin.appendChild(el("div", "p-dato-t", n === 1 ? "producto activo" : "productos activos"));
+    a.appendChild(lin);
 
-    var acc = el("div", "acciones");
-    var a1 = el("a", "btn btn-1"); a1.href = base; a1.innerHTML = "Abrir panel " + flecha;
-    a1.setAttribute("aria-label", "Abrir el panel de " + e.nombre);
-    var a2 = el("a", "btn btn-2", "Catálogo"); a2.href = base + "catalogo/";
-    a2.setAttribute("aria-label", "Ver el catálogo público de " + e.nombre);
-    acc.appendChild(a1); acc.appendChild(a2);
-    card.appendChild(acc);
-    return card;
+    var bot = el("div", "p-botones");
+    var b1 = el("a", "boton b1"); b1.href = base; b1.innerHTML = "Abrir panel " + flecha;
+    b1.setAttribute("aria-label", "Abrir el panel de " + e.nombre);
+    var b2 = el("a", "boton b2", "Catálogo"); b2.href = base + "catalogo/";
+    b2.setAttribute("aria-label", "Ver el catálogo público de " + e.nombre);
+    bot.appendChild(b1); bot.appendChild(b2);
+    a.appendChild(bot);
+    setTimeout(function () { figurin(s, LOOKS[i % LOOKS.length], .4, true, 0); }, 400 + i * 200);
+    return a;
   }
 
   fetch("/jmdventas/api/empresas", { headers: { Accept: "application/json" } })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function (lista) {
       cont.textContent = "";
-      if (!lista.length) { cont.appendChild(el("p", "aviso", "Todavía no hay empresas.")); return; }
+      document.getElementById("cuenta").textContent = lista.length === 1 ? "1 tienda" : lista.length + " tiendas";
+      if (!lista.length) { cont.appendChild(el("p", "aviso", "Todavía no hay tiendas.")); return; }
       if (lista.length >= 3) cont.classList.add("tres");
-      lista.forEach(function (e, i) { cont.appendChild(tarjeta(e, i)); });
+      lista.forEach(function (e, i) { cont.appendChild(portada(e, i)); });
     })
     .catch(function () {
       cont.textContent = "";
-      cont.appendChild(el("p", "aviso", "No se pudo cargar la lista de empresas. Vuelve a intentarlo en un momento."));
+      cont.appendChild(el("p", "aviso", "No se pudo cargar la lista de tiendas. Vuelve a intentarlo en un momento."));
     });
 })();
 </script>
-<!-- Intro (una vez por sesión; «Saltar»; nada con movimiento reducido). -->
-<script src="/jmdventas/_jmd/intro.js" defer></script>
 </body>
 </html>

@@ -6,19 +6,172 @@
  *    volantes (trazados en canvas, sin imágenes).
  * 3. «Inteligencia Artificial a tu servicio · Consultoría DIGITAL» con el logo, y fundido a la página.
  *
- * Unos 8 s. Una vez por sesión (sessionStorage), con «Saltar» y Escape; con prefers-reduced-motion no se muestra.
- * Todo lo mueve un único reloj en JS: ?intro=1 la fuerza y ?intro_t=3.4 congela ese instante (capturas).
+ * Unos 8 s, en cada carga (también con F5), con «Saltar» y Escape; con prefers-reduced-motion no se muestra. No
+ * bloquea: la página de abajo carga mientras tanto. Todo lo mueve un único reloj en JS: ?intro=1 la fuerza (aun con
+ * movimiento reducido), ?intro=0 la omite (pruebas) y ?intro_t=3.4 congela ese instante (capturas).
+ *
+ * Además deja en window.JMDFiguras los figurines (la portada los dibuja en SVG).
  */
 (function () {
   "use strict";
-  var KEY = "jmd_intro_vista";
+  // ---------------------------------------------------------------- figuras (alto = 1 de la cabeza a los pies)
+  // Figurines de moda de ~9 cabezas en contraposto: el peso en la pierna derecha de la figura (la cadera de ese lado
+  // sube y sale, los hombros se inclinan al revés), una mano en la cintura y el otro brazo suelto. Cada look es una
+  // lista de trazos {p: puntos, w: grosor relativo, f: relleno suave opcional}; el orden es el orden en que se dibujan.
+  // Los usa la intro (constelación en canvas) y la portada (ilustración SVG que se dibuja sola).
+  function ovalo(cx, cy, rx, ry, rot, n) {
+    var out = [], c = Math.cos(rot), s = Math.sin(rot);
+    for (var i = 0; i <= n; i++) {
+      var a = Math.PI * 2 * i / n - Math.PI / 2, x = rx * Math.cos(a), y = ry * Math.sin(a);
+      out.push([cx + x * c - y * s, cy + x * s + y * c]);
+    }
+    return out;
+  }
+  function ondas(x0, y0, x1, y1, n, amp) { // borde con volantes: n ondas de (x0,y0) a (x1,y1)
+    var out = [];
+    for (var i = 0; i <= n * 6; i++) {
+      var u = i / (n * 6);
+      out.push([x0 + (x1 - x0) * u, y0 + (y1 - y0) * u + amp * Math.abs(Math.sin(Math.PI * n * u))]);
+    }
+    return out;
+  }
+  var CARA = { p: ovalo(.004, .06, .026, .041, -.12, 18), w: .8 };
+  var CUELLO = [{ p: [[-.011, .098], [-.012, .12], [-.013, .143]], w: .7 }, { p: [[.016, .097], [.016, .12], [.018, .145]], w: .7 }];
+  var HOMBROS = [{ p: [[-.013, .143], [-.04, .147], [-.062, .151], [-.077, .158]], w: .8 }, { p: [[.018, .145], [.045, .151], [.064, .157], [.076, .166]], w: .8 }];
+  var BRAZOS = [
+    // suelto, con la mano relajada
+    { p: [[-.077, .158], [-.089, .185], [-.094, .235], [-.099, .29], [-.106, .35], [-.11, .41], [-.108, .45], [-.1, .472]], w: .75 },
+    { p: [[-.064, .205], [-.074, .25], [-.082, .3], [-.09, .36], [-.094, .41], [-.092, .45], [-.1, .472]], w: .75 },
+    // mano en la cintura, codo afuera
+    { p: [[.076, .166], [.097, .19], [.122, .228], [.144, .26], [.15, .276], [.132, .297], [.1, .314], [.068, .325], [.048, .33]], w: .75 },
+    { p: [[.06, .207], [.08, .228], [.103, .252], [.12, .268], [.1, .288], [.074, .303], [.05, .312]], w: .75 }
+  ];
+  function piernas(hem) { // pierna de apoyo bajo el cuerpo; la libre se abre y apunta el pie
+    return [
+      // apoyo: muslo, rodilla, pantorrilla, tobillo fino y pie en punta (zapato de tacón)
+      { p: [[.046, hem], [.042, .71], [.04, .735], [.045, .785], [.038, .85], [.026, .918], [.021, .944], [.027, .97], [.02, .99], [.006, .998]], w: .75 },
+      { p: [[.011, hem], [.012, .71], [.013, .74], [.01, .79], [.011, .86], [.011, .92], [.009, .948], [.007, .975], [.006, .998]], w: .75 },
+      // libre: se abre, rodilla hacia dentro, pie en punta hacia afuera
+      { p: [[-.05, hem], [-.054, .71], [-.056, .74], [-.066, .79], [-.069, .86], [-.074, .92], [-.077, .946], [-.093, .974], [-.108, .99]], w: .75 },
+      { p: [[-.016, hem], [-.024, .71], [-.032, .745], [-.04, .79], [-.05, .86], [-.06, .92], [-.064, .95], [-.08, .981], [-.108, .99]], w: .75 }
+    ];
+  }
+  var PELO = {
+    recogido: [ // moño bajo
+      { p: [[-.028, .072], [-.033, .045], [-.024, .018], [-.002, .006], [.022, .01], [.036, .028], [.04, .052], [.035, .07]], w: .9 },
+      { p: ovalo(.045, .062, .016, .019, .3, 12), w: .8 },
+      { p: [[-.02, .02], [.005, .022], [.03, .04]], w: .45 }
+    ],
+    bob: [ // melena corta con raya al lado
+      { p: [[-.033, .088], [-.037, .055], [-.032, .025], [-.015, .008], [.008, .004], [.03, .014], [.042, .04], [.044, .07], [.04, .092]], w: .9 },
+      { p: [[-.012, .008], [.006, .03], [.02, .06], [.026, .088]], w: .5 }
+    ],
+    ondas: [ // pelo largo que cae sobre un hombro
+      { p: [[-.03, .075], [-.034, .04], [-.02, .012], [.004, .004], [.028, .014], [.04, .042], [.044, .078], [.052, .11], [.048, .14], [.06, .172], [.054, .205]], w: .9 },
+      { p: [[-.031, .075], [-.04, .105], [-.034, .13], [-.042, .158]], w: .7 },
+      { p: [[.02, .02], [.032, .06], [.04, .1], [.036, .13]], w: .45 }
+    ]
+  };
+  function look(pelo, ropa, hem) {
+    return [CARA].concat(PELO[pelo], CUELLO, HOMBROS, BRAZOS, ropa, hem ? piernas(hem) : []);
+  }
+  // Piezas de cada vestido con nombre: forman el trazo y, unidas, el relleno suave de la ilustración de la portada.
+  var G = {
+    faldaI: [[-.04, .326], [-.062, .4], [-.085, .5], [-.11, .62], [-.135, .75], [-.16, .88], [-.185, .975]],
+    faldaD: [[.04, .322], [.075, .4], [.1, .5], [.118, .62], [.14, .75], [.168, .87], [.212, .955], [.27, .985]],
+    ruedo: [[-.185, .975], [-.12, .99], [-.04, .998], [.05, .997], [.15, .993], [.27, .985]],
+    cuerpoI: [[-.064, .205], [-.06, .25], [-.052, .29], [-.04, .326]],
+    cuerpoD: [[.06, .207], [.056, .25], [.05, .29], [.04, .322]],
+    escote: [[-.04, .147], [-.03, .17], [-.014, .196], [.004, .222], [.004, .222], [.02, .196], [.034, .17], [.046, .152]]
+  };
+  var L = {
+    hombro: [[-.035, .146], [-.06, .15], [-.077, .16], [-.074, .185], [-.064, .205]],
+    escote: [[-.062, .151], [-.045, .165], [-.02, .18], [.01, .193], [.035, .2], [.06, .207]],
+    ladoI: [[-.064, .205], [-.06, .25], [-.05, .29], [-.042, .326], [-.055, .37], [-.066, .42], [-.067, .48], [-.062, .56], [-.056, .62], [-.052, .665]],
+    ladoD: [[.06, .207], [.056, .25], [.048, .29], [.042, .322], [.062, .365], [.082, .41], [.084, .47], [.074, .55], [.062, .62], [.052, .66]],
+    ruedo: [[-.052, .665], [0, .663], [.052, .66]]
+  };
+  var V = {
+    escote: [[-.062, .218], [-.045, .207], [-.022, .212], [.002, .232], [.002, .232], [.024, .214], [.046, .209], [.06, .22]],
+    faldaI: [[-.04, .324], [-.07, .37], [-.108, .43], [-.1, .44], [-.135, .5], [-.172, .56], [-.165, .57], [-.2, .64], [-.238, .71]],
+    faldaD: [[.04, .32], [.075, .365], [.116, .42], [.11, .43], [.146, .49], [.182, .55], [.176, .56], [.202, .625], [.226, .69]],
+    ruedo: ondas(-.238, .71, .226, .69, 8, .022)
+  };
+  function inv(a) { return a.slice().reverse(); }
+  var FIGURAS = {
+    // Gala larga con escote en V y capa que ondea detrás.
+    gala: look("recogido", [
+      { p: [[-.077, .158], [-.105, .2], [-.14, .32], [-.18, .48], [-.225, .64], [-.262, .8], [-.288, .92], [-.272, .972], [-.232, .99]], w: .9 },
+      { p: [[.076, .166], [.108, .21], [.16, .3], [.198, .45], [.232, .62], [.266, .78], [.302, .9], [.326, .962]], w: .9 },
+      { p: [[-.12, .3], [-.168, .55], [-.215, .84]], w: .4 },
+      { p: G.escote, w: 1.1 },
+      { p: G.cuerpoI, w: 1.1 }, { p: G.cuerpoD, w: 1.1 },
+      { p: [[-.04, .326], [0, .332], [.04, .322]], w: .9 },
+      { p: G.faldaI, w: 1.15 }, { p: G.faldaD, w: 1.15 }, { p: G.ruedo, w: 1.1 },
+      { p: [[.012, .336], [.024, .5], [.034, .7], [.05, .92]], w: .45 },
+      { p: [[-.02, .342], [-.045, .55], [-.07, .78], [-.09, .97]], w: .45 }
+    ]),
+    // Lápiz a la rodilla, de un hombro, con drapeado en diagonal y abertura.
+    lapiz: look("bob", [
+      { p: L.hombro, w: 1.1 }, { p: L.escote, w: 1.1 },
+      { p: L.ladoI, w: 1.15 }, { p: L.ladoD, w: 1.15 }, { p: L.ruedo, w: 1.1 },
+      { p: [[.03, .661], [.029, .608]], w: .7 },
+      { p: [[-.055, .19], [-.02, .24], [.02, .3], [.06, .36]], w: .5 },
+      { p: [[-.05, .25], [-.01, .31], [.035, .38], [.07, .44]], w: .45 }
+    ], .664),
+    // Corazón con tirantes finos, cintura marcada y falda amplia de tres volantes en movimiento.
+    volantes: look("ondas", [
+      { p: [[-.042, .149], [-.045, .21]], w: .6 }, { p: [[.042, .153], [.045, .212]], w: .6 },
+      { p: V.escote, w: 1.1 },
+      { p: [[-.062, .218], [-.057, .26], [-.04, .324]], w: 1.1 }, { p: [[.06, .22], [.054, .26], [.04, .32]], w: 1.1 },
+      { p: [[-.04, .324], [0, .33], [.04, .32]], w: .9 },
+      { p: V.faldaI, w: 1.15 }, { p: V.faldaD, w: 1.15 },
+      { p: ondas(-.108, .43, .116, .42, 5, .013), w: .75 },
+      { p: ondas(-.172, .56, .182, .55, 7, .016), w: .75 },
+      { p: V.ruedo, w: 1.1 }
+    ], .705)
+  };
+  // Relleno de cada vestido (polígono cerrado con las mismas piezas).
+  var RELLENOS = {
+    gala: G.escote.concat(G.cuerpoD, G.faldaD.slice(1), inv(G.ruedo).slice(1), inv(G.faldaI).slice(1), inv(G.cuerpoI).slice(1)),
+    lapiz: L.hombro.concat(L.ladoI.slice(1), L.ruedo.slice(1), inv(L.ladoD).slice(1), inv(L.escote).slice(1)),
+    volantes: V.escote.concat([[.054, .26], [.04, .32]], V.faldaD.slice(1), inv(V.ruedo).slice(1), inv(V.faldaI).slice(1), [[-.057, .26]])
+  };
+  // Catmull-Rom: el trazo suave de cada línea (un punto repetido deja una esquina nítida).
+  function suave(pts, k) {
+    var out = [];
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      for (var j = 0; j < k; j++) {
+        var t = j / k, t2 = t * t, t3 = t2 * t;
+        out.push([
+          .5 * (2 * p1[0] + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3),
+          .5 * (2 * p1[1] + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3)
+        ]);
+      }
+    }
+    out.push(pts[pts.length - 1]);
+    return out;
+  }
+  // Trazo SVG (curvas de Bézier equivalentes a Catmull-Rom) escalado: lo usa la portada.
+  function svgPath(pts, esc, ox, oy) {
+    var P = function (p) { return [(ox + p[0] * esc).toFixed(1), (oy + p[1] * esc).toFixed(1)]; };
+    var d = "M" + P(pts[0]).join(" ");
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      var c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += " C" + P(c1).join(" ") + " " + P(c2).join(" ") + " " + P(p2).join(" ");
+    }
+    return d;
+  }
+  window.JMDFiguras = { figuras: FIGURAS, rellenos: RELLENOS, svgPath: svgPath, orden: ["gala", "lapiz", "volantes"] };
+
   var qs = new URLSearchParams(location.search);
-  var forzar = qs.has("intro") || qs.has("intro_t");
+  var forzar = qs.get("intro") === "1" || qs.has("intro_t");
   var congelado = qs.has("intro_t") ? parseFloat(qs.get("intro_t")) || 0 : null;
-  function vista() { try { return sessionStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
-  function marcar() { try { sessionStorage.setItem(KEY, "1"); } catch (e) { /* modo privado */ } }
+  function marcar() { /* ya no se recuerda: la intro sale en cada carga */ }
   var reducido = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!forzar && (reducido || vista())) return;
+  if (qs.get("intro") === "0" || (!forzar && reducido)) return;
   if (document.getElementById("jmd-intro")) return;
 
   var yo = document.currentScript && document.currentScript.src;
@@ -89,71 +242,6 @@
   function seg(t, a, b) { return cl((t - a) / (b - a)); }
   var rnd = (function (s) { return function () { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; })(20261007);
 
-  // ---------------------------------------------------------------- vestidos (alto = 1, x centrada)
-  function espejo(pts) { return pts.map(function (p) { return [-p[0], p[1]]; }); }
-  function festones(x0, x1, y, n, amp) { // borde con volantes: n ondas de x0 a x1
-    var out = [];
-    for (var i = 0; i <= n * 6; i++) {
-      var u = i / (n * 6);
-      out.push([x0 + (x1 - x0) * u, y + amp * Math.abs(Math.sin(Math.PI * n * u))]);
-    }
-    return out;
-  }
-  function gala() { // gala larga con capa, escote en V y tirantes anchos
-    var der = [[.042, 0], [.042, 0], [.096, .004], [.096, .004], [.101, .06], [.092, .13], [.078, .21], [.068, .285], [.068, .285],
-      [.09, .36], [.118, .47], [.15, .6], [.183, .73], [.217, .86], [.25, .965], [.25, .965]];
-    var ruedo = [[.13, .99], [0, 1], [-.13, .99]];
-    var izq = espejo(der).reverse();
-    var capaD = [[.096, .004], [.096, .004], [.16, .07], [.21, .19], [.255, .37], [.298, .57], [.336, .77], [.362, .93], [.34, 1.0], [.29, 1.03]];
-    return [
-      { p: [[0, .12], [0, .12]].concat(der, ruedo, izq, [[0, .12], [0, .12]]), w: 1.25 },
-      { p: [[-.068, .285], [0, .296], [.068, .285]], w: .8 },
-      { p: capaD, w: 1 }, { p: espejo(capaD), w: 1 },
-      { p: [[.19, .16], [.215, .5], [.255, .86]], w: .4 },
-      { p: [[-.19, .16], [-.215, .5], [-.255, .86]], w: .4 }
-    ];
-  }
-  function lapiz() { // lápiz a la rodilla, un hombro, drapeado y abertura
-    var contorno = [[-.088, 0], [-.115, .025], [-.106, .07], [-.096, .128], [-.1, .18], [-.071, .28], [-.094, .36], [-.106, .44], [-.1, .56], [-.086, .68],
-      [0, .685], [.086, .68], [.1, .56], [.106, .44], [.094, .36], [.071, .28], [.1, .18], [.095, .122], [.05, .092], [0, .062], [-.045, .03], [-.064, 0], [-.088, 0]];
-    return [
-      { p: contorno, w: 1.25 },
-      { p: [[-.07, .05], [-.02, .15], [.04, .26], [.095, .4]], w: .6 },
-      { p: [[-.08, .11], [-.02, .2], [.06, .33]], w: .45 },
-      { p: [[.048, .682], [.046, .6]], w: .8 }
-    ];
-  }
-  function volantes() { // corazón con tirantes, cintura marcada y falda amplia en tres volantes
-    var cuerpoD = [[0, .085], [.03, .05], [.065, .044], [.095, .06], [.09, .14], [.065, .24]];
-    var faldaD = [[.065, .24], [.16, .42], [.145, .432], [.24, .62], [.225, .633], [.33, .86]];
-    var ruedo = festones(.33, -.33, .86, 8, .028);
-    var izq = espejo(faldaD).reverse().concat(espejo(cuerpoD).reverse());
-    return [
-      { p: cuerpoD.concat(faldaD.slice(1), ruedo.slice(1), izq.slice(1)), w: 1.25 },
-      { p: [[.065, .044], [.06, -.012]], w: .7 }, { p: [[-.065, .044], [-.06, -.012]], w: .7 },
-      { p: [[-.065, .24], [0, .25], [.065, .24]], w: .8 },
-      { p: festones(-.155, .155, .425, 5, .016), w: .7 },
-      { p: festones(-.235, .235, .625, 7, .02), w: .7 }
-    ];
-  }
-  var VESTIDOS = [gala(), lapiz(), volantes()];
-
-  // Catmull-Rom: el trazo suave que forma la silueta; las estrellas son nodos a lo largo de él.
-  function suave(pts, k) {
-    var out = [];
-    for (var i = 0; i < pts.length - 1; i++) {
-      var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
-      for (var j = 0; j < k; j++) {
-        var t = j / k, t2 = t * t, t3 = t2 * t;
-        out.push([
-          .5 * (2 * p1[0] + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3),
-          .5 * (2 * p1[1] + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3)
-        ]);
-      }
-    }
-    out.push(pts[pts.length - 1]);
-    return out;
-  }
 
   // ---------------------------------------------------------------- lienzo
   var W = 0, H = 0, DPR = 1, particulas = [], figuras = [], movil = false, glow;
@@ -176,10 +264,11 @@
     for (var i = 0; i < n; i++) {
       particulas.push({ x: rnd() * W, y: rnd() * H, vx: (rnd() - .5) * 9, vy: (rnd() - .5) * 9, r: .6 + rnd() * 1.3, f: rnd() * 6.28 });
     }
-    // Vestidos: tres en fila en escritorio; en el teléfono, uno tras otro al centro.
-    var alto = movil ? Math.min(H * .56, W * 1.05) : Math.min(H * .64, W * .34);
-    var top = movil ? H * .17 : H * .16;
-    figuras = VESTIDOS.map(function (trazos, i) {
+    // Figuras: tres en fila en escritorio; en el teléfono, una tras otra al centro.
+    var alto = movil ? Math.min(H * .8, W * 1.42) : Math.min(H * .8, W * .42);
+    var top = (H - alto) * (movil ? .42 : .45);
+    figuras = window.JMDFiguras.orden.map(function (nombre, i) {
+      var trazos = FIGURAS[nombre];
       var cx = movil ? W / 2 : W * (.22 + .28 * i);
       var lineas = trazos.map(function (tz) {
         var pts = suave(tz.p, 7).map(function (p) { return [cx + p[0] * alto, top + p[1] * alto]; });
@@ -188,12 +277,12 @@
         return { pts: pts, acum: acum, largo: largo, w: tz.w };
       });
       var total = lineas.reduce(function (s, l) { return s + l.largo; }, 0);
-      var paso = alto * (movil ? .05 : .042), nodos = [], off = 0;
+      var paso = alto * (movil ? .036 : .03), nodos = [], off = 0;
       lineas.forEach(function (l) {
         for (var s = 0; s <= l.largo; s += paso * (l.w < .9 ? 1.7 : 1)) {
           var k = 1; while (k < l.acum.length - 1 && l.acum[k] < s) k++;
           var a = l.acum[k - 1], b = l.acum[k], u = b > a ? (s - a) / (b - a) : 0, p = l.pts[k - 1], q = l.pts[k];
-          nodos.push({ x: p[0] + (q[0] - p[0]) * u, y: p[1] + (q[1] - p[1]) * u, s: off + s, f: rnd() * 6.28, big: l.w > 1 && rnd() < .22 });
+          nodos.push({ x: p[0] + (q[0] - p[0]) * u, y: p[1] + (q[1] - p[1]) * u, s: off + s, f: rnd() * 6.28, big: l.w > 1 && rnd() < .16 });
         }
         off += l.largo;
       });
@@ -206,7 +295,7 @@
       var a0 = 2.35 + i * .5;
       return { p: easeIO(seg(t, a0, a0 + 1.75)), a: ease(seg(t, a0 - .1, a0 + .3)) * (1 - .72 * ease(seg(t, INICIO_TEXTO - .2, INICIO_TEXTO + .5))) };
     }
-    var m0 = 2.3 + i * 1.18, ultimo = i === VESTIDOS.length - 1;
+    var m0 = 2.3 + i * 1.18, ultimo = i === figuras.length - 1;
     var sale = ultimo ? .72 * ease(seg(t, INICIO_TEXTO - .2, INICIO_TEXTO + .5)) : ease(seg(t, m0 + 1.0, m0 + 1.25));
     return { p: easeIO(seg(t, m0, m0 + 0.95)), a: ease(seg(t, m0 - .1, m0 + .2)) * (1 - sale) };
   }
