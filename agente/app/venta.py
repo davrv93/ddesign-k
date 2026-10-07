@@ -9,6 +9,8 @@ import json
 import os
 import re
 
+from . import ficha_producto
+
 _SEED = os.path.join(os.path.dirname(__file__), "..", "seed")
 PRODUCTO_DEMO = os.environ.get("PRODUCTO_DEMO", "").strip().upper()   # p. ej. V42: el vestido del anuncio
 PAGO_MD = os.environ.get("PAGO_INFO", os.path.join(_SEED, "pago.md"))
@@ -40,7 +42,7 @@ def extras_texto(codigo: str) -> str:
         partes.append(f"material: {x['material']}")
     if x.get("ocasion"):
         partes.append("ideal para: " + ", ".join(x["ocasion"]))
-    return (" | " + " | ".join(partes)) if partes else ""
+    return ((" | " + " | ".join(partes)) if partes else "") + ficha_producto.texto(codigo)
 
 
 def imagen_material(codigo: str) -> str:
@@ -80,7 +82,11 @@ def tela(codigo: str, descripcion: str) -> str:
         if m:
             t = re.sub(r"\b[A-ZÁÉÍÓÚ]{3,}\b", lambda w: w.group(0).lower(), m.group(1))
             return f"tela {t}" if t.lower() in _NOMBRE_DE_TELA else t
-    return ""
+    t = ficha_producto.valor(codigo, "tela")      # la ficha técnica (de Diners), si el párrafo no la nombra
+    # «organza francesa en las mangas» no es la tela de la blusa: la frase del código no la da (el LLM la ve en la ficha)
+    if re.search(r"no se indica|no indica|\ben (la|las|el|los) ", t):
+        return ""
+    return f"tela {t}" if t.lower() in _NOMBRE_DE_TELA else t
 
 
 def nota_tela(codigo: str, nombre: str, descripcion: str) -> str:

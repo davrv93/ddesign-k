@@ -461,3 +461,21 @@ envío, pago). Precio y rebaja: el modelo se abstiene. La despedida no cuenta si
 
 En el bot: `solicitud_de(req)` (reglas O modelo) alimenta `SolicitudCliente`, los hechos de la tabla de respuestas, la tela y
 la cita. `COMPRENSION=activo` (defecto) · `sombra` (solo traza) · `0` (apagado). Traza: `comprension` en cada respuesta.
+
+## Ficha técnica de cada prenda (`app/ficha_producto.py`, 07-10-2026)
+
+El catálogo solo trae el párrafo de Diners, escrito para vender. «¿Tiene mangas?», «¿es largo?» o «¿cómo es la espalda?»
+dependían de que el párrafo lo dijera: si no, el LLM adivinaba (y Jev le quitaba la frase) o se derivaba a una asesora algo
+que se ve en la foto. `seed/fichas_producto.json` tiene una ficha por prenda real (V21–V42) con silueta, largo, escote,
+mangas, cintura, espalda, cierre, tela, forro, transparencias, estampado, piezas, detalles, «cómo queda» y cuidados.
+
+- **Fuente de cada dato** (`fuente`): `diners` (texto de la tienda; lámina de materiales en V42), `foto` (análisis visual de
+  TODAS las fotos de la prenda: solo lo visible) o `ambas`. La tela nunca sale de una foto y «cómo queda» solo de la tienda
+  (`prueba_ficha_producto` lo exige). Lo que no se sabe va a `pendiente_tienda` (las medidas por talla, siempre).
+- **El texto de Diners se contradice con las fotos** en varias prendas (Kabanova «falda lisa» y es floreada; Irla «palo rosa»
+  y es negro…). Quedan en `discrepancias`; para el LLM manda la ficha («si choca con la descripción, vale esta»).
+- **En el bot:** la ficha se suma a lo que lee el LLM y a lo que verifica Jev (`venta.extras_texto`). `pedidos()` detecta el
+  atributo preguntado; con DeepSeek va una nota con el dato (o «no figura → asesora»), y si el texto no lo dice lo antepone
+  el código (`dicho()`). Sin LLM, la regla `atributo` de la tabla. «¿La falda es lisa?» / «¿viene con la blusa?» preguntan
+  por una pieza de la prenda que mira, no buscan faldas ni blusas (`memoria.RE_PIEZA_DE_FOCO`).
+- `FICHAS_PRODUCTO=0` lo apaga. Prenda nueva → su ficha (mismo esquema), o el bot solo tendrá el párrafo.

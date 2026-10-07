@@ -24,7 +24,7 @@ import re
 from dataclasses import dataclass
 from typing import Callable
 
-from . import estructurado, memoria, venta
+from . import estructurado, ficha_producto, memoria, venta
 
 # ---------------------------------------------------------------------------
 # Patrones con nombre (antes, sueltos dentro de las ramas)
@@ -74,6 +74,7 @@ def hechos(c) -> dict:
         "groseria": (c.cl_intencion == "censura" and c.cl_confianza >= c.k.UMBRAL_ACCION
                      and not RE_DUDA.search(p) and not RE_PEDIDO_APURADO.search(p)),
         "fuera_de_giro": (c.cl_intencion == "pregunta_general" and c.cl_confianza >= c.k.UMBRAL_ACCION and not c.lectura.get("respondio")
+                          and not getattr(c, "pide_attr", None)
                           and not c.datos and not c.k.RE_ROPA.search(c.mensaje) and not c.k.RE_TEMA_TIENDA.search(p)
                           and len(p.split()) >= 3 and not c.nombrados and not c.afirma and not c.niega),
         "pide_cuenta": bool(RE_CUENTA.search(p) and RE_CALCULA.search(p)),
@@ -158,6 +159,7 @@ EXCLUYE = {
     "talla_dicha": {"tallas", "detalle"},
     "tallas": {"detalle"},
     "tela": {"detalle"},
+    "atributo": {"detalle"},
     "precio": {"precio_al_nombrar", "detalle"},
     "color": {"detalle"},
 }
@@ -170,6 +172,7 @@ EXPLICITO = {
     "tallas": lambda c, h: bool(RE_TALLAS.search(c.plano)),
     "color": lambda c, h: c.pregunta_variante or bool(re.search(r"\bcolou?r(es)?\b", c.plano)),
     "tela": lambda c, h: c.pide_tela,
+    "atributo": lambda c, h: bool(getattr(c, "pide_attr", None)),
     "descuento": lambda c, h: h["menciona_descuento"],
     "envio": lambda c, h: h["habla_envio"],
     "showroom": lambda c, h: bool(RE_UBICACION.search(c.plano)),
@@ -227,6 +230,9 @@ TABLA: list[Regla] = [
     # --- dato de la prenda en foco (solo si se habla de ella)
     Regla("tela", "dato_prenda", "pregunta la tela", lambda c, h: c.pide_tela,
           lambda c, h: venta.respuesta_tela(c.foco.codigo, c.foco.nombre, c.foco.detalle)),
+    Regla("atributo", "dato_prenda", "pregunta mangas, largo, escote, espalda, cierre, forro… (ficha técnica)",
+          lambda c, h: bool(getattr(c, "pide_attr", None)),
+          lambda c, h: ficha_producto.respuesta(c.foco.codigo, c.ref, c.pide_attr)),
     Regla("envio_no_es_precio", "dato_prenda", "habla de envío: «¿cuánto sale el envío?» no pregunta el precio de la prenda",
           lambda c, h: h["habla_envio"], lambda c, h: ""),
     Regla("precio", "dato_prenda", "pregunta el precio", lambda c, h: h["pregunta_precio"] and c.foco.precio is not None,

@@ -1,0 +1,1952 @@
+[
+ {
+  "codigo": "V21",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "ajustada al cuerpo, tipo corsé",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "mini",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "corazón, con copas",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "tirantes finos",
+    "fuente": "foto"
+   },
+   "cintura": {
+    "valor": "marcada con una cinta negra horizontal",
+    "fuente": "foto"
+   },
+   "espalda": {
+    "valor": "cerrada, con las mismas cintas negras que el delantero",
+    "fuente": "ambas"
+   },
+   "cierre": {
+    "valor": "cierre invisible en la espalda",
+    "fuente": "ambas"
+   },
+   "tela": {
+    "valor": "encaje negro en la basta; la tela del cuerpo no se indica",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso con cintas negras y encaje negro en la basta",
+    "fuente": "ambas"
+   },
+   "color_visto": {
+    "valor": "nude (rosado claro) con cintas negras",
+    "fuente": "foto"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "copas en el busto",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cintas negras stretch que forman los cortes tipo corsé",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "encaje negro en la parte baja de la falda",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cintas también en la espalda",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "tirantes finos negros",
+    "fuente": "foto"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "las tiras stretch ayudan a sujetar el busto",
+    "fuente": "diners"
+   },
+   {
+    "valor": "los cortes de la espalda resaltan la figura",
+    "fuente": "diners"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "Vestido corto nude, ajustado y tipo corsé, con copas, escote corazón y tirantes finos; lleva cintas negras que dibujan la figura y encaje negro en la basta. Cierra con cierre invisible en la espalda.",
+  "discrepancias": [
+   "El catálogo lo registra como palo rosa; el texto dice nude y en la foto se ve nude rosado claro."
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "tela del cuerpo del vestido",
+   "si tiene forro",
+   "si la tela del cuerpo estira o solo las cintas",
+   "si los tirantes son regulables"
+  ]
+ },
+ {
+  "codigo": "V22",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "recta",
+    "fuente": "foto"
+   },
+   "largo": {
+    "valor": "largo completo",
+    "fuente": "foto"
+   },
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "tiro alto con pretina",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "con pinzas y cierre invisible",
+    "fuente": "diners"
+   },
+   "cierre": {
+    "valor": "cierre invisible en la espalda",
+    "fuente": "diners"
+   },
+   "tela": {
+    "valor": "Prada stretch",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "azul noche",
+    "fuente": "ambas"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "sobrepuestos delanteros con dos filas de botones dorados",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "corte en la línea de planchado al frente",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "abertura con botones al costado de cada basta",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "pinzas en la espalda",
+    "fuente": "diners"
+   },
+   {
+    "valor": "estilo formal",
+    "fuente": "diners"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "Pantalón formal azul noche de tiro alto y corte recto, en tela Prada stretch, con dos filas de botones dorados al frente y aberturas con botones en la basta. Cierra con cierre invisible en la espalda.",
+  "discrepancias": [
+   "El texto llama a los botones primero «nacarados» y luego «de metal»; en la foto se ven dorados metálicos."
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "largo de entrepierna",
+   "si tiene forro",
+   "cuánto estira la tela",
+   "si las blusas de las fotos se venden aparte"
+  ]
+ },
+ {
+  "codigo": "V23",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "corta y cruzada al frente",
+    "fuente": "foto"
+   },
+   "largo": {
+    "valor": "cropped (corto)",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "en V cruzado",
+    "fuente": "foto"
+   },
+   "mangas": {
+    "valor": "abullonadas 3/4 con puño fruncido",
+    "fuente": "foto"
+   },
+   "cintura": {
+    "valor": "tira que rodea el abdomen y deja aberturas a los costados",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "cerrada",
+    "fuente": "foto"
+   },
+   "cierre": null,
+   "tela": {
+    "valor": "seda",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "floreado, con flores y hojas",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "blanco con flores y hojas en palo rosa y marrón",
+    "fuente": "foto"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "cruce al frente bajo el busto",
+    "fuente": "foto"
+   },
+   {
+    "valor": "tira en el abdomen",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "aberturas a los costados de la cintura",
+    "fuente": "foto"
+   },
+   {
+    "valor": "hombros con volumen",
+    "fuente": "foto"
+   },
+   {
+    "valor": "puños fruncidos",
+    "fuente": "foto"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "Blusa corta floreada, blanca con flores palo rosa y marrón, de escote en V cruzado, mangas abullonadas 3/4 y una tira que rodea el abdomen dejando aberturas a los costados.",
+  "discrepancias": [
+   "El texto describe un short con cinturón corbata y broches; la blusa no lleva short y el short de las fotos tiene pretina con solapas y botones dorados, no cinturón corbata.",
+   "El texto dice «blusa de seda», pero la tela en la foto se ve mate y estructurada; no decir seda hasta que la tienda lo confirme."
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "si tiene forro",
+   "cómo se cierra o ajusta (cierre, broches o se amarra)",
+   "si el short de las fotos se vende aparte o viene con la blusa",
+   "confirmar la tela: Diners dice seda y en la foto se ve mate"
+  ]
+ },
+ {
+  "codigo": "V24",
+  "piezas": [
+   "top",
+   "falda"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "princesa: top corto y falda con vuelo desde la pretina",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "top: cropped (corto); falda: sobre la rodilla",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "top: corazón",
+    "fuente": "foto"
+   },
+   "mangas": {
+    "valor": "jamón (abullonadas, sobre el codo)",
+    "fuente": "ambas"
+   },
+   "cintura": {
+    "valor": "falda de tiro alto con pretina ancha",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "top: descubierta con escote cuadrado y panel fruncido",
+    "fuente": "foto"
+   },
+   "cierre": {
+    "valor": "cierre invisible",
+    "fuente": "diners"
+   },
+   "tela": {
+    "valor": "tejido suave al tacto (no se indica cuál)",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "floreado con florecitas",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "blanco con flores azules",
+    "fuente": "ambas"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "pretina gruesa en la falda",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "mangas jamón",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "falda con pliegues y vuelo desde la pretina",
+    "fuente": "foto"
+   },
+   {
+    "valor": "panel fruncido en la espalda del top",
+    "fuente": "foto"
+   },
+   {
+    "valor": "espalda del top con escote cuadrado",
+    "fuente": "foto"
+   },
+   {
+    "valor": "cierre en la espalda del top",
+    "fuente": "foto"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "la silueta princesa da volumen",
+    "fuente": "diners"
+   },
+   {
+    "valor": "la pretina ancha ayuda a formar el talle",
+    "fuente": "diners"
+   },
+   {
+    "valor": "el top levanta y forma el busto",
+    "fuente": "diners"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "Conjunto de top corto y falda, blanco con florecitas azules: el top tiene escote corazón y mangas jamón, y la falda es de tiro alto con pretina ancha y vuelo, sobre la rodilla.",
+  "discrepancias": [
+   "El texto dice «falda lisa y sencilla» y «falda lineal»; en la foto la falda es floreada y tiene pliegues y vuelo.",
+   "El texto dice cierre invisible; en la espalda del top se ve un cierre que no parece invisible (el de la falda no se distingue).",
+   "La tercera foto muestra además la versión roja (V25) junto a la azul."
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "tela exacta",
+   "si tiene forro",
+   "si el panel de la espalda del top estira",
+   "si se puede comprar el top o la falda por separado"
+  ]
+ },
+ {
+  "codigo": "V25",
+  "piezas": [
+   "top",
+   "falda"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "princesa: top corto y falda con vuelo desde la pretina",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "top: cropped (corto); falda: sobre la rodilla",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "top: corazón",
+    "fuente": "foto"
+   },
+   "mangas": {
+    "valor": "jamón (abullonadas, sobre el codo)",
+    "fuente": "ambas"
+   },
+   "cintura": {
+    "valor": "falda de tiro alto con pretina ancha",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "top: descubierta con escote cuadrado y panel fruncido",
+    "fuente": "foto"
+   },
+   "cierre": {
+    "valor": "cierre invisible",
+    "fuente": "diners"
+   },
+   "tela": {
+    "valor": "tejido suave al tacto (no se indica cuál)",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "floreado con florecitas",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "blanco con flores rojas",
+    "fuente": "ambas"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "pretina gruesa en la falda",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "mangas jamón",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "falda con pliegues y vuelo desde la pretina",
+    "fuente": "foto"
+   },
+   {
+    "valor": "panel fruncido en la espalda del top",
+    "fuente": "foto"
+   },
+   {
+    "valor": "espalda del top con escote cuadrado",
+    "fuente": "foto"
+   },
+   {
+    "valor": "cierre metálico en la espalda del top",
+    "fuente": "foto"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "la silueta princesa da volumen",
+    "fuente": "diners"
+   },
+   {
+    "valor": "la pretina ancha ayuda a formar el talle",
+    "fuente": "diners"
+   },
+   {
+    "valor": "el top levanta y forma el busto",
+    "fuente": "diners"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "Conjunto de top corto y falda, blanco con florecitas rojas: el top tiene escote corazón y mangas jamón, y la falda es de tiro alto con pretina ancha y vuelo, sobre la rodilla.",
+  "discrepancias": [
+   "El texto dice «falda lisa y sencilla» y «falda lineal»; en la foto la falda es floreada y tiene pliegues y vuelo.",
+   "El texto dice cierre invisible; en la espalda del top se ve un cierre con dientes metálicos (el de la falda no se distingue)."
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "tela exacta",
+   "si tiene forro",
+   "si el panel de la espalda del top estira",
+   "si se puede comprar el top o la falda por separado"
+  ]
+ },
+ {
+  "codigo": "V26",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "palazzo",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "largo completo",
+    "fuente": "foto"
+   },
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "tiro alto con pretina ancha tipo corsé",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "pretina tipo corsé con cortes princesa; los tirantes se unen al delantero",
+    "fuente": "diners"
+   },
+   "cierre": {
+    "valor": "cierre invisible en la espalda",
+    "fuente": "diners"
+   },
+   "tela": {
+    "valor": "Prada",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "beige",
+    "fuente": "ambas"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "tirantes regulables con ganchos metálicos",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "pliegues al frente",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "bolsillos laterales",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "bastas anchas con doblez",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "trabillas",
+    "fuente": "diners"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "Pantalón palazzo beige de tela Prada, de tiro alto con pretina ancha tipo corsé y tirantes regulables; lleva pliegues al frente, bolsillos laterales y bastas anchas con doblez.",
+  "discrepancias": [
+   "El texto lo llama «tipo overol»; en la foto es un pantalón con tirantes, sin peto."
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "largo de entrepierna",
+   "si tiene forro",
+   "si la tela estira",
+   "si los tirantes se pueden quitar",
+   "si las blusas de las fotos se venden aparte"
+  ]
+ },
+ {
+  "codigo": "V27",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "entallada al torso",
+    "fuente": "foto"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "cuello lazo",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "largas transparentes, con volantes en los hombros y puño con volante",
+    "fuente": "ambas"
+   },
+   "cintura": null,
+   "espalda": {
+    "valor": "cerrada y transparente",
+    "fuente": "ambas"
+   },
+   "cierre": {
+    "valor": "botones forrados al frente",
+    "fuente": "ambas"
+   },
+   "tela": {
+    "valor": "organza francesa en las mangas",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": {
+    "valor": "mangas y espalda; el delantero es opaco",
+    "fuente": "ambas"
+   },
+   "estampado": {
+    "valor": "liso",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "negro",
+    "fuente": "ambas"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "lazo grande en el cuello",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "volantes dobles en los hombros",
+    "fuente": "foto"
+   },
+   {
+    "valor": "botones forrados al frente",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "mangas de organza francesa",
+    "fuente": "diners"
+   },
+   {
+    "valor": "puño fruncido con volante",
+    "fuente": "foto"
+   },
+   {
+    "valor": "espalda transparente",
+    "fuente": "ambas"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "hace destacar el torso",
+    "fuente": "diners"
+   },
+   {
+    "valor": "el cuello lazo realza los hombros",
+    "fuente": "diners"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "Blusa negra con cuello lazo, botones forrados al frente y mangas largas de organza francesa transparente con volantes en los hombros; la espalda es cerrada y transparente.",
+  "discrepancias": [],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "tela del delantero",
+   "largo de la blusa (en las fotos va metida)",
+   "si tiene forro en el delantero",
+   "si se ve transparencia del sostén por la espalda"
+  ]
+ },
+ {
+  "codigo": "V28",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "cintura ajustada y falda amplia en tres niveles de volantes",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "al piso",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "halter, en V profundo",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "sin mangas",
+    "fuente": "foto"
+   },
+   "cintura": {
+    "valor": "drapeada, con pretina ancha fruncida",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "descubierta, con amarre en el cuello y tira a la cintura",
+    "fuente": "ambas"
+   },
+   "cierre": {
+    "valor": "cierre invisible",
+    "fuente": "diners"
+   },
+   "tela": {
+    "valor": "lino prada",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "floreado",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "turquesa con flores fucsia, rosadas y azules",
+    "fuente": "foto"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "falda de tres niveles (tres tiempos)",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cuello halter que se amarra en la nuca",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "trenza bajo el busto",
+    "fuente": "diners"
+   },
+   {
+    "valor": "espalda totalmente descubierta",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cintura drapeada",
+    "fuente": "ambas"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "da protagonismo a los hombros",
+    "fuente": "diners"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "Vestido largo de lino prada en turquesa floreado, con cuello halter en V, espalda descubierta, cintura drapeada y falda de tres volantes.",
+  "discrepancias": [
+   "el texto de Diners llama al vestido «Hayen», no Azra",
+   "la foto v28_2 muestra el vestido en palo rosa (otro color, el del V29), no en turquesa"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "forro",
+   "si la tela tiene elasticidad",
+   "si se puede usar brasier con la espalda descubierta"
+  ]
+ },
+ {
+  "codigo": "V29",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "cintura ajustada y falda amplia en tres niveles de volantes",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "al piso",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "halter, en V profundo",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "sin mangas",
+    "fuente": "foto"
+   },
+   "cintura": {
+    "valor": "drapeada, con pretina ancha fruncida",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "descubierta, con amarre en el cuello y tira a la cintura",
+    "fuente": "ambas"
+   },
+   "cierre": {
+    "valor": "cierre invisible",
+    "fuente": "diners"
+   },
+   "tela": {
+    "valor": "lino prada",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "floreado",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "rosa palo con flores moradas, lilas y toques turquesa y naranja",
+    "fuente": "foto"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "falda de tres niveles (tres tiempos)",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cuello halter que se amarra en la nuca",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "trenza bajo el busto",
+    "fuente": "diners"
+   },
+   {
+    "valor": "espalda totalmente descubierta",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cintura drapeada",
+    "fuente": "ambas"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "da protagonismo a los hombros",
+    "fuente": "diners"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "Vestido largo de lino prada en rosa palo floreado, con cuello halter en V, espalda descubierta, cintura drapeada y falda de tres volantes.",
+  "discrepancias": [
+   "el texto de Diners llama al vestido «Hayen», no Azra",
+   "las fotos v29_3 y v29_4 muestran el vestido en turquesa (el color del V28), no en palo rosa",
+   "no hay foto de la espalda en palo rosa: la única de espalda es la turquesa"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "forro",
+   "si la tela tiene elasticidad",
+   "si se puede usar brasier con la espalda descubierta"
+  ]
+ },
+ {
+  "codigo": "V30",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "ajustado arriba, con peplum en la cintura y pantalón wide leg",
+    "fuente": "foto"
+   },
+   "largo": {
+    "valor": "largo completo",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "un hombro (asimétrico)",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "sin mangas",
+    "fuente": "foto"
+   },
+   "cintura": {
+    "valor": "marcada con cinturón",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "cerrada, deja un hombro al descubierto",
+    "fuente": "foto"
+   },
+   "cierre": {
+    "valor": "cierre invisible en la espalda",
+    "fuente": "ambas"
+   },
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "rosado",
+    "fuente": "foto"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "volado en cascada a lo largo de una pierna (forma de caracol)",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cinturón tejido blanco plateado con hebilla redonda",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "peplum en la cintura",
+    "fuente": "foto"
+   },
+   {
+    "valor": "pinzas para levantar el busto",
+    "fuente": "diners"
+   },
+   {
+    "valor": "asimétrico en el hombro",
+    "fuente": "ambas"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "el cinturón ajusta y acentúa la silueta",
+    "fuente": "diners"
+   },
+   {
+    "valor": "las pinzas levantan el busto",
+    "fuente": "diners"
+   },
+   {
+    "valor": "disimula zonas que suelen incomodar",
+    "fuente": "diners"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "Enterizo rosado de un hombro, con cinturón tejido, peplum en la cintura, pantalón ancho de largo completo y un volado en cascada a lo largo de una pierna.",
+  "discrepancias": [
+   "el texto habla de «cinturón de cuero» y luego de «correa tejida»; en la foto el cinturón se ve tejido en blanco plateado y no se puede confirmar que sea de cuero"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "tela",
+   "forro",
+   "elasticidad",
+   "material del cinturón y si viene incluido",
+   "largo del pantalón según la estatura"
+  ]
+ },
+ {
+  "codigo": "V31",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "ajustada al cuerpo (lápiz)",
+    "fuente": "foto"
+   },
+   "largo": {
+    "valor": "sobre la rodilla",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "corazón asimétrico, un hombro, con solapa",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "sin mangas",
+    "fuente": "foto"
+   },
+   "cintura": {
+    "valor": "marcada con cinturón de hebilla metálica",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "cerrada, deja un hombro al descubierto",
+    "fuente": "foto"
+   },
+   "cierre": {
+    "valor": "cremallera gruesa plateada visible al frente",
+    "fuente": "ambas"
+   },
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso, con ribetes plateados de cremallera",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "negro",
+    "fuente": "foto"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "solapa en el escote",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cremallera gruesa plateada a lo largo de la falda",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cremalleras decorativas en los bolsillos",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cinturón con hebilla de metal plateada",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "un solo hombro",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "acabado brillante",
+    "fuente": "foto"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "Vestido negro ajustado sobre la rodilla, de un hombro con escote corazón y solapa, cinturón con hebilla de metal y cremalleras plateadas al frente y en los bolsillos.",
+  "discrepancias": [
+   "el texto menciona un corte asimétrico en la falda; en la foto el bajo se ve recto y lo asimétrico es la cremallera descentrada"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "tela (el texto no la dice)",
+   "forro",
+   "elasticidad",
+   "si la cremallera del frente abre o es decorativa"
+  ]
+ },
+ {
+  "codigo": "V32",
+  "piezas": [
+   "saco",
+   "falda"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "saco: corte princesa, corto (cropped); falda: recta cruzada",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "saco: cropped (corto); falda: mini",
+    "fuente": "ambas"
+   },
+   "escote": {
+    "valor": "saco: cuello con solapa abierto",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "largas, con abertura desde el codo hasta la basta",
+    "fuente": "ambas"
+   },
+   "cintura": {
+    "valor": "falda sin pretina",
+    "fuente": "diners"
+   },
+   "espalda": {
+    "valor": "saco cerrado; falda con cierre invisible",
+    "fuente": "ambas"
+   },
+   "cierre": {
+    "valor": "saco: botones forrados; falda: cierre invisible en la espalda",
+    "fuente": "ambas"
+   },
+   "tela": {
+    "valor": "prada rígida",
+    "fuente": "diners"
+   },
+   "forro": {
+    "valor": "seda satín",
+    "fuente": "diners"
+   },
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "celeste bebé",
+    "fuente": "ambas"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "saco corto que deja ver la cintura",
+    "fuente": "foto"
+   },
+   {
+    "valor": "presillas con botón a los costados del saco",
+    "fuente": "foto"
+   },
+   {
+    "valor": "falda con sobrepuesto en diagonal y 4 botones forrados",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "mangas con abertura desde el codo",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "botones forrados en la misma tela",
+    "fuente": "ambas"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "Conjunto celeste bebé de saco corto con solapa y falda mini cruzada con botones forrados, en tela prada rígida con forro de seda satín.",
+  "discrepancias": [
+   "el texto dice 4 botones cerca a la basta del saco; en la foto se ven 2 botones al frente y una presilla con botón a cada costado"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "si el saco y la falda se venden por separado",
+   "elasticidad"
+  ]
+ },
+ {
+  "codigo": "V33",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "entallada, con pinzas en el busto",
+    "fuente": "ambas"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "en V, con cuello de tiras que se anudan en lazo",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "cortas abullonadas (tipo princesa) con basta ancha",
+    "fuente": "ambas"
+   },
+   "cintura": null,
+   "espalda": {
+    "valor": "simple",
+    "fuente": "diners"
+   },
+   "cierre": {
+    "valor": "botones de broche al frente",
+    "fuente": "ambas"
+   },
+   "tela": {
+    "valor": "denim delgado",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "azul denim",
+    "fuente": "foto"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "cuello con tiras ajustables que se anudan en lazo",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "botones de broche metálicos al frente",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "mangas abullonadas con basta ancha",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cortes a los lados con pespunte",
+    "fuente": "diners"
+   },
+   {
+    "valor": "pinzas a la altura del busto",
+    "fuente": "diners"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "Blusa de denim delgado azul, con cuello de tiras que se anuda en lazo, escote en V, mangas cortas abullonadas y botones de broche al frente.",
+  "discrepancias": [],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "largo de la blusa (en las fotos va metida en el pantalón)",
+   "forro",
+   "elasticidad",
+   "si el pantalón azul marino de las fotos se vende aparte (no es parte de esta prenda)"
+  ]
+ },
+ {
+  "codigo": "V34",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "palazzo, de basta amplia",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "largo completo",
+    "fuente": "foto"
+   },
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "tiro alto con pretina ancha y hebilla",
+    "fuente": "foto"
+   },
+   "espalda": {
+    "valor": "con pinzas y cierre invisible",
+    "fuente": "diners"
+   },
+   "cierre": {
+    "valor": "cierre invisible en la espalda",
+    "fuente": "diners"
+   },
+   "tela": {
+    "valor": "prada",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "naranja",
+    "fuente": "ambas"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "sobrepuesto delantero con abertura",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "pretina con sobrepuesto de puntas sujeto con botones",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "hebilla dorada desmontable al centro de la pretina",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "broches en la pretina",
+    "fuente": "diners"
+   },
+   {
+    "valor": "pinzas en la espalda",
+    "fuente": "diners"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "Pantalón palazzo naranja de tela prada, tiro alto con pretina ancha y hebilla desmontable, con sobrepuesto delantero abierto y basta amplia.",
+  "discrepancias": [
+   "el texto dice que la abertura llega hasta la altura de la rodilla; en la foto v34_2 el sobrepuesto delantero se abre desde más arriba, casi desde la cadera"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "forro",
+   "elasticidad",
+   "largo según la estatura (en la foto se usa con tacón)",
+   "si la blusa negra de las fotos se vende aparte (no es parte de esta prenda)"
+  ]
+ },
+ {
+  "codigo": "V35",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "ajustada al cuerpo, estilo lápiz",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "a la rodilla",
+    "fuente": "ambas"
+   },
+   "escote": {
+    "valor": "corazón con hombros descubiertos (off shoulder)",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "sin mangas: banda caída sobre los brazos y tirantes finos",
+    "fuente": "ambas"
+   },
+   "cintura": {
+    "valor": "ajustada, sin pretina",
+    "fuente": "foto"
+   },
+   "espalda": {
+    "valor": "recta",
+    "fuente": "diners"
+   },
+   "cierre": {
+    "valor": "cierre invisible",
+    "fuente": "diners"
+   },
+   "tela": {
+    "valor": "roma",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "negro",
+    "fuente": "foto"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "escote corazón",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "hombros descubiertos con banda doblada sobre los brazos",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "tirantes finos",
+    "fuente": "foto"
+   },
+   {
+    "valor": "largo lápiz a la altura de la rodilla",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cierre invisible",
+    "fuente": "diners"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "el largo lápiz a la rodilla marca las curvas",
+    "fuente": "diners"
+   },
+   {
+    "valor": "la tela roma favorece la figura",
+    "fuente": "diners"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "El vestido Irla es ajustado al cuerpo, estilo lápiz y a la rodilla, con escote corazón, hombros descubiertos y tirantes finos. Es de tela roma, que favorece la figura, y cierra con cierre invisible.",
+  "discrepancias": [
+   "el catálogo lo registra en palo rosa, pero en las tres fotos es negro"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "en qué colores está disponible (palo rosa según catálogo, negro en la foto)",
+   "forro",
+   "elasticidad de la tela",
+   "ubicación del cierre invisible",
+   "cuidados de lavado"
+  ]
+ },
+ {
+  "codigo": "V36",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "entallada con peplum",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "a la cadera",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "en V",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "largas, tradicionales con yugo, con puño",
+    "fuente": "ambas"
+   },
+   "cintura": {
+    "valor": "marcada con corte en la cintura y lazo anudado al frente",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "con pinzas desde la sisa hasta la cintura",
+    "fuente": "diners"
+   },
+   "cierre": {
+    "valor": "botones al frente hasta la cintura",
+    "fuente": "foto"
+   },
+   "tela": {
+    "valor": "seda de rayas (seda estampada)",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "rayas",
+    "fuente": "ambas"
+   },
+   "color_visto": {
+    "valor": "rojo con rayas blancas",
+    "fuente": "foto"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "corte princesa al frente hasta la cintura",
+    "fuente": "diners"
+   },
+   {
+    "valor": "parte baja estilo peplum",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "lazo anudado en la cintura",
+    "fuente": "foto"
+   },
+   {
+    "valor": "botoncitos rojos al frente",
+    "fuente": "foto"
+   },
+   {
+    "valor": "mangas con yugo",
+    "fuente": "diners"
+   },
+   {
+    "valor": "pinzas en la espalda",
+    "fuente": "diners"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "La blusa Emet es de seda a rayas rojas y blancas, con escote en V, corte en la cintura y parte baja estilo peplum. Tiene mangas largas con yugo y, en la foto, botones al frente y un lazo en la cintura.",
+  "discrepancias": [],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "si el lazo de la cintura es fijo o se desata",
+   "forro",
+   "elasticidad de la tela",
+   "cuidados de lavado",
+   "si el pantalón blanco de la foto se vende aparte"
+  ]
+ },
+ {
+  "codigo": "V37",
+  "piezas": [
+   "top",
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "top: corto y ajustado; pantalón: palazzo",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "top: cropped (corto); pantalón: largo completo",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "top: redondo",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "sin mangas",
+    "fuente": "foto"
+   },
+   "cintura": {
+    "valor": "pantalón de tiro alto con cinturón forrado",
+    "fuente": "ambas"
+   },
+   "espalda": null,
+   "cierre": {
+    "valor": "cierre invisible",
+    "fuente": "diners"
+   },
+   "tela": {
+    "valor": "catania",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "palo rosa",
+    "fuente": "ambas"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "top con corte inglés",
+    "fuente": "diners"
+   },
+   {
+    "valor": "cinturón forrado con hebilla",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "pantalón palazzo de pierna ancha",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "pantalón con cortes en la pierna que le dan vuelo",
+    "fuente": "foto"
+   },
+   {
+    "valor": "deja el abdomen descubierto entre top y pantalón",
+    "fuente": "foto"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": "lavar siempre a mano; no usar agua caliente porque podría encoger; planchado a vapor",
+  "resumen": "El conjunto Kaylee es de tela catania palo rosa: top corto sin mangas con escote redondo y pantalón palazzo de tiro alto con cinturón forrado. Se lava a mano, sin agua caliente, y se plancha a vapor.",
+  "discrepancias": [],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "en qué pieza va el cierre invisible",
+   "si el cinturón viene incluido en el conjunto",
+   "si se venden las piezas por separado",
+   "forro",
+   "elasticidad de la tela"
+  ]
+ },
+ {
+  "codigo": "V38",
+  "piezas": [
+   "blazer"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "entallada a la cintura",
+    "fuente": "foto"
+   },
+   "largo": {
+    "valor": "a medio muslo",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "en V profundo con cuello y solapa",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "largas, tradicionales, con botones en el puño",
+    "fuente": "ambas"
+   },
+   "cintura": {
+    "valor": "marcada con pretina ancha y tiras que se anudan",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "con tiras que cruzan hacia la espalda",
+    "fuente": "diners"
+   },
+   "cierre": {
+    "valor": "botones forrados al frente; el texto menciona además cierre invisible",
+    "fuente": "ambas"
+   },
+   "tela": {
+    "valor": "prada (rígida)",
+    "fuente": "diners"
+   },
+   "forro": {
+    "valor": "satín",
+    "fuente": "diners"
+   },
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "rosado bebé",
+    "fuente": "ambas"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "botones forrados grandes al frente",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "cuello y solapa con corte inglés hacia el cuello",
+    "fuente": "diners"
+   },
+   {
+    "valor": "tiras que se anudan en la cintura y cruzan hacia la espalda",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "bolsillos con tapa",
+    "fuente": "foto"
+   },
+   {
+    "valor": "botones en el puño",
+    "fuente": "foto"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "El blazer Begonia es de tela prada rígida color rosado bebé, forrado en satín, con cuello y solapa, escote en V, botones forrados y tiras que marcan la cintura. En las fotos llega a medio muslo.",
+  "discrepancias": [
+   "el texto lista «seda» además de la tela prada y el forro de satín, sin decir en qué parte va",
+   "la categoría es blazer, pero en la foto 3 se lleva solo, a medio muslo, como vestido-blazer sin otra prenda abajo"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "si se puede usar solo como vestido-blazer",
+   "en qué parte va la seda",
+   "ubicación del cierre invisible",
+   "elasticidad de la tela",
+   "cuidados de lavado"
+  ]
+ },
+ {
+  "codigo": "V39",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "holgada, tipo blusón con basta elástica",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "a la cintura",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "en V con cuello lazo de tiras ajustables",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "largas y amplias, fruncidas con elástico antes del puño y con volante al final",
+    "fuente": "ambas"
+   },
+   "cintura": {
+    "valor": "elástico en la basta",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "con elástico grueso en la basta",
+    "fuente": "diners"
+   },
+   "cierre": {
+    "valor": "sin cierre visible",
+    "fuente": "foto"
+   },
+   "tela": {
+    "valor": "gasa",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "verde oscuro, tono petróleo",
+    "fuente": "ambas"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "cuello de tiras ajustables que se anuda en lazo",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "escote en V",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "pliegues en los hombros",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "elástico en la basta",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "puños fruncidos con elástico y volante",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "corte en el centro del delantero",
+    "fuente": "diners"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "La blusa Bernadette es de gasa verde oscuro, con cuello de tiras que se anuda en lazo, escote en V, pliegues en los hombros y elástico en la basta. Las mangas son amplias, fruncidas con elástico y terminan en volante.",
+  "discrepancias": [
+   "el texto habla de volantes largos al final de la manga; en las fotos el volante del puño se ve corto"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "si la gasa transparenta y si lleva forro",
+   "cuidados de lavado",
+   "si el pantalón de la foto se vende aparte"
+  ]
+ },
+ {
+  "codigo": "V40",
+  "piezas": [
+   "falda"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "recta y ajustada",
+    "fuente": "foto"
+   },
+   "largo": {
+    "valor": "mini",
+    "fuente": "foto"
+   },
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "pretina interior, sin pretina a la vista",
+    "fuente": "ambas"
+   },
+   "espalda": null,
+   "cierre": {
+    "valor": "cierre invisible",
+    "fuente": "diners"
+   },
+   "tela": {
+    "valor": "jacquard pesado",
+    "fuente": "diners"
+   },
+   "forro": {
+    "valor": "completamente forrada",
+    "fuente": "diners"
+   },
+   "transparencias": null,
+   "estampado": {
+    "valor": "diseño geométrico tejido en la tela",
+    "fuente": "foto"
+   },
+   "color_visto": {
+    "valor": "beige con diseño geométrico negro y gris",
+    "fuente": "foto"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "completamente forrada",
+    "fuente": "diners"
+   },
+   {
+    "valor": "pretina interior",
+    "fuente": "diners"
+   },
+   {
+    "valor": "diseño geométrico de rombos y zigzag",
+    "fuente": "foto"
+   },
+   {
+    "valor": "cierre invisible",
+    "fuente": "diners"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "La falda Paola es mini y recta, de jacquard pesado beige con diseño geométrico negro y gris. Es completamente forrada y tiene pretina interior con cierre invisible.",
+  "discrepancias": [],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "ubicación del cierre invisible",
+   "elasticidad de la tela",
+   "cuidados de lavado",
+   "si la blusa blanca de la foto se vende aparte"
+  ]
+ },
+ {
+  "codigo": "V41",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "ajustada al cuerpo",
+    "fuente": "foto"
+   },
+   "largo": {
+    "valor": "mini",
+    "fuente": "foto"
+   },
+   "escote": {
+    "valor": "en V profundo",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "largas, abullonadas en el hombro, con puños anchos",
+    "fuente": "ambas"
+   },
+   "cintura": {
+    "valor": "pretina drapeada",
+    "fuente": "ambas"
+   },
+   "espalda": {
+    "valor": "cerrada",
+    "fuente": "foto"
+   },
+   "cierre": null,
+   "tela": {
+    "valor": "roma",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "liso",
+    "fuente": "ambas"
+   },
+   "color_visto": {
+    "valor": "nude durazno y guinda (dos colores en las fotos)",
+    "fuente": "foto"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "volante (bobo) forrado en el lado izquierdo de la falda",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "ligero recogido debajo del busto",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "pretina drapeada",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "mangas abullonadas",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "puños anchos con botones forrados",
+    "fuente": "ambas"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "el escote en V da volumen al busto",
+    "fuente": "diners"
+   },
+   {
+    "valor": "la pretina drapeada afina la cintura",
+    "fuente": "diners"
+   },
+   {
+    "valor": "el volante de la falda disimula y aumenta caderas",
+    "fuente": "diners"
+   },
+   {
+    "valor": "las mangas abullonadas y los puños estilizan",
+    "fuente": "diners"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "El vestido Holly es ajustado y corto, de tela roma, con escote en V, pretina drapeada que afina la cintura y un volante en el lado izquierdo de la falda. Lleva mangas abullonadas con puños anchos y botones forrados.",
+  "discrepancias": [
+   "el catálogo lo registra en palo rosa, pero en las fotos aparece en nude durazno y en guinda"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "qué colores hay en stock (palo rosa según catálogo; nude y guinda en las fotos)",
+   "tipo y ubicación del cierre",
+   "forro",
+   "elasticidad de la tela",
+   "cuidados de lavado"
+  ]
+ },
+ {
+  "codigo": "V42",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "cintura marcada con falda amplia y con caída (línea A)",
+    "fuente": "ambas"
+   },
+   "largo": {
+    "valor": "al piso",
+    "fuente": "ambas"
+   },
+   "escote": {
+    "valor": "en V profundo",
+    "fuente": "ambas"
+   },
+   "mangas": {
+    "valor": "tipo capa, largas, de gasa",
+    "fuente": "ambas"
+   },
+   "cintura": {
+    "valor": "marcada con pretina ancha",
+    "fuente": "ambas"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "base de podesuá rígida con acabado en gasa",
+    "fuente": "diners"
+   },
+   "forro": null,
+   "transparencias": {
+    "valor": "mangas capa de gasa translúcida",
+    "fuente": "foto"
+   },
+   "estampado": {
+    "valor": "corpiño bordado con pedrería; resto liso",
+    "fuente": "ambas"
+   },
+   "color_visto": {
+    "valor": "azul, tono petróleo",
+    "fuente": "ambas"
+   }
+  },
+  "detalles": [
+   {
+    "valor": "corpiño bordado con pedrería",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "mangas tipo capa largas con borde ondulado",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "panel color piel al centro del escote",
+    "fuente": "foto"
+   },
+   {
+    "valor": "pretina ancha en la cintura",
+    "fuente": "ambas"
+   },
+   {
+    "valor": "falda larga con caída",
+    "fuente": "ambas"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "la base de podesuá aporta firmeza y mantiene la forma del vestido",
+    "fuente": "diners"
+   },
+   {
+    "valor": "la gasa da ligereza y un movimiento fluido",
+    "fuente": "diners"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "El vestido Gala Capa Azul es largo al piso, con escote en V, corpiño bordado con pedrería, cintura marcada y mangas tipo capa de gasa. Tiene base de podesuá, que mantiene la forma, y acabado en gasa con caída fluida.",
+  "discrepancias": [],
+  "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
+   "cómo es la espalda y dónde va el cierre (la foto es de frente, en maniquí)",
+   "si el panel del escote es transparente",
+   "forro",
+   "elasticidad de la tela",
+   "cuidados de lavado"
+  ]
+ }
+]

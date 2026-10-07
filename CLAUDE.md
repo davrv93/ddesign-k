@@ -190,6 +190,7 @@ responde. **No los arranques**: serían dos bots con el mismo número de WhatsAp
 | Dato | Estado |
 |---|---|
 | Productos **V21–V41** | **Reales.** Precio, tallas S/M/L, stock, descripción y fotos copiados de `baruka.dinersclubmall.pe` el 03-10-2026 (19 productos; Kabanova y Azra, que traen dos colores, se separan en uno por color). Scripts en `deploy/catalogo-diners/` |
+| Ficha técnica V21–V42 (`agente/seed/fichas_producto.json`) | Silueta, largo, escote, mangas, espalda… sacados de las **fotos reales** (análisis visual, 07-10-2026) y del texto de Diners, con la fuente de cada dato. Medidas por talla, forro y varias telas: **pendientes de la tienda**. Lista de contradicciones texto ↔ foto en cada ficha (`discrepancias`) |
 | Política de cambios y devoluciones | **Real** (de la ficha de Diners), en `tienda.md` |
 | Productos V01–V20 | Ejemplo, **inactivos**. No se borran porque los pedidos de prueba #4, #5 y #7 los referencian |
 | Sucursales (Centro de Lima, Miraflores, Gamarra) | **Demostración, con direcciones inventadas.** Apagadas con `KD_SUCURSALES=0`: el bot ya no las menciona |

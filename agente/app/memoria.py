@@ -290,6 +290,10 @@ PRENDAS = [("conjunto", r"conjunt|\bset\b|dos piezas"), ("enterizo", r"enteriz|j
            ("blazer", r"blazer|\bsaco\b"), ("falda", r"\bfalda"), ("jeans", r"\bjean"), ("pantalon", r"pantal|palazzo"),
            ("polo", r"\bpolos?\b|polera"), ("blusa", r"\bblus|\btop\b"), ("vestido", r"\b[vb]estid")]   # «bestido» también
 RE_PRENDA = [(k, re.compile(rx)) for k, rx in PRENDAS]
+# «¿la falda es lisa?», «¿viene con la blusa?»: pregunta por una PIEZA de la prenda que mira, no pide ver faldas ni blusas
+# (07-10: mandaba la foto de otra prenda y la pregunta se quedaba sin respuesta).
+RE_PIEZA_DE_FOCO = re.compile(r"\b(?:viene con|trae|incluye|lleva)\s+(?:la|el|su)\s+(?:falda|blusa|top|pantal[oó]n|saco|short|blazer)\b"
+                              r"|\b(?:la|el|su)\s+(?:falda|blusa|top|pantal[oó]n|saco|short|blazer)\s+(?:es|son|tiene|trae|lleva|viene|est[aá]|queda)\b", re.I)
 RE_ESTATURA = re.compile(r"\b(1[.,]\s?[4-9]\d?|1\s[4-9]\d)\b(?:\s*m\b|\s*mts?\b|\s*metros?\b)?|\bmido\s+(1[4-9]\d)\b|\b(1[4-9]\d)\s*cm\b")
 PROVINCIAS = ("arequipa", "cusco", "cuzco", "trujillo", "piura", "chiclayo", "iquitos", "huancayo", "tacna", "puno", "ica",
               "chimbote", "cajamarca", "ayacucho", "huanuco", "pucallpa", "tarapoto", "juliaca", "moquegua", "tumbes",
@@ -458,8 +462,9 @@ def extraer(texto: str, pendiente: str = "") -> dict:
         out["fecha"] = m.group(1)
     elif m := RE_FECHA_PARA.search(t):
         out["fecha"] = m.group(1)
+    t_prenda = RE_PIEZA_DE_FOCO.sub(" ", t)
     for k, rx in RE_PRENDA:
-        if rx.search(t):
+        if rx.search(t_prenda):
             out["prenda"] = k
             break
     if v := _estatura(t):

@@ -29,7 +29,7 @@ import base64
 import json
 from contextvars import ContextVar
 
-from . import comprension, datos, etapas, jev, memoria, respuestas, venta
+from . import comprension, datos, etapas, ficha_producto, jev, memoria, respuestas, venta
 from . import animo, crm, estructurado, gasto, rerank
 from .solicitud import (RE_CATALOGO, RE_MAS_BARATO, RE_MAS_OPCIONES, RE_OTRAS, RE_PIDE_COLOR_VERBO, _color_txt, _de_color, _raiz_color,
                         color_dicho, color_pedido, color_que_pide, interpretar)
@@ -1113,7 +1113,7 @@ def quiere_opciones(req: ChatIn, cl: dict) -> bool:
     if foco is not None and categoria_pedida(req.mensaje) == categoria_de(foco):
         return False   # «¿cuánto cuesta ese pantalón?» habla del pantalón que está viendo
     antes = set().union(*[_palabras_ropa(t.texto) for t in recientes if t.rol == "cliente"])
-    return bool(_palabras_ropa(req.mensaje) - antes)
+    return bool(_palabras_ropa(memoria.RE_PIEZA_DE_FOCO.sub(" ", req.mensaje)) - antes)   # «¿viene con la blusa?» no busca blusas
 
 
 def categoria_distinta(texto: str) -> bool:
@@ -1237,7 +1237,7 @@ RE_NO_PRENDA = re.compile(r"\bno\s+(?:es\s+)?(?:un|una|el|la|los|las)?\s*\w+", r
 
 def categoria_pedida(texto: str) -> str | None:
     """La prenda que pide. «busco un bestido, no un conjunto» es vestido: lo que descarta con «no» no cuenta."""
-    t = RE_NO_PRENDA.sub(" ", texto or "")
+    t = memoria.RE_PIEZA_DE_FOCO.sub(" ", RE_NO_PRENDA.sub(" ", texto or ""))
     return next((c for c, rx in RE_CATEGORIA if rx.search(t)), None)
 
 
@@ -1934,8 +1934,13 @@ def conversar(req: ChatIn) -> dict:
         if foco and not pide and not es_catalogo and not nombrados(req.mensaje):
             fichas = [foco] + [f for f in fichas if f is not foco]     # la primera ficha es de la que se habla
         # Con confianza baja la intención no cuenta («es de noche» salía como material con 0.38).
+        # «¿tiene mangas?», «¿es largo?», «¿y la espalda?»: atributos de la ficha técnica (app/ficha_producto.py)
+        pide_attr = (ficha_producto.pedidos(plano_m) if foco is not None and all(f is foco for f in sugeridas)
+                     and ficha_producto.RE_PREGUNTA.search(plano_m) else [])
         pide_tela = bool(foco and (venta.pregunta_material(req.mensaje, dec["intent"] if dec["nivel"] != "baja" else "")
                                    or "tela" in _clf_actual.get()))
+        if pide_tela and "forro" in pide_attr and not re.search(r"materia|tela|de qu[eé] (es|est[aá])|gasa", plano_m):
+            pide_tela = False   # «¿tiene forro?» pregunta el forro (ficha técnica), no la tela
         if pide_tela:
             lamina = venta.imagen_material(foco.codigo)
         if necesidad and (indagando or una_opcion is not None):
@@ -2042,7 +2047,7 @@ def conversar(req: ChatIn) -> dict:
                 no_hay=no_hay, no_hay_viene=no_hay_viene, es_bot=es_bot, una_opcion=una_opcion, sugeridas=sugeridas, pide=pide,
                 es_catalogo=es_catalogo, describiendo=describiendo, esperando_cual=esperando_cual, mas_barato=mas_barato,
                 foco=foco, ref=f"*{foco.codigo}* {foco.nombre}" if foco is not None else "",
-                nombrados=nombrados(req.mensaje), sol=solicitud_de(req), pide_tela=pide_tela, clf=_clf_actual.get(),
+                nombrados=nombrados(req.mensaje), sol=solicitud_de(req), pide_tela=pide_tela, pide_attr=pide_attr, clf=_clf_actual.get(),
                 cat_p=categoria_pedida(req.mensaje), cat_foco=categoria_de(foco) if foco is not None else None,
                 libres=[x["talla"] for x in tallas_de(foco) if x["disponible"]] if foco is not None else [],
                 pregunta_variante=pregunta_variante(req), ofrecer=ofrecer,
@@ -2069,6 +2074,8 @@ def conversar(req: ChatIn) -> dict:
                         if indagando else "")
                 if pide_tela:   # la tela sale de la ficha; si no figura, se dice que no figura (no se adivina)
                     nota = (nota + "\n" if nota else "") + venta.nota_tela(foco.codigo, foco.nombre, foco.detalle)
+                if pide_attr:
+                    nota = (nota + "\n" if nota else "") + ficha_producto.nota(foco.codigo, pide_attr)
                 if no_hay:
                     nota = (nota + "\n" if nota else "") + (f"NO TENEMOS {no_hay} ahora: dilo claro en la primera frase y no ofrezcas "
                                                            "otra prenda en su lugar (el bot preguntará si quiere ver otras opciones).")
@@ -2133,7 +2140,7 @@ def conversar(req: ChatIn) -> dict:
                     oc = memoria.OCASION_TXT.get(mem["sabemos"].get("ocasion") or "", "")
                     respuesta = (f"Para {oc} te recomiendo el *{una_opcion.codigo}* {una_opcion.nombre} 😊" if oc else
                                  f"Te recomiendo el *{una_opcion.codigo}* {una_opcion.nombre} 😊") + "\n\n" + respuesta
-                elif (foco is not None and "?" in req.mensaje and not pide_tela
+                elif (foco is not None and "?" in req.mensaje and not pide_tela and not pide_attr
                       and not re.search(r"asesora|\*4\*", respuesta) and dec["intent"] in PREGUNTA_PRENDA):
                     respuesta = (respuesta.rstrip() + "\n\n" + f"Ese detalle no figura en la ficha del *{foco.codigo}* {foco.nombre}; "
                                  "si quieres, una asesora te lo confirma escribiendo *4* 😊")
@@ -2145,6 +2152,9 @@ def conversar(req: ChatIn) -> dict:
             dicho = (clave_t and clave_t in memoria._plano(respuesta)) or (not t and re.search(r"asesora|\*4\*", respuesta))
             if not dicho:
                 respuesta = venta.respuesta_tela(foco.codigo, foco.nombre, foco.detalle) + "\n\n" + respuesta
+        if respuesta and pide_attr and accion == "responder" and not ficha_producto.dicho(foco.codigo, pide_attr, respuesta):
+            # Preguntó mangas, largo, espalda…: si el LLM no lo dijo (o Jev se lo quitó), lo pone el código desde la ficha.
+            respuesta = ficha_producto.respuesta(foco.codigo, f"*{foco.codigo}* {foco.nombre}", pide_attr) + "\n\n" + respuesta
         if respuesta and sig == "probar" and foco is not None and foco.precio is not None:
             # El cierre del método de venta va con el precio: si el LLM no lo dijo, lo pone el código (de la ficha),
             # justo antes de «¿te lo pruebas o te lo separo?».
