@@ -149,6 +149,8 @@ services:
       AGENT_VERSION: ${KD_AGENT_VERSION:-v1}
       V2_MODO: ${KD_V2_MODO:-sombra}
       V2_HABLA: ${KD_V2_HABLA:-recomendar,preguntar}
+      # Catálogos semánticos (app/catalogos/): 0 apagado · sombra (por defecto) lee y mide · activo además afina el detector de temas.
+      V2_CATALOGOS: ${KD_V2_CATALOGOS:-sombra}
       # Decisión: reglas (por defecto) | jev (Jev local por /v1/systemone en V2_JUEZ_URL) | jev-chat.
       V2_DECISION: ${KD_V2_DECISION:-reglas}
       V2_JUEZ_URL: ${KD_V2_JUEZ_URL:-}
