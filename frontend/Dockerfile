@@ -22,7 +22,8 @@ FROM nginx:1.29-alpine
 # nginx.conf (una tienda) o nginx.jmdventas.conf (multiempresa).
 ARG NGINX_CONF=nginx.conf
 COPY ${NGINX_CONF} /etc/nginx/conf.d/default.conf
-COPY jmdventas/index.html /usr/share/nginx/jmd/index.html
+# Portada de JMD Ventas, su intro y el logo de Consultoría Digital (los sirve nginx.jmdventas.conf).
+COPY jmdventas/ /usr/share/nginx/jmd/
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -qO- http://127.0.0.1/healthz || exit 1

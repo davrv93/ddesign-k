@@ -14,6 +14,9 @@ export const LEMA = MARCA === "Baruka Design" ? "CRM WhatsApp" : MARCA;
 
 export const titulo = (pagina: string) => `${pagina} · ${MARCA}`;
 
+/** Intro animada (frontend/jmdventas/intro.js): solo en JMD Ventas; la sirve su nginx en /jmdventas/_jmd/. */
+export const INTRO_URL = MARCA === "JMD Ventas" ? "/jmdventas/_jmd/intro.js" : "";
+
 export const iniciales = (nombre: string) =>
   nombre
     .split(/\s+/)

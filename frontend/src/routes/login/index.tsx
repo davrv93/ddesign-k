@@ -2,7 +2,7 @@ import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { api, getToken, setToken } from "~/lib/api";
 import { u } from "~/lib/base";
-import { LEMA, MARCA, cargarEmpresa, empresaGuardada, iniciales, titulo } from "~/lib/marca";
+import { INTRO_URL, LEMA, MARCA, cargarEmpresa, empresaGuardada, iniciales, titulo } from "~/lib/marca";
 
 export default component$(() => {
   const user = useSignal("admin");
@@ -13,7 +13,16 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    if (getToken()) location.href = u("/");
+    if (getToken()) {
+      location.href = u("/");
+      return;
+    }
+    if (INTRO_URL && !document.querySelector("script[data-jmd-intro]")) {
+      const s = document.createElement("script");
+      s.src = INTRO_URL;
+      s.dataset.jmdIntro = "";
+      document.body.appendChild(s);
+    }
     empresa.value = empresaGuardada();
     empresa.value = await cargarEmpresa();
   });

@@ -4,6 +4,7 @@ import { titulo } from "~/lib/marca";
 import { api, getToken, type Product } from "~/lib/api";
 import { money } from "~/lib/format";
 import { u } from "~/lib/base";
+import { FichaTecnica, datosFicha } from "~/components/ficha";
 
 const emptyProduct = (): Product => ({
   id: 0,
@@ -95,6 +96,14 @@ export default component$(() => {
                   <span class="price">{money(p.price)}</span>
                 </div>
                 <div class="product-name">{p.name}</div>
+                {p.ficha && (
+                  <div class="ficha-chip" title="Datos completos de la ficha técnica">
+                    {(() => {
+                      const [n, t] = datosFicha(p.ficha);
+                      return `Ficha ${n}/${t} datos`;
+                    })()}
+                  </div>
+                )}
                 <div class="sizes">
                   {p.variants.map((v) => (
                     <span key={v.size} class={["size", v.stock === 0 ? "zero" : v.stock <= 1 ? "low" : ""]}>
@@ -137,6 +146,7 @@ const ProductForm = component$<FormProps>(({ product, onClose$, onSaved$ }) => {
   const preview = useSignal(u(product.image));
   const busy = useSignal("");
   const error = useSignal("");
+  const tab = useSignal<"producto" | "ficha">("producto");
 
   const describe = $(async () => {
     if (!file.value) return;
@@ -177,7 +187,36 @@ const ProductForm = component$<FormProps>(({ product, onClose$, onSaved$ }) => {
           }
         }}
       >
-        <h2>{p.id ? `Editar ${p.code}` : "Nuevo producto"}</h2>
+        <h2>{p.id ? `${p.code} · ${p.name}` : "Nuevo producto"}</h2>
+        {p.id > 0 && (
+          <div class="tabs" role="tablist">
+            <button type="button" role="tab" aria-selected={tab.value === "producto"} class={["tab", tab.value === "producto" && "active"]} onClick$={() => (tab.value = "producto")}>
+              Producto y stock
+            </button>
+            <button type="button" role="tab" aria-selected={tab.value === "ficha"} class={["tab", tab.value === "ficha" && "active"]} onClick$={() => (tab.value = "ficha")}>
+              Ficha técnica
+            </button>
+          </div>
+        )}
+        {tab.value === "ficha" && p.id > 0 && (
+          <>
+            <FichaTecnica
+              productId={p.id}
+              sizes={p.variants.map((v) => v.size).filter(Boolean)}
+              ficha={product.ficha}
+              onSaved$={(f) => {
+                p.ficha = f;
+              }}
+            />
+            <div class="modal-actions">
+              <button type="button" class="btn btn-ghost" onClick$={onSaved$}>
+                Cerrar
+              </button>
+            </div>
+          </>
+        )}
+        {tab.value === "producto" && (
+        <>
         <div class="form-cols">
           <div class="photo-col">
             <div class="photo-box">{preview.value ? <img src={preview.value} alt="" width={220} height={290} /> : <span class="muted">Sin foto</span>}</div>
@@ -284,6 +323,8 @@ const ProductForm = component$<FormProps>(({ product, onClose$, onSaved$ }) => {
             Guardar
           </button>
         </div>
+        </>
+        )}
       </form>
     </div>
   );

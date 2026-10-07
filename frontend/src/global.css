@@ -1285,3 +1285,238 @@ textarea {
     font-size: 1.1rem;
   }
 }
+
+/* ---------- ficha técnica (components/ficha.tsx) ---------- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  margin: 10px 0 16px;
+  overflow-x: auto;
+}
+.tab {
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 10px 12px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tab.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+}
+.ficha-chip {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin: -2px 0 8px;
+}
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ficha-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.push-right {
+  margin-left: auto;
+}
+.ficha-meter {
+  width: 120px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.ficha-meter span {
+  display: block;
+  height: 100%;
+  background: var(--brand);
+  border-radius: inherit;
+}
+.ficha-resumen {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin: 6px 0;
+}
+.ficha-piezas {
+  margin: 0;
+}
+.ficha-h {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 14px 0 6px;
+}
+.ficha-attrs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+  margin: 0;
+}
+.ficha-attr {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.ficha-attr dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.ficha-attr dd {
+  margin: 0;
+  font-size: 0.9rem;
+}
+.fuente {
+  display: inline-block;
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: 999px;
+  vertical-align: 1px;
+  white-space: nowrap;
+  border: 1px solid currentColor;
+}
+.fuente-diners {
+  color: #1f6fb2;
+}
+.fuente-foto {
+  color: #7a4fb5;
+}
+.fuente-ambas {
+  color: var(--ok);
+}
+.fuente-tienda {
+  color: var(--brand);
+  background: var(--brand-soft);
+  border-color: transparent;
+}
+.no-figura {
+  color: var(--muted);
+  font-style: italic;
+}
+.ficha-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.ficha-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.9rem;
+}
+.ficha-list li {
+  margin-bottom: 4px;
+}
+.ficha-medidas table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.ficha-medidas th,
+.ficha-medidas td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+}
+.ficha-medidas thead th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+.ficha-medidas td.pendiente {
+  color: var(--warn);
+  font-style: italic;
+}
+.ficha-box {
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 12px;
+  font-size: 0.9rem;
+  border: 1px solid;
+}
+.ficha-box ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+.box-warn {
+  background: color-mix(in srgb, var(--warn) 9%, var(--surface));
+  border-color: color-mix(in srgb, var(--warn) 35%, var(--line));
+}
+.box-info {
+  background: color-mix(in srgb, #1f6fb2 8%, var(--surface));
+  border-color: color-mix(in srgb, #1f6fb2 30%, var(--line));
+}
+.ficha-leyenda {
+  margin-top: 10px;
+  line-height: 2;
+}
+.ficha-attrs-edit {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 14px;
+}
+.ficha-attrs-edit .lbl {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.ficha-fs {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 10px 0 0;
+}
+.ficha-fs legend {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 4px;
+}
+.ficha-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.ficha-row input {
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .ficha-attrs,
+  .ficha-cols,
+  .ficha-attrs-edit {
+    grid-template-columns: 1fr;
+  }
+  .ficha-attr {
+    grid-template-columns: 104px 1fr;
+  }
+  .ficha-meter {
+    width: 70px;
+  }
+}
+
+.ficha > p {
+  margin: 0;
+}

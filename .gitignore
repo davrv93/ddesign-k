@@ -19,3 +19,6 @@ agente/finetune/datos/
 agente/finetune/.venv/
 agente/finetune/hf/
 agente/finetune/modelos/
+
+# JMD Ventas: credenciales generadas en el servidor (DEPLOY.md §12); nunca en git
+credenciales-*.txt

@@ -444,6 +444,12 @@ Queda en `https://proyectopostventa.site/jmdventas/otra-tienda/` (panel, `login/
 cifras y guiones, 2–40, y no una ruta reservada (`api`, `media`, `build`, `login`, `catalogo`…). La empresa nueva
 empieza vacía: productos desde el panel. Sin WhatsApp (ver §12.4).
 
+Tarjeta en la portada `/jmdventas/` (§12.6): `--orden N` al crearla (menor primero) y, después,
+`jmd orden --empresa X --orden N`. Color del monograma y logo: `jmd marca --empresa X --color '#6d1f45' --logo https://…`
+(vacíos = color derivado del slug y monograma). Empresas al 07-10-2026: Modas LILI (`modaslili`, orden 1, catálogo
+vacío) y Baruka Design (`baruka`, orden 2). La clave de Modas LILI se generó en el servidor y está en
+`~/jmdventas/deploy/jmdventas/credenciales-modaslili.txt` (600; `credenciales-*.txt` está en `.gitignore`).
+
 ### 12.3 Migración de la SQLite de `/baruka/` (hecha el 07-10-2026)
 
 Sobre una **copia** (el respaldo del §7), nunca sobre la base viva. Repetible: borra lo que la empresa tenga en las
@@ -463,6 +469,55 @@ Imprime los conteos origen/destino y falla si no cuadran. La SQLite de producci�
 su tabla `users` (bcrypt) se copian por nombre. Los ids son globales: la migración con ids es para la primera empresa
 de una base; si un id ya es de otra empresa, falla sin escribir nada.
 
+### 12.6 Portada e intro (`frontend/jmdventas/`)
+
+`index.html` es la portada (tarjetas desde `GET /jmdventas/api/empresas`: solo slug, nombre, orden, color, logo y
+productos activos). `intro.js` es la intro animada (apertura editorial en blanco y negro, constelaciones que dibujan tres
+vestidos sobre azul profundo y púrpura, y «Inteligencia Artificial a tu servicio · Consultoría DIGITAL» con
+`consultoria-digital.jpg`). Corre en la portada y en el login de cada empresa, una vez por sesión, con «Saltar» y
+Escape; con `prefers-reduced-motion` no aparece. Todo va dentro de la imagen del panel (`COPY jmdventas/` →
+`/usr/share/nginx/jmd/`, servido en `/jmdventas/_jmd/`): se despliega horneando `jmd-frontend` (§12.1).
+
+Para verla de nuevo o revisar un instante: `/jmdventas/?intro=1` la fuerza y `/jmdventas/?intro_t=4.2` congela ese
+segundo (así se hacen las capturas).
+
+### 12.7 Fichas técnicas (`products.ficha`)
+
+Cada producto tiene su ficha técnica (esquema de `agente/seed/fichas_producto.json`, rama `feat/agente-v2`): atributos
+con su fuente, detalles, cómo queda, cuidados, resumen, contradicciones y pendientes. El panel la muestra y la edita en
+la pestaña «Ficha técnica» del producto; lo que se cambia a mano queda con fuente «tienda». La columna se crea sola al
+arrancar el backend (`ALTER TABLE … ADD COLUMN IF NOT EXISTS`).
+
+Despliegue completo (fichas + portada + intro). **Todavía no se ha hecho**: requiere orden expresa del usuario.
+
+```bash
+F2=~/Downloads/PjgFactSalud_completo/ddesign-k-v2/agente/seed/fichas_producto.json   # 22 fichas, V21–V42
+# 0. Respaldo de la base y de las imágenes actuales (para volver atrás)
+ssh -i $K $H 'F=$(date +%Y%m%d-%H%M); RP=$(sudo grep "^MARIADB_ROOT_PASSWORD=" ~/jmdventas/deploy/jmdventas/mariadb.env | cut -d= -f2-); \
+  sudo podman exec -e MYSQL_PWD="$RP" jmdventas_mariadb mariadb-dump -uroot --single-transaction jmdventas | gzip > ~/respaldos/jmdventas-$F.sql.gz \
+  && sudo podman tag localhost/jmdventas/backend:local localhost/jmdventas/backend:previo \
+  && sudo podman tag localhost/jmdventas/frontend:local localhost/jmdventas/frontend:previo && ls -la ~/respaldos/jmdventas-$F.sql.gz'
+# 1. Código
+rsync -az --exclude .git --exclude .env --exclude '*.env' --exclude node_modules --exclude dist \
+  -e "ssh -i $K" $R/backend $R/frontend $R/deploy "${H}:jmdventas/"
+# 2. Hornear (uno tras otro) y cargar en Podman
+ssh -i $K $H 'cd ~/jmdventas/deploy/jmdventas && docker compose build jmd-backend && docker compose build jmd-frontend \
+  && docker save localhost/jmdventas/backend:local localhost/jmdventas/frontend:local | sudo podman load'
+# 3. Recrear backend y panel (MariaDB no se toca; la columna ficha se crea al arrancar)
+ssh -i $K $H 'cd ~/jmdventas/deploy/jmdventas && sudo podman rm -f --depend jmdventas_backend \
+  && sudo podman-compose -p jmdventas up -d --no-build && sudo podman ps --format "{{.Names}} {{.ImageID}} {{.Status}}" | grep jmd'
+# 4. Cargar las fichas en Baruka (repetible; OJO: reemplaza también lo editado a mano en esos códigos)
+scp -i $K $F2 "${H}:/tmp/fichas_producto.json"
+ssh -i $K $H 'sudo podman cp /tmp/fichas_producto.json jmdventas_backend:/tmp/fichas.json \
+  && sudo podman exec jmdventas_backend jmd fichas --empresa baruka --archivo /tmp/fichas.json && rm -f /tmp/fichas_producto.json'
+# 5. Verificar
+for p in /jmdventas/ /jmdventas/_jmd/intro.js /jmdventas/_jmd/consultoria-digital.jpg /jmdventas/api/empresas \
+  /jmdventas/baruka/login/ /jmdventas/modaslili/login/ /baruka/ /demo-design/health; do
+  curl -s -o /dev/null -w "$p %{http_code}\n" https://proyectopostventa.site$p; done                 # todo 200
+```
+
+`jmd fichas` imprime por código «10/13 datos · N pendientes · N contradicciones» y avisa de los códigos sin producto.
+
 ### 12.4 WhatsApp
 
 Apagado en este stack (`EVOLUTION_URL=off`, sin `WHATSAPP_TENANT`): el panel lo muestra «no disponible», no se envía ni
@@ -479,3 +534,10 @@ entrado mientras tanto.
 - **Apagar el stack:** `cd ~/jmdventas/deploy/jmdventas && sudo podman-compose -p jmdventas down` (sin `-v` conserva
   la base y las fotos). No toca `kddesign`, `keto` ni `landing`.
 - **Datos de `/baruka/`:** la migración solo leyó una copia. Respaldo previo: `~/respaldos/kddesign_backend_data-pre-jmdventas-20261007-2119.tgz`.
+- **Fichas, portada e intro (§12.6–12.7):** volver a las imágenes del paso 0 y recrear:
+  `sudo podman tag localhost/jmdventas/backend:previo localhost/jmdventas/backend:local && sudo podman tag
+  localhost/jmdventas/frontend:previo localhost/jmdventas/frontend:local && sudo podman rm -f --depend jmdventas_backend
+  && sudo podman-compose -p jmdventas up -d --no-build`. La columna `products.ficha` puede quedarse (el backend anterior
+  no la lee). Para quitar solo las fichas: `UPDATE products SET ficha='' WHERE tenant_id=<id de baruka>`; para todo,
+  restaurar `~/respaldos/jmdventas-<fecha>.sql.gz` con `zcat … | sudo podman exec -i -e MYSQL_PWD=… jmdventas_mariadb mariadb -uroot jmdventas`.
+- **Modas LILI:** `DELETE FROM tenants WHERE slug='modaslili'` (en cascada) y borrar su archivo de credenciales.

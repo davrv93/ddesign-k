@@ -72,6 +72,25 @@ export interface Product {
   ai_tags: string;
   active: boolean;
   variants: Variant[];
+  ficha?: Ficha | null;
+}
+
+/** Ficha técnica (backend/internal/store/ficha.go; el esquema del agente V2). */
+export type Fuente = "diners" | "foto" | "ambas" | "tienda";
+export interface Dato {
+  valor: string;
+  fuente: Fuente;
+}
+export interface Ficha {
+  codigo?: string;
+  piezas: string[] | null;
+  atributos: Record<string, Dato | null> | null;
+  detalles: Dato[] | null;
+  como_queda: Dato[] | null;
+  cuidados: string | null;
+  resumen: string;
+  discrepancias: string[] | null;
+  pendiente_tienda: string[] | null;
 }
 
 export interface Customer {
