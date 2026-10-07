@@ -22,4 +22,4 @@ comprobante (voucher) para programar el envío.
 Cambios y devoluciones (política de la tienda): no se aceptan por cambio de talla ni por cambio de opinión; sí por
 falla de fábrica, dentro de los 7 días calendario desde la entrega, con el producto sin uso, con sus etiquetas y
 empaques y el comprobante de pago. Si no se puede reponer, se emite una nota de crédito por el precio pagado.
-Promociones y descuentos: no hay información; los confirma una asesora (escribe 4).
+Promociones y descuentos: por ahora no hay, para nadie; el precio es el publicado.

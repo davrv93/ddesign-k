@@ -385,8 +385,10 @@ Tuteas. Como mucho un emoji por mensaje.
 
 Reglas que no se rompen:
 - Datos de la tienda (sucursales, direcciones, horarios, cómo comprar): solo los de TIENDA; dalos completos.
-- Formas de pago, costo o tiempo de envío, cambios, devoluciones y promociones: no los sabes; nunca digas que sí
+- Formas de pago, costo o tiempo de envío, cambios y devoluciones: no los sabes; nunca digas que sí
   o que no. Ofrece que una asesora (*4*) lo confirme.
+- Descuentos, rebajas y promociones: por ahora NO hay, para nadie. Si los pide, dilo con amabilidad y sigue con la venta,
+  sin derivar a la asesora.
 - Solo afirmas datos de producto que estén en FICHAS. Nunca inventes precios, stock, marcas, fabricantes, medidas
   corporales, tiempos ni costos de entrega.
 - Precio: si la ficha trae «precio:», dalo tal cual en {moneda}, sea de la tienda o del catálogo de 100 modelos.
@@ -438,7 +440,8 @@ no es mi giro 😅» y vuelve a la tienda con una pregunta. Ejemplo:
 
 Reglas que no se rompen:
 - Datos de la tienda: solo los de TIENDA. Si te preguntan algo que no figura (formas de pago, costo o tiempo de
-  envío, cambios y devoluciones, promociones), no lo inventes: dile que se lo confirma una asesora escribiendo *4*.
+  envío, cambios y devoluciones), no lo inventes: dile que se lo confirma una asesora escribiendo *4*.
+- Descuentos, rebajas y promociones: por ahora NO hay, para nadie. Dilo con amabilidad, sin derivar a la asesora.
 - Datos de producto: solo los de FICHAS. Nunca inventes precios, stock, marcas, medidas ni tiempos de entrega.
 - Precio: si la ficha trae «precio:», dalo tal cual en {moneda} cuando lo pregunten o al recomendar.
 - Las fichas del "catálogo de 100 modelos" (VES-, POL-, BLU-, JEA-) no tienen marca ni medidas (ni precio si la
@@ -1300,7 +1303,8 @@ RE_TEMA_TIENDA = re.compile(r"\b(corte|pegad\w*|entallad\w*|ajustad\w*|suelt\w*|
                             r"vale|envi\w+|delivery|pago|pagar|yape|tienda|showroom|stock|separ\w+|apart\w+|pedido|compr\w+)\b")
 RE_CORTE_EMOJI = re.compile(r"(?<=[\U0001F300-\U0001FAFF☀-➿])\s+(?=[A-ZÁÉÍÓÚÑ¡¿])")
 AVISO_TIEMPO = "El tiempo exacto de entrega te lo confirma la asesora al programar tu envío 😊"
-AVISO_DESCUENTO = "Lo de descuentos y promociones te lo confirma una asesora: escribe *4* 😊"
+# Política de la tienda (07-10-2026): no hay descuentos para nadie. Se dice sin derivar a la asesora: pedir rebaja no es pedir a una persona.
+AVISO_DESCUENTO = "Por ahora no tenemos descuentos ni promociones: el precio es el publicado 😊"
 
 
 def _precios_reales() -> set[int]:
@@ -1313,8 +1317,8 @@ def _precios_reales() -> set[int]:
 
 def _sin_inventos(texto: str, prendas=()) -> str:
     """Quita del texto del LLM, frase a frase, lo que no puede saber: tiempos de entrega y descuentos (TIENDA no los
-    dice), precios que no existen en el catálogo y telas que la ficha de la prenda no nombra. Donde quitó un tiempo o
-    un descuento deja dicho quién lo confirma. Es el piso que no depende de Jev (que hace lo mismo con más criterio)."""
+    dice), precios que no existen en el catálogo y telas que la ficha de la prenda no nombra. Donde quitó un tiempo deja
+    dicho quién lo confirma; donde quitó un descuento, que no hay. Es el piso que no depende de Jev (que hace lo mismo con más criterio)."""
     validos = _precios_reales()
     ficha = _sin_tildes(" ".join(ficha_txt(f) for f in prendas if f is not None))
     avisos, partes = [], []

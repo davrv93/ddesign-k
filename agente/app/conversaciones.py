@@ -634,7 +634,7 @@ def _datos_reales(r: dict) -> str:
               f"stock {CAT[c].get('stock', {})}. {CAT[c]['descripcion'][:400]}" for c in sorted(cods) if c in CAT]
     tienda = ("TIENDA: showroom Juan Ayllón 459, Santa Anita (a 4 cuadras del Mall de Santa Anita), solo con cita, lunes a domingo "
               "9:00–19:00, refrigerio 13:00–14:00. Envíos: Lima S/ 15 (Olva), provincia S/ 20 (Olva o Shalom). Tallas S, M, L. "
-              "Cambios solo por falla de fábrica en 7 días. Promociones/descuentos y datos de pago: los da una asesora (*4*).")
+              "Cambios solo por falla de fábrica en 7 días. Descuentos y promociones: no hay. Datos de pago: los da una asesora (*4*).")
     try:
         demo = json.load(open(os.path.join(AQUI, "..", "seed", "producto_demo.json"), encoding="utf-8"))
         tienda += f" Material del {demo['codigo']} (lámina de la tienda): {demo.get('material', '')}"
