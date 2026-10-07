@@ -1,0 +1,103 @@
+# JMD Ventas · solo integración continua: pruebas de Go (SQLite y MariaDB) y build del panel.
+#
+# NO despliega: no hay llaves ni secretos en este repositorio (es público). El despliegue sigue siendo manual
+# (DEPLOY.md §12) hasta que se decida cómo dar acceso al servidor.
+name: JMD Ventas · CI
+
+on:
+  push:
+    branches: [feat/jmdventas-multitenant]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "deploy/jmdventas/**"
+      - ".github/workflows/jmdventas-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jmdventas-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Go (SQLite + MariaDB)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      # MariaDB desechable para las pruebas de aislamiento entre empresas (JMD_TEST_MYSQL_DSN). Claves de prueba, no
+      # secretos: el contenedor vive lo que dura el job.
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: ci-raiz
+          MARIADB_DATABASE: jmdtest
+          MARIADB_USER: jmd
+          MARIADB_PASSWORD: ci-prueba
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: go vet
+        run: go vet ./...
+      - name: go test (SQLite y MariaDB)
+        env:
+          JMD_TEST_MYSQL_DSN: jmd:ci-prueba@tcp(127.0.0.1:3306)/jmdtest
+        run: go test -count=1 ./...
+      - name: Las pruebas de aislamiento corrieron también en MariaDB
+        env:
+          JMD_TEST_MYSQL_DSN: jmd:ci-prueba@tcp(127.0.0.1:3306)/jmdtest
+        run: |
+          go test -count=1 -v -run 'Aislamiento|Ficha' ./internal/store/ | tee /tmp/store.txt
+          grep -q -- '--- PASS: TestAislamientoEntreEmpresas/mariadb' /tmp/store.txt
+          grep -q -- '--- PASS: TestFichaPorEmpresa/mariadb' /tmp/store.txt
+
+  frontend:
+    name: Panel (JMD Ventas y /baruka/)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Build multiempresa (BASE_PATH=/jmdventas/XEMPRESAX/)
+        env:
+          BASE_PATH: /jmdventas/XEMPRESAX/
+          MARCA: JMD Ventas
+          PUBLIC_URL: https://proyectopostventa.site
+        run: |
+          npm run build
+          # Con «__» en la base Qwik no genera páginas y el build sale verde igual: se comprueba que existan.
+          for p in index.html login/index.html productos/index.html catalogo/index.html; do
+            test -s "dist/jmdventas/XEMPRESAX/$p" || { echo "falta $p"; exit 1; }
+          done
+          rm -rf dist
+      - name: Build de una tienda (BASE_PATH=/baruka/)
+        env:
+          BASE_PATH: /baruka/
+          PUBLIC_URL: https://proyectopostventa.site/baruka
+        run: |
+          npm run build
+          test -s dist/baruka/index.html && test -s dist/baruka/login/index.html
+          rm -rf dist
+      - name: Sintaxis de la portada y la intro
+        run: node --check jmdventas/intro.js
