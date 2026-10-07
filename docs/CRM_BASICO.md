@@ -61,7 +61,7 @@ empresas (`internal/store/crm_test.go` en SQLite y MariaDB, `internal/api/crm_pa
 ## Migración
 
 Sin pasos a mano: al arrancar, el backend crea las tablas `notas`, `tareas`, `actividad` y `cliente_etiquetas` y
-añade a `customers` (`email`, `ciudad`, `etapa`, `etapa_fijada`, `asesora_id`, `updated_at`) y a `orders`
+añade a `customers` (`email`, `ciudad`, `etapa`, `etapa_fijada`, `asesora_id`) y a `orders`
 (`asesora_id`) las columnas que falten (`ALTER TABLE … ADD COLUMN IF NOT EXISTS` en MariaDB, `pragma_table_info` en
 SQLite), igual que se hizo con `products.ficha`. Todo con valor por defecto: los datos existentes no cambian. La etapa
 de las clientas que ya conversaron se rellena una vez desde `conversations.context`.

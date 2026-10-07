@@ -965,6 +965,28 @@ func (s *Store) Actividad(ctx context.Context, customerID int64, limit int) ([]E
 	return out, nil
 }
 
+// TodosLosPedidos: todos los pedidos de la empresa, del más nuevo al más viejo (para exportar).
+func (s *Store) TodosLosPedidos(ctx context.Context, limit int) ([]*Order, error) {
+	rows, err := s.DB.QueryContext(ctx, orderSelect+` WHERE o.tenant_id=? ORDER BY o.id DESC LIMIT ?`, s.tid, limit)
+	if err != nil {
+		return nil, err
+	}
+	var out []*Order
+	for rows.Next() {
+		o, err := scanOrder(rows)
+		if err != nil {
+			rows.Close()
+			return nil, err
+		}
+		out = append(out, o)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return out, s.loadItems(ctx, s.DB, out)
+}
+
 // ---------------------------------------------------------------------------
 // Panel de inicio
 
