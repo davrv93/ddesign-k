@@ -57,7 +57,10 @@ def nueva() -> dict:
             # Talla de sus pedidos anteriores (perfil): se le SUGIERE al preguntar («¿en M, como tu pedido anterior?»);
             # no es la talla de hoy hasta que ella lo diga. Antes prellenaba `sabemos.talla` y armaba el pedido con una
             # talla que no dijo (WhatsApp real, 04-10-2026: «quiero el v21» → pedido en M → «mi talla es L disculpa»).
-            "talla_perfil": ""}
+            "talla_perfil": "",
+            # Cuántas veces se hizo de verdad cada pregunta (V1 y la retoma de V2). `preguntado` solo repite las de indagar:
+            # la talla preguntada dos veces figuraba una, y la cita la pedía una tercera (07-10).
+            "conteo": {}}
 
 
 def normalizar(m: dict | None) -> dict:
@@ -89,6 +92,9 @@ def normalizar(m: dict | None) -> dict:
     for k, forma in (("dia", _FORMA["fecha_dia"]), ("hora", _FORMA["hora"])):
         v = tent.get(k)
         base["cita_tentativa"][k] = v if isinstance(v, str) and forma.match(v) else None
+    if isinstance(m.get("conteo"), dict):
+        base["conteo"] = {k: v for k, v in m["conteo"].items()
+                          if k in PENDIENTES and isinstance(v, int) and not isinstance(v, bool) and 0 < v < 100}
     if base["pendiente"] not in PENDIENTES:
         base["pendiente"] = ""
     return base
@@ -165,6 +171,11 @@ REPETIBLES = INDAGAR + ("que_busca",)
 
 def veces(mem: dict, k: str) -> int:
     return mem["preguntado"].count(k)
+
+
+def veces_hecha(mem: dict, k: str) -> int:
+    """Cuántas veces se le hizo de verdad esa pregunta (el conteo; si la ficha es anterior al conteo, lo de `preguntado`)."""
+    return max((mem.get("conteo") or {}).get(k, 0), veces(mem, k))
 
 
 def ya_hecha(mem: dict, k: str) -> bool:
@@ -941,7 +952,7 @@ def leer(mem: dict, texto: str, jev: dict | None = None, ahora: _dt.datetime | N
     return res
 
 
-def registrar_respuesta(mem: dict, respuesta: str, forzar: str | None = None, prev: dict | None = None) -> str:
+def registrar_respuesta(mem: dict, respuesta: str, forzar: str | None = None, prev: dict | None = None, contar: bool = True) -> str:
     """Anota lo que preguntó el bot. `forzar` lo fija el código cuando la pregunta es suya (flujo del pedido,
     «¿cuál es?»). Si el bot no preguntó nada reconocible, la pendiente sin responder sigue (solo las que no se
     sueltan solas); el resto se limpia. Devuelve la pendiente nueva."""
@@ -951,6 +962,9 @@ def registrar_respuesta(mem: dict, respuesta: str, forzar: str | None = None, pr
         # entre medio se soltaba, la tercera y la cuarta «¿para cuándo lo necesitas?» no se contaban y se repetía sin fin.
         repite = clave in REPETIBLES
         mem["pendiente"] = clave
+        if contar:
+            conteo = mem.setdefault("conteo", {})
+            conteo[clave] = conteo.get(clave, 0) + 1
         if clave not in mem["preguntado"] or (repite and veces(mem, clave) < VECES_INDAGAR):
             mem["preguntado"].append(clave)
     elif mem.get("pendiente") not in PERSISTENTES:

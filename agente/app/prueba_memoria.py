@@ -517,6 +517,18 @@ caso("regresión · una cita bien formada se conserva", M.normalizar({"sabemos":
 def main() -> int:
     for f in fallos:
         print(f)
+    # Conteo real de preguntas (07-10): la talla preguntada dos veces cuenta dos, y la retoma no cuenta doble.
+    from .v2 import temas as T
+    mc = M.nueva()
+    M.registrar_respuesta(mc, "Te recomiendo el Pandora.\n\n¿Qué talla usas normalmente?")
+    M.registrar_respuesta(mc, "Está a S/ 330.\n\n¿Qué talla usas: S, M o L?")
+    caso("conteo: talla preguntada dos veces", (M.veces_hecha(mc, "talla"), M.veces(mc, "talla")), (2, 1))
+    previo = "Está a S/ 330.\n\n¿Qué talla usas normalmente?"
+    T.registrar_en_ficha(mc, previo + "\n\nY para ayudarte a elegir, ¿qué talla usas?", previo)
+    caso("conteo: la retoma con la misma pregunta de V1 no cuenta doble", M.veces_hecha(mc, "talla"), 2)
+    caso("conteo: normalizar lo conserva", M.normalizar({"conteo": {"talla": 2}})["conteo"], {"talla": 2})
+    caso("conteo: normalizar descarta basura", M.normalizar({"conteo": {"talla": "x", "inventada": 3, "fecha": True}})["conteo"], {})
+    caso("conteo: ficha vieja sin conteo usa preguntado", M.veces_hecha(M.normalizar({"preguntado": ["talla"]}), "talla"), 1)
     print(f"memoria    extracción, hilo y siguiente pregunta: {total - len(fallos)}/{total} casos")
     return 1 if fallos else 0
 

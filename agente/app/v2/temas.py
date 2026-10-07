@@ -603,13 +603,15 @@ def pregunta_canonica(slot: str) -> str:
     return memoria.PREGUNTAS.get(slot, "")
 
 
-def registrar_en_ficha(mem: dict, texto_final: str) -> str:
+def registrar_en_ficha(mem: dict, texto_final: str, previo: str = "") -> str:
     """Anota en la ficha de V1 lo que ahora espera el bot, con la MISMA función con la que V1 anota sus preguntas
     (`memoria.registrar_respuesta`): la clave sale de la última pregunta del texto (`memoria.clave_de`). Así, si ella contesta «M», V1 lo
     lee como respuesta a la talla. Solo se llama cuando la retoma de V2 de verdad salió."""
     if not isinstance(mem.get("preguntado"), list) or not isinstance(mem.get("sabemos"), dict):
         return mem.get("pendiente", "")
-    return memoria.registrar_respuesta(mem, texto_final)
+    # `previo` = lo que V1 ya registró en este turno: si hacía la misma pregunta, no se cuenta dos veces.
+    misma = bool(previo) and memoria.pregunta_de(previo) == memoria.pregunta_de(texto_final)
+    return memoria.registrar_respuesta(mem, texto_final, contar=not misma)
 
 
 def olvidar_talla_adivinada(mem: dict) -> bool:

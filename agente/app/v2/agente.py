@@ -310,8 +310,9 @@ class AgentV2:
                 out["respuestas_rapidas"] = T.rapidas_de(retoma["slot"])
         # Estado: lo que sale (o se simula en sombra) cuenta como pregunta hecha; si la retoma no pasó la compuerta, no cuenta.
         if puede and texto_retoma:
-            res["respuesta"] = (res.get("respuesta") or "").rstrip() + "\n\n" + texto_retoma
-            T.registrar_en_ficha(mem, res["respuesta"])         # la memoria de V1 reconoce qué se espera (memoria.clave_de)
+            previo = res.get("respuesta") or ""
+            res["respuesta"] = previo.rstrip() + "\n\n" + texto_retoma
+            T.registrar_en_ficha(mem, res["respuesta"], previo)         # la memoria de V1 reconoce qué se espera (memoria.clave_de)
             res["respuestas_rapidas"] = out["respuestas_rapidas"]
             out["enviada"] = True
             traza["enviado"] = "v2"

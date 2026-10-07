@@ -1638,11 +1638,8 @@ def conversar(req: ChatIn) -> dict:
             dia, hora = mem["sabemos"]["cita"].split("T")
             t_c = talla_conocida(req)
             nombre = (req.cliente or "").split()[0] if (req.cliente or "").strip() else ""
-            # La talla se pregunta a lo sumo dos veces: con la retoma de V2 la cita la pedía una tercera (07-10). La retoma no
-            # queda en `preguntado` de V1, así que se cuentan las preguntas de talla que ya salieron en el historial.
-            talla_ya = sum(1 for t in (req.historial or []) if t.rol == "bot"
-                           for p in memoria.preguntas_en(t.texto) if memoria.clave_de(p) == "talla")
-            pedir_talla = max(talla_ya, memoria.veces(mem, "talla")) < 2
+            # La talla se pregunta a lo sumo dos veces (con la retoma de V2 la cita la pedía una tercera, 07-10).
+            pedir_talla = memoria.veces_hecha(mem, "talla") < 2
             respuesta = venta.cita_ok(dia, hora, hoy, f"*{foco.codigo}* {foco.nombre}" if foco is not None else "", t_c, nombre,
                                       pedir_talla=pedir_talla)
             forzar = "talla" if (foco is not None and not t_c and pedir_talla) else ""
