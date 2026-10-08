@@ -128,6 +128,7 @@ export interface Order {
   updated_at: string;
   customer: Customer;
   conversation_id: number;
+  asesora_id: number;
   items: OrderItem[];
 }
 
@@ -158,4 +159,141 @@ export interface Stats {
   customers: number;
   low_stock: number;
   open_inquiries: number;
+}
+
+// ---------------------------------------------------------------------------
+// CRM (backend/internal/api/crm_panel.go)
+
+export interface Sesion {
+  id: number;
+  username: string;
+  name: string;
+  role: "admin" | "asesora" | string;
+  admin: boolean;
+}
+
+export interface Clienta {
+  id: number;
+  jid: string;
+  phone: string;
+  name: string;
+  email: string;
+  ciudad: string;
+  etapa: string;
+  etapa_fijada: boolean;
+  asesora_id: number;
+  asesora: string;
+  etiquetas: string[];
+  pedidos: number;
+  total_comprado: number;
+  ultima_compra: string | null;
+  conversation_id: number;
+  ultimo_mensaje: string | null;
+  no_leidos: number;
+  created_at: string;
+}
+
+export interface Nota {
+  id: number;
+  customer_id: number;
+  order_id: number;
+  texto: string;
+  autor: string;
+  autor_id: number;
+  created_at: string;
+}
+
+export interface Tarea {
+  id: number;
+  customer_id: number;
+  clienta: string;
+  order_id: number;
+  titulo: string;
+  vence: string | null;
+  responsable_id: number;
+  responsable: string;
+  hecha: boolean;
+  hecha_at: string | null;
+  creada_por: string;
+  created_at: string;
+}
+
+export interface Miembro {
+  id: number;
+  username: string;
+  name: string;
+  role: string;
+  active: boolean;
+}
+
+export interface Evento {
+  tipo: string;
+  texto: string;
+  autor: string;
+  detalle?: string;
+  ref_id?: number;
+  monto?: number;
+  at: string;
+}
+
+export interface Inicio {
+  ventas_mes: number;
+  ventas_mes_anterior: number;
+  pedidos_vendidos: number;
+  pedidos_mes: number;
+  por_estado: Record<string, number>;
+  clientas_nuevas: number;
+  clientas_total: number;
+  embudo: Record<string, number>;
+  tareas_vencidas: number;
+  tareas_hoy: number;
+  mis_vencidas: number;
+  mis_hoy: number;
+  sin_leer: number;
+  stock_bajo: number;
+}
+
+let sesionCache: Promise<Sesion> | null = null;
+
+/** Usuario de la sesión y su rol (una vez por carga de página). */
+export function miSesion(): Promise<Sesion> {
+  if (!sesionCache) {
+    sesionCache = api<{ usuario: Sesion }>("/api/me")
+      .then((r) => r.usuario)
+      .catch((e) => {
+        sesionCache = null;
+        throw e;
+      });
+  }
+  return sesionCache;
+}
+
+let equipoCache: Promise<Miembro[]> | null = null;
+
+/** Personas del equipo (para asignar clientas, pedidos y tareas). */
+export function equipo(fresco = false): Promise<Miembro[]> {
+  if (!equipoCache || fresco) {
+    equipoCache = api<Miembro[]>("/api/equipo").catch((e) => {
+      equipoCache = null;
+      throw e;
+    });
+  }
+  return equipoCache;
+}
+
+/** Descarga un archivo de la API con la sesión (los enlaces normales no llevan el token). */
+export async function descargar(path: string, nombre: string) {
+  const res = await fetch(u(path), { headers: { Authorization: `Bearer ${getToken() ?? ""}` } });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new ApiError((d as { error?: string }).error ?? `Error ${res.status}`, res.status);
+  }
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }

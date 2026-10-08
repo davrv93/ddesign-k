@@ -145,6 +145,9 @@ export default component$(() => {
                   {STATE_LABEL[conv.state] && ` · ${STATE_LABEL[conv.state]}`}
                 </div>
               </div>
+              <a class="btn btn-sm btn-ghost" href={u(`/clientas?c=${conv.customer.id}`)} title="Ficha de la clienta: datos, notas, tareas e historial">
+                Ficha
+              </a>
               {thread.value!.kommo_url && (
                 <a class="btn btn-sm btn-ghost" href={thread.value!.kommo_url} target="_blank" rel="noreferrer" title="Abrir el lead de esta conversación en Kommo CRM">
                   Ver en Kommo ↗
@@ -167,7 +170,7 @@ export default component$(() => {
                   .filter((o) => o.status !== "cancelado")
                   .slice(0, 4)
                   .map((o) => (
-                    <a key={o.id} href={u(`/?pedido=${o.id}`)} class="pill" style={{ "--col": STATUS[o.status]?.color }}>
+                    <a key={o.id} href={u(`/pedidos?pedido=${o.id}`)} class="pill" style={{ "--col": STATUS[o.status]?.color }}>
                       #{o.id} {STATUS[o.status]?.label}
                       {o.total > 0 && ` · ${money(o.total)}`}
                     </a>

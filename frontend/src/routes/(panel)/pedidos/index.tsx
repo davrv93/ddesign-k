@@ -1,9 +1,10 @@
 import { $, component$, sync$, useComputed$, useOnWindow, useSignal, useStore, useVisibleTask$, type QRL } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { titulo } from "~/lib/marca";
-import { api, type Order, type Product, type Stats } from "~/lib/api";
-import { customerName, mapsLink, money, phoneLabel, STATUS, timeAgo } from "~/lib/format";
+import { api, descargar, equipo, miSesion, type Miembro, type Order, type Product, type Sesion, type Stats } from "~/lib/api";
+import { customerName, iniciales2, mapsLink, money, phoneLabel, STATUS, timeAgo } from "~/lib/format";
 import { u } from "~/lib/base";
+import { NotasPanel, TareaModal } from "~/components/crm";
 
 interface Board {
   statuses: string[];
@@ -21,6 +22,8 @@ export default component$(() => {
   const toast = useSignal<{ text: string; error?: boolean } | null>(null);
   const showNew = useSignal(false);
   const filter = useSignal("");
+  const miembros = useSignal<Miembro[]>([]);
+  const yo = useSignal<Sesion | null>(null);
 
   const notify = $((text: string, error = false) => {
     toast.value = { text, error };
@@ -46,6 +49,8 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
+    miSesion().then((s) => (yo.value = s));
+    equipo().then((ms) => (miembros.value = ms));
     await Promise.all([load(), loadProducts()]);
     const id = Number(new URLSearchParams(location.search).get("pedido"));
     if (id) selectedId.value = id;
@@ -97,6 +102,20 @@ export default component$(() => {
         </div>
         <div class="head-actions">
           <input class="search" type="search" placeholder="Buscar cliente, código, #pedido…" bind:value={filter} />
+          {yo.value?.admin && (
+            <button
+              class="btn"
+              onClick$={async () => {
+                try {
+                  await descargar("/api/export/pedidos.csv", `pedidos-${new Date().toISOString().slice(0, 10)}.csv`);
+                } catch (e) {
+                  notify((e as Error).message, true);
+                }
+              }}
+            >
+              ⬇ CSV
+            </button>
+          )}
           <button class="btn btn-primary" onClick$={() => (showNew.value = true)}>
             + Pedido manual
           </button>
@@ -216,6 +235,11 @@ export default component$(() => {
                           o.stock_reserved && <span class="chip warn">Sin ubicación</span>
                         )}
                         {o.source === "manual" && <span class="chip">Manual</span>}
+                        {o.asesora_id > 0 && (
+                          <span class="chip asesora-chip" title={`A cargo de ${nombreDe(miembros.value, o.asesora_id)}`}>
+                            {iniciales2(nombreDe(miembros.value, o.asesora_id))}
+                          </span>
+                        )}
                       </div>
                     </article>
                   ))}
@@ -231,6 +255,8 @@ export default component$(() => {
         <OrderDrawer
           key={selected.id}
           order={selected}
+          miembros={miembros.value}
+          admin={!!yo.value?.admin}
           onClose$={() => (selectedId.value = null)}
           onMove$={move}
           onSaved$={load}
@@ -257,16 +283,24 @@ export default component$(() => {
 
 // ---------------------------------------------------------------------------
 
+const nombreDe = (ms: Miembro[], id: number) => {
+  const m = ms.find((x) => x.id === id);
+  return m ? m.name || m.username : "—";
+};
+
 interface DrawerProps {
   order: Order;
+  miembros: Miembro[];
+  admin: boolean;
   onClose$: QRL<() => void>;
   onMove$: QRL<(id: number, status: string, notify?: boolean) => Promise<void>>;
   onSaved$: QRL<() => Promise<void>>;
   onToast$: QRL<(text: string, error?: boolean) => void>;
 }
 
-const OrderDrawer = component$<DrawerProps>(({ order, onClose$, onMove$, onSaved$, onToast$ }) => {
+const OrderDrawer = component$<DrawerProps>(({ order, miembros, admin, onClose$, onMove$, onSaved$, onToast$ }) => {
   const notes = useSignal(order.notes);
+  const tarea = useSignal(false);
   const target = useSignal(order.status);
   const notifyCustomer = useSignal(true);
   const saving = useSignal(false);
@@ -299,11 +333,44 @@ const OrderDrawer = component$<DrawerProps>(({ order, onClose$, onMove$, onSaved
               </a>
             )}
           </p>
-          {order.conversation_id > 0 && (
-            <a class="btn btn-sm" href={u(`/conversaciones?c=${order.conversation_id}`)}>
-              Ver conversación
+          <div class="row wrap">
+            <a class="btn btn-sm" href={u(`/clientas?c=${order.customer.id}`)}>
+              Ficha de la clienta
             </a>
-          )}
+            {order.conversation_id > 0 && (
+              <a class="btn btn-sm" href={u(`/conversaciones?c=${order.conversation_id}`)}>
+                Ver conversación
+              </a>
+            )}
+            <button class="btn btn-sm" onClick$={() => (tarea.value = true)}>
+              + Tarea
+            </button>
+          </div>
+        </section>
+
+        <section class="drawer-sec">
+          <h3>A cargo de</h3>
+          <select
+            value={String(order.asesora_id)}
+            onChange$={async (_, el) => {
+              try {
+                await api(`/api/orders/${order.id}`, { method: "PATCH", json: { asesora_id: Number(el.value) } });
+                onToast$("Asignación guardada");
+                await onSaved$();
+              } catch (e) {
+                onToast$((e as Error).message, true);
+              }
+            }}
+          >
+            <option value="0">Sin asignar</option>
+            {miembros
+              .filter((m) => m.active || m.id === order.asesora_id)
+              .map((m) => (
+                <option key={m.id} value={String(m.id)}>
+                  {m.name || m.username}
+                </option>
+              ))}
+          </select>
         </section>
 
         {order.customer_image && (
@@ -377,7 +444,7 @@ const OrderDrawer = component$<DrawerProps>(({ order, onClose$, onMove$, onSaved
         </section>
 
         <section class="drawer-sec">
-          <h3>Notas internas</h3>
+          <h3>Nota del pedido</h3>
           <textarea rows={3} bind:value={notes} placeholder="Pago por Yape, entrega el sábado…" />
           <button
             class="btn btn-sm"
@@ -395,14 +462,20 @@ const OrderDrawer = component$<DrawerProps>(({ order, onClose$, onMove$, onSaved
               }
             }}
           >
-            Guardar notas
+            Guardar nota
           </button>
+        </section>
+
+        <section class="drawer-sec">
+          <h3>Notas del equipo</h3>
+          <NotasPanel pedidoId={order.id} compacto />
         </section>
 
         <footer class="drawer-foot">
           <span class="muted small">
             Creado {timeAgo(order.created_at)} · {order.source === "manual" ? "manual" : "WhatsApp"}
           </span>
+          {admin && (
           <button
             class="btn btn-danger btn-sm"
             onClick$={async () => {
@@ -419,8 +492,19 @@ const OrderDrawer = component$<DrawerProps>(({ order, onClose$, onMove$, onSaved
           >
             Eliminar
           </button>
+          )}
         </footer>
       </aside>
+      {tarea.value && (
+        <TareaModal
+          pedidoId={order.id}
+          onClose$={() => (tarea.value = false)}
+          onSaved$={() => {
+            tarea.value = false;
+            onToast$("Tarea creada");
+          }}
+        />
+      )}
     </div>
   );
 });

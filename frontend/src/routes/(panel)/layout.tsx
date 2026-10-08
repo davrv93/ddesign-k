@@ -5,7 +5,10 @@ import { BASE, u } from "~/lib/base";
 import { LEMA, MARCA, cargarEmpresa, empresaGuardada, iniciales } from "~/lib/marca";
 
 const NAV = [
-  { href: "/", label: "Pedidos", icon: "▦" },
+  { href: "/", label: "Inicio", icon: "◎" },
+  { href: "/pedidos", label: "Pedidos", icon: "▦" },
+  { href: "/clientas", label: "Clientas", icon: "♀" },
+  { href: "/tareas", label: "Tareas", icon: "☑" },
   { href: "/conversaciones", label: "Conversaciones", icon: "✉" },
   { href: "/productos", label: "Productos y stock", icon: "👗" },
   { href: "/whatsapp", label: "WhatsApp", icon: "☎" },
