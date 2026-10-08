@@ -8,6 +8,7 @@ import (
 	"crypto/subtle"
 	"database/sql"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"hash/fnv"
@@ -30,6 +31,9 @@ type Tenant struct {
 	Orden     int       `json:"orden"` // posición en la portada (menor primero)
 	Color     string    `json:"color"` // color del monograma; vacío = derivado del slug (ColorDe)
 	Logo      string    `json:"logo"`  // URL del logo; vacío = monograma
+	Direccion string    `json:"direccion"`
+	Horario   string    `json:"horario"`
+	Galeria   []string  `json:"galeria"` // fotos del login (assets de la tienda, fuera de git)
 	Active    bool      `json:"active"`
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -45,15 +49,21 @@ var reservedSlugs = map[string]bool{
 // ValidSlug dice si el texto sirve como ruta de una empresa (minúsculas, cifras y guiones; 2 a 40).
 func ValidSlug(slug string) bool { return reSlug.MatchString(slug) && !reservedSlugs[slug] }
 
-const tenantCols = `id, slug, name, currency, whatsapp, orden, color, logo, active, created_at`
+const tenantCols = `id, slug, name, currency, whatsapp, orden, color, logo, direccion, horario, galeria, active, created_at`
 
 func scanTenant(sc interface{ Scan(...any) error }) (*Tenant, error) {
 	t := &Tenant{}
 	var active int
-	if err := sc.Scan(&t.ID, &t.Slug, &t.Name, &t.Currency, &t.WhatsApp, &t.Orden, &t.Color, &t.Logo, &active, &t.CreatedAt); err != nil {
+	var galeria string
+	if err := sc.Scan(&t.ID, &t.Slug, &t.Name, &t.Currency, &t.WhatsApp, &t.Orden, &t.Color, &t.Logo, &t.Direccion, &t.Horario,
+		&galeria, &active, &t.CreatedAt); err != nil {
 		return nil, err
 	}
 	t.Active = active == 1
+	t.Galeria = []string{}
+	if galeria != "" {
+		_ = json.Unmarshal([]byte(galeria), &t.Galeria)
+	}
 	return t, nil
 }
 
@@ -157,6 +167,70 @@ func (s *Store) SetTenantMarca(ctx context.Context, slug, color, logo string) er
 }
 
 var reColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
+
+// SetTenantDatos fija la dirección y el horario que se muestran en el login de la tienda.
+func (s *Store) SetTenantDatos(ctx context.Context, slug, direccion, horario string) error {
+	direccion, horario = strings.TrimSpace(direccion), strings.TrimSpace(horario)
+	if len(direccion) > 300 || len(horario) > 200 {
+		return errors.New("dirección (máx. 300) u horario (máx. 200) demasiado largos")
+	}
+	res, err := s.DB.ExecContext(ctx, `UPDATE tenants SET direccion=?, horario=? WHERE slug=?`, direccion, horario, slug)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// PrefijoAssets es donde el panel sirve los archivos de cada tienda (fotos que no van a git).
+func PrefijoAssets(slug string) string { return "/jmdventas/_jmd/empresas/" + slug + "/" }
+
+// SetTenantGaleria fija las fotos del login. Solo se aceptan archivos de la propia tienda (PrefijoAssets) o https.
+func (s *Store) SetTenantGaleria(ctx context.Context, slug string, urls []string) error {
+	if len(urls) > 40 {
+		return errors.New("máximo 40 fotos")
+	}
+	limpias := []string{}
+	for _, u := range urls {
+		u = strings.TrimSpace(u)
+		if u == "" {
+			continue
+		}
+		if !(strings.HasPrefix(u, PrefijoAssets(slug)) || strings.HasPrefix(u, "https://")) || strings.Contains(u, "..") || len(u) > 500 {
+			return fmt.Errorf("foto inválida %q: debe estar en %s o ser https://", u, PrefijoAssets(slug))
+		}
+		limpias = append(limpias, u)
+	}
+	b, _ := json.Marshal(limpias)
+	res, err := s.DB.ExecContext(ctx, `UPDATE tenants SET galeria=? WHERE slug=?`, string(b), slug)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// FotosCatalogo: fotos de los productos activos de la empresa (galería del login si la tienda no subió otras).
+func (s *Store) FotosCatalogo(ctx context.Context, max int) ([]string, error) {
+	rows, err := s.DB.QueryContext(ctx, `SELECT image FROM products WHERE tenant_id=? AND active=1 AND image<>'' ORDER BY code LIMIT ?`, s.tid, max)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []string{}
+	for rows.Next() {
+		var u string
+		if err := rows.Scan(&u); err != nil {
+			return nil, err
+		}
+		out = append(out, u)
+	}
+	return out, rows.Err()
+}
 
 // ColorDe es el color propio de la empresa: el guardado o uno derivado del slug (tono por hash, saturación y luz
 // fijas para que el monograma blanco siempre se lea).

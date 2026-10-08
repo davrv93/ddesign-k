@@ -105,6 +105,17 @@ func (s *Server) empresasPublicas(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, out)
 }
 
+// empresaPublica: GET /<slug>/api/public/empresa — lo que muestra el login de la tienda: nombre, logo, color,
+// dirección, horario y fotos (las suyas o, si no subió, las de su catálogo). Nada privado.
+func (s *Server) empresaPublica(w http.ResponseWriter, r *http.Request, t *store.Tenant) {
+	fotos, _ := s.store.ForTenant(t.ID).FotosCatalogo(r.Context(), 18)
+	w.Header().Set("Cache-Control", "public, max-age=60")
+	writeJSON(w, 200, map[string]any{
+		"slug": t.Slug, "nombre": t.Name, "color": store.ColorDe(t), "logo": t.Logo,
+		"direccion": t.Direccion, "horario": t.Horario, "galeria": t.Galeria, "fotos_catalogo": fotos,
+	})
+}
+
 // isBotTenant: la empresa de la petición es la del bot (sin multiempresa, siempre).
 func (s *Server) isBotTenant(r *http.Request) bool {
 	return !s.cfg.MultiTenant || (s.BotTenant > 0 && s.tenantID(r) == s.BotTenant)
@@ -170,6 +181,10 @@ func (s *Server) tenantRouter(next http.Handler) http.Handler {
 		r2 := r.Clone(WithTenant(r.Context(), t))
 		r2.URL.Path = "/" + tail
 		r2.URL.RawPath = ""
+		if r.Method == http.MethodGet && tail == "api/public/empresa" {
+			s.empresaPublica(w, r2, t)
+			return
+		}
 		next.ServeHTTP(w, r2)
 	})
 }

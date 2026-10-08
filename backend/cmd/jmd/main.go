@@ -11,6 +11,11 @@
 //	jmd fichas --empresa baruka --archivo fichas_producto.json
 //	    Carga las fichas técnicas (el JSON del agente, rama feat/agente-v2) en los productos de la empresa, por código.
 //	    Repetible: reemplaza la ficha de cada código del archivo; los demás productos no se tocan.
+//	jmd datos --empresa modaslili --direccion "Jr. … 507, Santa Anita" --horario "Lunes a sábado, 9:00–21:00"
+//	    Dirección y horario que se ven en el login de la tienda.
+//	jmd galeria --empresa modaslili look-01.jpg look-02.jpg …   (o URLs completas; --vaciar las quita)
+//	    Fotos del login. Un nombre suelto se toma de la carpeta de la tienda (/jmdventas/_jmd/empresas/<slug>/), que
+//	    vive solo en el servidor. Sin galería, el login usa las fotos de su catálogo.
 //	jmd empresas
 //	    Lista las empresas con sus conteos por tabla.
 //	jmd migrar-sqlite --origen /ruta/crm.db --empresa baruka
@@ -52,6 +57,10 @@ func main() {
 		err = marca(ctx, os.Args[2:])
 	case "fichas":
 		err = fichas(ctx, os.Args[2:])
+	case "datos":
+		err = datos(ctx, os.Args[2:])
+	case "galeria":
+		err = galeria(ctx, os.Args[2:])
 	case "migrar-sqlite":
 		err = migrar(ctx, os.Args[2:])
 	default:
@@ -68,6 +77,8 @@ func uso() {
 	fmt.Fprintln(os.Stderr, "     jmd orden --empresa SLUG --orden N")
 	fmt.Fprintln(os.Stderr, "     jmd marca --empresa SLUG [--color #rrggbb] [--logo URL]")
 	fmt.Fprintln(os.Stderr, "     jmd fichas --empresa SLUG --archivo fichas_producto.json")
+	fmt.Fprintln(os.Stderr, "     jmd datos --empresa SLUG --direccion D --horario H")
+	fmt.Fprintln(os.Stderr, "     jmd galeria --empresa SLUG [--vaciar] foto1.jpg foto2.jpg …")
 	fmt.Fprintln(os.Stderr, "     jmd empresas")
 	fmt.Fprintln(os.Stderr, "     jmd migrar-sqlite --origen crm.db --empresa SLUG")
 	os.Exit(2)
@@ -211,6 +222,50 @@ func fichas(ctx context.Context, args []string) error {
 		fmt.Printf(" · sin producto con ese código: %s", strings.Join(faltan, ", "))
 	}
 	fmt.Println()
+	return nil
+}
+
+func datos(ctx context.Context, args []string) error {
+	fs := flag.NewFlagSet("datos", flag.ExitOnError)
+	slug := fs.String("empresa", "", "slug")
+	dir := fs.String("direccion", "", "dirección")
+	hor := fs.String("horario", "", "horario")
+	_ = fs.Parse(args)
+	st, err := abrir()
+	if err != nil {
+		return err
+	}
+	defer st.DB.Close()
+	if err := st.SetTenantDatos(ctx, *slug, *dir, *hor); err != nil {
+		return fmt.Errorf("%s: %w", *slug, err)
+	}
+	fmt.Printf("%s → dirección %q · horario %q\n", *slug, *dir, *hor)
+	return nil
+}
+
+func galeria(ctx context.Context, args []string) error {
+	fs := flag.NewFlagSet("galeria", flag.ExitOnError)
+	slug := fs.String("empresa", "", "slug")
+	vaciar := fs.Bool("vaciar", false, "quitar todas las fotos (el login usa las del catálogo)")
+	_ = fs.Parse(args)
+	urls := []string{}
+	if !*vaciar {
+		for _, a := range fs.Args() {
+			if !strings.HasPrefix(a, "/") && !strings.HasPrefix(a, "https://") {
+				a = store.PrefijoAssets(*slug) + a
+			}
+			urls = append(urls, a)
+		}
+	}
+	st, err := abrir()
+	if err != nil {
+		return err
+	}
+	defer st.DB.Close()
+	if err := st.SetTenantGaleria(ctx, *slug, urls); err != nil {
+		return fmt.Errorf("%s: %w", *slug, err)
+	}
+	fmt.Printf("%s → %d fotos en la galería del login\n", *slug, len(urls))
 	return nil
 }
 

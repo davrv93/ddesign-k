@@ -1,0 +1,174 @@
+@import url("https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,400&display=swap");
+
+/* Login editorial de JMD Ventas: a un lado, un lookbook con las fotos de la tienda que se desliza despacio; al otro,
+   su logo, su nombre, el formulario y sus datos. En el teléfono, el lookbook es una franja arriba. */
+.lg {
+  --acento: #6d1f45;
+  --acento-fuerte: color-mix(in srgb, var(--acento) 78%, #000);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.88fr);
+  background: #f6f2ec;
+  color: #1b1618;
+}
+@media (prefers-color-scheme: dark) {
+  .lg { background: #120f10; color: #f3ecef; }
+}
+
+/* ---------------------------------------------------------------- lookbook */
+.lg-galeria {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--acento) 22%, #141012);
+}
+.lg-cols {
+  position: absolute;
+  inset: -40px 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 0 14px;
+}
+.lg-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: lg-sube 60s linear infinite;
+}
+.lg-col:nth-child(2) { animation-direction: reverse; margin-top: -120px; }
+.lg-col img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  opacity: 0;
+  animation: lg-aparece 1.2s ease forwards;
+}
+@keyframes lg-sube { to { transform: translateY(-50%); } }
+@keyframes lg-aparece { to { opacity: 1; } }
+.lg-velo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(10, 6, 8, 0.35) 0%, rgba(10, 6, 8, 0) 22%, rgba(10, 6, 8, 0) 62%, rgba(10, 6, 8, 0.72) 100%),
+    linear-gradient(90deg, rgba(10, 6, 8, 0) 70%, color-mix(in srgb, var(--acento) 30%, transparent) 100%);
+}
+.lg-leyenda {
+  position: absolute;
+  left: 32px;
+  bottom: 30px;
+  right: 32px;
+  color: #fff;
+  pointer-events: none;
+}
+.lg-leyenda span {
+  display: block;
+  font: 600 11px/1 Inter, system-ui, sans-serif;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  margin-bottom: 10px;
+}
+.lg-leyenda b {
+  font: italic 400 clamp(30px, 3.4vw, 46px)/1.02 "Bodoni Moda", var(--serif), Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+/* ---------------------------------------------------------------- panel */
+.lg-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px clamp(28px, 5vw, 72px);
+  gap: 0;
+}
+.lg-marca { margin-bottom: 18px; min-height: 64px; display: flex; align-items: center; }
+.lg-logo { display: block; max-height: 92px; max-width: min(260px, 70%); object-fit: contain; }
+.lg-logo.placa { background: #fff; border-radius: 12px; padding: 10px 16px; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 10px 26px -16px rgba(0, 0, 0, 0.35); }
+.lg-mono {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--acento);
+  color: #fff;
+  font: 600 24px/1 "Bodoni Moda", var(--serif), serif;
+}
+.lg-nombre {
+  font: 700 clamp(30px, 3vw, 42px)/1.04 "Bodoni Moda", var(--serif), Georgia, serif;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.lg-lema {
+  margin: 8px 0 26px;
+  font: 600 11px/1.3 Inter, system-ui, sans-serif;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, currentColor 58%, transparent);
+}
+.lg-form { display: grid; gap: 14px; max-width: 380px; }
+.lg-form label { display: grid; gap: 6px; font: 600 12.5px/1.2 Inter, system-ui, sans-serif; letter-spacing: 0.02em; }
+.lg-form input {
+  font: 400 16px/1.2 Inter, system-ui, sans-serif;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  background: color-mix(in srgb, #fff 82%, transparent);
+  color: inherit;
+}
+@media (prefers-color-scheme: dark) { .lg-form input { background: rgba(255, 255, 255, 0.05); } }
+.lg-form input:focus { outline: 2px solid var(--acento); outline-offset: 1px; border-color: transparent; }
+.lg-boton {
+  margin-top: 6px;
+  min-height: 50px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--acento-fuerte);
+  color: #fff;
+  font: 600 15px/1 Inter, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.2s;
+}
+.lg-boton:hover { filter: brightness(1.08); }
+.lg-boton:active { transform: scale(0.99); }
+.lg-boton:disabled { opacity: 0.7; cursor: default; }
+.lg-error { color: #c2334a; font-size: 14px; margin: 0; }
+.lg-datos { list-style: none; padding: 18px 0 0; margin: 26px 0 0; border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent); display: grid; gap: 10px; max-width: 380px; }
+.lg-datos li { display: flex; gap: 10px; align-items: flex-start; font: 400 14px/1.45 Inter, system-ui, sans-serif; color: color-mix(in srgb, currentColor 80%, transparent); }
+.lg-datos svg { flex: none; margin-top: 2px; color: var(--acento); }
+.lg-pie { margin: 28px 0 0; font: 500 11px/1.4 Inter, system-ui, sans-serif; letter-spacing: 0.16em; text-transform: uppercase; color: color-mix(in srgb, currentColor 45%, transparent); }
+
+/* ---------------------------------------------------------------- teléfono: franja arriba, formulario sin scroll */
+@media (max-width: 860px) {
+  .lg { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
+  .lg-galeria { height: min(30vh, 230px); }
+  .lg-cols { inset: 0; display: block; padding: 12px 0; }
+  .lg-col { flex-direction: row; height: 100%; gap: 10px; animation-name: lg-lado; animation-duration: 70s; }
+  .lg-col:nth-child(n + 2) { display: none; }
+  .lg-col img { height: 100%; width: auto; aspect-ratio: 3 / 4; }
+  .lg-leyenda { left: 16px; bottom: 14px; }
+  .lg-leyenda span { margin-bottom: 6px; font-size: 10px; }
+  .lg-leyenda b { font-size: 24px; }
+  .lg-panel { justify-content: flex-start; padding: 22px 20px 28px; }
+  .lg-marca { margin-bottom: 12px; min-height: 48px; }
+  .lg-logo { max-height: 56px; }
+  .lg-mono { width: 52px; height: 52px; font-size: 20px; }
+  .lg-nombre { font-size: 28px; }
+  .lg-lema { margin: 6px 0 16px; }
+  .lg-form { gap: 10px; max-width: none; }
+  .lg-datos { margin-top: 18px; padding-top: 14px; max-width: none; }
+  .lg-pie { margin-top: 18px; }
+}
+@keyframes lg-lado { to { transform: translateX(-50%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .lg-col { animation: none !important; }
+  .lg-col img { animation: none; opacity: 1; }
+}

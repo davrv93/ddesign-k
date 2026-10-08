@@ -358,6 +358,9 @@ func (s *Store) migrateSQLite() error {
 		{"tenants", "color", "TEXT NOT NULL DEFAULT ''"},
 		{"tenants", "logo", "TEXT NOT NULL DEFAULT ''"},
 		{"products", "ficha", "TEXT NOT NULL DEFAULT ''"},
+		{"tenants", "direccion", "TEXT NOT NULL DEFAULT ''"},
+		{"tenants", "horario", "TEXT NOT NULL DEFAULT ''"},
+		{"tenants", "galeria", "TEXT NOT NULL DEFAULT ''"},
 	} {
 		if has, err := s.sqliteHasColumn(c[0], c[1]); err != nil {
 			return err
@@ -628,6 +631,10 @@ func (s *Store) migrateMySQL() error {
 		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS logo VARCHAR(500) NOT NULL DEFAULT ''`,
 		// Ficha técnica de la prenda (JSON, store/ficha.go).
 		`ALTER TABLE products ADD COLUMN IF NOT EXISTS ficha MEDIUMTEXT NOT NULL DEFAULT ''`,
+		// Datos públicos de la tienda para su login: dirección, horario y fotos de la galería (JSON).
+		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS direccion VARCHAR(300) NOT NULL DEFAULT ''`,
+		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS horario VARCHAR(200) NOT NULL DEFAULT ''`,
+		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS galeria MEDIUMTEXT NOT NULL DEFAULT ''`,
 	} {
 		if _, err := s.DB.Exec(q); err != nil {
 			return err

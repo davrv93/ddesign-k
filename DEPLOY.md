@@ -489,6 +489,13 @@ volantes); y «Inteligencia Artificial a tu servicio · Consultoría DIGITAL» c
 Para revisar: `/jmdventas/?intro=1` la fuerza (aun con movimiento reducido), `?intro=0` la omite y
 `?intro_t=4.2` congela ese segundo (así se hacen las capturas).
 
+**Login de cada tienda** (`/jmdventas/<slug>/login/`): lookbook con sus fotos, logo, nombre, formulario, dirección y
+horario, leídos de `GET /<slug>/api/public/empresa`. Se fijan con `jmd marca` (color y logo), `jmd datos` (dirección y
+horario) y `jmd galeria` (fotos; sin galería salen las de su catálogo). **Las fotos con personas no van a git**: viven en
+`~/jmdventas/deploy/jmdventas/empresas/<slug>/` del servidor (volumen del panel, servido en
+`/jmdventas/_jmd/empresas/<slug>/`); en local, en `assets-empresas/` (ignorada). Los logos sí van en
+`frontend/jmdventas/logos/`.
+
 El color de cada portada es el de la empresa (`jmd marca`); Baruka va en su vino de marca:
 `ssh -i $K $H "sudo podman exec jmdventas_backend jmd marca --empresa baruka --color '#6d1f45'"`.
 

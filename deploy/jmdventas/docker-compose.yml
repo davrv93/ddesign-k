@@ -86,6 +86,9 @@ services:
     restart: unless-stopped
     depends_on:
       - jmd-backend
+    volumes:
+      # Fotos de cada tienda (empresas/<slug>/…), solo en el servidor: no van a git (muestran a personas reales).
+      - ./empresas:/usr/share/nginx/empresas:ro
     mem_limit: 64m
     networks: [jmd, landing]
 
