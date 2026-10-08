@@ -91,6 +91,7 @@ func (s *Server) Routes() http.Handler {
 	p("GET /api/conversations/{id}/messages", s.listMessages)
 	p("POST /api/conversations/{id}/send", s.sendMessage)
 	p("POST /api/conversations/{id}/bot", s.setBot)
+	a("DELETE /api/conversations/{id}", s.deleteConversation)
 
 	p("GET /api/settings", s.getSettings)
 	a("PUT /api/settings", s.putSettings)
@@ -396,7 +397,10 @@ func (s *Server) noWA(w http.ResponseWriter, r *http.Request) bool {
 
 func (s *Server) waStatus(w http.ResponseWriter, r *http.Request) {
 	if !s.waEnabled(r) {
-		writeJSON(w, 200, map[string]any{"available": false, "error": "WhatsApp no está habilitado para esta empresa"})
+		// Apagado a propósito para esta empresa (JMD Ventas): el panel lo explica sin jerga técnica.
+		nombre, _, _ := s.business(r)
+		writeJSON(w, 200, map[string]any{"available": false, "habilitado": false, "empresa": nombre,
+			"error": "WhatsApp no está habilitado para esta empresa"})
 		return
 	}
 	st, err := s.evo.Status(r.Context())

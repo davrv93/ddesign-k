@@ -10,6 +10,9 @@ interface Status {
   name?: string;
   instance?: string;
   error?: string;
+  // false = WhatsApp apagado a propósito para esta empresa (JMD Ventas, mientras el bot siga en su panel anterior).
+  habilitado?: boolean;
+  empresa?: string;
 }
 
 interface QR {
@@ -122,13 +125,23 @@ export default component$(() => {
       <section class="panel">
         {st == null ? (
           <p class="muted">Consultando estado…</p>
+        ) : !st.available && st.habilitado === false ? (
+          <div class="state state-off">
+            <span class="big-dot" />
+            <div>
+              <strong>WhatsApp todavía no está conectado a este panel</strong>
+              <p class="small">
+                Si {st.empresa || "tu tienda"} ya atiende con un bot de WhatsApp, sigue funcionando como hasta ahora desde su panel actual. Te
+                avisaremos cuando lo traslademos aquí; entonces podrás vincular el número y ver las conversaciones en este panel.
+              </p>
+            </div>
+          </div>
         ) : !st.available ? (
           <div class="state state-off">
             <span class="big-dot" />
             <div>
-              <strong>El servicio de WhatsApp no responde</strong>
-              <p class="muted small">{st.error}</p>
-              <p class="small">Revisa que el contenedor <code>evolution</code> esté corriendo: <code>docker compose ps</code>.</p>
+              <strong>WhatsApp no responde en este momento</strong>
+              <p class="small">Vuelve a intentarlo en unos minutos. Si sigue igual, avisa al equipo de soporte.</p>
             </div>
           </div>
         ) : st.logged_in ? (
@@ -224,7 +237,7 @@ export default component$(() => {
         <h2>¿Qué hace el bot?</h2>
         <ul class="bullets">
           <li>Saluda y muestra el menú: catálogo, consulta por foto, estado del pedido y asesora.</li>
-          <li>Cuando la clienta envía una foto, la IA (Gemini Flash-Lite, con Gemma de respaldo) la compara con tus productos y revisa el stock por talla.</li>
+          <li>Cuando un cliente envía una foto, la IA (Gemini Flash-Lite, con Gemma de respaldo) la compara con tus productos y revisa el stock por talla.</li>
           <li>Pide talla, muestra el resumen y, si confirma con <b>SI</b>, reserva el stock y le pide su ubicación.</li>
           <li>Si respondes desde el panel o desde el celular, el bot se pausa en ese chat.</li>
         </ul>

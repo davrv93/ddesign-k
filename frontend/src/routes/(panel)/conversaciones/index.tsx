@@ -1,7 +1,8 @@
 import { $, component$, sync$, useOnWindow, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { titulo } from "~/lib/marca";
-import { api, type Conversation, type Message, type Order } from "~/lib/api";
+import { api, miSesion, type Conversation, type Message, type Order } from "~/lib/api";
+import { Confirmar } from "~/components/confirmar";
 import { customerName, money, phoneLabel, STATUS, timeAgo, timeLabel, waText } from "~/lib/format";
 import { u } from "~/lib/base";
 
@@ -25,6 +26,9 @@ export default component$(() => {
   const convs = useSignal<Conversation[]>([]);
   const current = useSignal<number | null>(null);
   const thread = useSignal<Thread | null>(null);
+  // Eliminar la conversación: solo admin (el backend también lo exige), con el diálogo del panel.
+  const esAdmin = useSignal(false);
+  const borrando = useSignal(false);
   const draft = useSignal("");
   const sending = useSignal(false);
   const error = useSignal("");
@@ -50,6 +54,9 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
+    miSesion()
+      .then((s) => (esAdmin.value = s.admin))
+      .catch(() => {});
     await loadList();
     const c = Number(new URLSearchParams(location.search).get("c"));
     if (c) await open(c);
@@ -145,13 +152,18 @@ export default component$(() => {
                   {STATE_LABEL[conv.state] && ` · ${STATE_LABEL[conv.state]}`}
                 </div>
               </div>
-              <a class="btn btn-sm btn-ghost" href={u(`/clientas?c=${conv.customer.id}`)} title="Ficha de la clienta: datos, notas, tareas e historial">
+              <a class="btn btn-sm btn-ghost" href={u(`/clientes?c=${conv.customer.id}`)} title="Ficha del cliente: datos, notas, tareas e historial">
                 Ficha
               </a>
               {thread.value!.kommo_url && (
                 <a class="btn btn-sm btn-ghost" href={thread.value!.kommo_url} target="_blank" rel="noreferrer" title="Abrir el lead de esta conversación en Kommo CRM">
                   Ver en Kommo ↗
                 </a>
+              )}
+              {esAdmin.value && (
+                <button class="btn btn-sm btn-ghost btn-borrar" onClick$={() => (borrando.value = true)} title="Eliminar esta conversación y sus mensajes">
+                  Eliminar conversación
+                </button>
               )}
               {conv.bot_paused ? (
                 <button class="btn btn-sm btn-primary" onClick$={() => toggleBot(false)} title="El bot vuelve a responder desde el menú">
@@ -224,6 +236,22 @@ export default component$(() => {
           </>
         )}
       </section>
+      {borrando.value && conv && (
+        <Confirmar
+          titulo="¿Eliminar esta conversación?"
+          texto={`Se borran la conversación con ${customerName(conv.customer)} y sus ${thread.value?.messages.length ?? 0} mensajes. Su ficha de cliente y sus pedidos se conservan, y en su historial queda quién la eliminó. No se puede deshacer.`}
+          confirmar="Eliminar conversación"
+          peligro
+          onCancelar$={() => (borrando.value = false)}
+          onConfirmar$={async () => {
+            await api(`/api/conversations/${conv.id}`, { method: "DELETE" });
+            borrando.value = false;
+            current.value = null;
+            thread.value = null;
+            await loadList();
+          }}
+        />
+      )}
     </div>
   );
 });

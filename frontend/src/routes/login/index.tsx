@@ -2,7 +2,7 @@ import { $, component$, useSignal, useStyles$, useVisibleTask$ } from "@builder.
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { api, getToken, setToken } from "~/lib/api";
 import { u } from "~/lib/base";
-import { INTRO_URLS, LEMA, MARCA, cargarEmpresa, empresaGuardada, iniciales, titulo } from "~/lib/marca";
+import { LEMA, MARCA, cargarEmpresa, empresaGuardada, iniciales, titulo } from "~/lib/marca";
 import estilos from "./login.css?inline";
 
 /** Datos públicos de la tienda para su login (GET /<slug>/api/public/empresa). */
@@ -37,15 +37,7 @@ export default component$(() => {
       location.href = u("/");
       return;
     }
-    if (INTRO_URLS.length && !document.querySelector("script[data-jmd-intro]")) {
-      for (const src of INTRO_URLS) {
-        const s = document.createElement("script");
-        s.src = src;
-        s.async = false; // en orden: figuras.js antes que intro.js
-        s.dataset.jmdIntro = "";
-        document.body.appendChild(s);
-      }
-    }
+    // Sin la intro animada: el login de cada tienda va directo (la intro queda solo en la portada /jmdventas/).
     empresa.value = empresaGuardada();
     if (EDITORIAL) {
       try {

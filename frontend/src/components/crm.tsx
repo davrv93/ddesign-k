@@ -15,7 +15,7 @@ export const EtapaPill = component$<{ etapa: string; fijada?: boolean }>(({ etap
 });
 
 // ---------------------------------------------------------------------------
-// Notas internas de una clienta o de un pedido (con autor y fecha). Solo las ve el equipo.
+// Notas internas de un cliente o de un pedido (con autor y fecha). Solo las ve el equipo.
 
 export const NotasPanel = component$<{ clientaId?: number; pedidoId?: number; compacto?: boolean }>(({ clientaId, pedidoId, compacto }) => {
   const notas = useSignal<Nota[]>([]);
@@ -58,7 +58,7 @@ export const NotasPanel = component$<{ clientaId?: number; pedidoId?: number; co
   return (
     <div class="notas">
       <form class="nota-form" preventdefault:submit onSubmit$={add}>
-        <textarea rows={compacto ? 2 : 3} bind:value={texto} placeholder="Nota para el equipo (la clienta no la ve)…" />
+        <textarea rows={compacto ? 2 : 3} bind:value={texto} placeholder="Nota para el equipo (el cliente no la ve)…" />
         <button class="btn btn-sm btn-primary" disabled={busy.value || !texto.value.trim()}>
           Guardar nota
         </button>
@@ -114,8 +114,8 @@ export const TareaFila = component$<{ t: Tarea; conClienta?: boolean; onToggle$:
             {t.hecha && t.hecha_at && <span class="muted">Hecha {timeAgo(t.hecha_at)}</span>}
             <span class="muted">· {t.responsable || "Sin responsable"}</span>
             {conClienta && t.customer_id > 0 && (
-              <a href={u(`/clientas?c=${t.customer_id}`)} class="tarea-clienta">
-                {t.clienta || "Clienta"}
+              <a href={u(`/clientes?c=${t.customer_id}`)} class="tarea-clienta">
+                {t.clienta || "Cliente"}
               </a>
             )}
             {t.order_id > 0 && <a href={u(`/pedidos?pedido=${t.order_id}`)}>#{t.order_id}</a>}

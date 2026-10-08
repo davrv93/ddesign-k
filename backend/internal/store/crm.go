@@ -417,7 +417,7 @@ func (s *Store) AsignarClienta(ctx context.Context, id, userID int64) error {
 	if n, _ := res.RowsAffected(); n == 0 {
 		return ErrNotFound
 	}
-	return s.registrar(ctx, s.DB, id, "asignacion", asignacionTexto("Clienta", "a", nombre), 0)
+	return s.registrar(ctx, s.DB, id, "asignacion", asignacionTexto("Cliente", "o", nombre), 0)
 }
 
 // AsignarPedido deja el pedido a cargo de una persona del equipo (0 = nadie).
@@ -545,7 +545,7 @@ func (s *Store) AddNota(ctx context.Context, n *Nota) error {
 	} else {
 		var one int
 		if err := s.DB.QueryRowContext(ctx, `SELECT 1 FROM customers WHERE id=? AND tenant_id=?`, n.CustomerID, s.tid).Scan(&one); err != nil {
-			return fmt.Errorf("clienta %d: %w", n.CustomerID, ErrNotFound)
+			return fmt.Errorf("cliente %d: %w", n.CustomerID, ErrNotFound)
 		}
 	}
 	n.CreatedAt = now()
@@ -736,7 +736,7 @@ func (s *Store) checkVinculos(ctx context.Context, t *Tarea) error {
 	if t.CustomerID > 0 {
 		var one int
 		if err := s.DB.QueryRowContext(ctx, `SELECT 1 FROM customers WHERE id=? AND tenant_id=?`, t.CustomerID, s.tid).Scan(&one); err != nil {
-			return fmt.Errorf("clienta %d: %w", t.CustomerID, ErrNotFound)
+			return fmt.Errorf("cliente %d: %w", t.CustomerID, ErrNotFound)
 		}
 	}
 	_, err := s.nombreUsuario(ctx, t.ResponsableID)

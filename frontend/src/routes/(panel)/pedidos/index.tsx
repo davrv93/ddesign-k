@@ -334,8 +334,8 @@ const OrderDrawer = component$<DrawerProps>(({ order, miembros, admin, onClose$,
             )}
           </p>
           <div class="row wrap">
-            <a class="btn btn-sm" href={u(`/clientas?c=${order.customer.id}`)}>
-              Ficha de la clienta
+            <a class="btn btn-sm" href={u(`/clientes?c=${order.customer.id}`)}>
+              Ficha del cliente
             </a>
             {order.conversation_id > 0 && (
               <a class="btn btn-sm" href={u(`/conversaciones?c=${order.conversation_id}`)}>

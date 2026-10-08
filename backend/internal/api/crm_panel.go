@@ -300,7 +300,7 @@ func (s *Server) listEtiquetas(w http.ResponseWriter, r *http.Request) {
 func (s *Server) listNotas(w http.ResponseWriter, r *http.Request) {
 	c, o := qInt(r, "clienta"), qInt(r, "pedido")
 	if c == 0 && o == 0 {
-		writeErr(w, 400, "indica la clienta o el pedido")
+		writeErr(w, 400, "indica el cliente o el pedido")
 		return
 	}
 	ns, err := s.st(r).ListNotas(r.Context(), c, o)
@@ -561,7 +561,7 @@ func (s *Server) exportClientas(w http.ResponseWriter, r *http.Request) {
 			strings.Join(c.Etiquetas, ", "), c.Asesora, strconv.Itoa(c.Pedidos), monto(c.TotalComprado), fechaLima(c.UltimaCompra),
 			fechaLima(c.UltimoMensaje), fechaLima(&created)})
 	}
-	escribirCSV(w, "clientas", filas)
+	escribirCSV(w, "clientes", filas)
 }
 
 func (s *Server) exportPedidos(w http.ResponseWriter, r *http.Request) {
@@ -577,7 +577,7 @@ func (s *Server) exportPedidos(w http.ResponseWriter, r *http.Request) {
 			nombres[m.ID] = (&Sesion{Name: m.Name, Username: m.Username}).Nombre()
 		}
 	}
-	filas := [][]string{{"id", "fecha", "estado", "clienta", "telefono", "productos", "total", "origen", "asesora", "direccion", "notas"}}
+	filas := [][]string{{"id", "fecha", "estado", "cliente", "telefono", "productos", "total", "origen", "asesora", "direccion", "notas"}}
 	for _, o := range pedidos {
 		var items []string
 		for _, it := range o.Items {

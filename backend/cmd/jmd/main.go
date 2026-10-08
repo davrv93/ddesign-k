@@ -16,6 +16,9 @@
 //	jmd galeria --empresa modaslili look-01.jpg look-02.jpg …   (o URLs completas; --vaciar las quita)
 //	    Fotos del login. Un nombre suelto se toma de la carpeta de la tienda (/jmdventas/_jmd/empresas/<slug>/), que
 //	    vive solo en el servidor. Sin galería, el login usa las fotos de su catálogo.
+//	jmd usuario --empresa baruka --usuario admin [--rol admin|asesora] [--nombre N]
+//	    Crea el usuario o le cambia la clave. La clave se lee de JMD_CLAVE o, si no está, de la entrada estándar (nunca
+//	    de la línea de órdenes, que queda en ps y en el historial).
 //	jmd empresas
 //	    Lista las empresas con sus conteos por tabla.
 //	jmd migrar-sqlite --origen /ruta/crm.db --empresa baruka
@@ -33,6 +36,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -59,6 +63,8 @@ func main() {
 		err = fichas(ctx, os.Args[2:])
 	case "datos":
 		err = datos(ctx, os.Args[2:])
+	case "usuario":
+		err = usuario(ctx, os.Args[2:])
 	case "galeria":
 		err = galeria(ctx, os.Args[2:])
 	case "migrar-sqlite":
@@ -79,6 +85,7 @@ func uso() {
 	fmt.Fprintln(os.Stderr, "     jmd fichas --empresa SLUG --archivo fichas_producto.json")
 	fmt.Fprintln(os.Stderr, "     jmd datos --empresa SLUG --direccion D --horario H")
 	fmt.Fprintln(os.Stderr, "     jmd galeria --empresa SLUG [--vaciar] foto1.jpg foto2.jpg …")
+	fmt.Fprintln(os.Stderr, "     jmd usuario --empresa SLUG --usuario U [--rol admin|asesora] [--nombre N]  (clave en JMD_CLAVE o stdin)")
 	fmt.Fprintln(os.Stderr, "     jmd empresas")
 	fmt.Fprintln(os.Stderr, "     jmd migrar-sqlite --origen crm.db --empresa SLUG")
 	os.Exit(2)
@@ -222,6 +229,72 @@ func fichas(ctx context.Context, args []string) error {
 		fmt.Printf(" · sin producto con ese código: %s", strings.Join(faltan, ", "))
 	}
 	fmt.Println()
+	return nil
+}
+
+func usuario(ctx context.Context, args []string) error {
+	fs := flag.NewFlagSet("usuario", flag.ExitOnError)
+	slug := fs.String("empresa", "", "slug")
+	user := fs.String("usuario", "", "nombre de usuario")
+	rol := fs.String("rol", "", "admin | asesora (vacío = no cambia; al crear, admin)")
+	nombre := fs.String("nombre", "", "nombre visible (vacío = no cambia; al crear, el usuario)")
+	_ = fs.Parse(args)
+	if *slug == "" || *user == "" {
+		uso()
+	}
+	clave := os.Getenv("JMD_CLAVE")
+	if clave == "" {
+		b, err := io.ReadAll(io.LimitReader(os.Stdin, 4096))
+		if err != nil {
+			return err
+		}
+		clave = strings.TrimRight(string(b), "\r\n")
+	}
+	if len(clave) < 8 {
+		return errors.New("la clave (JMD_CLAVE o stdin) debe tener al menos 8 caracteres")
+	}
+	st, err := abrir()
+	if err != nil {
+		return err
+	}
+	defer st.DB.Close()
+	t, err := st.TenantBySlug(ctx, *slug)
+	if err != nil {
+		return fmt.Errorf("empresa %q: %w", *slug, err)
+	}
+	ts := st.ForTenant(t.ID)
+	m, err := ts.MiembroPorUsuario(ctx, *user)
+	switch {
+	case errors.Is(err, store.ErrNotFound):
+		r := *rol
+		if r == "" {
+			r = store.RolAdmin
+		}
+		n := *nombre
+		if n == "" {
+			n = *user
+		}
+		if m, err = ts.CrearMiembro(ctx, *user, clave, n, r); err != nil {
+			return err
+		}
+		fmt.Printf("%s: usuario %q creado (rol %s)\n", t.Slug, m.Username, m.Role)
+	case err != nil:
+		return err
+	default:
+		c := store.CambioMiembro{Password: &clave}
+		activo := true
+		c.Active = &activo
+		if *rol != "" {
+			c.Role = rol
+		}
+		if *nombre != "" {
+			c.Name = nombre
+		}
+		if m, err = ts.UpdateMiembro(ctx, m.ID, c); err != nil {
+			return err
+		}
+		fmt.Printf("%s: clave de %q actualizada (rol %s, activo)\n", t.Slug, m.Username, m.Role)
+	}
 	return nil
 }
 

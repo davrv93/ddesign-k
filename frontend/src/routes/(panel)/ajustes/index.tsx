@@ -90,7 +90,7 @@ export default component$(() => {
   );
 });
 
-// Equipo: personas que entran al panel. Admin: todo. Asesora: atiende clientas, pedidos, notas y tareas, pero no cambia
+// Equipo: personas que entran al panel. Admin: todo. Asesora: atiende clientes, pedidos, notas y tareas, pero no cambia
 // ajustes, WhatsApp ni el equipo, no borra pedidos ni productos y no exporta.
 const Equipo = component$<{ yo: Sesion }>(({ yo }) => {
   const lista = useSignal<Miembro[]>([]);
@@ -128,7 +128,7 @@ const Equipo = component$<{ yo: Sesion }>(({ yo }) => {
           </button>
         )}
       </div>
-      <p class="muted small">Admin: todo. Asesora: atiende clientas, pedidos, notas y tareas; no cambia ajustes, WhatsApp ni el equipo, no borra y no exporta.</p>
+      <p class="muted small">Admin: todo. Asesora: atiende clientes, pedidos, notas y tareas; no cambia ajustes, WhatsApp ni el equipo, no borra y no exporta.</p>
       {abierto.value && (
         <form
           class="equipo-form"

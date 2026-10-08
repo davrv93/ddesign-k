@@ -108,7 +108,7 @@ export default component$(() => {
               <strong>{money(d.pedidos_vendidos > 0 ? d.ventas_mes / d.pedidos_vendidos : 0, mon)}</strong>
             </div>
             <div class="stat">
-              <span>Clientas nuevas</span>
+              <span>Clientes nuevos</span>
               <strong>{d.clientas_nuevas}</strong>
               <small class="muted">de {d.clientas_total} en total</small>
             </div>
@@ -123,19 +123,19 @@ export default component$(() => {
             <section class="panel">
               <div class="panel-head">
                 <h2>Embudo de ventas</h2>
-                <a class="small" href={u("/clientas")}>
-                  Ver clientas →
+                <a class="small" href={u("/clientes")}>
+                  Ver clientes →
                 </a>
               </div>
               {conEtapa === 0 ? (
-                <p class="muted small">Todavía no hay clientas con etapa. El bot las pone al conversar, o se fijan a mano en la ficha.</p>
+                <p class="muted small">Todavía no hay clientes con etapa. El bot los pone al conversar, o se fijan a mano en la ficha.</p>
               ) : (
                 <ul class="funnel">
                   {embudo.map((e, i) => {
                     const n = llegaron(i);
                     return (
                       <li key={e.key}>
-                        <a href={u(`/clientas?etapa=${e.key}`)} class="funnel-row">
+                        <a href={u(`/clientes?etapa=${e.key}`)} class="funnel-row">
                           <span class="funnel-label">{e.label}</span>
                           <span class="funnel-bar">
                             <span style={{ width: `${Math.max(pct(n, conEtapa), 2)}%`, background: e.color }} />
@@ -210,7 +210,7 @@ export default component$(() => {
 
             <section class="panel">
               <div class="panel-head">
-                <h2>Clientas recientes</h2>
+                <h2>Clientes recientes</h2>
                 <a class="small" href={u("/conversaciones")}>
                   {d.sin_leer > 0 ? `${d.sin_leer} chats sin leer →` : "Conversaciones →"}
                 </a>
@@ -218,7 +218,7 @@ export default component$(() => {
               <ul class="mini-list">
                 {recientes.value.map((c) => (
                   <li key={c.id}>
-                    <a href={u(`/clientas?c=${c.id}`)} class="mini-row">
+                    <a href={u(`/clientes?c=${c.id}`)} class="mini-row">
                       <span class="avatar sm">{iniciales2(customerName(c))}</span>
                       <span class="grow">
                         <strong>{customerName(c)}</strong>
@@ -228,7 +228,7 @@ export default component$(() => {
                     </a>
                   </li>
                 ))}
-                {recientes.value.length === 0 && <li class="muted small">Aún no hay clientas.</li>}
+                {recientes.value.length === 0 && <li class="muted small">Aún no hay clientes.</li>}
               </ul>
               {d.stock_bajo > 0 && (
                 <p class="muted small">

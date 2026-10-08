@@ -621,3 +621,7 @@ input.switch {
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+/* Eliminar conversación (solo admin): acción destructiva en rojo, sin llamar la atención. */
+.btn-borrar { color: var(--danger); }
+.btn-borrar:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }

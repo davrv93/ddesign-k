@@ -7,7 +7,7 @@ import { LEMA, MARCA, cargarEmpresa, empresaGuardada, iniciales } from "~/lib/ma
 const NAV = [
   { href: "/", label: "Inicio", icon: "◎" },
   { href: "/pedidos", label: "Pedidos", icon: "▦" },
-  { href: "/clientas", label: "Clientas", icon: "♀" },
+  { href: "/clientes", label: "Clientes", icon: "☺" },
   { href: "/tareas", label: "Tareas", icon: "☑" },
   { href: "/conversaciones", label: "Conversaciones", icon: "✉" },
   { href: "/productos", label: "Productos y stock", icon: "👗" },
@@ -18,7 +18,7 @@ const NAV = [
 export default component$(() => {
   const ready = useSignal(false);
   const loc = useLocation();
-  const wa = useSignal<{ available?: boolean; logged_in?: boolean; name?: string } | null>(null);
+  const wa = useSignal<{ available?: boolean; logged_in?: boolean; name?: string; habilitado?: boolean } | null>(null);
   const unread = useSignal(0);
   const navOpen = useSignal(false);
   const empresa = useSignal("");
@@ -102,7 +102,9 @@ export default component$(() => {
             <span class="dot" />
             {wa.value == null
               ? "Revisando WhatsApp…"
-              : !wa.value.available
+              : wa.value.habilitado === false
+                ? "WhatsApp aún no conectado"
+                : !wa.value.available
                 ? "WhatsApp no disponible"
                 : wa.value.logged_in
                   ? `Conectado${wa.value.name ? ` · ${wa.value.name}` : ""}`
