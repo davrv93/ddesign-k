@@ -529,6 +529,23 @@ for p in /jmdventas/ /jmdventas/_jmd/intro.js /jmdventas/_jmd/consultoria-digita
 
 `jmd fichas` imprime por código «10/13 datos · N pendientes · N contradicciones» y avisa de los códigos sin producto.
 
+### 12.8 CRM básico (clientas, notas, tareas, equipo, inicio y CSV; rama `feat/jmdventas-crm`)
+
+Detalle y brechas en [`docs/CRM_BASICO.md`](docs/CRM_BASICO.md). **Todavía no se ha desplegado**: requiere orden expresa.
+
+- **Migración:** no hay paso a mano. Al arrancar, el backend crea `notas`, `tareas`, `actividad` y `cliente_etiquetas` y
+  añade columnas con valor por defecto (`customers`: `email`, `ciudad`, `etapa`, `etapa_fijada`, `asesora_id`; `orders`:
+  `asesora_id`) con `ADD COLUMN IF NOT EXISTS`. Copia una vez a `customers.etapa` la etapa que el bot ya guardó en la
+  conversación. Probado sobre una MariaDB con el esquema anterior (dos arranques seguidos, sin pérdida).
+- **Pasos:** los del §12.7 (0 respaldo con `mariadb-dump` y etiqueta `:previo`; 1 rsync; 2 hornear `jmd-backend` y luego
+  `jmd-frontend`, uno tras otro; 3 recrear backend y panel), sin el paso 4 de fichas. Verificar además, con sesión:
+  `GET /jmdventas/baruka/api/inicio`, `/api/clientas` y `/api/me` → 200.
+- **Roles:** todos los usuarios que existen hoy son `admin` (el alta por consola crea admin), así que nada cambia para
+  ellos. Las asesoras se crean en el panel: *Ajustes → Equipo*.
+- **El tablero de pedidos pasa a `/pedidos`**; `/` es el panel de inicio y `/?pedido=N` redirige.
+- **Volver atrás:** imágenes `:previo` (§12.5). Las tablas y columnas nuevas pueden quedarse: el backend anterior no las
+  lee.
+
 ### 12.4 WhatsApp
 
 Apagado en este stack (`EVOLUTION_URL=off`, sin `WHATSAPP_TENANT`): el panel lo muestra «no disponible», no se envía ni

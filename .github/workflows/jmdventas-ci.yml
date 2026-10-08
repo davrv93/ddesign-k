@@ -6,7 +6,7 @@ name: JMD Ventas · CI
 
 on:
   push:
-    branches: [feat/jmdventas-multitenant]
+    branches: [feat/jmdventas-multitenant, feat/jmdventas-crm]
     paths:
       - "backend/**"
       - "frontend/**"
@@ -60,9 +60,12 @@ jobs:
         env:
           JMD_TEST_MYSQL_DSN: jmd:ci-prueba@tcp(127.0.0.1:3306)/jmdtest
         run: |
-          go test -count=1 -v -run 'Aislamiento|Ficha' ./internal/store/ | tee /tmp/store.txt
+          go test -count=1 -v -run 'Aislamiento|Aislado|Ficha|Etapa|Equipo' ./internal/store/ | tee /tmp/store.txt
           grep -q -- '--- PASS: TestAislamientoEntreEmpresas/mariadb' /tmp/store.txt
           grep -q -- '--- PASS: TestFichaPorEmpresa/mariadb' /tmp/store.txt
+          grep -q -- '--- PASS: TestCRMAisladoEntreEmpresas/mariadb' /tmp/store.txt
+          grep -q -- '--- PASS: TestEtapaDelBotYManual/mariadb' /tmp/store.txt
+          grep -q -- '--- PASS: TestEquipoUltimaAdmin/mariadb' /tmp/store.txt
 
   frontend:
     name: Panel (JMD Ventas y /baruka/)
@@ -87,7 +90,7 @@ jobs:
         run: |
           npm run build
           # Con «__» en la base Qwik no genera páginas y el build sale verde igual: se comprueba que existan.
-          for p in index.html login/index.html productos/index.html catalogo/index.html; do
+          for p in index.html login/index.html productos/index.html catalogo/index.html pedidos/index.html clientas/index.html tareas/index.html; do
             test -s "dist/jmdventas/XEMPRESAX/$p" || { echo "falta $p"; exit 1; }
           done
           rm -rf dist
