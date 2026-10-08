@@ -119,7 +119,7 @@ func (s *Server) inicio(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) listClientas(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
-	f := store.FiltroClientas{Q: q.Get("q"), Etapa: q.Get("etapa"), Etiqueta: q.Get("etiqueta"), Compra: q.Get("compra")}
+	f := store.FiltroClientas{Q: q.Get("q"), Etapa: q.Get("etapa"), Etiqueta: q.Get("etiqueta"), Compra: q.Get("compra"), Limit: int(qInt(r, "limit"))}
 	switch a := q.Get("asesora"); a {
 	case "":
 	case "sin":

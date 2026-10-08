@@ -321,7 +321,7 @@ func (s *Store) UpdateOrderStatus(ctx context.Context, id int64, status string, 
 		return prev, err
 	}
 	if prev != status { // línea de tiempo de la clienta (store/crm.go)
-		if err := s.registrar(ctx, tx, custID, "estado", fmt.Sprintf("Pedido #%d: %s → %s", id, prev, status), id); err != nil {
+		if err := s.registrar(ctx, tx, custID, "estado", fmt.Sprintf("Pedido #%d: %s → %s", id, EstadoLabel[prev], EstadoLabel[status]), id); err != nil {
 			return prev, err
 		}
 	}

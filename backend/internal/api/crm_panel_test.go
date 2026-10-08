@@ -15,7 +15,7 @@ import (
 // nada de la otra, aun con sus ids; y una asesora no puede lo que es de admin.
 
 type empresaHTTP struct {
-	slug, admin, asesora string // tokens
+	slug, admin, asesora  string // tokens
 	clienta, pedido, ases int64
 }
 

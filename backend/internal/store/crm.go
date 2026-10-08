@@ -29,6 +29,12 @@ func ValidEtapa(e string) bool {
 	return false
 }
 
+// EstadoLabel: los estados del pedido como los nombra el panel (frontend/src/lib/format.ts).
+var EstadoLabel = map[string]string{
+	"consulta": "Consulta", "pendiente": "Por confirmar", "confirmado": "Confirmado", "preparando": "En preparación",
+	"enviado": "Enviado", "entregado": "Entregado", "cancelado": "Cancelado",
+}
+
 var EtapaLabel = map[string]string{
 	"": "Sin etapa", "prospeccion": "Prospección", "seguimiento": "Seguimiento", "cierre": "Cierre",
 	"venta_confirmada": "Venta confirmada", "perdida": "Perdida",
@@ -411,7 +417,7 @@ func (s *Store) AsignarClienta(ctx context.Context, id, userID int64) error {
 	if n, _ := res.RowsAffected(); n == 0 {
 		return ErrNotFound
 	}
-	return s.registrar(ctx, s.DB, id, "asignacion", asignacionTexto("Clienta", nombre), 0)
+	return s.registrar(ctx, s.DB, id, "asignacion", asignacionTexto("Clienta", "a", nombre), 0)
 }
 
 // AsignarPedido deja el pedido a cargo de una persona del equipo (0 = nadie).
@@ -427,14 +433,14 @@ func (s *Store) AsignarPedido(ctx context.Context, orderID, userID int64) error 
 	if _, err := s.DB.ExecContext(ctx, `UPDATE orders SET asesora_id=? WHERE id=? AND tenant_id=?`, userID, orderID, s.tid); err != nil {
 		return err
 	}
-	return s.registrar(ctx, s.DB, custID, "asignacion", asignacionTexto(fmt.Sprintf("Pedido #%d", orderID), nombre), orderID)
+	return s.registrar(ctx, s.DB, custID, "asignacion", asignacionTexto(fmt.Sprintf("Pedido #%d", orderID), "o", nombre), orderID)
 }
 
-func asignacionTexto(que, nombre string) string {
+func asignacionTexto(que, genero, nombre string) string {
 	if nombre == "" {
 		return que + " sin asignar"
 	}
-	return que + " asignado a " + nombre
+	return que + " asignad" + genero + " a " + nombre
 }
 
 // nombreUsuario valida que el usuario sea de esta empresa (0 = nadie, nombre vacío).
@@ -838,8 +844,9 @@ type Evento struct {
 	Tipo    string    `json:"tipo"` // mensaje | pedido | estado | etapa | asignacion | edicion | nota | tarea | tarea_hecha
 	Texto   string    `json:"texto"`
 	Autor   string    `json:"autor"`
-	Detalle string    `json:"detalle,omitempty"` // mensaje: in | out
+	Detalle string    `json:"detalle,omitempty"` // mensaje: in | out; pedido: estado actual
 	RefID   int64     `json:"ref_id,omitempty"`
+	Monto   float64   `json:"monto,omitempty"` // pedido: total
 	At      time.Time `json:"at"`
 }
 
@@ -895,15 +902,11 @@ func (s *Store) Actividad(ctx context.Context, customerID int64, limit int) ([]E
 		[]any{s.tid, customerID, limit}, func(sc interface{ Scan(...any) error }) error {
 			var e Evento
 			var status, source string
-			var total float64
-			if err := sc.Scan(&e.RefID, &status, &total, &source, &e.At); err != nil {
+			if err := sc.Scan(&e.RefID, &status, &e.Monto, &source, &e.At); err != nil {
 				return err
 			}
 			e.Tipo, e.Autor, e.Detalle = "pedido", map[bool]string{true: "manual", false: "bot"}[source == "manual"], status
 			e.Texto = fmt.Sprintf("Pedido #%d creado", e.RefID)
-			if total > 0 {
-				e.Texto += fmt.Sprintf(" · %.2f", total)
-			}
 			out = append(out, e)
 			return nil
 		}); err != nil {
