@@ -30,9 +30,10 @@ agente/             Python 3.12 · FastAPI · app/main.py (conversación, prompt
 deploy/             catalogo-diners/ (copia el catálogo real de Diners al CRM) · deploy.sh y edge-kddesign.conf
                     son del esquema anterior (nginx en host, kddesign.duckdns.org): no los uses
 docker-compose.yml  5 servicios: frontend, backend, agente, evolution, evolution-db
-ai-orchestrator/    proyecto aparte (Rust): gateway OpenAI-compatible con router de modelos, fallbacks,
-                    cuotas y UI. No es parte del CRM ni de su docker-compose; ver su README
 ```
+
+El gateway de IA y el CLI `jmd` (antes `ai-orchestrator/` en este repo) viven en su propio
+repositorio: https://github.com/davrv93/jmd. No forman parte del CRM.
 
 ## Comandos
 
