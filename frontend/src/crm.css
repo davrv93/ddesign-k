@@ -1,0 +1,623 @@
+/* CRM: inicio, clientas, ficha, tareas, notas y equipo. Usa los tokens de global.css. */
+
+.block {
+  display: block;
+}
+.danger-text {
+  color: var(--danger);
+}
+select.auto {
+  width: auto;
+}
+.row.wrap {
+  flex-wrap: wrap;
+}
+.link-btn {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 8px;
+}
+.link-btn:hover {
+  color: var(--danger);
+}
+.avatar.sm {
+  width: 30px;
+  height: 30px;
+  font-size: 0.75rem;
+}
+.avatar.lg {
+  width: 56px;
+  height: 56px;
+  font-size: 1.15rem;
+  font-family: var(--serif);
+}
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.panel-head h2 {
+  margin: 0;
+}
+.panel-head a {
+  text-decoration: none;
+  white-space: nowrap;
+}
+.empty {
+  text-align: center;
+  padding: 36px 18px;
+}
+.empty-msg {
+  margin: 8px 0;
+  text-align: center;
+}
+.aviso {
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0 0 10px;
+  font-weight: 500;
+}
+.aviso-danger {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 9%, transparent);
+}
+
+/* ---------- inicio ---------- */
+.stat small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.74rem;
+}
+.stat-link {
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s;
+}
+.stat-link:hover {
+  border-color: var(--brand);
+}
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.dash-grid .panel {
+  margin: 0;
+}
+.funnel,
+.bars,
+.mini-list,
+.tareas,
+.nota-list,
+.equipo {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.funnel-row {
+  display: grid;
+  grid-template-columns: 118px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  color: inherit;
+  text-decoration: none;
+}
+.funnel-row:hover .funnel-label {
+  color: var(--brand);
+}
+.funnel-label,
+.bars-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.funnel-bar,
+.bars-bar {
+  height: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.funnel-bar span,
+.bars-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s;
+}
+.funnel-num {
+  min-width: 112px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.funnel-foot {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+}
+.bars li {
+  display: grid;
+  grid-template-columns: 118px 1fr 32px;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+.bars-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.mini-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+}
+.mini-list li:last-child .mini-row {
+  border-bottom: 0;
+}
+.mini-row:hover strong {
+  color: var(--brand);
+}
+.asesora-chip {
+  color: var(--brand);
+  background: var(--brand-soft);
+  border-color: transparent;
+}
+
+/* ---------- tareas ---------- */
+.tarea {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.tareas .tarea:last-child {
+  border-bottom: 0;
+}
+.tarea-check {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--brand);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.tarea-titulo {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.tarea-titulo:disabled {
+  cursor: default;
+}
+.tarea.hecha .tarea-titulo {
+  text-decoration: line-through;
+  color: var(--muted);
+  font-weight: 500;
+}
+.tarea-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin-top: 2px;
+}
+.tarea-meta a {
+  text-decoration: none;
+}
+.vence {
+  font-weight: 600;
+  color: var(--muted);
+}
+.vence.warn {
+  color: var(--warn);
+}
+.vence.danger {
+  color: var(--danger);
+}
+.tarea-clienta::before {
+  content: "· ";
+  color: var(--muted);
+}
+.atajos {
+  gap: 6px;
+  margin: -4px 0 12px;
+}
+.atajos .chip-btn {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  text-transform: none;
+}
+
+/* ---------- filtros y tabla de clientas ---------- */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.filters select {
+  width: auto;
+  min-width: 150px;
+}
+.tbl-wrap {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tbl th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+  white-space: nowrap;
+}
+.tbl td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.tbl tbody tr {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.tbl tbody tr:hover,
+.tbl tbody tr:focus-visible {
+  background: color-mix(in srgb, var(--brand) 5%, transparent);
+  outline: none;
+}
+.tbl tbody tr:last-child td {
+  border-bottom: 0;
+}
+.tbl .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.who .badge {
+  margin-left: auto;
+}
+.tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.tags.edit {
+  margin-bottom: 8px;
+}
+.tag-x {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0 0 0 2px;
+}
+.tag-x:hover {
+  color: var(--danger);
+}
+
+/* ---------- ficha de la clienta ---------- */
+.back-link {
+  margin: -6px 0 8px -8px;
+}
+.fc-head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.fc-head h1 {
+  margin-bottom: 2px;
+}
+.fc-sub {
+  margin: 0 0 6px;
+}
+.fc-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.fc-kpis {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.stat strong.sm {
+  font-size: 1.05rem;
+  padding-top: 4px;
+}
+.fc-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.fc-side,
+.fc-main {
+  min-width: 0;
+}
+.fc-side .panel,
+.fc-main {
+  margin: 0 0 16px;
+}
+.fc-side select {
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+.fc-main .tabs {
+  margin-top: -8px;
+}
+.lbl {
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.timeline {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.tl-day h3 {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  padding: 6px 0;
+  margin: 0;
+  z-index: 1;
+}
+.tl-day ul {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  position: relative;
+}
+.tl-day ul::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--line);
+}
+.tl-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 6px 0;
+  position: relative;
+}
+.tl-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 0.9rem;
+  line-height: 1;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.tl-text {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.tl-mensaje .tl-text {
+  color: var(--muted);
+}
+.tl-mensaje.tl-in .tl-text {
+  color: var(--text);
+}
+.tl-etapa .tl-text,
+.tl-estado .tl-text,
+.tl-pedido .tl-text,
+.tl-tarea_hecha .tl-text {
+  font-weight: 600;
+}
+.tl-nota .tl-text {
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
+  border-radius: 8px;
+  padding: 6px 9px;
+}
+
+/* ---------- notas ---------- */
+.nota-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.nota {
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--warn) 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--warn) 22%, var(--line));
+}
+.nota p {
+  margin: 0 0 4px;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- equipo ---------- */
+.equipo-form {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 8px 0 12px;
+}
+.miembro {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.miembro:last-child {
+  border-bottom: 0;
+}
+.miembro.inactivo {
+  opacity: 0.55;
+}
+
+/* ---------- teléfono ---------- */
+@media (max-width: 900px) {
+  .dash-grid,
+  .fc-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fc-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .filters select {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
+  }
+  .filters .push-right {
+    width: 100%;
+    margin-left: 0;
+  }
+  .kpis .stat:last-child {
+    grid-column: 1 / -1;
+  }
+  .funnel-row,
+  .bars li {
+    grid-template-columns: 96px 1fr auto;
+    gap: 8px;
+  }
+  .funnel-num {
+    min-width: 0;
+  }
+  .funnel-num .small {
+    display: none;
+  }
+  .fc-actions {
+    width: 100%;
+  }
+  .fc-actions .btn {
+    flex: 1;
+  }
+  /* La tabla de clientas se vuelve tarjetas. */
+  .tbl-wrap {
+    background: none;
+    border: 0;
+    overflow: visible;
+  }
+  .tbl thead {
+    display: none;
+  }
+  .tbl,
+  .tbl tbody,
+  .tbl tr,
+  .tbl td {
+    display: block;
+    width: 100%;
+  }
+  .tbl tr {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "c c" "e t" "g m";
+    align-items: center;
+    gap: 6px 10px;
+  }
+  .tbl td {
+    padding: 0;
+    border: 0;
+  }
+  .tbl td[data-label="Clienta"] {
+    grid-area: c;
+  }
+  .tbl td[data-label="Etapa"] {
+    grid-area: e;
+  }
+  .tbl td[data-label="Total"] {
+    grid-area: t;
+  }
+  .tbl td[data-label="Etiquetas"] {
+    grid-area: g;
+  }
+  .tbl td[data-label="Asesora"],
+  .tbl td[data-label="Pedidos"],
+  .tbl td[data-label="Última compra"] {
+    display: none;
+  }
+  .tbl td.num {
+    text-align: right;
+  }
+  .tbl td[data-label="Último mensaje"] {
+    grid-area: m;
+    text-align: right;
+    font-size: 0.82rem;
+  }
+}
+
+/* input[type="checkbox"] { width: auto } (global.css) ganaba a .switch y lo dejaba sin ancho. */
+input.switch {
+  width: 42px;
+}
+.switch:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

@@ -52,6 +52,7 @@ type Order struct {
 	LocationText    string      `json:"location_text"`
 	StockReserved   bool        `json:"stock_reserved"`
 	Position        float64     `json:"position"`
+	AsesoraID       int64       `json:"asesora_id"` // persona del equipo a cargo (0 = nadie)
 	CreatedAt       time.Time   `json:"created_at"`
 	UpdatedAt       time.Time   `json:"updated_at"`
 	Customer        *Customer   `json:"customer"`
@@ -60,7 +61,7 @@ type Order struct {
 }
 
 const orderSelect = `SELECT o.id, o.customer_id, o.status, o.total, o.notes, o.source, o.customer_image, o.match_confidence,
-	o.location_lat, o.location_lng, o.location_text, o.stock_reserved, o.position, o.created_at, o.updated_at,
+	o.location_lat, o.location_lng, o.location_text, o.stock_reserved, o.position, o.asesora_id, o.created_at, o.updated_at,
 	cu.id, cu.jid, cu.phone, cu.name, cu.created_at, coalesce(cv.id, 0)
 	FROM orders o JOIN customers cu ON cu.id=o.customer_id AND cu.tenant_id=o.tenant_id
 	LEFT JOIN conversations cv ON cv.customer_id=cu.id AND cv.tenant_id=o.tenant_id`
@@ -70,7 +71,7 @@ func scanOrder(sc interface{ Scan(...any) error }) (*Order, error) {
 	var reserved int
 	var lat, lng sql.NullFloat64
 	err := sc.Scan(&o.ID, &o.CustomerID, &o.Status, &o.Total, &o.Notes, &o.Source, &o.CustomerImage, &o.MatchConfidence,
-		&lat, &lng, &o.LocationText, &reserved, &o.Position, &o.CreatedAt, &o.UpdatedAt,
+		&lat, &lng, &o.LocationText, &reserved, &o.Position, &o.AsesoraID, &o.CreatedAt, &o.UpdatedAt,
 		&o.Customer.ID, &o.Customer.JID, &o.Customer.Phone, &o.Customer.Name, &o.Customer.CreatedAt, &o.ConversationID)
 	if lat.Valid {
 		o.LocationLat = &lat.Float64
@@ -294,7 +295,8 @@ func (s *Store) UpdateOrderStatus(ctx context.Context, id int64, status string, 
 	}
 	defer tx.Rollback()
 	var reserved int
-	if err := tx.QueryRowContext(ctx, `SELECT status, stock_reserved FROM orders WHERE id=? AND tenant_id=?`, id, s.tid).Scan(&prev, &reserved); err != nil {
+	var custID int64
+	if err := tx.QueryRowContext(ctx, `SELECT status, stock_reserved, customer_id FROM orders WHERE id=? AND tenant_id=?`, id, s.tid).Scan(&prev, &reserved, &custID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", ErrNotFound
 		}
@@ -317,6 +319,11 @@ func (s *Store) UpdateOrderStatus(ctx context.Context, id int64, status string, 
 	}
 	if err != nil {
 		return prev, err
+	}
+	if prev != status { // línea de tiempo de la clienta (store/crm.go)
+		if err := s.registrar(ctx, tx, custID, "estado", fmt.Sprintf("Pedido #%d: %s → %s", id, EstadoLabel[prev], EstadoLabel[status]), id); err != nil {
+			return prev, err
+		}
 	}
 	return prev, tx.Commit()
 }

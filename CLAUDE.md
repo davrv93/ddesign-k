@@ -324,6 +324,23 @@ sigue igual, con su SQLite y el WhatsApp. Despliegue, alta, migración y vuelta 
   en `products`/`warehouses` y su propia tabla `users`. Esta rama usa `tenant_id` numérico: no despliegues este backend
   sobre esa SQLite sin reconciliar antes las dos versiones.
 
+## CRM básico (07-10-2026, rama `feat/jmdventas-crm`)
+
+Clientas (lista con filtros y ficha), etiquetas, embudo editable, notas, tareas, línea de tiempo, equipo con roles
+(admin / asesora), panel de inicio y CSV. Brechas, alcance y pendientes en [`docs/CRM_BASICO.md`](docs/CRM_BASICO.md).
+
+- **Store:** `internal/store/crm.go` (clientas, etiquetas, etapa, notas, tareas, actividad, inicio) y `equipo.go`. Los
+  cambios de estado del pedido y de etapa se registran en `actividad` **desde el store**, así cuentan también los del bot.
+  El autor sale del contexto (`store.ConAutor`); sin autor es «bot».
+- **Etapa:** `customers.etapa` la mueve el bot al guardar el contexto (`SetConversationState` → `etapaDelBot`) salvo que
+  una persona la fije (`etapa_fijada`). «Automática» devuelve el control al bot.
+- **Roles:** `requireAuth` carga el usuario de la base en cada petición (`cargarSesion`); desactivado = 401 al instante.
+  Lo de admin va con `a(...)` en `Routes()` (`soloAdmin`). Un usuario con rol vacío o distinto de `asesora` es admin.
+- **Panel:** `/` es el inicio; el kanban está en `/pedidos`. La ficha va por `?c=<id>` (el nginx sirve páginas
+  estáticas: nada de rutas `/clientas/123`). Estilos del CRM en `src/crm.css`.
+- **Pruebas:** `internal/store/crm_test.go` y `internal/api/crm_panel_test.go`, con dos empresas. Un recurso nuevo lleva su
+  caso de aislamiento ahí.
+
 ## Reglas
 
 1. **No despliegues sin que el usuario lo pida.** Aun así, una orden de desplegar ya es la autorización:

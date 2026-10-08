@@ -61,20 +61,22 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("POST /api/internal/crm/evento", s.crmEvento)
 
 	p := func(pattern string, h http.HandlerFunc) { mux.Handle(pattern, s.requireAuth(h)) }
-	p("GET /api/me", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, map[string]any{"ok": true}) })
+	// a: solo admin (una asesora no cambia ajustes, WhatsApp ni el equipo, no borra y no exporta).
+	a := func(pattern string, h http.HandlerFunc) { mux.Handle(pattern, s.requireAuth(s.soloAdmin(h))) }
+	p("GET /api/me", s.me)
 	p("GET /api/events", func(w http.ResponseWriter, r *http.Request) { s.hub.Serve(w, r, s.tenantID(r)) })
 	p("GET /api/stats", s.stats)
 
 	p("GET /api/whatsapp/status", s.waStatus)
-	p("POST /api/whatsapp/connect", s.waConnect)
-	p("GET /api/whatsapp/qr", s.waQR)
-	p("POST /api/whatsapp/pair", s.waPair)
-	p("POST /api/whatsapp/logout", s.waLogout)
+	a("POST /api/whatsapp/connect", s.waConnect)
+	a("GET /api/whatsapp/qr", s.waQR)
+	a("POST /api/whatsapp/pair", s.waPair)
+	a("POST /api/whatsapp/logout", s.waLogout)
 
 	p("GET /api/products", s.listProducts)
 	p("POST /api/products", s.saveProduct)
 	p("PUT /api/products/{id}", s.saveProduct)
-	p("DELETE /api/products/{id}", s.deleteProduct)
+	a("DELETE /api/products/{id}", s.deleteProduct)
 	p("POST /api/products/{id}/image", s.uploadProductImage)
 	p("POST /api/products/describe", s.describeImage)
 	p("GET /api/products/{id}/ficha", s.getFicha)
@@ -83,7 +85,7 @@ func (s *Server) Routes() http.Handler {
 	p("GET /api/orders", s.listOrders)
 	p("POST /api/orders", s.createOrder)
 	p("PATCH /api/orders/{id}", s.patchOrder)
-	p("DELETE /api/orders/{id}", s.deleteOrder)
+	a("DELETE /api/orders/{id}", s.deleteOrder)
 
 	p("GET /api/conversations", s.listConversations)
 	p("GET /api/conversations/{id}/messages", s.listMessages)
@@ -91,7 +93,28 @@ func (s *Server) Routes() http.Handler {
 	p("POST /api/conversations/{id}/bot", s.setBot)
 
 	p("GET /api/settings", s.getSettings)
-	p("PUT /api/settings", s.putSettings)
+	a("PUT /api/settings", s.putSettings)
+
+	// CRM (crm_panel.go)
+	p("GET /api/inicio", s.inicio)
+	p("GET /api/clientas", s.listClientas)
+	p("POST /api/clientas", s.crearClienta)
+	p("GET /api/clientas/{id}", s.getClienta)
+	p("PATCH /api/clientas/{id}", s.patchClienta)
+	p("GET /api/clientas/{id}/actividad", s.actividadClienta)
+	p("GET /api/etiquetas", s.listEtiquetas)
+	p("GET /api/notas", s.listNotas)
+	p("POST /api/notas", s.crearNota)
+	p("DELETE /api/notas/{id}", s.borrarNota)
+	p("GET /api/tareas", s.listTareas)
+	p("POST /api/tareas", s.crearTarea)
+	p("PATCH /api/tareas/{id}", s.patchTarea)
+	p("DELETE /api/tareas/{id}", s.borrarTarea)
+	p("GET /api/equipo", s.listEquipo)
+	a("POST /api/equipo", s.crearMiembro)
+	a("PATCH /api/equipo/{id}", s.patchMiembro)
+	a("GET /api/export/clientas.csv", s.exportClientas)
+	a("GET /api/export/pedidos.csv", s.exportPedidos)
 
 	if s.cfg.MultiTenant {
 		return logRequests(s.tenantRouter(mux))
@@ -147,7 +170,14 @@ func (s *Server) requireAuth(h http.Handler) http.Handler {
 			writeErr(w, http.StatusUnauthorized, "la sesión es de otra empresa")
 			return
 		}
-		h.ServeHTTP(w, r)
+		// Quién es y con qué rol (de la base, en cada petición). Lo que cambie queda a su nombre (store.ConAutor).
+		u, code, err := s.cargarSesion(r, c.User)
+		if err != nil {
+			writeErr(w, code, err.Error())
+			return
+		}
+		ctx := store.ConAutor(context.WithValue(r.Context(), sesionKey, u), u.Nombre())
+		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
@@ -749,6 +779,8 @@ func (s *Server) patchOrder(w http.ResponseWriter, r *http.Request) {
 		Position *float64 `json:"position"`
 		Notes    *string  `json:"notes"`
 		Notify   *bool    `json:"notify"`
+		// Persona del equipo a cargo del pedido (0 = nadie).
+		AsesoraID *int64 `json:"asesora_id"`
 	}
 	if err := readJSON(r, &in); err != nil {
 		writeErr(w, 400, "datos inválidos")
@@ -758,6 +790,12 @@ func (s *Server) patchOrder(w http.ResponseWriter, r *http.Request) {
 	if in.Notes != nil {
 		if err := s.st(r).UpdateOrderNotes(ctx, id, *in.Notes); err != nil {
 			writeErr(w, 500, err.Error())
+			return
+		}
+	}
+	if in.AsesoraID != nil {
+		if err := s.st(r).AsignarPedido(ctx, id, *in.AsesoraID); err != nil {
+			errStore(w, err)
 			return
 		}
 	}
