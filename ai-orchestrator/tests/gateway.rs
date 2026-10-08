@@ -39,6 +39,22 @@ async fn fake_chat(State(f): State<Arc<Fake>>, Json(body): Json<Value>) -> Respo
     if model.starts_with("bad-") {
         return (StatusCode::BAD_REQUEST, Json(json!({"error": {"message": "messages[0]: campo inválido"}}))).into_response();
     }
+    if model.starts_with("tool-") {
+        if body["stream"].as_bool() == Some(true) {
+            let sse = format!(
+                "data: {}\n\ndata: {}\n\ndata: [DONE]\n\n",
+                json!({"choices": [{"index": 0, "delta": {"tool_calls": [{"index": 0, "id": "call_1", "type": "function",
+                    "function": {"name": "Bash", "arguments": "{\"command\":"}}]}}]}),
+                json!({"choices": [{"index": 0, "delta": {"tool_calls": [{"index": 0, "function": {"arguments": "\"ls\"}"}}]},
+                    "finish_reason": "tool_calls"}]}),
+            );
+            return ([("content-type", "text/event-stream")], sse).into_response();
+        }
+        return Json(json!({"choices": [{"index": 0, "finish_reason": "tool_calls", "message": {"role": "assistant",
+            "content": null, "tool_calls": [{"id": "call_1", "type": "function",
+            "function": {"name": "Bash", "arguments": "{\"command\":\"ls\"}"}}]}}],
+            "usage": {"prompt_tokens": 20, "completion_tokens": 8, "total_tokens": 28}})).into_response();
+    }
     if model.starts_with("down-") {
         return (StatusCode::SERVICE_UNAVAILABLE, "overloaded").into_response();
     }
@@ -107,6 +123,7 @@ models:
   down:    {{capabilities: [text], deployments: [{{provider: p1, model: down-x}}]}}
   seer:    {{capabilities: [text, image], deployments: [{{provider: p2, model: ok-vision}}]}}
   capmodel: {{capabilities: [text], deployments: [{{provider: limited, model: ok-capped}}]}}
+  toolmodel: {{capabilities: [text, tools], deployments: [{{provider: p2, model: tool-x}}]}}
 agents:
   general: {{chain: [good], priority: speed}}
   coding:  {{chain: [flaky, good], params: {{temperature: 0.2}}}}
@@ -115,6 +132,11 @@ agents:
   outage:  {{chain: [down, good]}}
   vision:  {{chain: [good, seer]}}
   capped:  {{chain: [capmodel, good]}}
+  tools:   {{chain: [toolmodel]}}
+compat:
+  model_aliases:
+    "claude-*sonnet*": general
+    "claude-*tool*": tools
 router:
   judge: {{enabled: false}}
 reliability:
@@ -349,4 +371,132 @@ async fn ui_is_served() {
     let (st, v, _) = call(&app, "GET", "/ui/", None, None).await;
     assert_eq!(st, StatusCode::OK);
     assert!(v.as_str().unwrap().contains("<html"));
+}
+
+// ---------------------------------------------------------------------------
+// API de Anthropic (Claude Code)
+// ---------------------------------------------------------------------------
+
+async fn raw_call(app: &Router, uri: &str, body: Value, headers: &[(&str, &str)]) -> (StatusCode, String) {
+    let mut req = Request::builder().method("POST").uri(uri).header("content-type", "application/json");
+    for (k, v) in headers {
+        req = req.header(*k, *v);
+    }
+    let resp = app.clone().oneshot(req.body(Body::from(body.to_string())).unwrap()).await.unwrap();
+    let status = resp.status();
+    let bytes = resp.into_body().collect().await.unwrap().to_bytes();
+    (status, String::from_utf8_lossy(&bytes).into())
+}
+
+fn events(sse: &str) -> Vec<Value> {
+    sse.lines().filter_map(|l| l.strip_prefix("data: ")).map(|d| serde_json::from_str(d).unwrap()).collect()
+}
+
+#[tokio::test]
+async fn anthropic_messages_with_alias_and_text() {
+    let (app, _e, fake, _d) = setup().await;
+    let req = json!({"model": "claude-sonnet-4-5", "max_tokens": 100, "system": "Eres útil.",
+        "messages": [{"role": "user", "content": "hola"}]});
+    let (st, body) = raw_call(&app, "/v1/messages", req, &[("x-api-key", "cualquiera"), ("user-agent", "claude-cli/2.0")]).await;
+    assert_eq!(st, StatusCode::OK, "{body}");
+    let v: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(v["type"], "message");
+    assert_eq!(v["model"], "claude-sonnet-4-5");
+    assert_eq!(v["content"][0]["text"], "respuesta de ok-good");
+    assert_eq!(v["stop_reason"], "end_turn");
+    assert_eq!(v["usage"]["input_tokens"], 10);
+    let sent = fake.bodies.lock().unwrap().last().unwrap().clone();
+    assert_eq!(sent["messages"][0], json!({"role": "system", "content": "Eres útil."}));
+}
+
+#[tokio::test]
+async fn anthropic_tool_use_non_stream_and_stream() {
+    let (app, _e, _f, _d) = setup().await;
+    let mut req = json!({"model": "claude-tool-1", "max_tokens": 100,
+        "tools": [{"name": "Bash", "description": "shell", "input_schema": {"type": "object"}}],
+        "messages": [{"role": "user", "content": "lista"}]});
+    let (st, body) = raw_call(&app, "/v1/messages", req.clone(), &[]).await;
+    assert_eq!(st, StatusCode::OK, "{body}");
+    let v: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(v["stop_reason"], "tool_use");
+    assert_eq!(v["content"][0], json!({"type": "tool_use", "id": "call_1", "name": "Bash", "input": {"command": "ls"}}));
+
+    req["stream"] = json!(true);
+    let (st, body) = raw_call(&app, "/v1/messages", req, &[]).await;
+    assert_eq!(st, StatusCode::OK);
+    let ev = events(&body);
+    let types: Vec<&str> = ev.iter().map(|e| e["type"].as_str().unwrap()).collect();
+    assert_eq!(types, ["message_start", "ping", "content_block_start", "content_block_delta", "content_block_stop",
+        "message_delta", "message_stop"]);
+    assert_eq!(ev[2]["content_block"]["name"], "Bash");
+    assert_eq!(ev[3]["delta"]["partial_json"], "{\"command\":\"ls\"}");
+    assert_eq!(ev[5]["delta"]["stop_reason"], "tool_use");
+}
+
+#[tokio::test]
+async fn anthropic_text_stream() {
+    let (app, _e, _f, _d) = setup().await;
+    let req = json!({"model": "claude-sonnet-4-5", "max_tokens": 50, "stream": true,
+        "messages": [{"role": "user", "content": "hola"}]});
+    let (st, body) = raw_call(&app, "/v1/messages", req, &[]).await;
+    assert_eq!(st, StatusCode::OK);
+    let ev = events(&body);
+    let text: String = ev.iter().filter(|e| e["type"] == "content_block_delta")
+        .map(|e| e["delta"]["text"].as_str().unwrap()).collect();
+    assert_eq!(text, "Hola");
+    assert_eq!(ev.last().unwrap()["type"], "message_stop");
+    assert_eq!(ev[ev.len() - 2]["usage"]["output_tokens"], 2);
+}
+
+#[tokio::test]
+async fn anthropic_errors_and_count_tokens() {
+    let (app, _e, _f, _d) = setup().await;
+    let (st, body) = raw_call(&app, "/v1/messages", json!({"model": "no-existe", "max_tokens": 5,
+        "messages": [{"role": "user", "content": "x"}]}), &[]).await;
+    assert_eq!(st, StatusCode::NOT_FOUND);
+    let v: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(v["type"], "error");
+    assert_eq!(v["error"]["type"], "not_found_error");
+    let (st, body) = raw_call(&app, "/v1/messages/count_tokens", json!({"model": "claude-sonnet-4-5",
+        "messages": [{"role": "user", "content": "a".repeat(400)}]}), &[]).await;
+    assert_eq!(st, StatusCode::OK);
+    assert_eq!(serde_json::from_str::<Value>(&body).unwrap()["input_tokens"], 100);
+}
+
+#[tokio::test]
+async fn style_and_tool_compression_reach_the_provider_and_the_stats() {
+    let (app, _e, fake, _d) = setup().await;
+    // Estilo por cabecera
+    let (st, _, _) = {
+        let req = Request::builder().method("POST").uri("/v1/chat/completions")
+            .header("content-type", "application/json").header("x-jmd-style", "full").header("x-jmd-client", "jmd")
+            .body(Body::from(chat("general", "hola").to_string())).unwrap();
+        let resp = app.clone().oneshot(req).await.unwrap();
+        (resp.status(), (), ())
+    };
+    assert_eq!(st, StatusCode::OK);
+    let sent = fake.bodies.lock().unwrap().last().unwrap().clone();
+    assert!(sent["messages"][0]["content"].as_str().unwrap().contains("Terse mode"));
+
+    // Compresión de salidas de herramientas, activada desde la API de administración
+    let (st, _, _) = call(&app, "PUT", "/admin/api/savings",
+        Some(json!({"style": "lite", "compress_tool_output": true, "tool_output_max_chars": 300})), Some(ADMIN)).await;
+    assert_eq!(st, StatusCode::OK);
+    let long = "compilando…\n".repeat(200) + "error: falta ;";
+    let body = json!({"model": "general", "messages": [
+        {"role": "user", "content": "compila"},
+        {"role": "assistant", "content": null, "tool_calls": [{"id": "t1", "type": "function", "function": {"name": "sh", "arguments": "{}"}}]},
+        {"role": "tool", "tool_call_id": "t1", "content": long}]});
+    let (st, _, _) = call(&app, "POST", "/v1/chat/completions", Some(body), None).await;
+    assert_eq!(st, StatusCode::OK);
+    let sent = fake.bodies.lock().unwrap().last().unwrap().clone();
+    let tool = sent["messages"].as_array().unwrap().iter().find(|m| m["role"] == "tool").unwrap();
+    let t = tool["content"].as_str().unwrap();
+    assert!(t.contains("[×200]") && t.ends_with("error: falta ;"), "{t}");
+    assert!(sent["messages"][0]["content"].as_str().unwrap().contains("Answer concisely"));
+
+    let (_, s, _) = call(&app, "GET", "/admin/api/savings", None, Some(ADMIN)).await;
+    let rows = s["by_style"].as_array().unwrap();
+    assert!(rows.iter().any(|r| r["style"] == "full" && r["client"] == "jmd"), "{s}");
+    assert!(rows.iter().any(|r| r["style"] == "lite" && r["tool_chars_saved"].as_i64().unwrap() > 2000), "{s}");
 }

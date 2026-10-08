@@ -22,6 +22,10 @@ pub struct Config {
     pub reliability: Reliability,
     #[serde(default)]
     pub learning: Learning,
+    #[serde(default)]
+    pub savings: SavingsCfg,
+    #[serde(default)]
+    pub compat: CompatCfg,
 }
 
 fn default_profile() -> String {
@@ -399,6 +403,98 @@ impl Learning {
 }
 
 // ---------------------------------------------------------------------------
+// Ahorro de tokens y compatibilidad con clientes
+// ---------------------------------------------------------------------------
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct SavingsCfg {
+    /// Estilo de respuesta (a la manera de caveman): off · lite · full · ultra.
+    pub style: crate::savings::Style,
+    /// Limpiar y recortar los mensajes `tool` largos (a la manera de RTK, en el servidor).
+    pub compress_tool_output: bool,
+    pub tool_output_max_chars: usize,
+}
+
+impl Default for SavingsCfg {
+    fn default() -> Self {
+        Self { style: crate::savings::Style::Off, compress_tool_output: false, tool_output_max_chars: 12000 }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct CompatCfg {
+    /// Nombres de modelo que mandan los clientes (con `*` como comodín) → perfil del gateway.
+    /// Claude Code pide `claude-sonnet-…`, `claude-haiku-…`; aquí se decide a qué agente van.
+    pub model_aliases: BTreeMap<String, String>,
+}
+
+impl Default for CompatCfg {
+    fn default() -> Self {
+        Self {
+            model_aliases: BTreeMap::from([
+                ("claude-*opus*".to_string(), "coding-deep".to_string()),
+                ("claude-*sonnet*".to_string(), "coding".to_string()),
+                ("claude-*haiku*".to_string(), "cheap".to_string()),
+                ("gpt-*".to_string(), "auto".to_string()),
+            ]),
+        }
+    }
+}
+
+/// Coincidencia con `*` como comodín (sin distinguir mayúsculas).
+pub fn glob_match(pattern: &str, text: &str) -> bool {
+    let p = pattern.to_lowercase();
+    let t = text.to_lowercase();
+    let parts: Vec<&str> = p.split('*').collect();
+    if parts.len() == 1 {
+        return p == t;
+    }
+    let mut rest = t.as_str();
+    for (i, part) in parts.iter().enumerate() {
+        if part.is_empty() {
+            continue;
+        }
+        if i == 0 {
+            match rest.strip_prefix(part) {
+                Some(r) => rest = r,
+                None => return false,
+            }
+        } else if i == parts.len() - 1 {
+            return rest.ends_with(part);
+        } else {
+            match rest.find(part) {
+                Some(pos) => rest = &rest[pos + part.len()..],
+                None => return false,
+            }
+        }
+    }
+    true
+}
+
+impl Config {
+    pub fn is_profile(&self, name: &str) -> bool {
+        name == "auto" || self.agents.contains_key(name) || self.models.contains_key(name)
+    }
+
+    /// Alias cuyo destino no existe (se ignoran al resolver; `jmd doctor` los avisa).
+    pub fn broken_aliases(&self) -> Vec<(String, String)> {
+        self.compat.model_aliases.iter().filter(|(_, t)| !self.is_profile(t))
+            .map(|(p, t)| (p.clone(), t.clone())).collect()
+    }
+
+    /// Perfil al que va un nombre de modelo desconocido, según `compat.model_aliases`.
+    /// Gana el patrón más largo (el más específico).
+    pub fn resolve_alias(&self, model: &str) -> Option<&str> {
+        self.compat.model_aliases.iter()
+            .filter(|(p, t)| glob_match(p, model) && self.is_profile(t))
+            .max_by_key(|(p, _)| p.len())
+            .map(|(_, target)| target.as_str())
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Validación, carga y guardado
 // ---------------------------------------------------------------------------
 
@@ -523,6 +619,16 @@ mod tests {
         let mut cfg = Config::from_yaml(include_str!("../config.yaml")).unwrap();
         cfg.agents.get_mut("coding").unwrap().chain.push("no-existe".into());
         assert!(cfg.validate().unwrap_err().contains("no-existe"));
+    }
+
+    #[test]
+    fn aliases_pick_the_most_specific_pattern() {
+        let cfg = Config::from_yaml(include_str!("../config.yaml")).unwrap();
+        assert_eq!(cfg.resolve_alias("claude-sonnet-4-5-20250929"), Some("coding"));
+        assert_eq!(cfg.resolve_alias("claude-3-5-haiku-latest"), Some("cheap"));
+        assert_eq!(cfg.resolve_alias("claude-opus-4-1"), Some("coding-deep"));
+        assert_eq!(cfg.resolve_alias("llama-3"), None);
+        assert!(glob_match("a*b*c", "aXXbYYc") && !glob_match("a*b*c", "aXXc") && glob_match("*x", "abx"));
     }
 
     #[test]

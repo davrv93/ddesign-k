@@ -135,3 +135,8 @@ pre {
   .deps .dep { grid-template-columns: 1fr 1fr; }
   header h1 { width: 100%; }
 }
+
+.code-line { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; }
+.code-line pre { flex: 1; margin: 0; max-height: none; }
+.code-line button { flex: none; }
+.cmds td:first-child { white-space: nowrap; }

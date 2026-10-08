@@ -67,6 +67,55 @@ generó uno: `docker exec ai-orchestrator cat /data/admin_token` (o `podman exec
 
 Sin contenedores: `cargo run --release` (lee `config.yaml` y guarda en `./data`).
 
+## Desde la terminal: `jmd`, Claude Code y OpenCode
+
+`jmd` es el CLI del gateway. Va dentro de la imagen y también se descarga desde la UI
+(pestaña **Terminal**).
+
+```bash
+# Linux/WSL: el binario sale del propio gateway
+mkdir -p ~/.local/bin && curl -fsSL http://localhost:4000/download/jmd -o ~/.local/bin/jmd && chmod +x ~/.local/bin/jmd
+# macOS/Windows: cargo install --git <este repo> ai-orchestrator --bin jmd
+
+jmd login --url http://localhost:4000 --token <ADMIN_TOKEN>
+jmd status              # gateway, tokens, Claude Code, OpenCode, RTK y caveman
+jmd setup claude        # Claude Code → gateway (y ofrece el hook de RTK)
+jmd setup opencode      # proveedor «jmd» en opencode.json (--project para el del proyecto)
+```
+
+| Comando | |
+|---|---|
+| `jmd` | Modo interactivo: los comandos de abajo y, si no es un comando, chat con streaming (`/model`, `/style`, `/rate`, `/clear`) |
+| `jmd models` · `providers` · `provider <n> [test\|balance]` · `quotas` | Estado, cuotas y saldo |
+| `jmd stats` · `requests` | Uso, éxito, latencia, calidad y ahorro por estilo y cliente (+ `rtk gain`) |
+| `jmd route "…"` · `chat "…"` | Ruta sin llamar · pregunta |
+| `jmd style off\|lite\|full\|ultra [--compress on]` | Ahorro de tokens para todos los clientes |
+| `jmd reset <modelo>` · `ui` | Quita cooldowns · abre la UI |
+
+Todos aceptan `--json`.
+
+**Claude Code** habla la API de Anthropic. El gateway expone `POST /v1/messages` (y
+`/v1/messages/count_tokens`) y la traduce a OpenAI, con streaming, tools, imágenes y PDF.
+`jmd setup claude` escribe `ANTHROPIC_BASE_URL` y `ANTHROPIC_AUTH_TOKEN` en
+`~/.claude/settings.json`. Los nombres de modelo que pide Claude Code se mapean a agentes en
+`compat.model_aliases`: `claude-*opus*` va a `coding-deep`, `claude-*sonnet*` a `coding` y
+`claude-*haiku*` a `cheap` (editables en la UI). Si `ANTHROPIC_BASE_URL` está definida en la
+terminal, gana a settings.json, y `jmd status` lo avisa.
+
+**Ahorro de tokens:**
+
+- **Estilo** (`savings.style`) es una instrucción de respuesta corta a la manera de
+  [caveman](https://github.com/JuliusBrussee/caveman), aplicada en el gateway: sirve para
+  cualquier agente. También se elige por petición (`X-JMD-Style`).
+- **Compresión de salidas de herramientas** (`savings.compress_tool_output`) quita ANSI y líneas
+  repetidas y recorta por el medio, conservando el final, donde suele estar el error. Es la idea de
+  [RTK](https://github.com/rtk-ai/rtk), pero en el servidor.
+- RTK propiamente dicho actúa en el equipo de cada persona, y `jmd setup claude` instala su hook.
+  Si usas el plugin caveman, deja el estilo en `off` para no recortar dos veces.
+
+`jmd stats` compara los tokens de salida por estilo y por cliente (`claude-code`,
+`opencode`, `jmd`…).
+
 ## La UI
 
 | Pestaña | Para qué |
@@ -76,6 +125,7 @@ Sin contenedores: `cargo run --release` (lee `config.yaml` y guarda en `./data`)
 | **Modelos** | Cada modelo es un grupo con uno o varios deployments (el mismo modelo en varios proveedores), con sus capacidades, su contexto, su costo y su cuota propia |
 | **Agentes** | Perfiles con su cadena de modelos ordenable, su prioridad (calidad, velocidad o costo), sus parámetros por defecto y su system prompt |
 | **Router y fiabilidad** | Umbral de las reglas y modelos del juez, una tabla de qué hacer con cada tipo de error y los pesos del aprendizaje |
+| **Terminal** | Instalar `jmd`, conectar Claude Code y OpenCode, alias de modelos y ahorro de tokens |
 | **Probar** | Chat de prueba que muestra la ruta elegida, los intentos y el modelo que respondió. Se puede valorar la respuesta |
 | **Peticiones** | Últimos intentos con su resultado, latencia y tokens |
 | **YAML** | Toda la configuración de una vez. Se puede descargar |
@@ -188,6 +238,7 @@ La pestaña **Probar** también la envía con los botones Buena, Regular y Mala.
 | Ruta | |
 |---|---|
 | `POST /v1/chat/completions` | OpenAI, con streaming |
+| `POST /v1/messages` · `/v1/messages/count_tokens` | Anthropic (Claude Code), con streaming y tools |
 | `GET /v1/models` | `auto`, los agentes y los modelos |
 | `POST /v1/route` | Dry-run: qué agente y qué cadena tocarían, sin llamar a nadie |
 | `POST /v1/feedback` | `{request_id, quality}` |
@@ -213,7 +264,7 @@ Las claves pueden ir en variables de entorno (`api_key_env`) o guardarse desde l
 ## Desarrollo
 
 ```bash
-cargo test                 # 46 pruebas: unitarias y de punta a punta contra un proveedor falso
+cargo test                 # 64 pruebas: unitarias y de punta a punta contra un proveedor falso
 cargo clippy --all-targets
 cargo run                  # http://localhost:4000/ui/
 ```
@@ -228,7 +279,10 @@ src/
   quotas.rs       cabeceras x-ratelimit, saldo, presupuestos locales
   scorer.rs       ranking aprendido y calidad automática
   telemetry.rs    SQLite
-  config.rs       esquema, validación, claves tapadas
+  config.rs       esquema, validación, claves tapadas, alias de modelos
+  anthropic.rs    traducción Anthropic ⇄ OpenAI (peticiones, respuestas, SSE)
+  savings.rs      estilo de respuesta y compresión de salidas de herramientas
+  bin/jmd/        el CLI: comandos, modo interactivo, setup de Claude Code/OpenCode/RTK
 ui/               index.html · app.js · style.css (sin dependencias; van dentro del binario)
 tests/gateway.rs  gateway real contra un proveedor OpenAI falso (429, 400, 503, SSE, /models, /key)
 ```

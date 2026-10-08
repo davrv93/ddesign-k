@@ -723,10 +723,115 @@ async function viewYaml() {
   };
 }
 
+
+// ---------------------------------------------------------------------------
+// Terminal: jmd, Claude Code, OpenCode, ahorro de tokens
+// ---------------------------------------------------------------------------
+
+function codeLine(text) {
+  return `<div class="code-line"><pre>${esc(text)}</pre><button type="button" class="copy" data-copy="${esc(text)}">Copiar</button></div>`;
+}
+
+const JMD_COMMANDS = [
+  ["jmd", "modo interactivo: comandos y, si no es un comando, chat"],
+  ["jmd status", "gateway, tokens, Claude Code, OpenCode, RTK y caveman"],
+  ["jmd models", "perfiles y modelos con su estado"],
+  ["jmd providers · jmd quotas", "cuota y saldo por proveedor y modelo"],
+  ["jmd provider <n> test", "modelos reales del proveedor y cuáles faltan"],
+  ["jmd stats", "uso, éxito, latencia, calidad y ahorro (+ rtk gain)"],
+  ["jmd route \"texto\"", "qué agente y cadena tocarían, sin llamar"],
+  ["jmd chat \"texto\" -m coding", "pregunta con streaming (sin texto: chat)"],
+  ["jmd style full --compress on", "respuestas cortas y salidas de herramientas recortadas"],
+  ["jmd setup claude|opencode|all", "conecta el agente (y RTK) con el gateway"],
+  ["jmd reset <modelo> · jmd ui", "quita cooldowns · abre esta UI"],
+];
+
+async function viewTerminal() {
+  const cfg = await loadConfig();
+  const sv = await api("GET", "/admin/api/savings");
+  const origin = location.origin;
+  const profiles = ["auto", ...Object.keys(cfg.agents), ...Object.keys(cfg.models)];
+  const aliases = Object.entries(cfg.compat?.model_aliases || {});
+  const claudeJson = JSON.stringify({ env: { ANTHROPIC_BASE_URL: origin, ANTHROPIC_AUTH_TOKEN: "<una de GATEWAY_API_KEYS, o cualquier texto si no hay>" } }, null, 2);
+  const ocJson = JSON.stringify({ $schema: "https://opencode.ai/config.json", provider: { jmd: { npm: "@ai-sdk/openai-compatible", name: "JMD (gateway)",
+    options: { baseURL: `${origin}/v1`, apiKey: "{env:JMD_API_KEY}" },
+    models: Object.fromEntries(["auto", ...Object.keys(cfg.agents)].map((m) => [m, { name: m }])) } }, model: "jmd/auto" }, null, 2);
+  const rows = (sv.by_style || []).map((r) => `<tr><td class="mono">${esc(r.style)}</td><td>${esc(r.client)}</td><td>${fmtNum(r.responses)}</td>
+    <td>${fmtNum(r.avg_output_tokens)}</td><td>${fmtNum(r.avg_input_tokens)}</td><td>≈${fmtNum(r.tool_chars_saved / 4)} tok</td></tr>`).join("");
+  $("#main").innerHTML = `<h2>Terminal e integraciones</h2>
+    <div class="grid">
+      <div class="card"><h3>1 · Instalar jmd</h3>
+        <p class="muted small">Linux y WSL (el binario sale de este servidor):</p>
+        ${codeLine(`mkdir -p ~/.local/bin && curl -fsSL ${origin}/download/jmd -o ~/.local/bin/jmd && chmod +x ~/.local/bin/jmd`)}
+        <p class="muted small">macOS y Windows (necesita Rust):</p>
+        ${codeLine("cargo install --git https://github.com/davrv93/ddesign-k ai-orchestrator --bin jmd")}
+        <p class="muted small">Mientras no esté en la rama principal, añade <span class="mono">--branch claude/magical-noether-egkbo5</span>.</p>
+        <p class="muted small">Conectar (el token es el mismo de esta UI):</p>
+        ${codeLine(`jmd login --url ${origin} --token <ADMIN_TOKEN>`)}
+        ${codeLine("jmd status")}
+      </div>
+      <div class="card"><h3>Comandos</h3>
+        <table class="cmds"><tbody>${JMD_COMMANDS.map(([c, d]) => `<tr><td class="mono">${esc(c)}</td><td class="small">${esc(d)}</td></tr>`).join("")}</tbody></table>
+      </div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div class="card"><h3>2 · Claude Code</h3>
+        <p class="small">El gateway habla también la API de Anthropic (<span class="mono">/v1/messages</span>), así que Claude Code, RTK y caveman funcionan tal cual.</p>
+        ${codeLine("jmd setup claude")}
+        <p class="muted small">o a mano, en <span class="mono">~/.claude/settings.json</span>:</p>
+        <pre>${esc(claudeJson)}</pre>
+        <p class="muted small">Si <span class="mono">ANTHROPIC_BASE_URL</span> está definida en la terminal, gana a settings.json.</p>
+        <h3 style="margin-top:12px">Qué modelo usa cada nombre de Claude Code</h3>
+        <form id="aliases"><table><thead><tr><th>Nombre que pide (con *)</th><th>Perfil del gateway</th></tr></thead><tbody>
+          ${aliases.map(([p, t], i) => `<tr><td><input class="a-pat mono" value="${esc(p)}"></td><td><select class="a-tgt">${profiles.map((x) =>
+            `<option ${x === t ? "selected" : ""}>${esc(x)}</option>`).join("")}${profiles.includes(t) ? "" : `<option selected>${esc(t)}</option>`}</select></td></tr>`).join("")}
+          <tr><td><input class="a-pat mono" placeholder="nuevo, p. ej. claude-*"></td><td><select class="a-tgt">${profiles.map((x) => `<option>${esc(x)}</option>`).join("")}</select></td></tr>
+        </tbody></table><div class="row" style="margin-top:8px"><button class="primary" type="submit">Guardar alias</button>
+          <span class="muted small">deja el nombre vacío para borrar</span></div></form>
+      </div>
+      <div class="card"><h3>3 · OpenCode</h3>
+        ${codeLine("jmd setup opencode")}
+        <p class="muted small">o a mano, en <span class="mono">opencode.json</span>:</p>
+        <pre>${esc(ocJson)}</pre>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px"><h3>4 · Ahorro de tokens</h3>
+      <form id="sv"><div class="fields">
+        <div class="field"><label>Estilo de respuesta (a la manera de caveman, para todos los clientes)</label><select id="sv-style">
+          ${["off", "lite", "full", "ultra"].map((x) => `<option ${sv.config.style === x ? "selected" : ""}>${x}</option>`).join("")}</select></div>
+        <div class="field"><label>Máx. caracteres por salida de herramienta</label><input id="sv-max" type="number" min="500" value="${sv.config.tool_output_max_chars}"></div>
+      </div>
+      <div class="checks field"><label><input type="checkbox" id="sv-cmp" ${sv.config.compress_tool_output ? "checked" : ""}>
+        Comprimir salidas de herramientas en el gateway (ANSI, líneas repetidas, recorte por el medio: a la manera de RTK)</label></div>
+      <div class="row"><button class="primary" type="submit">Guardar</button></div></form>
+      <p class="small muted">RTK comprime la salida de los comandos en el equipo de cada persona, antes de que llegue al agente (<span class="mono">jmd setup claude</span> instala su hook).
+        caveman es un plugin de Claude Code; si lo usas, deja aquí el estilo en <span class="mono">off</span> para no recortar dos veces.</p>
+      <div class="table-wrap"><table><thead><tr><th>Estilo</th><th>Cliente</th><th>Respuestas</th><th>Tokens salida (media)</th><th>Tokens entrada (media)</th><th>Quitado de herramientas</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="6" class="muted">Sin datos todavía.</td></tr>`}</tbody></table></div>
+      <p class="muted small">Últimos ${sv.window_days} días. Compara los tokens de salida entre off y full/ultra para ver cuánto ahorra el estilo.</p>
+    </div>`;
+  $$("[data-copy]").forEach((b) => b.onclick = async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy); toast("Copiado"); } catch { toast("No se pudo copiar", "bad"); }
+  });
+  $("#sv").onsubmit = async (e) => {
+    e.preventDefault();
+    if (await save("PUT", "/admin/api/savings", { style: $("#sv-style").value, compress_tool_output: $("#sv-cmp").checked,
+      tool_output_max_chars: num("#sv-max") })) show("terminal");
+  };
+  $("#aliases").onsubmit = async (e) => {
+    e.preventDefault();
+    const c = clone(state.cfg);
+    c.compat = { model_aliases: {} };
+    const pats = $$(".a-pat"), tgts = $$(".a-tgt");
+    pats.forEach((p, i) => { const k = p.value.trim(); if (k) c.compat.model_aliases[k] = tgts[i].value; });
+    if (await save("PUT", "/admin/api/config", c)) show("terminal");
+  };
+}
+
 // ---------------------------------------------------------------------------
 
 const VIEWS = { panel: viewPanel, providers: viewProviders, models: viewModels, agents: viewAgents,
-  routing: viewRouting, playground: viewPlayground, requests: viewRequests, yaml: viewYaml };
+  routing: viewRouting, playground: viewPlayground, terminal: viewTerminal, requests: viewRequests, yaml: viewYaml };
 
 $$("#nav button").forEach((b) => b.onclick = () => show(b.dataset.view));
 $("#logout").onclick = () => { store.set("aio_token", null); state.cfg = null; login(); };

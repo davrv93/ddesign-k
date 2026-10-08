@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS calls (
     quality_user REAL
 );
 CREATE INDEX IF NOT EXISTS calls_agent_model ON calls(agent, model, ts);
+-- (las columnas style, saved_chars y client se añaden con ALTER en open() para bases antiguas)
 CREATE INDEX IF NOT EXISTS calls_request ON calls(request_id);
 CREATE INDEX IF NOT EXISTS calls_provider ON calls(provider, ts);
 ";
@@ -57,6 +58,9 @@ pub struct Row {
     pub prompt_tokens: Option<u64>,
     pub completion_tokens: Option<u64>,
     pub quality_auto: Option<f64>,
+    pub style: Option<String>,
+    pub saved_chars: Option<u64>,
+    pub client: Option<String>,
 }
 
 #[derive(Debug, Default, Clone, Copy, Serialize)]
@@ -85,6 +89,10 @@ impl Telemetry {
         let db = Connection::open(path)?;
         db.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;")?;
         db.execute_batch(SCHEMA)?;
+        for col in ["style TEXT", "saved_chars INTEGER", "client TEXT"] {
+            // Falla si ya existe: es la migración de las bases creadas antes de estas columnas.
+            let _ = db.execute(&format!("ALTER TABLE calls ADD COLUMN {col}"), []);
+        }
         Ok(Self { db: Mutex::new(db), cache: Mutex::new(HashMap::new()) })
     }
 
@@ -92,11 +100,12 @@ impl Telemetry {
         let db = self.db.lock().unwrap();
         let res = db.execute(
             "INSERT INTO calls (ts, request_id, profile, agent, bucket, route_source, model, provider, upstream_model,
-                ok, final, latency, error_kind, status, stream, prompt_tokens, completion_tokens, quality_auto)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18)",
+                ok, final, latency, error_kind, status, stream, prompt_tokens, completion_tokens, quality_auto,
+                style, saved_chars, client)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21)",
             params![now(), r.request_id, r.profile, r.agent, r.bucket, r.route_source, r.model, r.provider,
                 r.upstream_model, r.ok, r.is_final, r.latency, r.error_kind, r.status, r.stream,
-                r.prompt_tokens, r.completion_tokens, r.quality_auto],
+                r.prompt_tokens, r.completion_tokens, r.quality_auto, r.style, r.saved_chars, r.client],
         );
         if let Err(e) = res {
             tracing::warn!("telemetría: {e}");
@@ -212,6 +221,31 @@ impl Telemetry {
                 "error_kind": r.get::<_, Option<String>>(11)?, "status": r.get::<_, Option<i64>>(12)?,
                 "stream": r.get::<_, bool>(13)?, "prompt_tokens": r.get::<_, Option<i64>>(14)?,
                 "completion_tokens": r.get::<_, Option<i64>>(15)?, "quality": r.get::<_, Option<f64>>(16)?,
+            }))
+        })
+        .map(|rows| rows.flatten().collect())
+        .unwrap_or_default()
+    }
+
+    /// Ahorro por estilo y cliente: tokens de salida medios por respuesta y caracteres
+    /// quitados de las salidas de herramientas, en la ventana dada.
+    pub fn savings(&self, window_days: u32) -> Vec<serde_json::Value> {
+        let since = now() - window_days as f64 * 86400.0;
+        let db = self.db.lock().unwrap();
+        let mut st = match db.prepare_cached(
+            "SELECT COALESCE(style, 'off'), COALESCE(client, 'openai'), COUNT(*), AVG(completion_tokens),
+                    AVG(prompt_tokens), COALESCE(SUM(saved_chars), 0)
+             FROM calls WHERE final = 1 AND ok = 1 AND ts >= ?1
+             GROUP BY COALESCE(style, 'off'), COALESCE(client, 'openai') ORDER BY 1, 2",
+        ) {
+            Ok(s) => s,
+            Err(_) => return vec![],
+        };
+        st.query_map(params![since], |r| {
+            Ok(serde_json::json!({
+                "style": r.get::<_, String>(0)?, "client": r.get::<_, String>(1)?, "responses": r.get::<_, i64>(2)?,
+                "avg_output_tokens": r.get::<_, Option<f64>>(3)?, "avg_input_tokens": r.get::<_, Option<f64>>(4)?,
+                "tool_chars_saved": r.get::<_, i64>(5)?,
             }))
         })
         .map(|rows| rows.flatten().collect())

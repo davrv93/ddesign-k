@@ -207,3 +207,23 @@ learning:
     quality: {quality: 0.55, success: 0.35, speed: 0.10, cost: 0.00}
     speed:   {quality: 0.25, success: 0.30, speed: 0.45, cost: 0.00}
     cost:    {quality: 0.20, success: 0.30, speed: 0.10, cost: 0.40}
+
+# ---------------------------------------------------------------------------
+# Ahorro de tokens (para cualquier cliente: Claude Code, OpenCode, jmd chat…)
+#   style: off · lite · full · ultra   respuestas cortas, a la manera de caveman
+#   compress_tool_output               limpia y recorta salidas de herramientas largas,
+#                                      a la manera de RTK pero en el servidor
+# Por petición: cabecera X-JMD-Style o "orchestrator": {"style": "full"}.
+# ---------------------------------------------------------------------------
+savings:
+  style: "off"
+  compress_tool_output: false
+  tool_output_max_chars: 12000
+
+# Nombres de modelo de los clientes → perfil del gateway (`*` comodín; gana el más específico).
+compat:
+  model_aliases:
+    "claude-*opus*": coding-deep
+    "claude-*sonnet*": coding
+    "claude-*haiku*": cheap
+    "gpt-*": auto

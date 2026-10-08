@@ -2,6 +2,7 @@
 //!
 //! ```text
 //! POST /v1/chat/completions   model = auto | <agente> | <modelo>   (stream incluido)
+//! POST /v1/messages           lo mismo con la API de Anthropic (Claude Code)
 //! GET  /v1/models             perfiles, agentes y modelos
 //! POST /v1/route              dry-run: qué agente y qué cadena tocarían, sin llamar a nadie
 //! POST /v1/feedback           {request_id, quality: 0..1} → alimenta el aprendizaje
@@ -11,7 +12,8 @@
 //! /ui/                        la UI de gestión
 //! ```
 //! Pistas opcionales: en el cuerpo (`"orchestrator": {"agent": "...", "priority": "speed",
-//! "judge": false}`) o en cabeceras (`X-Orchestrator-Agent`, `X-Orchestrator-Priority`).
+//! "judge": false, "style": "full"}`) o en cabeceras (`X-Orchestrator-Agent`,
+//! `X-Orchestrator-Priority`, `X-JMD-Style`).
 
 #![allow(clippy::result_large_err)] // las respuestas de error son el Err de los guardas
 
@@ -19,6 +21,7 @@ use crate::config::{AgentSpec, Config, ModelSpec, Priority, Provider};
 use crate::engine::{prepare_body, trunc, Attempt, CallCtx, Engine, Failure, Hints, PlanError, Reply, RoutePlan};
 use crate::quotas::probe_balance;
 use crate::reliability::now;
+use crate::savings::{apply_style, compress_tool_messages, Style};
 use crate::scorer::{auto_quality, quality_of_body};
 use crate::telemetry::Row;
 use axum::body::{Body, Bytes};
@@ -45,6 +48,8 @@ pub fn router(engine: AppState) -> Router {
         .route("/health", get(health))
         .route("/v1/models", get(models))
         .route("/v1/chat/completions", post(chat))
+        .route("/v1/messages", post(messages))
+        .route("/v1/messages/count_tokens", post(count_tokens))
         .route("/v1/route", post(route))
         .route("/v1/feedback", post(feedback))
         .route("/admin/api/config", get(get_config).put(put_config))
@@ -59,6 +64,8 @@ pub fn router(engine: AppState) -> Router {
         .route("/admin/api/status", get(status))
         .route("/admin/api/requests", get(requests))
         .route("/admin/api/playground", post(playground))
+        .route("/admin/api/savings", get(get_savings).put(put_savings))
+        .route("/download/jmd", get(download_jmd))
         .route("/admin/api/route", post(admin_route))
         .with_state(engine)
 }
@@ -124,35 +131,97 @@ fn parse_body(raw: &Bytes) -> Result<Value, Response> {
     Ok(body)
 }
 
-fn hints(headers: &HeaderMap, body: &Value) -> Result<Hints, Response> {
+/// Error de la API, independiente del formato: se pinta como OpenAI o como Anthropic.
+pub struct ApiErr {
+    status: StatusCode,
+    message: String,
+    kind: String,
+    extra: Value,
+    retry_after: Option<i64>,
+}
+
+impl ApiErr {
+    fn new(status: StatusCode, message: impl Into<String>, kind: &str) -> Self {
+        Self { status, message: message.into(), kind: kind.into(), extra: json!({}), retry_after: None }
+    }
+
+    fn render(self, wire: Wire) -> Response {
+        let mut resp = match wire {
+            Wire::OpenAI => error(self.status, self.message, &self.kind, self.extra),
+            Wire::Anthropic => (self.status, Json(crate::anthropic::error_body(self.status.as_u16(), &self.message))).into_response(),
+        };
+        if let Some(secs) = self.retry_after {
+            resp.headers_mut().insert(header::RETRY_AFTER, HeaderValue::from(secs));
+        }
+        resp
+    }
+}
+
+/// Formato de la API por la que entró la petición.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Wire {
+    OpenAI,
+    Anthropic,
+}
+
+fn hints(headers: &HeaderMap, body: &Value) -> Result<Hints, ApiErr> {
     let o = &body["orchestrator"];
     let hv = |k: &str| headers.get(k).and_then(|v| v.to_str().ok()).map(String::from);
     let agent = hv("x-orchestrator-agent").or_else(|| o["agent"].as_str().map(String::from));
     let priority = match hv("x-orchestrator-priority").or_else(|| o["priority"].as_str().map(String::from)) {
         None => None,
         Some(p) => Some(Priority::parse(&p).ok_or_else(|| {
-            error(StatusCode::BAD_REQUEST, "priority: quality | speed | cost", "invalid_request_error", json!({}))
+            ApiErr::new(StatusCode::BAD_REQUEST, "priority: quality | speed | cost", "invalid_request_error")
         })?),
     };
-    Ok(Hints { agent, priority, judge: o["judge"].as_bool().unwrap_or(true) })
+    let style = match hv("x-jmd-style").or_else(|| o["style"].as_str().map(String::from)) {
+        None => None,
+        Some(s) => Some(Style::parse(&s).ok_or_else(|| {
+            ApiErr::new(StatusCode::BAD_REQUEST, "style: off | lite | full | ultra", "invalid_request_error")
+        })?),
+    };
+    Ok(Hints { agent, priority, judge: o["judge"].as_bool().unwrap_or(true), style })
 }
 
-fn plan_error(e: PlanError) -> Response {
-    match e {
-        PlanError::UnknownProfile(p) => {
-            error(StatusCode::NOT_FOUND, format!("modelo o perfil desconocido: {p}"), "model_not_found", json!({}))
+/// Quién llama, para las estadísticas: `X-JMD-Client` o el User-Agent conocido.
+fn client_name(headers: &HeaderMap, wire: Wire) -> String {
+    if let Some(c) = headers.get("x-jmd-client").and_then(|v| v.to_str().ok()) {
+        let c: String = c.chars().filter(|ch| ch.is_ascii_alphanumeric() || "-_.".contains(*ch)).take(32).collect();
+        if !c.is_empty() {
+            return c;
         }
-        PlanError::NoCapableModel(m) => error(StatusCode::UNPROCESSABLE_ENTITY, m, "no_capable_model", json!({})),
+    }
+    let ua = headers.get(header::USER_AGENT).and_then(|v| v.to_str().ok()).unwrap_or("").to_lowercase();
+    if ua.contains("claude-cli") || ua.contains("claude-code") {
+        "claude-code".into()
+    } else if ua.contains("opencode") {
+        "opencode".into()
+    } else if ua.starts_with("jmd/") {
+        "jmd".into()
+    } else {
+        match wire {
+            Wire::OpenAI => "openai".into(),
+            Wire::Anthropic => "anthropic".into(),
+        }
     }
 }
 
-fn failure_response(e: &Engine, f: Failure, chain: &[String]) -> Response {
+fn plan_error(e: PlanError) -> ApiErr {
+    match e {
+        PlanError::UnknownProfile(p) => {
+            ApiErr::new(StatusCode::NOT_FOUND, format!("modelo o perfil desconocido: {p}"), "model_not_found")
+        }
+        PlanError::NoCapableModel(m) => ApiErr::new(StatusCode::UNPROCESSABLE_ENTITY, m, "no_capable_model"),
+    }
+}
+
+fn failure_error(e: &Engine, f: Failure, chain: &[String]) -> ApiErr {
     match f {
         Failure::NoFallback(err, _) => {
             let status = err.status.and_then(|s| StatusCode::from_u16(s).ok())
                 .filter(|s| s.is_client_error() || s.is_server_error())
                 .unwrap_or(StatusCode::BAD_REQUEST);
-            error(status, trunc(&err.message, 2000), err.kind.as_str(), json!({}))
+            ApiErr::new(status, trunc(&err.message, 2000), err.kind.as_str())
         }
         Failure::AllFailed(attempts, last) => {
             let kinds: Vec<String> = attempts.iter().map(|a| a.skipped.clone().or(a.kind.clone()).unwrap_or_default()).collect();
@@ -162,8 +231,9 @@ fn failure_response(e: &Engine, f: Failure, chain: &[String]) -> Response {
             let msg = format!("todos los modelos fallaron ({})",
                 attempts.iter().map(|a| format!("{}:{}", a.model, a.skipped.clone().or(a.kind.clone()).unwrap_or_default()))
                     .collect::<Vec<_>>().join(", "));
-            let mut resp = error(if limited { StatusCode::TOO_MANY_REQUESTS } else { StatusCode::SERVICE_UNAVAILABLE },
-                msg, "all_models_failed", json!({"attempts": attempts, "last_error": last.map(|l| l.to_string())}));
+            let mut err = ApiErr::new(if limited { StatusCode::TOO_MANY_REQUESTS } else { StatusCode::SERVICE_UNAVAILABLE },
+                msg, "all_models_failed");
+            err.extra = json!({"attempts": attempts, "last_error": last.map(|l| l.to_string())});
             if limited {
                 let t = now();
                 let wait = chain.iter().filter_map(|m| {
@@ -172,11 +242,10 @@ fn failure_response(e: &Engine, f: Failure, chain: &[String]) -> Response {
                     cd.into_iter().chain(cb).reduce(f64::max)
                 }).fold(f64::INFINITY, f64::min);
                 if wait.is_finite() {
-                    let secs = ((wait - t).ceil() as i64).max(1);
-                    resp.headers_mut().insert(header::RETRY_AFTER, HeaderValue::from(secs));
+                    err.retry_after = Some(((wait - t).ceil() as i64).max(1));
                 }
             }
-            resp
+            err
         }
     }
 }
@@ -189,7 +258,7 @@ fn meta(rid: &str, plan: &RoutePlan, model: &str, provider: &str, upstream_model
     })
 }
 
-fn meta_headers(h: &mut HeaderMap, rid: &str, plan: &RoutePlan, model: &str, attempts: &[Attempt]) {
+fn meta_headers(h: &mut HeaderMap, rid: &str, plan: &RoutePlan, model: &str, upstream_model: &str, attempts: &[Attempt]) {
     let mut put = |k: &'static str, v: String| {
         if let Ok(v) = HeaderValue::from_str(&v) {
             h.insert(k, v);
@@ -198,6 +267,7 @@ fn meta_headers(h: &mut HeaderMap, rid: &str, plan: &RoutePlan, model: &str, att
     put("x-orchestrator-request-id", rid.into());
     put("x-orchestrator-agent", plan.task());
     put("x-orchestrator-model", model.into());
+    put("x-orchestrator-upstream-model", upstream_model.into());
     put("x-orchestrator-route-source", plan.decision.source.clone());
     put("x-orchestrator-attempts", attempts.iter().filter(|a| a.skipped.is_none()).count().to_string());
 }
@@ -207,7 +277,7 @@ fn meta_headers(h: &mut HeaderMap, rid: &str, plan: &RoutePlan, model: &str, att
 // ---------------------------------------------------------------------------
 
 async fn health() -> Json<Value> {
-    Json(json!({"ok": true}))
+    Json(json!({"ok": true, "version": env!("CARGO_PKG_VERSION")}))
 }
 
 async fn models(State(e): State<AppState>, headers: HeaderMap) -> Response {
@@ -234,35 +304,76 @@ async fn route(State(e): State<AppState>, headers: HeaderMap, raw: Bytes) -> Res
 
 async fn do_route(e: &Engine, headers: &HeaderMap, raw: &Bytes) -> Response {
     let body = match parse_body(raw) { Ok(b) => b, Err(r) => return r };
-    let h = match hints(headers, &body) { Ok(h) => h, Err(r) => return r };
+    let h = match hints(headers, &body) { Ok(h) => h, Err(err) => return err.render(Wire::OpenAI) };
     let cfg = e.cfg();
     match e.plan(&cfg, &body, body["model"].as_str(), &h).await {
         Ok(plan) => Json(json!(plan)).into_response(),
-        Err(err) => plan_error(err),
+        Err(err) => plan_error(err).render(Wire::OpenAI),
     }
 }
 
 async fn chat(State(e): State<AppState>, headers: HeaderMap, raw: Bytes) -> Response {
     guard!(gateway_auth(&e, &headers));
     let body = match parse_body(&raw) { Ok(b) => b, Err(r) => return r };
-    handle_chat(e, &headers, body).await
+    let client = client_name(&headers, Wire::OpenAI);
+    handle(e, &headers, body, Wire::OpenAI, client, None).await
 }
 
-async fn handle_chat(e: AppState, headers: &HeaderMap, body: Value) -> Response {
-    let h = match hints(headers, &body) { Ok(h) => h, Err(r) => return r };
+/// `POST /v1/messages`: la API de Anthropic (Claude Code), traducida a OpenAI.
+async fn messages(State(e): State<AppState>, headers: HeaderMap, raw: Bytes) -> Response {
+    if gateway_auth(&e, &headers).is_err() {
+        return ApiErr::new(StatusCode::UNAUTHORIZED, "clave inválida", "auth").render(Wire::Anthropic);
+    }
+    let req: Value = match serde_json::from_slice(&raw) {
+        Ok(v) => v,
+        Err(_) => return ApiErr::new(StatusCode::BAD_REQUEST, "JSON inválido", "invalid_request_error").render(Wire::Anthropic),
+    };
+    let body = match crate::anthropic::to_openai(&req) {
+        Ok(b) => b,
+        Err(m) => return ApiErr::new(StatusCode::BAD_REQUEST, m, "invalid_request_error").render(Wire::Anthropic),
+    };
+    let requested = req["model"].as_str().unwrap_or("auto").to_string();
+    let client = client_name(&headers, Wire::Anthropic);
+    handle(e, &headers, body, Wire::Anthropic, client, Some(requested)).await
+}
+
+/// `POST /v1/messages/count_tokens`: estimación (≈ 4 caracteres por token).
+async fn count_tokens(State(e): State<AppState>, headers: HeaderMap, raw: Bytes) -> Response {
+    if gateway_auth(&e, &headers).is_err() {
+        return ApiErr::new(StatusCode::UNAUTHORIZED, "clave inválida", "auth").render(Wire::Anthropic);
+    }
+    let req: Value = serde_json::from_slice(&raw).unwrap_or(Value::Null);
+    match crate::anthropic::to_openai(&req) {
+        Ok(body) => Json(json!({"input_tokens": crate::classifier::extract_features(&body).est_tokens})).into_response(),
+        Err(m) => ApiErr::new(StatusCode::BAD_REQUEST, m, "invalid_request_error").render(Wire::Anthropic),
+    }
+}
+
+/// Camino común: ruta → estilo y compresión → fallback → respuesta en el formato de entrada.
+async fn handle(e: AppState, headers: &HeaderMap, body: Value, wire: Wire, client: String,
+                requested_model: Option<String>) -> Response {
+    let h = match hints(headers, &body) { Ok(h) => h, Err(err) => return err.render(wire) };
     let cfg = e.cfg();
     let plan = match e.plan(&cfg, &body, body["model"].as_str(), &h).await {
         Ok(p) => p,
-        Err(err) => return plan_error(err),
+        Err(err) => return plan_error(err).render(wire),
     };
     let stream = body["stream"].as_bool().unwrap_or(false);
     let agent_spec = plan.agent.as_ref().and_then(|a| cfg.agents.get(a));
-    let payload = prepare_body(&body, agent_spec);
+    let mut payload = prepare_body(&body, agent_spec);
+    let style = h.style.unwrap_or(cfg.savings.style);
+    apply_style(&mut payload, style);
+    let saved = if cfg.savings.compress_tool_output {
+        compress_tool_messages(&mut payload, cfg.savings.tool_output_max_chars) as u64
+    } else {
+        0
+    };
     let per_try = Duration::from_secs_f64(agent_spec.and_then(|a| a.timeout).unwrap_or(cfg.reliability.default_timeout));
     let deadline = Duration::from_secs_f64(cfg.reliability.deadline);
     let rid = uuid::Uuid::new_v4().simple().to_string();
     let ctx = CallCtx { request_id: rid.clone(), profile: plan.profile.clone(), agent: plan.task(),
-        bucket: Some(plan.decision.bucket()), source: plan.decision.source.clone(), stream };
+        bucket: Some(plan.decision.bucket()), source: plan.decision.source.clone(), stream,
+        style: Some(style.as_str().into()), saved_chars: (saved > 0).then_some(saved), client: Some(client) };
 
     let res = e.run(&cfg, &plan.chain, per_try, deadline, |m, t| {
         let (cfg, payload, ctx, e) = (&cfg, &payload, &ctx, &e);
@@ -270,19 +381,26 @@ async fn handle_chat(e: AppState, headers: &HeaderMap, body: Value) -> Response 
     }).await;
     let out = match res {
         Ok(o) => o,
-        Err(f) => return failure_response(&e, f, &plan.chain),
+        Err(f) => return failure_error(&e, f, &plan.chain).render(wire),
     };
     let latency = out.attempts.last().map(|a| a.latency);
     let served = out.result;
     let (provider, upstream_model) = (served.provider.clone(), served.deployment.model.clone());
+    let shown_model = requested_model.clone().unwrap_or_else(|| out.model.clone());
     match served.reply {
         Reply::Json(mut v) => {
             let q = quality_of_body(&v, plan.features.wants_json);
             let usage = v.get("usage").cloned();
             e.record_success(&ctx, &out.model, &served.deployment, latency, Some(q), usage.as_ref());
-            v["orchestrator"] = meta(&rid, &plan, &out.model, &provider, &upstream_model, &out.attempts);
-            let mut resp = Json(v).into_response();
-            meta_headers(resp.headers_mut(), &rid, &plan, &out.model, &out.attempts);
+            let body = match wire {
+                Wire::OpenAI => {
+                    v["orchestrator"] = meta(&rid, &plan, &out.model, &provider, &upstream_model, &out.attempts);
+                    v
+                }
+                Wire::Anthropic => crate::anthropic::from_openai(&v, &shown_model),
+            };
+            let mut resp = Json(body).into_response();
+            meta_headers(resp.headers_mut(), &rid, &plan, &out.model, &upstream_model, &out.attempts);
             resp
         }
         Reply::Stream(upstream) => {
@@ -291,11 +409,19 @@ async fn handle_chat(e: AppState, headers: &HeaderMap, body: Value) -> Response 
             let deployment = served.deployment.clone();
             let model = out.model.clone();
             let wants_json = plan.features.wants_json;
+            let input_est = plan.features.est_tokens;
             tokio::spawn(async move {
                 let started = Instant::now();
                 let mut buf: Vec<u8> = Vec::new();
                 let mut completed = true;
                 let mut client_gone = false;
+                let mut conv = (wire == Wire::Anthropic)
+                    .then(|| crate::anthropic::StreamConverter::new(&shown_model, input_est));
+                let mut dec = crate::anthropic::SseDecoder::default();
+                let send_events = |evs: Vec<String>| Bytes::from(evs.concat());
+                if let Some(c) = conv.as_mut() {
+                    let _ = tx.send(Ok(send_events(c.start()))).await;
+                }
                 let mut s = upstream.bytes_stream();
                 while let Some(chunk) = s.next().await {
                     match chunk {
@@ -303,17 +429,30 @@ async fn handle_chat(e: AppState, headers: &HeaderMap, body: Value) -> Response 
                             if buf.len() < 1_000_000 {
                                 buf.extend_from_slice(&b);
                             }
-                            if tx.send(Ok(b)).await.is_err() {
+                            let out = match conv.as_mut() {
+                                None => b,
+                                Some(c) => send_events(dec.feed(&b).iter().flat_map(|d| c.push(d)).collect()),
+                            };
+                            if !out.is_empty() && tx.send(Ok(out)).await.is_err() {
                                 client_gone = true;
                                 break;
                             }
                         }
                         Err(err) => {
                             completed = false;
-                            let _ = tx.send(Err(std::io::Error::other(err.to_string()))).await;
+                            let msg = err.to_string();
+                            if conv.is_some() {
+                                let ev = format!("event: error\ndata: {}\n\n", crate::anthropic::error_body(500, &msg));
+                                let _ = tx.send(Ok(Bytes::from(ev))).await;
+                            } else {
+                                let _ = tx.send(Err(std::io::Error::other(msg))).await;
+                            }
                             break;
                         }
                     }
+                }
+                if let (Some(c), true, false) = (conv.as_mut(), completed, client_gone) {
+                    let _ = tx.send(Ok(send_events(c.finish()))).await;
                 }
                 let (text, finish, tools, usage) = parse_sse(&buf);
                 let cfg = engine.cfg();
@@ -323,6 +462,9 @@ async fn handle_chat(e: AppState, headers: &HeaderMap, body: Value) -> Response 
                 }
                 if completed || client_gone {
                     let q = (!client_gone).then(|| auto_quality(&text, finish.as_deref(), tools, wants_json));
+                    // Sin usage del proveedor, una estimación para poder medir el estilo.
+                    let usage = usage.or_else(|| Some(json!({"prompt_tokens": input_est,
+                        "completion_tokens": (text.chars().count() / 4) as u64})));
                     engine.record_success(&ctx, &model, &deployment,
                         latency.or(Some(started.elapsed().as_secs_f64())), q, usage.as_ref());
                 } else {
@@ -332,7 +474,7 @@ async fn handle_chat(e: AppState, headers: &HeaderMap, body: Value) -> Response 
                         bucket: ctx.bucket.clone(), route_source: ctx.source.clone(), model: model.clone(),
                         provider: Some(deployment.provider.clone()), upstream_model: Some(deployment.model.clone()),
                         ok: false, is_final: true, latency, error_kind: Some("stream_interrupted".into()), stream: true,
-                        ..Default::default()
+                        style: ctx.style.clone(), client: ctx.client.clone(), ..Default::default()
                     });
                 }
             });
@@ -343,7 +485,7 @@ async fn handle_chat(e: AppState, headers: &HeaderMap, body: Value) -> Response 
             let h = resp.headers_mut();
             h.insert(header::CONTENT_TYPE, HeaderValue::from_static("text/event-stream"));
             h.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-cache"));
-            meta_headers(h, &rid, &plan, &out.model, &out.attempts);
+            meta_headers(h, &rid, &plan, &out.model, &upstream_model, &out.attempts);
             resp
         }
     }
@@ -569,7 +711,10 @@ async fn status(State(e): State<AppState>, headers: HeaderMap) -> Response {
             "capabilities": m.capabilities, "cost": m.cost, "deployments": deployments,
         }));
     }
-    Json(json!({"now": t, "models": models, "stats": e.telemetry.summary(cfg.learning.window_days)})).into_response()
+    let warnings: Vec<String> = cfg.broken_aliases().into_iter()
+        .map(|(p, t)| format!("alias {p} → {t}: ese perfil no existe, se ignora")).collect();
+    Json(json!({"now": t, "models": models, "stats": e.telemetry.summary(cfg.learning.window_days),
+                "warnings": warnings, "version": env!("CARGO_PKG_VERSION")})).into_response()
 }
 
 #[derive(Deserialize)]
@@ -582,12 +727,39 @@ async fn requests(State(e): State<AppState>, headers: HeaderMap, Query(q): Query
     Json(e.telemetry.recent(q.limit.unwrap_or(100).min(1000))).into_response()
 }
 
+async fn get_savings(State(e): State<AppState>, headers: HeaderMap) -> Response {
+    guard!(admin_auth(&e, &headers));
+    let cfg = e.cfg();
+    Json(json!({"config": cfg.savings, "by_style": e.telemetry.savings(cfg.learning.window_days),
+                "window_days": cfg.learning.window_days})).into_response()
+}
+
+async fn put_savings(State(e): State<AppState>, headers: HeaderMap,
+                     Json(s): Json<crate::config::SavingsCfg>) -> Response {
+    guard!(admin_auth(&e, &headers));
+    edit(&e, |c| c.savings = s)
+}
+
+/// El binario `jmd` para Linux x86_64 (va dentro de la imagen). En macOS/Windows: `cargo install`.
+async fn download_jmd() -> Response {
+    let path = std::env::var("JMD_BINARY").unwrap_or_else(|_| "/usr/local/bin/jmd".into());
+    match tokio::fs::read(&path).await {
+        Ok(bytes) => (
+            [(header::CONTENT_TYPE, "application/octet-stream"),
+             (header::CONTENT_DISPOSITION, "attachment; filename=\"jmd\"")],
+            bytes,
+        ).into_response(),
+        Err(_) => error(StatusCode::NOT_FOUND, "jmd no está en este servidor: instálalo con cargo (ver /ui/ → Terminal)",
+            "not_found", json!({})),
+    }
+}
+
 /// El chat de la UI: igual que /v1/chat/completions, sin stream y con el token de administración.
 async fn playground(State(e): State<AppState>, headers: HeaderMap, raw: Bytes) -> Response {
     guard!(admin_auth(&e, &headers));
     let mut body = match parse_body(&raw) { Ok(b) => b, Err(r) => return r };
     body["stream"] = json!(false);
-    handle_chat(e, &headers, body).await
+    handle(e, &headers, body, Wire::OpenAI, "ui".into(), None).await
 }
 
 async fn admin_route(State(e): State<AppState>, headers: HeaderMap, raw: Bytes) -> Response {

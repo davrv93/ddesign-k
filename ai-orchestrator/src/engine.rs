@@ -80,6 +80,12 @@ pub struct CallCtx {
     pub bucket: Option<String>,
     pub source: String,
     pub stream: bool,
+    /// Estilo de respuesta aplicado (off/lite/full/ultra), para medir su ahorro.
+    pub style: Option<String>,
+    /// Caracteres quitados de las salidas de herramientas.
+    pub saved_chars: Option<u64>,
+    /// Quién llamó: openai · anthropic · jmd · ui.
+    pub client: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -486,7 +492,13 @@ impl Engine {
     // -- router (nivel 2) ----------------------------------------------------------
 
     pub async fn plan(&self, cfg: &Config, body: &Value, profile: Option<&str>, hints: &Hints) -> Result<RoutePlan, PlanError> {
-        let profile = profile.filter(|p| !p.is_empty()).unwrap_or(&cfg.default_profile).to_string();
+        let mut profile = profile.filter(|p| !p.is_empty()).unwrap_or(&cfg.default_profile).to_string();
+        if profile != "auto" && !cfg.agents.contains_key(&profile) && !cfg.models.contains_key(&profile) {
+            // Claude Code pide «claude-sonnet-…», OpenCode lo que se le configure: alias → perfil.
+            if let Some(target) = cfg.resolve_alias(&profile) {
+                profile = target.to_string();
+            }
+        }
         let f = extract_features(body);
         let rules = classify(&f, cfg.router.long_context_tokens);
         let requirements: Vec<&'static str> = f.requirements().into_iter().collect();
@@ -578,6 +590,7 @@ impl Engine {
 
     pub fn record_success(&self, ctx: &CallCtx, group: &str, d: &Deployment, latency: Option<f64>,
                           quality: Option<f64>, usage: Option<&Value>) {
+        let usage = usage.filter(|u| !u.is_null());
         self.telemetry.record(&Row {
             request_id: ctx.request_id.clone(), profile: ctx.profile.clone(), agent: ctx.agent.clone(),
             bucket: ctx.bucket.clone(), route_source: ctx.source.clone(), model: group.into(),
@@ -585,7 +598,8 @@ impl Engine {
             ok: true, is_final: true, latency, stream: ctx.stream,
             prompt_tokens: usage.and_then(|u| u["prompt_tokens"].as_u64()),
             completion_tokens: usage.and_then(|u| u["completion_tokens"].as_u64()),
-            quality_auto: quality, ..Default::default()
+            quality_auto: quality, style: ctx.style.clone(), saved_chars: ctx.saved_chars,
+            client: ctx.client.clone(), ..Default::default()
         });
     }
 }
@@ -608,6 +622,7 @@ pub struct Hints {
     pub agent: Option<String>,
     pub priority: Option<Priority>,
     pub judge: bool,
+    pub style: Option<crate::savings::Style>,
 }
 
 /// Aplica los parámetros por defecto del agente sin pisar los de la petición.
