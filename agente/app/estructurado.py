@@ -114,7 +114,11 @@ def _recortar(texto: str, max_frases: int, max_chars: int, sin_preguntas: bool =
     out = []
     for f in _frases(texto):
         if sin_preguntas and "?" in f:
-            continue
+            # Quita solo las frases que son pregunta; antes se perdía el párrafo entero y quedaba una frase colgada
+            # («La M te queda en el busto, ¿te la separo?» → se perdía la primera).
+            f = " ".join(x for x in _frases(f) if "?" not in x).strip()
+            if not f:
+                continue
         if out and len(" ".join(out + [f])) > max_chars:
             break
         out.append(f)

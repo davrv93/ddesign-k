@@ -85,6 +85,9 @@ SUCURSALES_JSON = os.environ.get("SUCURSALES_JSON", os.path.join(os.path.dirname
 # Respuesta fija a lo que no es del rubro cuando no hay LLM: el dataset sí contesta «¿qué es un CSV?».
 FUERA_DE_GIRO = "La verdad es que eso no te lo puedo contestar, no es mi giro 😅 Pero si buscas algo para vestir, ahí sí soy tu persona. ¿Te ayudo con algo de la tienda?"
 
+# Observabilidad (F1.7): turnos en que ningún proveedor contestó y salió el respaldo del código. Se ve en /metricas.
+CAIDAS = {"sin_modelo": 0}
+
 # Conexión persistente: ahorra el saludo TLS con OpenRouter en cada mensaje.
 _http = httpx.Client(timeout=LLM_TIMEOUT, headers={
     "HTTP-Referer": "https://kddesign.pjgfactsalud.com.pe",
@@ -525,13 +528,16 @@ RE_PARRAFO_PIE = re.compile(r"👉|Escribe \*?[A-Z]{1,3}-?\d{1,3}\*? para pedirl
 
 def _hist_llm(turnos) -> str:
     """Historial para el LLM. Los pies de foto se resumen en una línea: si los ve enteros los imita y
-    escribe «V24 · Conjunto… Tallas: L, M, S 👉 Escribe V24» como texto, duplicando las fotos."""
+    escribe «V24 · Conjunto… Tallas: L, M, S 👉 Escribe V24» como texto, duplicando las fotos. Un turno
+    del bot puede traer su texto y varios pies (los funde el bot): se resume cada pie y se deja el texto."""
     out = []
     for t in turnos:
-        if t.rol != "cliente" and RE_PIE.search(t.texto):
-            out.append(f"{t.rol}: [envió la foto de {t.texto.splitlines()[0].replace('*', '')}]")
-        else:
-            out.append(f"{t.rol}: {t.texto}")
+        texto = t.texto
+        if t.rol != "cliente" and RE_PIE.search(texto):
+            texto = "\n\n".join(
+                f"[envió la foto de {p.splitlines()[0].replace('*', '')}]" if RE_PIE.search(p) else p
+                for p in texto.split("\n\n"))
+        out.append(f"{t.rol}: {texto}")
     return "\n".join(out) or "(sin mensajes previos)"
 
 
@@ -546,7 +552,7 @@ def _sin_pies(texto: str) -> str:
 
 def _prompt_persona(req: ChatIn, cl: dict, fichas, sugeridas=(), ofrecer=False) -> list[dict]:
     """Motor deepseek: más historial y los datos de la tienda; sin ejemplos del dataset, que lo vuelven de plantilla."""
-    hist = _hist_llm(req.historial[-12:])
+    hist = _hist_llm(req.historial[-24:])
     st = E.stock.consultar([f.codigo for f in fichas])
     fich = "\n".join(f"- {ficha_txt(f)} | AHORA: {stk.resumen(st.get(f.codigo, {}))}" for f in fichas) or "(ninguna relevante)"
     ya_hablaron = any(t.rol != "cliente" for t in req.historial)
@@ -585,7 +591,7 @@ def _prompt_comercial(req: ChatIn, cl: dict, dec: dict, foco, fichas, sugeridas=
                       mem: dict | None = None, sig: str = "") -> list[dict]:
     """Motor deepseek: el LLM redacta; la etapa, los totales, el producto en foco, lo que ya sabemos de la
     clienta y la siguiente pregunta se los da el código. El historial queda como contexto de tono."""
-    hist = _hist_llm(req.historial[-14:])
+    hist = _hist_llm(req.historial[-24:])
     st = E.stock.consultar([f.codigo for f in fichas])
     fich = "\n".join(f"- {ficha_txt(f)} | AHORA: {stk.resumen(st.get(f.codigo, {}))}" for f in fichas) or "(ninguna relevante)"
     ya_hablaron = any(t.rol != "cliente" for t in req.historial)
@@ -617,7 +623,7 @@ MENSAJE NUEVO DE LA CLIENTA:
 
 
 def _prompt(req: ChatIn, cl: dict, fichas, ejemplos, sugeridas=(), ofrecer=False) -> list[dict]:
-    hist = _hist_llm(req.historial[-8:])
+    hist = _hist_llm(req.historial[-16:])
     st = E.stock.consultar([f.codigo for f in fichas])
     fich = "\n".join(f"- {ficha_txt(f)} | AHORA: {stk.resumen(st.get(f.codigo, {}))}" for f in fichas) or "(ninguna relevante)"
     ejs = "\n".join(f"- [{e.intencion}] cliente: {e.texto}\n  respuesta modelo: {e.respuesta}" for e, _ in ejemplos)
@@ -687,6 +693,10 @@ def _llm(mensajes: list[dict], url: str, clave: str, modelos: list[str], tempera
         except Exception as e:
             ultimo = e
             log.warning("LLM falló: %s", e)
+            # Clave inválida o sin permiso (401/403): probar otro modelo del mismo proveedor no lo arregla. Corta
+            # aquí y deja que conteste el motor de respaldo, en vez de encadenar llamadas perdidas.
+            if "HTTP 401" in str(e) or "HTTP 403" in str(e):
+                break
     raise RuntimeError(str(ultimo))
 
 
@@ -1393,16 +1403,6 @@ def _sin_tallas_falsas(texto: str, prendas=()) -> str:
     return "\n\n".join(out) if cambio else texto
 
 
-def _solo_hilo(texto: str, prendas) -> str:
-    """Mientras se indaga la necesidad no se nombran prendas. Si el LLM nombró una («el Azra Turquesa es ideal…»), queda
-    su primera frase si no la nombra y las preguntas; lo demás (la prenda y su descripción) se va."""
-    def nombra(fr: str) -> bool:
-        return bool(nombradas_en_respuesta(fr)) or bool(RE_PROMESA_FOTOS.search(fr))
-    frases = estructurado._frases(texto)
-    out = [fr for k, fr in enumerate(frases) if not nombra(fr) and (k == 0 or "?" in fr)]
-    return "\n\n".join(out)
-
-
 def _art(f) -> str:
     return "la" if categoria_de(f) in ("blusa", "falda") else "el"
 
@@ -2100,6 +2100,8 @@ def conversar(req: ChatIn) -> dict:
         if not respuesta and motor == "deepseek":
             respuesta = respaldo_codigo()
             modelo = "fuera_de_giro" if respuesta == FUERA_DE_GIRO else "respaldo_codigo"
+            if modelo == "respaldo_codigo":
+                CAIDAS["sin_modelo"] += 1
         # ¿Preguntó o pidió algo concreto? Entonces la respuesta tiene que contestarlo (Jev lo revisa en la misma llamada).
         pregunto = bool("?" in req.mensaje or dec["intent"].startswith("consulta_") or cl["intencion"] in (
             "consulta_precio", "consulta_stock", "consulta_entrega", "consulta_medidas", "producto_descripcion",
@@ -2206,10 +2208,9 @@ def conversar(req: ChatIn) -> dict:
         nombradas_r = nombradas_en_respuesta(respuesta, foco)
         if indagando and nombradas_r and modelo not in ("respaldo_codigo", "indaga_antes_de_ver", "flujo_cita", "flujo_cierre"):
             # Regla de la tienda: primero se indaga. Si el LLM nombró un vestido antes de tiempo («el Azra Turquesa es
-            # ideal para una boda»), no se le sigue la corriente mandando su foto: se quita y queda la pregunta.
-            respuesta = _solo_hilo(respuesta, nombradas_r)
-            if sig and memoria.pregunta_de(respuesta) != sig:
-                respuesta = (respuesta + "\n\n" if respuesta else "") + memoria.texto_pregunta(sig, mem, req.mensaje)
+            # ideal para una boda»), no se le sigue la corriente mandando su foto: se descarta su texto entero
+            # (recortarlo a medias dejaba frases colgadas) y va la pregunta que toca.
+            respuesta = memoria.texto_pregunta(sig, mem, req.mensaje) if sig else ""
             respuesta = respuesta or "¡Dale! 😊 Cuéntame un poquito más y te ayudo."
             nombradas_r, sugeridas = [], []
         promete = bool(RE_PROMESA_FOTOS.search(respuesta))
@@ -2324,7 +2325,7 @@ def health():
 
 @app.get("/metricas")
 def metricas():
-    return E.metricas | {"versiones": _METRICAS.resumen()}
+    return E.metricas | {"versiones": _METRICAS.resumen(), "caidas": dict(CAIDAS)}
 
 
 class TextoIn(BaseModel):
@@ -2631,7 +2632,7 @@ def conversar_foto(req: FotoIn) -> dict:
     if req.usar_llm:
         datos_f = f"{f.texto()} | AHORA: {stk.resumen(st.get(f.codigo, {}))}"
         par = "\n".join(f"- {x.texto()} | AHORA: {stk.resumen(st.get(x.codigo, {}))}" for x in sugeridas if x is not f) or "(ninguna)"
-        hist = _hist_llm(req.historial[-6:])
+        hist = _hist_llm(req.historial[-8:])
         usuario = f"""LA CLIENTA ENVIÓ UNA FOTO{f' con el texto: «{req.mensaje}»' if req.mensaje else ''}.
 CLIENTE: {req.cliente or "(sin nombre)"}
 

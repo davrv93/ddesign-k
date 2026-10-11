@@ -83,6 +83,26 @@ func TestAgenteAtiendeTextoLibre(t *testing.T) {
 	mustContain(t, fe.lastText(), "asesora")
 }
 
+// El historial funde el texto del bot y los pies de las fotos que manda detrás en UN solo turno:
+// el modelo ve conversación completa, no un mensaje por párrafo.
+func TestAgenteHistorialFundeTextoYPies(t *testing.T) {
+	b, _, _ := setup(t, `{"intent":"otro","reply":"respuesta de gemini"}`, false)
+	var last agente.Request
+	b.Agent = fakeAgente(t, &last)
+	handle(b, text("estoy triste no encuentro vestido")) // responde texto + 2 fotos
+	handle(b, text("hola"))                              // ya con el turno del bot en el historial
+	var bots []agente.Turn
+	for _, h := range last.Historial {
+		if h.Rol != "cliente" {
+			bots = append(bots, h)
+		}
+	}
+	if len(bots) != 1 {
+		t.Fatalf("texto y fotos del bot debían ser un solo turno, salieron %d: %+v", len(bots), bots)
+	}
+	mustContain(t, bots[0].Texto, "ayudo a encontrarlo", "VES-003")
+}
+
 func TestAgenteOfreceProducto(t *testing.T) {
 	b, _, fe := setup(t, `{}`, false)
 	var last agente.Request
@@ -98,13 +118,12 @@ func TestAgentePresentaCatalogo(t *testing.T) {
 	handle(b, text("hola"))
 	n := len(fe.sent)
 	handle(b, text("quiero ver su catalogo"))
-	if got := len(fe.sent) - n; got != 3 {
-		t.Fatalf("se esperaban 2 párrafos + 1 foto, salieron %d: %+v", got, fe.sent[n:])
+	if got := len(fe.sent) - n; got != 2 {
+		t.Fatalf("se esperaba 1 mensaje + 1 foto, salieron %d: %+v", got, fe.sent[n:])
 	}
-	// Con foto, la pregunta final va después de la foto: presentación → foto → pregunta.
-	mustContain(t, fe.sent[n]["text"].(string), "Mira estos")
+	// Un mensaje por turno: los párrafos van juntos en un solo envío; la foto va aparte.
+	mustContain(t, fe.sent[n]["text"].(string), "Mira estos", "ocasión")
 	mustContain(t, fe.sent[n+1]["caption"].(string), "V01")
-	mustContain(t, fe.sent[n+2]["text"].(string), "ocasión")
 }
 
 func TestAgenteCaidoVuelveAGemini(t *testing.T) {

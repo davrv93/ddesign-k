@@ -435,7 +435,10 @@ caso("día/noche, segunda vez: otras palabras", (M.clave_de(q), q != M.PREGUNTAS
 # WhatsApp real (04-10-2026): «si ca ver» a «¿te paso los datos para el pago?» no se leyó como sí; y «me llamo
 # alvaro» se tomó por pedir una asesora y el bot se pausó.
 for t, esp in [("si ca ver", True), ("si claro", True), ("ya pues", True), ("pasamelos porfa", True), ("no gracias", False),
-               ("sí?", False), ("no", False), ("el vestido de qué tela es", False)]:
+               ("sí?", False), ("no", False), ("el vestido de qué tela es", False),
+               # Un «sí» con reserva no confirma: lleva pero/gracias/aviso/luego/pienso.
+               ("si pero me lo pienso", False), ("ok gracias", False), ("si, luego te aviso", False),
+               ("sí, me lo pienso", False), ("si pero lo veo luego", False)]:
     caso(f"afirma: «{t}»", M.afirma(t), esp)
 m = M.nueva(); m["pendiente"] = "pago"
 caso("«si ca ver» responde a la pendiente de pago", M.leer(m, "si ca ver")["respondio"], True)

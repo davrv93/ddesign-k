@@ -407,12 +407,19 @@ def niega(texto: str) -> bool:
     return bool(RE_NIEGA.match(_plano(texto)))
 
 
+# Un «sí» con estas palabras detrás no es un sí cerrado: «sí pero me lo pienso», «ok gracias», «sí, luego te
+# aviso». No confirma venta ni agenda cita.
+RE_DUDA_AFIRMA = re.compile(r"\b(pero|gracias|aviso|luego|pienso|pensar|pensarlo)\b")
+
+
 def afirma(texto: str) -> bool:
-    """¿Es un sí a una pregunta de sí/no? Corto, sin signo de pregunta y empezando por una afirmación."""
+    """¿Es un sí a una pregunta de sí/no? Corto, sin signo de pregunta y empezando por una afirmación.
+    Un sí con reserva («sí pero…», «ok gracias», «luego te aviso», «me lo pienso») no cuenta."""
     t = _plano(texto)
     if RE_AFIRMA.match(t):
         return True
-    return bool(len(t.split()) <= 6 and "?" not in t and not re.match(r"^(no|ya no|todavia no)\b", t) and RE_AFIRMA_INICIO.match(t))
+    return bool(len(t.split()) <= 6 and "?" not in t and not RE_DUDA_AFIRMA.search(t)
+                and not re.match(r"^(no|ya no|todavia no)\b", t) and RE_AFIRMA_INICIO.match(t))
 
 
 def _talla(t: str, pendiente: str) -> str | None:

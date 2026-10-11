@@ -787,7 +787,9 @@ func (b *Bot) sendSummary(ctx context.Context, conv *store.Conversation, cc *con
 }
 
 func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *convContext, text, raw string) {
-	yes := isAny(text, "si", "sí", "s", "ok", "dale", "confirmo", "confirmar", "si confirmo", "yes", "claro", "de acuerdo", "listo") || strings.HasPrefix(text, "si ")
+	// Un «sí» con reserva no confirma: «sí pero…», «ok gracias», «luego te aviso», «me lo pienso». Va al agente.
+	duda := hasAny(text, "pero", "gracias", "aviso", "luego", "pienso", "pensar", "pensarlo")
+	yes := !duda && (isAny(text, "si", "sí", "s", "ok", "dale", "confirmo", "confirmar", "si confirmo", "yes", "claro", "de acuerdo", "listo") || strings.HasPrefix(text, "si "))
 	no := isAny(text, "no", "n", "cancelar", "cancela", "no gracias")
 	if !yes && !no {
 		p, err := b.store.GetProduct(ctx, cc.ProductID)
@@ -1132,21 +1134,24 @@ func (b *Bot) agentContext(ctx context.Context) (context.Context, context.Cancel
 	return context.WithTimeout(ctx, timeout)
 }
 
-// agentHistory devuelve los últimos turnos de texto previos al mensaje actual, que ya está
-// guardado (si coincide con `current`, se descarta).
+// agentHistory devuelve los últimos turnos previos al mensaje actual, que ya está guardado (si
+// coincide con `current`, se descarta). Un turno es UN mensaje: los mensajes seguidos del mismo rol
+// (el texto del bot y los pies de las fotos que manda detrás) se funden en uno, para que el modelo vea
+// conversación completa y no un mensaje por párrafo. Los pies siguen contando: el agente sabe qué
+// prendas ya ofreció.
 func (b *Bot) agentHistory(ctx context.Context, conv *store.Conversation, current string) []agente.Turn {
-	var out []agente.Turn
-	msgs, err := b.store.ListMessages(ctx, conv.ID, 11)
+	msgs, err := b.store.ListMessages(ctx, conv.ID, 80)
 	if err != nil {
 		return nil
 	}
 	var cc convContext
 	_ = json.Unmarshal([]byte(conv.Context), &cc)
+	type crudo struct{ rol, texto string }
+	var lista []crudo
 	for _, m := range msgs {
 		if cc.Desde > 0 && m.CreatedAt.Unix() < cc.Desde {
 			continue // de una sesión anterior: el agente no lo ve
 		}
-		// Los pies de foto cuentan: así el agente sabe qué prendas ya ofreció.
 		if (m.Kind != "text" && m.Kind != "image") || strings.TrimSpace(m.Body) == "" {
 			continue
 		}
@@ -1154,10 +1159,22 @@ func (b *Bot) agentHistory(ctx context.Context, conv *store.Conversation, curren
 		if m.Direction == "in" {
 			rol = "cliente"
 		}
-		out = append(out, agente.Turn{Rol: rol, Texto: m.Body})
+		lista = append(lista, crudo{rol, m.Body})
 	}
-	if n := len(out); n > 0 && out[n-1].Rol == "cliente" && out[n-1].Texto == current {
-		out = out[:n-1]
+	// El mensaje actual ya está guardado: se quita ANTES de fusionar, si no quedaría pegado al turno.
+	if n := len(lista); n > 0 && lista[n-1].rol == "cliente" && lista[n-1].texto == current {
+		lista = lista[:n-1]
+	}
+	var out []agente.Turn
+	for _, c := range lista {
+		if n := len(out); n > 0 && out[n-1].Rol == c.rol {
+			out[n-1].Texto += "\n\n" + c.texto
+			continue
+		}
+		out = append(out, agente.Turn{Rol: c.rol, Texto: c.texto})
+	}
+	if len(out) > 30 {
+		out = out[len(out)-30:]
 	}
 	return out
 }
@@ -1272,8 +1289,8 @@ func (b *Bot) dispatchAgent(ctx context.Context, conv *store.Conversation, cc *c
 	return true
 }
 
-// sendAgentText manda un párrafo por mensaje, como escribe una persona por WhatsApp, y
-// después las fotos sugeridas.
+// sendAgentText manda la respuesta del agente en UN solo mensaje y después las fotos sugeridas.
+// Un mensaje por turno: la clienta no recibe párrafos encadenados sin poder contestar.
 func (b *Bot) sendAgentText(ctx context.Context, conv *store.Conversation, r *agente.Reply) {
 	var partes []string
 	for _, parte := range strings.Split(r.Respuesta, "\n\n") {
@@ -1281,20 +1298,11 @@ func (b *Bot) sendAgentText(ctx context.Context, conv *store.Conversation, r *ag
 			partes = append(partes, parte)
 		}
 	}
-	// Con foto, la pregunta final va DESPUÉS de la foto: «te recomiendo este» → foto → «¿qué talla usas?». Antes la
-	// pregunta quedaba arriba de la foto y la clienta contestaba a la foto, no a la pregunta.
-	cierre := ""
-	if n := len(partes); len(r.Sugerencias) > 0 && n > 1 && strings.Contains(partes[n-1], "?") {
-		cierre, partes = partes[n-1], partes[:n-1]
-	}
-	for _, parte := range partes {
-		b.reply(ctx, conv, parte)
+	if len(partes) > 0 {
+		b.reply(ctx, conv, strings.Join(partes, "\n\n"))
 	}
 	for _, sg := range r.Sugerencias {
 		b.replySuggestion(ctx, conv, sg)
-	}
-	if cierre != "" {
-		b.reply(ctx, conv, cierre)
 	}
 }
 

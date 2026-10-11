@@ -129,6 +129,28 @@ func TestPreguntaEnConfirmacionNoAtasca(t *testing.T) {
 	}
 }
 
+// «sí pero…» con el resumen delante: un sí con reserva no confirma la venta; lo resuelve el agente y el
+// pedido sigue esperando.
+func TestSiConReservaNoConfirma(t *testing.T) {
+	b, st, fe := setup(t, `{}`, false)
+	var reqs []agente.Request
+	b.Agent = agenteGuion(t, map[string]agente.Reply{
+		"si pero me lo pienso": {Accion: "responder", Respuesta: "Claro, tómate tu tiempo 😊", Etapa: "cierre"},
+	}, &reqs)
+	handle(b, text("V01"))
+	handle(b, text("M"))
+	n := len(fe.sent)
+	handle(b, text("si pero me lo pienso"))
+	got := textosDesde(fe, n)
+	if strings.Contains(got, "quedó separado") {
+		t.Fatalf("un «sí» con reserva no debía confirmar el pedido:\n%s", got)
+	}
+	mustContain(t, got, "tómate tu tiempo")
+	if s, _ := estadoDe(t, st); s != stConfirm {
+		t.Fatalf("debía seguir esperando la confirmación, quedó en %q", s)
+	}
+}
+
 // «Lo voy a pensar» con el resumen delante: sale del cierre, se libera la talla y nadie la presiona.
 func TestDudaEnConfirmacionSaleDelCierre(t *testing.T) {
 	b, st, fe := setup(t, `{}`, false)
