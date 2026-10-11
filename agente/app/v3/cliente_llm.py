@@ -18,6 +18,21 @@ URL = os.environ.get("V3_URL") or os.environ.get("DEEPSEEK_URL") or "https://api
 KEY = (os.environ.get("V3_API_KEY") or os.environ.get("DEEPSEEK_API_KEY")
        or os.environ.get("LLM_API_KEY") or os.environ.get("OPENROUTER_API_KEY") or "")
 MODELO = (os.environ.get("V3_MODELO") or (os.environ.get("DEEPSEEK_MODEL") or "deepseek-chat").split(",")[0]).strip()
+
+
+def _cfg() -> tuple[str, str, str]:
+    """A qué proveedor llama V3. Si hay V3_* propio (DeepSeek directo), ese; si no, el motor «actual»
+    (LLM_*), que hoy es el que tiene clave válida. Así V3 no depende de una clave que no exista."""
+    if os.environ.get("V3_API_KEY") or os.environ.get("V3_URL"):
+        return (os.environ.get("V3_URL") or "https://api.deepseek.com/v1/chat/completions",
+                os.environ.get("V3_API_KEY", ""),
+                (os.environ.get("V3_MODELO") or "deepseek-chat").split(",")[0].strip())
+    return (os.environ.get("LLM_URL") or "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+            os.environ.get("LLM_API_KEY") or os.environ.get("OPENROUTER_API_KEY") or "",
+            (os.environ.get("LLM_MODEL") or "gemini-3.5-flash-lite").split(",")[0].strip())
+
+
+URL, KEY, MODELO = _cfg()
 TIMEOUT = float(os.environ.get("V3_TIMEOUT_MS", "8000")) / 1000.0
 MAX_VUELTAS = max(1, int(os.environ.get("V3_MAX_VUELTAS", "3")))
 

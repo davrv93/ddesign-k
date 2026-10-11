@@ -162,6 +162,14 @@ services:
       V2_GEN_URL: ${KD_V2_GEN_URL:-}
       V2_GEN_MODELO: ${KD_V2_GEN_MODELO:-qwen3:1.7b}
       V2_REALIZADOR: ${KD_V2_REALIZADOR:-variantes}
+      # Agente V3 (app/v3/): el modelo decide con herramientas. Sin V3_URL/V3_API_KEY propios usa el motor
+      # «actual» (LLM_*, hoy Gemini). V3_MODO: sombra (mide; habla V1) | activo (habla V3).
+      V3_URL: ${V3_URL:-}
+      V3_API_KEY: ${V3_API_KEY:-}
+      V3_MODELO: ${V3_MODELO:-}
+      V3_TIMEOUT_MS: ${V3_TIMEOUT_MS:-25000}
+      V3_MAX_VUELTAS: ${V3_MAX_VUELTAS:-3}
+      V3_MODO: ${KD_V3_MODO:-sombra}
       TZ: America/Lima
     volumes:
       - agente_data:/data

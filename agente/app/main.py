@@ -2538,6 +2538,20 @@ def _v3_conversar(req: ChatIn, permitir_reserva: bool) -> dict:
     return v3agente.conversar(req, E.fichas, E.stock.consultar, pie=_pie, permitir_reserva=permitir_reserva)
 
 
+def _v3_sombra(req: ChatIn) -> None:
+    """Corre V3 en segundo plano (sombra): su traza va al log y a /metricas; la clienta recibe V1 sin esperar."""
+    def correr():
+        t = time.time()
+        try:
+            traza = _v3_conversar(req, permitir_reserva=False)
+            log.info("V3 sombra ok: %s", json.dumps(traza.get("v3", {}), ensure_ascii=False)[:300])
+        except Exception as e:
+            log.warning("V3 sombra falló: %s", e)
+        finally:
+            _METRICAS.turno("v3", int((time.time() - t) * 1000), None)
+    threading.Thread(target=correr, daemon=True).start()
+
+
 @app.post("/chat")
 def ruta_chat(req: ChatIn):
     # V1 sigue siendo la ruta por defecto; V2/V3 solo si la petición o AGENT_VERSION lo piden.
@@ -2552,13 +2566,9 @@ def ruta_chat(req: ChatIn):
             except Exception as e:            # rechazo doble, sin clave o excepción: contesta V1
                 log.warning("V3 falló, contesta V1: %s", e)
                 res = conversar(req) | {"version": "v1", "v3": {"modo": "activo", "caida": str(e)[:200]}}
-        else:                                  # sombra: V3 corre entero (sin reservar) y se mide; habla V1
-            res_v1 = conversar(req) | {"version": "v1"}
-            try:
-                traza = _v3_conversar(req, permitir_reserva=False)
-                res = res_v1 | {"v3": {**traza.get("v3", {}), "modo": "sombra"}}
-            except Exception as e:
-                res = res_v1 | {"v3": {"modo": "sombra", "caida": str(e)[:200]}}
+        else:                                  # sombra: V3 corre en segundo plano y se mide; la clienta recibe V1
+            res = conversar(req) | {"version": "v1"}
+            _v3_sombra(req)
     else:
         res = conversar(req) | {"version": "v1"}
     _METRICAS.turno(res.get("version", "v1"), res.get("ms", res.get("v2", {}).get("ms", 0)), res.get("v2"))
