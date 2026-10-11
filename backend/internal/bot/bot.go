@@ -1213,8 +1213,8 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 	// V1 o V2: lo decide la política de los ajustes del panel, o la persona que fijó la versión de esta conversación.
 	pol := PoliticaAgente(ctx, b.store)
 	req.Version, _ = pol.Resolver(conv.AgentVersion, b.customerPhone(conv), conv.ID)
-	if req.Version == "v2" {
-		req.Modo = pol.Modo
+	if req.Version == "v2" || req.Version == "v3" {
+		req.Modo = pol.ModoDe(req.Version)
 	}
 	r, err := b.Agent.Chat(actx, req)
 	if err != nil {

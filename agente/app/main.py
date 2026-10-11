@@ -35,6 +35,7 @@ from .solicitud import (RE_CATALOGO, RE_MAS_BARATO, RE_MAS_OPCIONES, RE_OTRAS, R
                         color_dicho, color_pedido, color_que_pide, interpretar)
 from .solicitud import pide_otro_color as _pide_otro_color
 from .v2 import config as v2cfg
+from .v3 import agente as v3agente
 from .v2.agente import AgentV2
 from .v2.contexto import ContextBuilder
 from .v2.decision import JevStyleDecision, JevSystemOneDecision, ReglasDecision, juez_llama
@@ -2528,11 +2529,36 @@ _V2 = AgentV2(
 )
 
 
+def _v3_modo(req: ChatIn) -> str:
+    m = (req.modo or os.environ.get("V3_MODO", "sombra")).strip().lower()
+    return m if m in ("sombra", "activo") else "sombra"
+
+
+def _v3_conversar(req: ChatIn, permitir_reserva: bool) -> dict:
+    return v3agente.conversar(req, E.fichas, E.stock.consultar, pie=_pie, permitir_reserva=permitir_reserva)
+
+
 @app.post("/chat")
 def ruta_chat(req: ChatIn):
-    # V1 sigue siendo la ruta por defecto; V2 solo si la petición o AGENT_VERSION lo piden (app/v2/).
-    if v2cfg.version_pedida(req.version, v2cfg.version_por_defecto()) == "v2":
+    # V1 sigue siendo la ruta por defecto; V2/V3 solo si la petición o AGENT_VERSION lo piden.
+    version = v2cfg.version_pedida(req.version, v2cfg.version_por_defecto())
+    if version == "v2":
         res = _V2.conversar(req)
+    elif version == "v3":
+        if _v3_modo(req) == "activo":
+            try:
+                res = _v3_conversar(req, permitir_reserva=True)
+                res.setdefault("v3", {})["modo"] = "activo"
+            except Exception as e:            # rechazo doble, sin clave o excepción: contesta V1
+                log.warning("V3 falló, contesta V1: %s", e)
+                res = conversar(req) | {"version": "v1", "v3": {"modo": "activo", "caida": str(e)[:200]}}
+        else:                                  # sombra: V3 corre entero (sin reservar) y se mide; habla V1
+            res_v1 = conversar(req) | {"version": "v1"}
+            try:
+                traza = _v3_conversar(req, permitir_reserva=False)
+                res = res_v1 | {"v3": {**traza.get("v3", {}), "modo": "sombra"}}
+            except Exception as e:
+                res = res_v1 | {"v3": {"modo": "sombra", "caida": str(e)[:200]}}
     else:
         res = conversar(req) | {"version": "v1"}
     _METRICAS.turno(res.get("version", "v1"), res.get("ms", res.get("v2", {}).get("ms", 0)), res.get("v2"))

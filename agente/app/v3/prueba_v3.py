@@ -1,0 +1,124 @@
+"""Pruebas de V3 sin dependencias ni red: ficha, validador y herramientas.
+
+    python3 -m app.v3.prueba_v3
+"""
+from __future__ import annotations
+
+import sys
+
+from .. import datos
+from . import ficha as F, herramientas as H, validador as V
+
+FALLOS: list[str] = []
+
+
+def caso(nombre: str, obtenido, esperado) -> None:
+    if obtenido != esperado:
+        FALLOS.append(f"{nombre}: esperaba {esperado!r}, obtuve {obtenido!r}")
+
+
+def ficha(codigo, nombre, categoria="vestido", color="negro", detalle="", tallas="S,M,L", precio=320.0, imagen="/media/products/x.jpg"):
+    return datos.Ficha(codigo=codigo, nombre=nombre, categoria=categoria, color=color, detalle=detalle,
+                       tallas=tallas, fuente="seed", precio=precio, imagen=imagen)
+
+
+FICHAS = [ficha("V21", "Vestido Kendall", detalle="tela roma"),
+          ficha("V35", "Vestido Irla", detalle="tela roma"),
+          ficha("V32", "Conjunto Xela", categoria="conjunto", precio=280.0)]
+STOCK = {"V21": {"product": True, "online": {"S": 1, "M": 1, "L": 0}, "branches": []},
+         "V35": {"product": True, "online": {"S": 0, "M": 1, "L": 1}, "branches": []}}
+
+
+def _stock(codigos):
+    return {c.upper(): STOCK.get(c.upper(), {"product": False, "online": {}, "branches": []}) for c in codigos}
+
+
+# --- ficha -------------------------------------------------------------------
+def prueba_ficha():
+    f = F.nueva()
+    caso("ficha nueva trae pedido", f["pedido"], {"codigo": "", "talla": "", "confirmado": False})
+    caso("ficha nueva trae herramientas", f["herramientas"], [])
+    # Migración desde una memoria V1.
+    v1 = {"etapa": "seguimiento", "producto": "V35", "pendiente": "talla",
+          "sabemos": {"ocasion": "matrimonio", "talla": "M", "cita": "2026-10-20T17:00"},
+          "mostrados": ["V35"], "preguntado": ["ocasion"]}
+    g = F.normalizar(v1)
+    caso("migra etapa", g["etapa"], "seguimiento")
+    caso("migra prenda en foco", g["producto"], "V35")
+    caso("migra talla", g["sabemos"]["talla"], "M")
+    caso("migra pendiente", g["pendiente"], "talla")
+    caso("migra cita", g["sabemos"]["cita"], "2026-10-20T17:00")
+    caso("migra mostrados", g["mostrados"], ["V35"])
+    F.fijar_pedido(g, "V35", "m")
+    caso("fijar pedido talla", g["pedido"], {"codigo": "V35", "talla": "M", "confirmado": False})
+    caso("normalizar basura no revienta", F.normalizar({"pedido": "x", "herramientas": 3})["pedido"],
+         {"codigo": "", "talla": "", "confirmado": False})
+
+
+# --- validador ---------------------------------------------------------------
+def prueba_validador():
+    h = V.hechos_vacios()
+    h["precios"] = {320.0}
+    h["codigos"] = {"V21"}
+    h["tallas"] = {"S", "M", "L"}
+    h["telas"] = {"roma"}
+    caso("precio respaldado", V.validar("El V21 cuesta S/ 320.", h), [])
+    caso("precio no respaldado", V.validar("El V21 cuesta S/ 250.", h) != [], True)
+    caso("código no respaldado", V.validar("Te recomiendo el V99.", h) != [], True)
+    caso("talla no respaldada", V.validar("Lo tengo en talla XL.", h) != [], True)
+    caso("talla respaldada", V.validar("Lo tengo en talla M.", h), [])
+    caso("descuento prohibido", V.validar("Te hago un descuento del 10%.", h) != [], True)
+    caso("dos preguntas", V.validar("¿Te gusta? ¿Qué talla usas?", h) != [], True)
+    caso("una pregunta", V.validar("¿Qué talla usas?", h), [])
+    caso("pregunta repetida", V.validar("¿Qué talla usas?", h, "talla", ["talla"]) != [], True)
+    caso("tela respaldada", V.validar("Es de tela roma, muy fresca.", h), [])
+    caso("tela no respaldada", V.validar("Es de tela seda italiana.", h) != [], True)
+    caso("promete fotos sin fotos", V.validar("Te paso las fotos ahora.", h) != [], True)
+    h["fotos"] = {"V21"}
+    caso("promete fotos con fotos", V.validar("Te paso las fotos ahora.", h), [])
+    caso("plazo no respaldado", V.validar("Llega en 3 días.", h) != [], True)
+
+
+# --- herramientas ------------------------------------------------------------
+def prueba_herramientas():
+    rec = H.Recolector(FICHAS, _stock, pie=lambda f, st: f"{f.codigo} {f.nombre}")
+    r = rec.ejecutar("buscar_catalogo", {"consulta": "vestido negro"})
+    caso("buscar_catalogo devuelve prendas", len(r["prendas"]) >= 1, True)
+    caso("buscar_catalogo anota códigos", "V21" in rec.hechos["codigos"], True)
+    caso("buscar_catalogo anota precio", 320.0 in rec.hechos["precios"], True)
+    r = rec.ejecutar("stock", {"codigo": "V21"})
+    caso("stock devuelve tallas", set(r["tallas"]) == {"S", "M"}, True)
+    caso("stock anota tallas", {"S", "M"} <= rec.hechos["tallas"], True)
+    r = rec.ejecutar("ficha_tecnica", {"codigo": "V35"})
+    caso("ficha_tecnica anota tela", "roma" in rec.hechos["telas"], True)
+    r = rec.ejecutar("enviar_fotos", {"codigos": ["V21", "V35"]})
+    caso("enviar_fotos marca fotos", set(rec.hechos["fotos"]) == {"V21", "V35"}, True)
+    caso("enviar_fotos arma sugerencias", len(rec.fotos), 2)
+    # Reserva bloqueada si no está permitida (sombra).
+    caso("reserva bloqueada", rec.ejecutar("crear_reserva", {"codigo": "V21", "talla": "M"}).get("error") is not None, True)
+    rec2 = H.Recolector(FICHAS, _stock, permitir_reserva=True)
+    caso("reserva permitida", rec2.ejecutar("crear_reserva", {"codigo": "V21", "talla": "M"}).get("ok"), True)
+    caso("reserva anota el pedido", rec2.reserva, {"codigo": "V21", "talla": "M"})
+    # Cita: fuera de horario y una válida.
+    caso("cita fuera de horario", rec.ejecutar("agendar_cita", {"dia": "2030-01-02", "hora": "22:00"}).get("ok"), False)
+    caso("cita válida", rec.ejecutar("agendar_cita", {"dia": "2030-01-02", "hora": "17:00"}).get("ok"), True)
+    caso("derivar", rec.ejecutar("derivar_asesora", {"motivo": "no sé"}).get("ok"), True)
+    caso("derivar marca", rec.derivar, True)
+    caso("herramienta desconocida", rec.ejecutar("nope", {}).get("error") is not None, True)
+
+
+def main() -> int:
+    prueba_ficha()
+    prueba_validador()
+    prueba_herramientas()
+    if FALLOS:
+        print("FALLOS V3:")
+        for f in FALLOS:
+            print(" -", f)
+        return 1
+    print("v3  ficha, validador y herramientas: OK")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

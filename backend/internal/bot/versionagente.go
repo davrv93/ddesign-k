@@ -20,30 +20,41 @@ import (
 //  3. el ajuste global (`agent_version`): v1 | v2 | ab. En «ab», `agent_v2_percent` % de las clientas (por su número) va a V2.
 
 const (
-	AjusteVersion     = "agent_version"    // v1 | v2 | ab
-	AjustePorcentaje  = "agent_v2_percent" // 0–100, solo con «ab»
-	AjusteNumeros     = "agent_v2_phones"  // números separados por coma que siempre van a V2
-	AjusteModoV2      = "agent_v2_modo"    // sombra | activo
-	VersionPorDefecto = "v1"
+	AjusteVersion      = "agent_version"    // v1 | v2 | v3 | ab
+	AjustePorcentaje   = "agent_v2_percent" // 0–100, solo con «ab» (cuota de V2)
+	AjusteNumeros      = "agent_v2_phones"  // números separados por coma que siempre van a V2
+	AjusteModoV2       = "agent_v2_modo"    // sombra | activo
+	AjusteV3Porcentaje = "agent_v3_percent" // 0–100, solo con «ab» (cuota de V3, por encima de la de V2)
+	AjusteV3Numeros    = "agent_v3_phones"  // números separados por coma que siempre van a V3
+	AjusteModoV3       = "agent_v3_modo"    // sombra | activo
+	VersionPorDefecto  = "v1"
 )
 
 // Politica es lo que dicen los ajustes del panel sobre las versiones del agente.
 type Politica struct {
-	Global  string   // v1 | v2 | ab
-	Percent int      // 0–100
-	Numeros []string // solo dígitos
-	Modo    string   // sombra | activo
+	Global    string   // v1 | v2 | v3 | ab
+	Percent   int      // 0–100 (V2)
+	Numeros   []string // solo dígitos (V2)
+	Modo      string   // sombra | activo (V2)
+	V3Percent int      // 0–100 (V3)
+	V3Numeros []string // solo dígitos (V3)
+	V3Modo    string   // sombra | activo (V3)
 }
 
 // PoliticaAgente lee los ajustes (con valores seguros si faltan o están mal: V1, 0 %, sombra).
 func PoliticaAgente(ctx context.Context, st *store.Store) Politica {
 	p := Politica{
-		Global:  Normalizar(st.Setting(ctx, AjusteVersion, VersionPorDefecto), "v1", "v2", "ab"),
-		Modo:    Normalizar(st.Setting(ctx, AjusteModoV2, "sombra"), "sombra", "activo"),
-		Numeros: SoloDigitos(strings.Split(st.Setting(ctx, AjusteNumeros, ""), ",")),
+		Global:    Normalizar(st.Setting(ctx, AjusteVersion, VersionPorDefecto), "v1", "v2", "v3", "ab"),
+		Modo:      Normalizar(st.Setting(ctx, AjusteModoV2, "sombra"), "sombra", "activo"),
+		Numeros:   SoloDigitos(strings.Split(st.Setting(ctx, AjusteNumeros, ""), ",")),
+		V3Modo:    Normalizar(st.Setting(ctx, AjusteModoV3, "sombra"), "sombra", "activo"),
+		V3Numeros: SoloDigitos(strings.Split(st.Setting(ctx, AjusteV3Numeros, ""), ",")),
 	}
 	if n, err := strconv.Atoi(strings.TrimSpace(st.Setting(ctx, AjustePorcentaje, "0"))); err == nil {
 		p.Percent = max(0, min(100, n))
+	}
+	if n, err := strconv.Atoi(strings.TrimSpace(st.Setting(ctx, AjusteV3Porcentaje, "0"))); err == nil {
+		p.V3Percent = max(0, min(100, n))
 	}
 	return p
 }
@@ -99,10 +110,15 @@ func mismoNumero(a, b string) bool {
 
 // Resolver devuelve la versión que contesta a esta clienta y por qué («conversación», «número», «global», «ab»).
 func (p Politica) Resolver(fijada, telefono string, conversacion int64) (version, porque string) {
-	if fijada == "v1" || fijada == "v2" {
+	if fijada == "v1" || fijada == "v2" || fijada == "v3" {
 		return fijada, "conversación"
 	}
 	tel := SoloDigitos([]string{telefono})
+	for _, n := range p.V3Numeros {
+		if len(tel) == 1 && mismoNumero(n, tel[0]) {
+			return "v3", "número"
+		}
+	}
 	for _, n := range p.Numeros {
 		if len(tel) == 1 && mismoNumero(n, tel[0]) {
 			return "v2", "número"
@@ -111,29 +127,56 @@ func (p Politica) Resolver(fijada, telefono string, conversacion int64) (version
 	switch p.Global {
 	case "v2":
 		return "v2", "global"
+	case "v3":
+		return "v3", "global"
 	case "ab":
 		clave := "c" + strconv.FormatInt(conversacion, 10)
 		if len(tel) == 1 {
 			clave = tel[0][max(0, len(tel[0])-9):]
 		}
-		if Cubeta(clave) < p.Percent {
+		c := Cubeta(clave)
+		if c < p.Percent {
 			return "v2", "ab"
+		}
+		if c < p.Percent+p.V3Percent {
+			return "v3", "ab"
 		}
 		return "v1", "ab"
 	}
 	return "v1", "global"
 }
 
-// etiquetaAgente resume quién escribió el último turno: «v1», «v2» (habló V2) o «v2→v1» (V2 miró y habló V1).
+// ModoDe es el modo (sombra | activo) de esa versión: el de V2 o el de V3.
+func (p Politica) ModoDe(version string) string {
+	if version == "v3" {
+		return p.V3Modo
+	}
+	return p.Modo
+}
+
+// etiquetaAgente resume quién escribió el último turno: «v1», «v2»/«v3» (habló esa versión) o «v2→v1»/«v3→v1»
+// (miró y habló V1), o «v2 (sombra)»/«v3 (sombra)».
 func etiquetaAgente(r *agente.Reply) string {
-	if r == nil || r.Version != "v2" {
+	if r == nil {
 		return "v1"
 	}
-	if r.V2 != nil && r.V2.Enviado == "v2" {
-		return "v2"
+	switch r.Version {
+	case "v3":
+		if r.V3 != nil && r.V3.Caida != "" {
+			return "v3→v1"
+		}
+		if r.V3 != nil && r.V3.Modo == "activo" {
+			return "v3"
+		}
+		return "v3 (sombra)"
+	case "v2":
+		if r.V2 != nil && r.V2.Enviado == "v2" {
+			return "v2"
+		}
+		if r.V2 != nil && r.V2.Modo == "activo" {
+			return "v2→v1"
+		}
+		return "v2 (sombra)"
 	}
-	if r.V2 != nil && r.V2.Modo == "activo" {
-		return "v2→v1"
-	}
-	return "v2 (sombra)"
+	return "v1"
 }

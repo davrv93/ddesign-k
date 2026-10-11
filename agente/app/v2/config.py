@@ -17,7 +17,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
-VERSIONES = ("v1", "v2")
+VERSIONES = ("v1", "v2", "v3")
 
 
 def version_por_defecto(env=os.environ) -> str:

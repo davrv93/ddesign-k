@@ -91,9 +91,16 @@ type Reply struct {
 	// Comercial: la intención comercial del turno (consulta_material, objecion_precio…). La usa el CRM (Kommo) para
 	// anotar el hito; no cambia lo que hace el bot.
 	Comercial *Comercial `json:"comercial,omitempty"`
-	// Version con la que contestó el agente y, si fue V2, lo que hizo (agente/app/v2).
+	// Version con la que contestó el agente y, si fue V2 o V3, lo que hizo (agente/app/v2, agente/app/v3).
 	Version string  `json:"version,omitempty"`
 	V2      *V2Info `json:"v2,omitempty"`
+	V3      *V3Info `json:"v3,omitempty"`
+}
+
+// V3Info es lo mínimo de la traza de V3 que le sirve al bot: en qué modo corrió y si cayó a V1.
+type V3Info struct {
+	Modo  string `json:"modo"`
+	Caida string `json:"caida"`
 }
 
 // V2Info es lo mínimo de la traza de V2 que le sirve al bot: en qué modo corrió y quién escribió el texto.
