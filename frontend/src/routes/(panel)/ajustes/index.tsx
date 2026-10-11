@@ -13,6 +13,7 @@ const TOGGLES = [
 const VERSIONES = [
   { v: "v1", label: "V1" },
   { v: "v2", label: "V2" },
+  { v: "v3", label: "V3" },
   { v: "ab", label: "A/B" },
 ];
 const MODOS = [
@@ -30,11 +31,13 @@ export default component$(() => {
   const error = useSignal("");
   const metricas = useSignal<AgentMetricas | null>(null);
   const percent = useSignal(0);
+  const percent3 = useSignal(0);
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
     Object.assign(s, await api<Settings>("/api/settings"));
     percent.value = Number(s.agent_v2_percent) || 0;
+    percent3.value = Number(s.agent_v3_percent) || 0;
     loaded.value = true;
     metricas.value = await api<AgentMetricas>("/api/agent/metricas").catch(() => ({ disponible: false }));
   });
@@ -44,6 +47,7 @@ export default component$(() => {
     try {
       Object.assign(s, await api<Settings>("/api/settings", { method: "PUT", json: patch }));
       percent.value = Number(s.agent_v2_percent) || 0;
+      percent3.value = Number(s.agent_v3_percent) || 0;
       saved.value = "Guardado";
       setTimeout(() => (saved.value = ""), 2000);
     } catch (e) {
@@ -57,7 +61,7 @@ export default component$(() => {
 
   const v = s.agent_version || "v1";
   const versiones = metricas.value?.versiones ?? {};
-  const filas = (["v1", "v2"] as const).filter((k) => versiones[k]);
+  const filas = (["v1", "v2", "v3"] as const).filter((k) => versiones[k]);
 
   return (
     <div class="page narrow">
@@ -111,8 +115,8 @@ export default component$(() => {
               <div class="grow">
                 <strong>¿Quién contesta?</strong>
                 <p class="muted small">
-                  <b>V1</b>: el agente de siempre. <b>V2</b>: el agente nuevo para todas. <b>A/B</b>: reparte un porcentaje de clientas
-                  a V2 (por su número) y el resto queda en V1.
+                  <b>V1</b>: el agente de siempre. <b>V2</b>: el agente nuevo. <b>V3</b>: el agente que decide con herramientas.{" "}
+                  <b>A/B</b>: reparte un porcentaje de clientas a V2 y a V3 (por su número) y el resto queda en V1.
                 </p>
               </div>
               <div class="seg" role="group" aria-label="Versión del agente">
@@ -125,25 +129,46 @@ export default component$(() => {
             </div>
 
             {v === "ab" && (
-              <div class="setting">
-                <div class="grow">
-                  <strong>Clientas que van a V2</strong>
-                  <p class="muted small">Subir el porcentaje no cambia de versión a quien ya estaba en V2.</p>
+              <>
+                <div class="setting">
+                  <div class="grow">
+                    <strong>Clientas que van a V2</strong>
+                    <p class="muted small">Subir el porcentaje no cambia de versión a quien ya estaba en V2.</p>
+                  </div>
+                  <div class="ab-range">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={percent.value}
+                      aria-label="Porcentaje de clientas en V2"
+                      onInput$={(_, el) => (percent.value = Number(el.value))}
+                      onChange$={(_, el) => save({ agent_v2_percent: el.value })}
+                    />
+                    <output>{percent.value} %</output>
+                  </div>
                 </div>
-                <div class="ab-range">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={percent.value}
-                    aria-label="Porcentaje de clientas en V2"
-                    onInput$={(_, el) => (percent.value = Number(el.value))}
-                    onChange$={(_, el) => save({ agent_v2_percent: el.value })}
-                  />
-                  <output>{percent.value} %</output>
+                <div class="setting">
+                  <div class="grow">
+                    <strong>Clientas que van a V3</strong>
+                    <p class="muted small">Por encima de la cuota de V2. Subir el porcentaje no cambia de versión a quien ya estaba dentro.</p>
+                  </div>
+                  <div class="ab-range">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={percent3.value}
+                      aria-label="Porcentaje de clientas en V3"
+                      onInput$={(_, el) => (percent3.value = Number(el.value))}
+                      onChange$={(_, el) => save({ agent_v3_percent: el.value })}
+                    />
+                    <output>{percent3.value} %</output>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
 
             <div class="setting">
@@ -179,6 +204,42 @@ export default component$(() => {
                 placeholder="51987654321, 51912345678"
                 value={s.agent_v2_phones}
                 onChange$={(_, el) => save({ agent_v2_phones: el.value })}
+              />
+            </label>
+
+            <div class="setting">
+              <div class="grow">
+                <strong>Modo de V3</strong>
+                <p class="muted small">
+                  <b>Sombra</b>: V3 decide con sus herramientas y se mide, pero la clienta recibe siempre el texto de V1. <b>Activo</b>: V3
+                  contesta él mismo; si algo falla en el turno, contesta V1.
+                </p>
+              </div>
+              <div class="seg" role="group" aria-label="Modo de V3">
+                {MODOS.map((o) => (
+                  <button
+                    key={o.v}
+                    type="button"
+                    class={(s.agent_v3_modo || "sombra") === o.v && "on"}
+                    aria-pressed={(s.agent_v3_modo || "sombra") === o.v}
+                    onClick$={() => save({ agent_v3_modo: o.v })}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <label class="setting">
+              <div class="grow">
+                <strong>Números de prueba (siempre V3)</strong>
+                <p class="muted small">Separados por coma, con o sin el +51. Van a V3 aunque arriba esté V1 o V2.</p>
+              </div>
+              <textarea
+                rows={2}
+                placeholder="51987654321, 51912345678"
+                value={s.agent_v3_phones}
+                onChange$={(_, el) => save({ agent_v3_phones: el.value })}
               />
             </label>
           </section>

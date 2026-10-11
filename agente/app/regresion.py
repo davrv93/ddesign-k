@@ -51,6 +51,9 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 DATOS = os.path.join(AQUI, "..", "data")
 PREGUNTAS = os.path.join(DATOS, "regresion_preguntas.csv")
 CONVERSACIONES = os.path.join(DATOS, "regresion_conversaciones.jsonl")
+# Overrides de línea de comandos: correr el mismo banco contra V2/V3 y con el LLM encendido (con costo).
+VERSION_OVERRIDE = ""
+USAR_LLM_OVERRIDE = False
 # La vara que dictó la tienda: envío a Lima S/ 15, a provincia S/ 20; showroom en Juan Ayllón 459.
 ENVIO = {"lima": 15.0, "provincia": 20.0}
 SHOWROOM = "Juan Ayllón 459"
@@ -159,6 +162,9 @@ class Chat:
         self.estado, self.producto, self.talla = "", "", ""
         self.pausado = False
         self.payload: dict | None = None      # respuesta rápida pulsada en este turno (solo V2 la lee)
+        # V2/V3 y LLM: lo pide el caso o la línea de comandos (--version/--llm). Por defecto, V1 sin LLM.
+        self.version = conv.get("version", "") or VERSION_OVERRIDE
+        self.usar_llm = bool(conv.get("usar_llm")) or USAR_LLM_OVERRIDE
 
     # -- piezas ---------------------------------------------------------------------------------------------
     def poner(self, etapa="", mem=None, historial=(), estado="", producto="", talla=""):
@@ -177,8 +183,8 @@ class Chat:
         """POST /chat con el estado de la conversación. Actualiza etapa y memoria con lo que vuelve."""
         ventana = 20 if self.canal == "web" else 11          # el bot Go manda los últimos 11 mensajes
         cuerpo = {"mensaje": texto, "historial": self.historial[-ventana:], "cliente": self.cliente, "canal": self.canal,
-                  "motor": "deepseek", "usar_llm": False, "etapa": self.etapa, "conversacion": self.id, "estado": self.estado,
-                  "desde_anuncio": self.anuncio, "anuncio": self.anuncio_titulo}
+                  "motor": "deepseek", "usar_llm": self.usar_llm, "etapa": self.etapa, "conversacion": self.id, "estado": self.estado,
+                  "desde_anuncio": self.anuncio, "anuncio": self.anuncio_titulo, "version": self.version}
         if self.estado and self.producto:
             cuerpo["producto"] = self.producto
         if self.talla:
@@ -1048,9 +1054,13 @@ def main(argv=None) -> int:
     ap.add_argument("--temas", action="store_true",
                     help="exigir TAMBIÉN las afirmaciones de cambios de tema (retoma en el texto, traza de V2) aunque el agente sea V1 o V2 en sombra: "
                          "mide el «antes». Sin la bandera, solo se exigen si V2 habla con la retoma (V2_HABLA=…,responder_y_retomar).")
+    ap.add_argument("--version", default="", help="v1 | v2 | v3: versión del agente con la que se corre el banco (vacío = la del agente)")
+    ap.add_argument("--llm", action="store_true", help="encender el LLM del agente (usar_llm). Con V3 va siempre encendido.")
     a = ap.parse_args(argv)
-    global TEMAS_EXIGIDOS
+    global TEMAS_EXIGIDOS, VERSION_OVERRIDE, USAR_LLM_OVERRIDE
     TEMAS_EXIGIDOS = a.temas
+    VERSION_OVERRIDE = a.version.strip().lower()
+    USAR_LLM_OVERRIDE = a.llm
 
     copiadas = solapes()
     if a.solapes or copiadas:
