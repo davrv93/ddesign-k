@@ -110,13 +110,16 @@ services:
       # Para usar DeepSeek por OpenRouter (de pago): LLM_URL=https://openrouter.ai/api/v1/chat/completions,
       # LLM_API_KEY=<clave de OpenRouter>, LLM_MODEL=deepseek/deepseek-chat-v3.1,deepseek/deepseek-v4-flash
       LLM_URL: ${LLM_URL:-https://generativelanguage.googleapis.com/v1beta/openai/chat/completions}
-      LLM_API_KEY: ${LLM_API_KEY:-${GEMINI_API_KEY:-}}
+      # OJO: sin defaults anidados. podman-compose 1.5.0 no los expande y ademas pega un «}» al valor
+      # (memoria «podman-compose-no-expande-defaults-anidados»). El .env del servidor debe definir LLM_API_KEY.
+      LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_MODEL: ${LLM_MODEL:-gemini-3.5-flash-lite,gemini-3.1-flash-lite}
       LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-6}
       # Motor por defecto: "actual" (lo de arriba) o "deepseek" (DeepSeek por OpenRouter, tono más humano).
       # La UI de prueba lo cambia por mensaje; el bot usa este.
       MOTOR: ${MOTOR:-actual}
-      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-${OPENROUTER_API_KEY:-}}
+      # OJO: sin defaults anidados (mismo motivo que LLM_API_KEY). El .env define DEEPSEEK_API_KEY.
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek/deepseek-chat-v3.1,deepseek/deepseek-v4-flash}
       # Respuestas con más criterio de venta (350 → 500). Sube algo el costo por mensaje.
       DEEPSEEK_MAX_TOKENS: ${DEEPSEEK_MAX_TOKENS:-500}
