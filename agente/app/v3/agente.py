@@ -107,7 +107,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
                      mostrados=f.get("mostrados") or [], pago_ok=pago_ok,
                      contesta_cual=bool(RE_PREGUNTO_CUAL.search(ultimo_bot)))
     hecho = _precalculo(rec, {**(lectura.get("datos") or {}),
-                              "producto": getattr(req, "producto", "") or f.get("producto") or ""})
+                              "producto": getattr(req, "producto", "") or f.get("producto")
+                                          or ((f.get("mostrados") or [""])[-1])})
     pedido = _pedido_en_curso(rec, req, f)
     if pedido:
         hecho = (hecho + "\n" + pedido).strip()
@@ -221,6 +222,13 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
         partes.append(f"HECHO YA VERIFICADO: el {retirado} ya no está en el catálogo (baruka.pe es el catálogo oficial). "
                       "Díselo con amabilidad y pregúntale si quiere ver opciones parecidas; no mandes otra prenda como si "
                       "fuera esa.")
+    # Pregunta un atributo (medidas, tela, forro, mangas…) de la prenda en foco: el dato de su ficha (baruka.pe) va ya
+    # verificado. Sin esto «¿tienes tabla de medidas?» tras ver el Elvi se contestaba con el enlace de la web, teniendo
+    # la tabla (12-10-2026).
+    foco = (datos.get("producto") or "").upper()
+    attrs = ficha_producto.pedidos(memoria._plano(rec.mensaje))
+    if foco and attrs and ficha_producto.ficha(foco):
+        partes.append("HECHO YA VERIFICADO: " + ficha_producto.nota(foco, attrs))
     talla = (datos.get("talla") or "").upper()
     if talla in TALLAS_BAJO_PEDIDO:
         # baruka.pe vende XS, XL y 2XL «pre orden» en muchos modelos (12-10-2026): se confeccionan, no hay en stock.

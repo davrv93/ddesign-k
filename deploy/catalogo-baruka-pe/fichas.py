@@ -216,9 +216,12 @@ def main():
         cambios[cod] = {"atributos_nuevos_o_cambiados": n, "medidas": bool(med), "discrepancias_nuevas": len(disc) - len(actual.get("discrepancias") or [])}
     json.dump(propuestas, open(os.path.join(SALIDA, "fichas_producto_propuestas.json"), "w"), ensure_ascii=False, indent=1)
 
-    nuevos = []
-    for x in mapeo["nuevos_en_web"]:
-        p = por_handle[x["handle"]]
+    # Ficha SOLO con baruka.pe para TODOS los modelos de la web, también los que ya tenían código en el CRM: desde el
+    # 12-10-2026 la web es el catálogo oficial y el usuario pidió que las fichas sean solo según ella (nada de Diners
+    # ni del análisis de fotos). Lo que la web no dice queda en pendiente_tienda.
+    nuevos, todas = [], []
+    sin_codigo = {x["handle"] for x in mapeo["nuevos_en_web"]}
+    for p in por_handle.values():
         attrs, detalles, como, cuidados = de_la_web(p)
         med, origen = medidas_de(p, p["avisos"])
         cat = p.get("categoria")
@@ -243,12 +246,15 @@ def main():
         if cat == "conjunto" or not cat:
             pend.append("qué piezas trae")
         if not p["descripcion"].strip():
-            pend.append("la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos")
+            pend.append("silueta, largo, escote y mangas (la web no trae descripción)")
         ficha["web"] = {"url": p["url"], "handle": p["handle"], "colores": p["colores"],
                         "tallas": [t["talla"] + (" (pre orden)" if t["preorden"] else "") for t in p["tallas"]],
                         "precio": sorted({v["precio"] for v in p["variantes"]}), "fotos": p["fotos"]}
-        nuevos.append(ficha)
+        todas.append(ficha)
+        if p["handle"] in sin_codigo:
+            nuevos.append(ficha)
     json.dump(nuevos, open(os.path.join(SALIDA, "fichas_nuevos_web.json"), "w"), ensure_ascii=False, indent=1)
+    json.dump(todas, open(os.path.join(SALIDA, "fichas_web.json"), "w"), ensure_ascii=False, indent=1)
     for cod, c in cambios.items():
         print(cod, c)
     print(f"{len(propuestas)} fichas propuestas (V21–V42) · {len(nuevos)} fichas de productos nuevos de la web "

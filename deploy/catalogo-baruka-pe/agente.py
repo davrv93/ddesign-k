@@ -50,8 +50,8 @@ def main():
     # Los retirados conservan su ficha y llevan su nombre del CRM: si una clienta pide «el Irla» (de un anuncio viejo),
     # el agente sabe que ya no se vende y lo dice, en vez de mandar otra prenda parecida.
     nombres = {x["codigo"]: x["nombre_crm"] for x in json.load(open(os.path.join(AQUI, "salida", "mapeo.json")))["crm_a_web"]}
-    previas = {f["codigo"]: f for f in antes}
-    retiradas = [dict(previas.get(c) or {"codigo": c}, nombre=nombres.get(c, ""), retirado="no está en baruka.pe (12-10-2026)")
+    # Solo código, nombre y la marca: ningún dato de Diners queda en las fichas (12-10-2026, «solo según baruka.pe»).
+    retiradas = [{"codigo": c, "nombre": nombres.get(c, ""), "retirado": "no está en baruka.pe (12-10-2026)"}
                  for c in of["retirados"]]
     todas = sorted(web + retiradas, key=lambda f: int(f["codigo"][1:]))
     with open(ruta, "w", encoding="utf-8") as f:

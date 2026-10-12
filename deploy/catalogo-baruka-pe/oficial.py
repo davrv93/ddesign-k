@@ -69,8 +69,8 @@ def main():
     web = _cargar("catalogo_baruka_pe.json")
     web = web if isinstance(web, list) else web["productos"]
     mapeo = _cargar("mapeo.json")
-    propuestas = {f["codigo"]: f for f in _cargar("fichas_producto_propuestas.json")}
-    nuevas = {f["codigo"]: f for f in _cargar("fichas_nuevos_web.json")}
+    # Solo baruka.pe (fichas.py → fichas_web.json): ni Diners ni análisis de fotos, también para V22…V42.
+    fichas_web = {f["codigo"]: f for f in _cargar("fichas_web.json")}
 
     codigo_de = {x["web"]["handle"]: x["codigo"] for x in mapeo["crm_a_web"] if x["estado"] == "mapeado"}
     retirados = sorted(x["codigo"] for x in mapeo["crm_a_web"] if x["estado"] != "mapeado")
@@ -84,7 +84,7 @@ def main():
         tallas = [t["talla"] for t in p["tallas"]]
         preorden = [t["talla"] for t in p["tallas"] if t.get("preorden")]
         colores = [c.strip().rstrip(".").capitalize() if c.isupper() else c.strip().rstrip(".") for c in p["colores"]]
-        ficha = dict(propuestas.get(cod) or nuevas.get(f"WEB:{p['handle']}") or {})
+        ficha = dict(fichas_web[f"WEB:{p['handle']}"])
         ficha["codigo"] = cod
         ficha["nombre"] = nombre(p)
         # Lo que la web ya responde deja de estar «pendiente de la tienda»: colores y tallas siempre; medidas si su

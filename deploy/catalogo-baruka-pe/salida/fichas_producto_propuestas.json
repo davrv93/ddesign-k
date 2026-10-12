@@ -93,6 +93,8 @@
    "si la tela del cuerpo estira o solo las cintas",
    "si los tirantes son regulables"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Vestido Kendall",
   "web": null
  },
  {
@@ -103,7 +105,7 @@
   "atributos": {
    "silueta": {
     "valor": "recta",
-    "fuente": "foto+baruka.pe",
+    "fuente": "foto+baruka.pe+baruka.pe",
     "baruka_pe": "Corte recto clásico"
    },
    "largo": {
@@ -114,7 +116,7 @@
    "mangas": null,
    "cintura": {
     "valor": "tiro alto con pretina",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Cintura alta con botones decorativos"
    },
    "espalda": {
@@ -127,16 +129,21 @@
    },
    "tela": {
     "valor": "Tela Loma con cuerpo que mantiene la forma y aporta elegancia",
-    "fuente": "baruka.pe",
+    "fuente": "baruka.pe+baruka.pe",
     "antes": {
-     "valor": "Prada stretch",
-     "fuente": "diners"
+     "valor": "Tela Loma con cuerpo que mantiene la forma y aporta elegancia",
+     "fuente": "baruka.pe",
+     "antes": {
+      "valor": "Prada stretch",
+      "fuente": "diners"
+     }
     }
    },
    "forro": null,
    "transparencias": {
     "valor": "No se transparenta ni se marca, brinda seguridad al vestir",
-    "fuente": "baruka.pe"
+    "fuente": "baruka.pe+baruka.pe",
+    "baruka_pe": "No se transparenta ni se marca, brinda seguridad al vestir"
    },
    "estampado": {
     "valor": "liso",
@@ -186,6 +193,9 @@
    "silueta: baruka.pe dice «Corte recto clásico»; la ficha dice «recta» (fuente: foto). ¿Dicen lo mismo con otras palabras? Revisar.",
    "cintura: baruka.pe dice «Cintura alta con botones decorativos»; la ficha dice «tiro alto con pretina» (fuente: ambas). ¿Dicen lo mismo con otras palabras? Revisar.",
    "tela: baruka.pe dice «Tela Loma con cuerpo que mantiene la forma y aporta elegancia»; la ficha decía «Prada stretch» (fuente: diners). Se toma la web: confirmar con la tienda.",
+   "baruka.pe no vende el color «azul»: solo Negro",
+   "silueta: baruka.pe dice «Corte recto clásico»; la ficha dice «recta» (fuente: foto+baruka.pe). ¿Dicen lo mismo con otras palabras? Revisar.",
+   "cintura: baruka.pe dice «Cintura alta con botones decorativos»; la ficha dice «tiro alto con pretina» (fuente: ambas+baruka.pe). ¿Dicen lo mismo con otras palabras? Revisar.",
    "baruka.pe no vende el color «azul»: solo Negro"
   ],
   "pendiente_tienda": [
@@ -259,7 +269,8 @@
     170.0
    ],
    "mapeo": "nombre y tipo"
-  }
+  },
+  "nombre": "Pantalón Codman"
  },
  {
   "codigo": "V23",
@@ -344,6 +355,8 @@
    "si el short de las fotos se vende aparte o viene con la blusa",
    "confirmar la tela: Diners dice seda y en la foto se ve mate"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Blusa Anika",
   "web": null
  },
  {
@@ -451,6 +464,8 @@
    "si el panel de la espalda del top estira",
    "si se puede comprar el top o la falda por separado"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Conjunto Kabanova Azul",
   "web": null
  },
  {
@@ -557,6 +572,8 @@
    "si el panel de la espalda del top estira",
    "si se puede comprar el top o la falda por separado"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Conjunto Kabanova Rojo",
   "web": null
  },
  {
@@ -567,7 +584,7 @@
   "atributos": {
    "silueta": {
     "valor": "palazzo",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Silueta elegante gracias a su pierna palazzo"
    },
    "largo": {
@@ -578,28 +595,36 @@
    "mangas": null,
    "cintura": {
     "valor": "tiro alto con pretina ancha tipo corsé",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Pretina: Estructurada con soporte"
    },
    "espalda": {
     "valor": "pretina tipo corsé con cortes princesa; los tirantes se unen al delantero",
-    "fuente": "diners+baruka.pe",
+    "fuente": "diners+baruka.pe+baruka.pe",
     "baruka_pe": "Cierre: Invisible en la espalda"
    },
    "cierre": {
     "valor": "Invisible en la espalda",
-    "fuente": "diners+baruka.pe",
+    "fuente": "diners+baruka.pe+baruka.pe",
     "antes": {
-     "valor": "cierre invisible en la espalda",
-     "fuente": "diners"
+     "valor": "Invisible en la espalda",
+     "fuente": "diners+baruka.pe",
+     "antes": {
+      "valor": "cierre invisible en la espalda",
+      "fuente": "diners"
+     }
     }
    },
    "tela": {
     "valor": "Morgan (resistente, con caída y textura elegante)",
-    "fuente": "baruka.pe",
+    "fuente": "baruka.pe+baruka.pe",
     "antes": {
-     "valor": "Prada",
-     "fuente": "diners"
+     "valor": "Morgan (resistente, con caída y textura elegante)",
+     "fuente": "baruka.pe",
+     "antes": {
+      "valor": "Prada",
+      "fuente": "diners"
+     }
     }
    },
    "forro": null,
@@ -658,7 +683,8 @@
   "discrepancias": [
    "El texto lo llama «tipo overol»; en la foto es un pantalón con tirantes, sin peto.",
    "espalda: baruka.pe dice «Cierre: Invisible en la espalda»; la ficha dice «pretina tipo corsé con cortes princesa; los tirantes se unen al delantero» (fuente: diners). ¿Dicen lo mismo con otras palabras? Revisar.",
-   "tela: baruka.pe dice «Morgan (resistente, con caída y textura elegante)»; la ficha decía «Prada» (fuente: diners). Se toma la web: confirmar con la tienda."
+   "tela: baruka.pe dice «Morgan (resistente, con caída y textura elegante)»; la ficha decía «Prada» (fuente: diners). Se toma la web: confirmar con la tienda.",
+   "espalda: baruka.pe dice «Cierre: Invisible en la espalda»; la ficha dice «pretina tipo corsé con cortes princesa; los tirantes se unen al delantero» (fuente: diners+baruka.pe). ¿Dicen lo mismo con otras palabras? Revisar."
   ],
   "pendiente_tienda": [
    "largo de entrepierna",
@@ -737,7 +763,8 @@
     220.0
    ],
    "mapeo": "nombre y tipo"
-  }
+  },
+  "nombre": "Pantalón Cristal"
  },
  {
   "codigo": "V27",
@@ -851,7 +878,8 @@
     220.0
    ],
    "mapeo": "nombre y tipo"
-  }
+  },
+  "nombre": "Blusa Ankara"
  },
  {
   "codigo": "V28",
@@ -943,6 +971,8 @@
    "si la tela tiene elasticidad",
    "si se puede usar brasier con la espalda descubierta"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Vestido Azra Turquesa",
   "web": null
  },
  {
@@ -1036,6 +1066,8 @@
    "si la tela tiene elasticidad",
    "si se puede usar brasier con la espalda descubierta"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Vestido Azra Palo Rosa",
   "web": null
  },
  {
@@ -1046,7 +1078,7 @@
   "atributos": {
    "silueta": {
     "valor": "ajustado arriba, con peplum en la cintura y pantalón wide leg",
-    "fuente": "foto+baruka.pe",
+    "fuente": "foto+baruka.pe+baruka.pe",
     "baruka_pe": "Corte en la cintura"
    },
    "largo": {
@@ -1055,17 +1087,17 @@
    },
    "escote": {
     "valor": "un hombro (asimétrico)",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Escote asimétrico de un solo hombro"
    },
    "mangas": {
     "valor": "sin mangas",
-    "fuente": "foto+baruka.pe",
+    "fuente": "foto+baruka.pe+baruka.pe",
     "baruka_pe": "Escote asimétrico de un solo hombro"
    },
    "cintura": {
     "valor": "marcada con cinturón",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Cinturón integrado"
    },
    "espalda": {
@@ -1078,7 +1110,11 @@
    },
    "tela": {
     "valor": "Tela Morgan: firme, elegante y cómoda",
-    "fuente": "baruka.pe"
+    "fuente": "baruka.pe+baruka.pe",
+    "antes": {
+     "valor": "Tela Morgan: firme, elegante y cómoda",
+     "fuente": "baruka.pe"
+    }
    },
    "forro": null,
    "transparencias": null,
@@ -1151,7 +1187,8 @@
   "resumen": "Enterizo rosado de un hombro, con cinturón tejido, peplum en la cintura, pantalón ancho de largo completo y un volado en cascada a lo largo de una pierna.",
   "discrepancias": [
    "el texto habla de «cinturón de cuero» y luego de «correa tejida»; en la foto el cinturón se ve tejido en blanco plateado y no se puede confirmar que sea de cuero",
-   "mangas: baruka.pe dice «Escote asimétrico de un solo hombro»; la ficha dice «sin mangas» (fuente: foto). ¿Dicen lo mismo con otras palabras? Revisar."
+   "mangas: baruka.pe dice «Escote asimétrico de un solo hombro»; la ficha dice «sin mangas» (fuente: foto). ¿Dicen lo mismo con otras palabras? Revisar.",
+   "mangas: baruka.pe dice «Escote asimétrico de un solo hombro»; la ficha dice «sin mangas» (fuente: foto+baruka.pe). ¿Dicen lo mismo con otras palabras? Revisar."
   ],
   "pendiente_tienda": [
    "forro",
@@ -1233,7 +1270,8 @@
     270.0
    ],
    "mapeo": "nombre y tipo"
-  }
+  },
+  "nombre": "Enterizo Elvi"
  },
  {
   "codigo": "V31",
@@ -1321,6 +1359,8 @@
    "elasticidad",
    "si la cremallera del frente abre o es decorativa"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Vestido Pandora",
   "web": null
  },
  {
@@ -1410,6 +1450,8 @@
    "si el saco y la falda se venden por separado",
    "elasticidad"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Conjunto Xela",
   "web": null
  },
  {
@@ -1508,7 +1550,8 @@
     170.0
    ],
    "mapeo": "nombre y tipo"
-  }
+  },
+  "nombre": "Blusa Celestine"
  },
  {
   "codigo": "V34",
@@ -1589,6 +1632,8 @@
    "largo según la estatura (en la foto se usa con tacón)",
    "si la blusa negra de las fotos se vende aparte (no es parte de esta prenda)"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Pantalón Ivy",
   "web": null
  },
  {
@@ -1686,6 +1731,8 @@
    "ubicación del cierre invisible",
    "cuidados de lavado"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Vestido Irla",
   "web": null
  },
  {
@@ -1796,7 +1843,8 @@
     160.0
    ],
    "mapeo": "nombre y tipo"
-  }
+  },
+  "nombre": "Blusa Emet"
  },
  {
   "codigo": "V37",
@@ -1881,6 +1929,8 @@
    "forro",
    "elasticidad de la tela"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Conjunto Kaylee",
   "web": null
  },
  {
@@ -1973,6 +2023,8 @@
    "elasticidad de la tela",
    "cuidados de lavado"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Blazer Begonia",
   "web": null
  },
  {
@@ -2121,7 +2173,8 @@
     150.0
    ],
    "mapeo": "nombre y tipo"
-  }
+  },
+  "nombre": "Blusa Bernadette"
  },
  {
   "codigo": "V40",
@@ -2197,6 +2250,8 @@
    "cuidados de lavado",
    "si la blusa blanca de la foto se vende aparte"
   ],
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "nombre": "Falda Paola",
   "web": null
  },
  {
@@ -2207,22 +2262,22 @@
   "atributos": {
    "silueta": {
     "valor": "ajustada al cuerpo",
-    "fuente": "foto+baruka.pe",
+    "fuente": "foto+baruka.pe+baruka.pe",
     "baruka_pe": "Corte mini entallado"
    },
    "largo": {
     "valor": "mini",
-    "fuente": "foto+baruka.pe",
+    "fuente": "foto+baruka.pe+baruka.pe",
     "baruka_pe": "Corte mini entallado"
    },
    "escote": {
     "valor": "en V profundo",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Escote en V profundo"
    },
    "mangas": {
     "valor": "largas, abullonadas en el hombro, con puños anchos",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Manga larga"
    },
    "cintura": {
@@ -2235,19 +2290,31 @@
    },
    "cierre": {
     "valor": "Cierre posterior invisible",
-    "fuente": "baruka.pe"
+    "fuente": "baruka.pe+baruka.pe",
+    "antes": {
+     "valor": "Cierre posterior invisible",
+     "fuente": "baruka.pe"
+    }
    },
    "tela": {
     "valor": "Tela Roma stretch (elástica, con cuerpo)",
-    "fuente": "diners+baruka.pe",
+    "fuente": "diners+baruka.pe+baruka.pe",
     "antes": {
-     "valor": "roma",
-     "fuente": "diners"
+     "valor": "Tela Roma stretch (elástica, con cuerpo)",
+     "fuente": "diners+baruka.pe",
+     "antes": {
+      "valor": "roma",
+      "fuente": "diners"
+     }
     }
    },
    "forro": {
     "valor": "Forro interior",
-    "fuente": "baruka.pe"
+    "fuente": "baruka.pe+baruka.pe",
+    "antes": {
+     "valor": "Forro interior",
+     "fuente": "baruka.pe"
+    }
    },
    "transparencias": null,
    "estampado": {
@@ -2320,11 +2387,11 @@
   "discrepancias": [
    "el catálogo lo registra en palo rosa, pero en las fotos aparece en nude durazno y en guinda",
    "silueta: baruka.pe dice «Corte mini entallado»; la ficha dice «ajustada al cuerpo» (fuente: foto). ¿Dicen lo mismo con otras palabras? Revisar.",
+   "baruka.pe no vende el color «palo rosa»: solo Black, Beige, Vino",
+   "silueta: baruka.pe dice «Corte mini entallado»; la ficha dice «ajustada al cuerpo» (fuente: foto+baruka.pe). ¿Dicen lo mismo con otras palabras? Revisar.",
    "baruka.pe no vende el color «palo rosa»: solo Black, Beige, Vino"
   ],
-  "pendiente_tienda": [
-   "qué colores hay en stock (palo rosa según catálogo; nude y guinda en las fotos)"
-  ],
+  "pendiente_tienda": [],
   "cuidados_fuente": "baruka.pe",
   "medidas": {
    "XS": {
@@ -2390,7 +2457,8 @@
     350.0
    ],
    "mapeo": "nombre y tipo"
-  }
+  },
+  "nombre": "Vestido Holly"
  },
  {
   "codigo": "V42",
@@ -2400,37 +2468,41 @@
   "atributos": {
    "silueta": {
     "valor": "cintura marcada con falda amplia y con caída (línea A)",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Pretina de corte imperio"
    },
    "largo": {
     "valor": "al piso",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Falda larga con amplio vuelo"
    },
    "escote": {
     "valor": "en V profundo",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Escote en V profundo, estiliza visualmente el torso y realza el escote de manera elegante"
    },
    "mangas": {
     "valor": "tipo capa, largas, de gasa",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Mangas tipo capa, con caída fluida"
    },
    "cintura": {
     "valor": "marcada con pretina ancha",
-    "fuente": "ambas+baruka.pe",
+    "fuente": "ambas+baruka.pe+baruka.pe",
     "baruka_pe": "Pretina de corte imperio"
    },
    "espalda": null,
    "cierre": null,
    "tela": {
     "valor": "Confeccionado en gasa con fondo de podesuá, combinación que aporta fluidez, cobertura y una excelente caída",
-    "fuente": "diners+baruka.pe",
+    "fuente": "diners+baruka.pe+baruka.pe",
     "antes": {
-     "valor": "base de podesuá rígida con acabado en gasa",
-     "fuente": "diners"
+     "valor": "Confeccionado en gasa con fondo de podesuá, combinación que aporta fluidez, cobertura y una excelente caída",
+     "fuente": "diners+baruka.pe",
+     "antes": {
+      "valor": "base de podesuá rígida con acabado en gasa",
+      "fuente": "diners"
+     }
     }
    },
    "forro": null,
@@ -2503,7 +2575,9 @@
   "resumen": "El vestido Gala Capa Azul es largo al piso, con escote en V, corpiño bordado con pedrería, cintura marcada y mangas tipo capa de gasa. Tiene base de podesuá, que mantiene la forma, y acabado en gasa con caída fluida.",
   "discrepancias": [
    "silueta: baruka.pe dice «Pretina de corte imperio»; la ficha dice «cintura marcada con falda amplia y con caída (línea A)» (fuente: ambas). ¿Dicen lo mismo con otras palabras? Revisar.",
-   "largo: baruka.pe dice «Falda larga con amplio vuelo»; la ficha dice «al piso» (fuente: ambas). ¿Dicen lo mismo con otras palabras? Revisar."
+   "largo: baruka.pe dice «Falda larga con amplio vuelo»; la ficha dice «al piso» (fuente: ambas). ¿Dicen lo mismo con otras palabras? Revisar.",
+   "silueta: baruka.pe dice «Pretina de corte imperio»; la ficha dice «cintura marcada con falda amplia y con caída (línea A)» (fuente: ambas+baruka.pe). ¿Dicen lo mismo con otras palabras? Revisar.",
+   "largo: baruka.pe dice «Falda larga con amplio vuelo»; la ficha dice «al piso» (fuente: ambas+baruka.pe). ¿Dicen lo mismo con otras palabras? Revisar."
   ],
   "pendiente_tienda": [
    "cómo es la espalda y dónde va el cierre (la foto es de frente, en maniquí)",
@@ -2588,6 +2662,6556 @@
     450.0
    ],
    "mapeo": "manual"
-  }
+  },
+  "nombre": "Vestido Alma"
+ },
+ {
+  "codigo": "V43",
+  "nombre": "Conjunto Kabanova",
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "web": null,
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ]
+ },
+ {
+  "codigo": "V44",
+  "nombre": "Vestido Azra",
+  "retirado": "no está en baruka.pe (12-10-2026)",
+  "web": null,
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ]
+ },
+ {
+  "codigo": "V45",
+  "nombre": "Vestido Merlina",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Falda corte A con vuelo",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote en V con drapeado cruzado",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Diseño sin mangas",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Pretina definida: destaca la cintura y armoniza la silueta",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "venetón: tejido sin elasticidad, con estructura y caída definida",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote en V con drapeado cruzado: realza delicadamente el busto y estiliza visualmente el torso",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 110,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 110,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 110,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 110,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 110,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Tabla_de_medidas_para_vestido_rojo.png?v=1791668142"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V46",
+  "nombre": "Vestido Blear",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Falda corte A con vuelo",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote corazón con hombros descubiertos",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Mangas caídas: enmarcan los hombros con un acabado elegante",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Cintura definida: destaca la silueta y crea una transición armoniosa hacia la falda",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "venetón: tela de estructura definida que favorece la forma y caída del vestido",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote corazón con hombros descubiertos: realza delicadamente el escote y aporta feminidad",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Drapeado cruzado en el busto: aporta estructura visual y estiliza el torso",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Material venetón: tela de estructura definida que favorece la forma y caída del vestido",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 90,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 90,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 90,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 90,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 90,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Tabla_de_medidas_y_vestido_rojo_1.png?v=1791588271"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V47",
+  "nombre": "Vestido Zoraida",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte entallado: resalta las curvas de manera elegante",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote en V",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Mangas con volantes",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Pretina anatómica y cintura alta",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "satín Sahara: tela stretch de alta calidad, fresca, con excelente adaptación al cuerpo y resistente a la formación de bolitas",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior: proporciona un mejor acabado",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Abertura frontal: estiliza visualmente las piernas y facilita el movimiento",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Escote en V: estiliza visualmente el torso y realza el escote",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Copas con push-up: brindan soporte y realzan el busto",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pretina anatómica y cintura alta: definen la cintura y estilizan la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte entallado: resalta las curvas de manera elegante",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 105
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 105
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 105
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 105
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 105
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Zoraida.png?v=1791499829"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo total del vestido: 1.05 m."
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V48",
+  "nombre": "Vestido Saira",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": {
+    "valor": "Escote asimétrico con detalle floral, elegante y femenino.Drapeado estratégico",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": {
+    "valor": "Pretina anatómica",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Venetón",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": {
+    "valor": "Escote asimétrico con detalle floral, elegante y femenino.Drapeado estratégico",
+    "fuente": "baruka.pe"
+   },
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote asimétrico con detalle floral, elegante y femenino.Drapeado estratégico, que estiliza el torso",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pretina anatómica, que define y realza la cintura",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Falda con amplio vuelo y abertura, que aporta movimiento y estiliza las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 155
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 155
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 155
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 155
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 155
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/SAIRA.png?v=1791428396"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Importante:El largo se ha considero desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V49",
+  "nombre": "Vestido Ilaria",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Drapeado estratégico, que estiliza la silueta y ayuda a disimular el abdomen",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Falda larga con abertura",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Escote asimétrico con lazo",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta y diseño estructurado",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": {
+    "valor": "Excelente caída y cierre invisible, para un acabado elegante y sofisticado",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Satín stretch, tela satinada, superfresca y elástica que se amolda perfectamente al cuerpo",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote asimétrico con lazo, que aporta elegancia y realza los hombros",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Drapeado estratégico, que estiliza la silueta y ayuda a disimular el abdomen",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Cintura alta y diseño estructurado, que definen y realzan la figura",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Falda larga con abertura, que estiliza las piernas y facilita el movimiento",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 155
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 155
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 155
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 155
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 155
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ILARIA.png?v=1791405407"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Importante:El largo se ha considero desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V50",
+  "nombre": "Vestido Salome",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte de cintura alta",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Pretina anatómica",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Confeccionado en tela Venetón, de acabado mate, elegante y sofisticado",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Diseño off shoulder, que deja los hombros al descubierto y estiliza el torso",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pretina anatómica, que define y pronuncia visualmente la cintura",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte de cintura alta, que ayuda a estilizar y alargar visualmente la parte inferior del cuerpo",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Abertura frontal en la pierna, que estiliza y aporta movimiento al caminar",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 155
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 155
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 155
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 155
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 155
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Salome.png?v=1791374707"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Importante:El largo se ha considero desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V51",
+  "nombre": "Vestido Celestia",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": {
+    "valor": "Falda larga con amplio vuelo y movimiento elegante",
+    "fuente": "baruka.pe"
+   },
+   "escote": null,
+   "mangas": {
+    "valor": "Diseño strapless con copas estructuradas y push up, que brindan mayor soporte y realce",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Pretina anatómica ancha",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Confeccionado en podesuá, tela con cuerpo, fresca y de excelente caída",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Detalle drapeado y fruncido en el busto con acabado central tipo lazo",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Pretina anatómica ancha, que define y estiliza visualmente la cintura",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Abertura frontal en la pierna, que estiliza y aporta un detalle sofisticado",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 155
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 155
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 155
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 155
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 155
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Celestia.png?v=1791339295"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Importante:El largo se ha considero desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V52",
+  "nombre": "Vestido Nuria",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": {
+    "valor": "Largo recto con abertura frontal",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Diseño: Asimétrico, con escote estructurado y nudo central",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga farol con puño y volumen",
+    "fuente": "baruka.pe"
+   },
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre invisible lateral",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Licra brasilera stretch (elástica, gruesa y con cuerpo)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro completo",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 155
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 155
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 155
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 155
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 155
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Busto_1.png?v=1769454618"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Importante:El largo se ha considero desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V53",
+  "nombre": "Vestido Bruna",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Largo: Corte recto con abertura frontal que aporta elegancia y sensualidad",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Largo: Corte recto con abertura frontal que aporta elegancia y sensualidad",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Diseño: Vestido largo de silueta entallada, con escote en V estructurado y nudo central que estiliza la figura",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Mangas: Manga larga tipo farol, con abertura y puño fruncido para volumen sofisticado",
+    "fuente": "baruka.pe"
+   },
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre invisible lateral para un ajuste limpio",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Licra brasilera stretch, elástica, gruesa y con excelente caída",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro completo para mayor comodidad y mejor acabado",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Diseño: Vestido largo de silueta entallada, con escote en V estructurado y nudo central que estiliza la figura",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Calce: Se adapta al cuerpo realzando curvas sin marcar",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/file_7.jpg?v=1766882795",
+   "cuidados de lavado"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V54",
+  "nombre": "Vestido Santana",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": {
+    "valor": "Largo maxi",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Escote en V",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Licra brasilera (suave, elástica y elegante)",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Drapeado central frontal",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 158.5
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 159
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 159.5
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 160
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 160.5
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/file_5.jpg?v=1766881037"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CADERA/XL": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V55",
+  "nombre": "Vestido Paloma",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": {
+    "valor": "Largo recto con abertura frontal",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Diseño: Asimétrico, con escote estructurado y nudo central",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga farol con puño y volumen",
+    "fuente": "baruka.pe"
+   },
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre invisible lateral",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Licra brasilera, stretch (elástica, gruesa y con cuerpo)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro completo",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 158.5
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 159
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 159.5
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 160
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 160.5
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/file_6.jpg?v=1766881910"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V56",
+  "nombre": "Vestido Donna",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": {
+    "valor": "Escote con estructura y un solo hombro",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Escote con estructura y un solo hombro",
+    "fuente": "baruka.pe"
+   },
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre invisible posterior",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Roma stretch (elástico, suave, con cuerpo)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior completo",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Volante central vertical y peplum lateral",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Abertura alta lateral",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 89
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 89
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 89
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 89
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 89
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/vestido_donna.png?v=1746305246"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde la sisa"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V57",
+  "nombre": "Pantalón Rose",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "El palazzo",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Largo: Hasta el suelo, ideal para tacones",
+    "fuente": "baruka.pe"
+   },
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Tiro alto: Cintura definida sin molestias",
+    "fuente": "baruka.pe"
+   },
+   "espalda": {
+    "valor": "Cierre invisible en la espalda",
+    "fuente": "baruka.pe"
+   },
+   "cierre": {
+    "valor": "Cierre invisible en la espalda",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Padra (estructura, elegancia y fluidez)",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo_pantalon": 110,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo_pantalon": 110,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo_pantalon": 111,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo_pantalon": 111,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo_pantalon": 111,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/PANTALON_ROSE_5828e494-c3e2-4684-bc82-455950330782.png?v=1746023460"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CADERA/XS": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V58",
+  "nombre": "Conjunto Amira",
+  "piezas": [],
+  "atributos": {
+   "silueta": {
+    "valor": "Olvídate de los conjuntos rígidos y planos. Este diseño estiliza la silueta, enmarca el torso y alarga visualmente las piernas. Es esa prenda estrella",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Marca la cintura y estructura la parte superior del cuerpo",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": {
+    "valor": "Pantalón con cierre oculto y pretina firme",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela Morgan (80% poliéster – 20% spandex)",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Diseño: Blazer corto estructurado con hombreras / Pantalón tiro alto pierna recta",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Marca la cintura y estructura la parte superior del cuerpo",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pantalón con caída recta que estiliza visualmente",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Blazer tipo crop que alarga el torso visualmente",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado, no usar blanqueador. Secar a la sombra y planchar al reverso a temperatura media",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "qué piezas trae"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo_top": 20,
+    "largo_blazer": 45,
+    "largo_pantalon": 100,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo_top": 20,
+    "largo_blazer": 46,
+    "largo_pantalon": 100,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo_top": 20,
+    "largo_blazer": 47,
+    "largo_pantalon": 100,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo_top": 20,
+    "largo_blazer": 48,
+    "largo_pantalon": 100,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo_top": 20,
+    "largo_blazer": 49,
+    "largo_pantalon": 100,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/CONJUNTO_AMIRA.png?v=1745287702"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CINTURA/XS": "ocr_celda",
+    "CINTURA/S": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V59",
+  "nombre": "Blazer Kero",
+  "piezas": [
+   "blazer"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V60",
+  "nombre": "Blusa Franchesca",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V61",
+  "nombre": "Blusa Rochelle",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V62",
+  "nombre": "Blusa Hobeika",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V63",
+  "nombre": "Blusa Narciso",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V64",
+  "nombre": "Blusa Lila",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V65",
+  "nombre": "Blusa Henrrieta",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V66",
+  "nombre": "Blusa Avangelina",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V67",
+  "nombre": "Blusa Anastacia",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V68",
+  "nombre": "Blusa Jewell",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V69",
+  "nombre": "Blusa Hob",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V70",
+  "nombre": "Blusa Blum",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V71",
+  "nombre": "Blusa Isis",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V72",
+  "nombre": "Blusa Nieve",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V73",
+  "nombre": "Blusa Faye",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V74",
+  "nombre": "Blusa Camila",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V75",
+  "nombre": "Blusa Piume",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V76",
+  "nombre": "Blusa Yukio",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V77",
+  "nombre": "Blusa Olwen",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V78",
+  "nombre": "Blusa Margarita",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V79",
+  "nombre": "Blusa Bianca",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V80",
+  "nombre": "Blusa Eva",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V81",
+  "nombre": "Blusa Charlotte",
+  "piezas": [
+   "blusa"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V82",
+  "nombre": "Vestido Adana",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Silueta: Ceñida al cuerpo",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Largo: Arriba de la rodilla",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Diseño: Escote corazón, mangas off shoulder",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Diseño: Escote corazón, mangas off shoulder",
+    "fuente": "baruka.pe"
+   },
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Invisible en la parte posterior",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela stretch brillante (con forro interior completo)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Material: Tela stretch brillante (con forro interior completo)",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 149,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 150,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 151,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 152,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 153,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_4.png?v=1745099393"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CADERA/XL": "ocr_celda",
+    "TALLA DE PANTALÓN/L": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V83",
+  "nombre": "Enterizo Elowen",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V84",
+  "nombre": "Enterizo Sereia",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V85",
+  "nombre": "Pantalón Annette",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte recto elegante",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta estructurada",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Loma con cuerpo que aporta caída limpia y acabado prolijo",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": {
+    "valor": "No se marca ni se transparenta, mantiene una imagen pulida",
+    "fuente": "baruka.pe"
+   },
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Cintura alta estructurada que estiliza el abdomen y define la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte recto elegante que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo_maxi_vestido": 126,
+    "largo_pantalon": 107,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo_maxi_vestido": 126,
+    "largo_pantalon": 107,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo_maxi_vestido": 127,
+    "largo_pantalon": 107.5,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo_maxi_vestido": 128,
+    "largo_pantalon": 108,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo_maxi_vestido": 128,
+    "largo_pantalon": 108.5,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ANNETE_DE_INSTESIS.png?v=1766074395"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CINTURA/XS": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V86",
+  "nombre": "Pantalón De Dee",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte recto clásico",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta estructurada",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan con caída suave que aporta elegancia y comodidad",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Cintura alta estructurada que estiliza el abdomen y define la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte recto clásico que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_27.jpg?v=1766078505",
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V87",
+  "nombre": "Pantalón Gytsi",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte amplio tipo wide leg",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta estructurada",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan con caída elegante que brinda ligereza y suavidad",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Cintura alta estructurada que estiliza el abdomen y realza la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte amplio tipo wide leg que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_27.jpg?v=1766078505",
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V88",
+  "nombre": "Pantalón Holly",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte amplio y fluido",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta con pretina estructurada",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Loma con excelente caída que aporta elegancia y movimiento",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": {
+    "valor": "No se marca ni transparenta, brinda seguridad al vestir",
+    "fuente": "baruka.pe"
+   },
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Cintura alta con pretina estructurada que estiliza el abdomen",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte amplio y fluido que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. Secar a la sombra. Planchar por el reverso a temperatura media",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_26.jpg?v=1766076846",
+   "si tiene forro"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V89",
+  "nombre": "Pantalón Lexy",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte recto clásico",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta definida",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Loma con cuerpo que mantiene la forma durante todo el día",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": {
+    "valor": "No se marca ni transparenta, brinda seguridad al vestir",
+    "fuente": "baruka.pe"
+   },
+   "estampado": {
+    "valor": "Combínalo con blusas estampadas, camisas o tops elegantes",
+    "fuente": "baruka.pe"
+   },
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Cintura alta definida que estiliza el abdomen y marca la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte recto clásico que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. Secar a la sombra. Planchar por el reverso a temperatura media",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/WhatsApp_Image_2025-12-18_at_12.17.32_PM_1.jpg?v=1766078303",
+   "si tiene forro"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V90",
+  "nombre": "Pantalón Maddy",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte amplio y elegante",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta estructurada",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan con caída suave que aporta ligereza y movimiento",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": {
+    "valor": "No se marca ni transparenta, mantiene una imagen pulida",
+    "fuente": "baruka.pe"
+   },
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Cintura alta estructurada que estiliza el abdomen y define la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte amplio y elegante que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_27.jpg?v=1766078505",
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V91",
+  "nombre": "Pantalón Nala",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte amplio y fluido",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta definida",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan con caída suave que aporta elegancia y comodidad",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Cintura alta definida que estiliza el abdomen y realza la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte amplio y fluido que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_27.jpg?v=1766078505",
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V92",
+  "nombre": "Pantalón Skady",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte amplio y elegante",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta estructurada",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan con caída suave que aporta movimiento y elegancia",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Cintura alta estructurada que estiliza el abdomen y define la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte amplio y elegante que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/WhatsApp_Image_2025-12-18_at_12.43.49_PM.jpg?v=1766079848",
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V93",
+  "nombre": "Pantalón Sadie",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte amplio tipo wide leg",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta estructurada",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan con caída suave que realza la presencia del look",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Cintura alta estructurada que estiliza el abdomen y define la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte amplio tipo wide leg que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Tela Morgan con caída suave que realza la presencia del look",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo_pantalon": 110,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo_pantalon": 110,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo_pantalon": 111,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo_pantalon": 111,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo_pantalon": 111,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/PANTALON_SADIE_47df005a-4d47-41e5-a578-aa3ae0450b00.png?v=1766085499"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V94",
+  "nombre": "Pantalón Soyala",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte amplio y elegante",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta estructurada",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan con caída suave que aporta elegancia y ligereza",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Botones decorativos laterales que elevan el diseño y aportan carácter",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Cintura alta estructurada que estiliza el abdomen y define la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte amplio y elegante que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo_pantalon": 110
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo_pantalon": 110
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo_pantalon": 111
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo_pantalon": 111
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo_pantalon": 111
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/soyala_03dcb808-ad98-4429-addc-8faf9b1b94e0.jpg?v=1766085728"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V95",
+  "nombre": "Pantalón Tulipan",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte amplio y fluido",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta con pretina limpia",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan con caída suave que aporta movimiento y ligereza",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Cintura alta con pretina limpia que estiliza el abdomen y define la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte amplio y fluido que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Diseño femenino y sofisticado que realza cualquier outfit",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo_top": 20,
+    "largo_pantalon": 114,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo_top": 20,
+    "largo_pantalon": 114,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo_top": 22,
+    "largo_pantalon": 114,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo_top": 22,
+    "largo_pantalon": 114,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo_top": 23,
+    "largo_pantalon": 114,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/TULIPAN_DE_INTESIS_05bd0b4c-8522-43f6-9ff2-3bd01bac3af2.png?v=1766086004"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V96",
+  "nombre": "Pantalón Zury",
+  "piezas": [
+   "pantalón"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Cintura alta definida que estiliza el abdomen y marca la silueta",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": {
+    "valor": "Cintura alta definida",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Loma con excelente caída que aporta movimiento y elegancia",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": {
+    "valor": "No se marca ni transparenta, brinda seguridad al vestir",
+    "fuente": "baruka.pe"
+   },
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Cintura alta definida que estiliza el abdomen y marca la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pierna ancha (wide leg) que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. Planchar por el reverso a temperatura media",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo_pantalon": 110,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo_pantalon": 110,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo_pantalon": 111,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo_pantalon": 111,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo_pantalon": 111,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/PANTALON_ZURI_f38d6e03-6b20-46f6-98cc-7e9688e00901.png?v=1766076479"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CINTURA/S": "ocr_celda",
+    "CADERA/XS": "ocr_celda",
+    "TALLA DE PANTALÓN/S": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V97",
+  "nombre": "Vestido Miranda",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Vestido entallado y forrado",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierres decorativos funcionales",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Punto Roma elástico",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Vestido entallado y forrado",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 94
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 94
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 94.5
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 95
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 95.5
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/MIRANDA_DE_INTESIS_098c250f-0179-4678-8a6e-e1c0a05f625c.png?v=1765664061"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V98",
+  "nombre": "Vestido Petra",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": {
+    "valor": "Largo recto con abertura frontal",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Diseño: Asimétrico, con escote estructurado y nudo central",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga farol con puño y volumen",
+    "fuente": "baruka.pe"
+   },
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre invisible lateral",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Licra brasilera stretch (elástica, gruesa y con cuerpo)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro completo",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 158.5
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 159
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 159.5
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 160
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 160.5
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/file_3.jpg?v=1766881311"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CADERA/XL": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V99",
+  "nombre": "Vestido Persefone",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": {
+    "valor": "Escote cruzado estructurado",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre invisible posterior",
+    "fuente": "baruka.pe"
+   },
+   "tela": null,
+   "forro": {
+    "valor": "Forro interior completo",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Abertura frontal",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "tela",
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 100
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 100
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 101
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 101
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 102
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/PERSEFONE_55cde0d8-9c20-41f0-a997-309810f0b02b.png?v=1765841123"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde la sisa"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CADERA/S": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V100",
+  "nombre": "Vestido Daleska",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte entallado",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote estructurado",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga larga elegante",
+    "fuente": "baruka.pe"
+   },
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre posterior invisible",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela Punta Roma: fresca y cómoda",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro completo",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote estructurado que realza el busto",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte entallado que estiliza la figura",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Drapeo frontal favorecedor",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 96
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 98
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 100
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 102
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 104
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/df4eeb03-9f11-4d2a-8fdc-a607df4fec3a.png?v=1765841976"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "BUSTO/M": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V101",
+  "nombre": "Vestido Athena",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte entallado",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote estructurado",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre posterior invisible",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela Punta Roma: fresca, suave y cómoda",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Totalmente forrado",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Abertura que aporta movimiento y elegancia",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Escote estructurado que realza el busto",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte entallado que estiliza la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 80
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 80
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 81
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 81
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 82
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ATHENA.png?v=1765842760"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde la sisa"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V102",
+  "nombre": "Vestido Maura",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Silueta limpia y elegante con cierre invisible posterior",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Diseño: Escote corazón con nudo, ceñido al cuerpo, largo muslo",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Diseño: Escote corazón con nudo, ceñido al cuerpo, largo muslo",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Mangas: De tres capas, que equilibran visualmente la silueta",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Marca la cintura y define tus curvas gracias al corte ajustado",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": {
+    "valor": "Silueta limpia y elegante con cierre invisible posterior",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Cómodo y suave: gracias a su tela elástica y forro interior",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Cómodo y suave: gracias a su tela elástica y forro interior",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": {
+    "valor": "Forro interior completo: Sin transparencias y mejor estructura",
+    "fuente": "baruka.pe"
+   },
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Realza el busto con su escote corazón y anudado frontal",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Marca la cintura y define tus curvas gracias al corte ajustado",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Para cuerpos tipo reloj de arena, triángulo o rectángulo que quieren resaltar su figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Cuidado fácil: lavar a mano o en ciclo delicado, secar a la sombra y planchar al reverso. Así mantendrás tu vestido como nuevo por mucho más tiempo",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 87
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 89
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 91
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 93
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 95
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/WhatsApp_Image_2025-12-12_at_11.00.26_PM.jpg?v=1765598449"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CINTURA/S": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V103",
+  "nombre": "Vestido Sophia",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte entallado",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Largo mini",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Escote asimétrico de un solo hombro",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga larga unilateral",
+    "fuente": "baruka.pe"
+   },
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Roma stretch (elástico, suave, con cuerpo)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior completo",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": {
+    "valor": "Totalmente forrado: sin transparencias, mayor seguridad",
+    "fuente": "baruka.pe"
+   },
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote asimétrico de un solo hombro que realza el busto",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Fruncido lateral que estiliza la figura y disimula el abdomen",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte entallado que moldea sin incomodar",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Largo mini que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. Secar a la sombra. Planchar a temperatura media por el reverso",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 61
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 62
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 63
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 64
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 65
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/SOPHIA_b97d24f0-958c-4b1a-bd9a-185fc141c300.png?v=1765918818"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CINTURA/XS": "ocr_celda",
+    "LARGO DE VESTIDO/XS": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V104",
+  "nombre": "Vestido Aurora",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte entallado",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Largo corto (mini)",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Escote cerrado con abertura frontal",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga larga",
+    "fuente": "baruka.pe"
+   },
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Roma stretch (elástico, suave, con cuerpo)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior completo",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": {
+    "valor": "Totalmente forrado: sin transparencias",
+    "fuente": "baruka.pe"
+   },
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Botones decorativos que elevan el diseño y añaden carácter",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Abertura posterior sutil que aporta movimiento",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Botones decorativos frontales",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Abertura posterior",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Escote cerrado con abertura frontal que estiliza el cuello y aporta elegancia",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte entallado que moldea la figura sin ajustar",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Largo mini que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. Secar a la sombra. Planchar por el reverso a temperatura media",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/AURORA.png?v=1765920058"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V105",
+  "nombre": "Vestido Milan",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte entallado",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Largo por encima de la rodilla",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Escote cruzado",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Roma (licra) fresca, suave y cómoda",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Flecos laterales que aportan movimiento",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Flecos decorativos",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Escote cruzado que estiliza el busto",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte entallado que define la silueta",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 81
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 83
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 85
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 87
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 89
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/c1ff4d32-694e-4d26-afce-c80da5cd916b.png?v=1765921494"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde la sisa"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CINTURA/XS": "ocr_celda",
+    "LARGO DE VESTIDO/L": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V106",
+  "nombre": "Vestido Zoraida Clásico",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte entallado",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote en V",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga larga",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Cinturón incorporado",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre posterior invisible",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela Roma stretch (elástica, con cuerpo)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote en V que estiliza el cuello y el busto",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte entallado que define la silueta sin ajustar",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Cinturón estructurado que marca la cintura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 90
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 92
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 94
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 96
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 98
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/WhatsApp_Image_2025-12-16_at_4.57.44_PM.jpg?v=1765922319"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V107",
+  "nombre": "Vestido Merida",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre invisible posterior",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela Punto Roma stretch",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Vestido forrado",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 100
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 100
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 101
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 101
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 101
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/MERIDA_3263bc9c-72ba-451f-bc38-8593ef2199df.png?v=1765661515"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*LARGO MEDIDO DESDE LA SISA"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V108",
+  "nombre": "Vestido Addison",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte entallado femenino",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Largo sobre la rodilla",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Escote tipo blazer",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga larga",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Diseño cruzado que afina visualmente la cintura",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "tela estructurada con ligero stretch",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior completo",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": {
+    "valor": "Totalmente forrado: sin transparencias, mayor seguridad",
+    "fuente": "baruka.pe"
+   },
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote tipo blazer que estiliza el cuello y el busto",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte entallado que define la silueta sin ajustar de más",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. Secar a la sombra. Planchar a temperatura media por el reverso",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 70
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 70
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 71
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 71
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 72
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ADDISON.png?v=1765918244"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde la sisa"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "LARGO DE VESTIDO/XL": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V109",
+  "nombre": "Vestido Selma",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte mini entallado",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Corte mini entallado",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Escote en V",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga larga",
+    "fuente": "baruka.pe"
+   },
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre posterior invisible",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela Roma stretch (elástica, con cuerpo)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote en V que realza el busto de forma elegante",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte entallado que define la silueta sin incomodar",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Diseño cruzado en la falda que estiliza y alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_22.jpg?v=1765990213"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V110",
+  "nombre": "Vestido Moolenna",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte en cintura",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Falda larga con vuelo",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Escote en V",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Sin mangas",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Corte en cintura",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre posterior invisible",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Gasa italiana",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote en V profundo que realza el busto con elegancia",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte en la cintura que define la silueta y estiliza el torso",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Puedes optar por tonos dorados o nude para resaltar el color del vestido",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 148
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 150
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 152
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 155
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 155
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/MOOLENA_DE_INTESIS_71975080-829a-4e0e-b2bb-09a8d335b44b.png?v=1765990533"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CINTURA/L": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V111",
+  "nombre": "Vestido Samara",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte recto entallado",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Largo mini",
+    "fuente": "baruka.pe"
+   },
+   "escote": null,
+   "mangas": {
+    "valor": "Manga larga",
+    "fuente": "baruka.pe"
+   },
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre posterior invisible",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela wafer (texturada, fresca y ligera)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Corte recto entallado que estiliza la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Líneas verticales decorativas que alargan visualmente el cuerpo",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 100
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 100
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 101
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 101
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 102
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/SAMARA_2b2f365e-73aa-4085-9eff-26efa9abe8d7.png?v=1765925603"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CINTURA/S": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V112",
+  "nombre": "Conjunto Luz",
+  "piezas": [],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "qué piezas trae",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V113",
+  "nombre": "Vestido Roberta",
+  "piezas": [
+   "vestido"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte mini entallado",
+    "fuente": "baruka.pe"
+   },
+   "largo": {
+    "valor": "Corte mini entallado",
+    "fuente": "baruka.pe"
+   },
+   "escote": {
+    "valor": "Escote cruzado off-shoulder",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga larga",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Diseño envolvente que estiliza la cintura y define la silueta",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre posterior invisible",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela Roma stretch (elástica, con cuerpo)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Lazo frontal integrado que aporta feminidad y ajuste personalizado",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Diseño envolvente con lazo frontal",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Escote cruzado tipo off-shoulder que realza hombros y cuello con elegancia",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Diseño envolvente que estiliza la cintura y define la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Largo mini que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 83
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 84
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 85
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 86
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 87
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ROBERTA.png?v=1765989503"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde la sisa"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V114",
+  "nombre": "Enterizo Miara",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": {
+    "valor": "Diseño asimétrico que resalta hombros y escote",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre invisible lateral",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela Morgan stretch: elegante, fresca y cómoda",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Enterizo forrado, sin transparencias",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": {
+    "valor": "Enterizo forrado, sin transparencias",
+    "fuente": "baruka.pe"
+   },
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Diseño asimétrico que resalta hombros y escote",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Volantes estratégicos que estilizan sin exagerar",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pantalón recto que alarga la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "cuidados de lavado"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 113
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 113
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 114
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 114
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 114
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/el_MEJOR_DETALLE_1.png?v=1746303770"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V115",
+  "nombre": "Conjunto Ethel",
+  "piezas": [],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "qué piezas trae",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V116",
+  "nombre": "Conjunto Faris",
+  "piezas": [],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte alto",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Top con escote recto",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Tirantes delgados",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Tiras cruzadas decorativas en cintura",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre posterior invisible",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela Morgan (con cuerpo y caída elegante)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Top con escote recto que realza el busto de forma moderna",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Detalle de tiras cruzadas en la cintura que define y estiliza la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte alto que alarga visualmente la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "qué piezas trae"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo_top": 19,
+    "largo_pantalon": 115.5,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo_top": 20,
+    "largo_pantalon": 116,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo_top": 21,
+    "largo_pantalon": 116.5,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo_top": 22,
+    "largo_pantalon": 117,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo_top": 23,
+    "largo_pantalon": 117.5,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/FARIS_DE_INTESIS_40c1c1ea-cc39-40a3-a4de-1816db0017f7.png?v=1766003499"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V117",
+  "nombre": "Conjunto Silvine",
+  "piezas": [],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "qué piezas trae",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V118",
+  "nombre": "Conjunto Almudena",
+  "piezas": [],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": {
+    "valor": "Top off-shoulder en gasa que realza hombros y escote con un aire femenino",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": {
+    "valor": "Pantalón de tiro alto",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Volante frontal que aporta movimiento y delicadeza",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Top off-shoulder en gasa que realza hombros y escote con un aire femenino",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pantalón de tiro alto que define la cintura y estiliza la figura",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pierna amplia que alarga visualmente las piernas",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "tela",
+   "si tiene forro",
+   "qué piezas trae"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo_top": 20,
+    "largo_pantalon": 110,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo_top": 20,
+    "largo_pantalon": 110,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo_top": 21,
+    "largo_pantalon": 111,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo_top": 21,
+    "largo_pantalon": 111,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo_top": 21,
+    "largo_pantalon": 111,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/TOP_ALMUDENA.png?v=1766008351",
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/PANTALON_ALMUDENA.png?v=1766008351"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*LARGO MEDIDO DESDE LA SISA"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "LARGO DE TOP/M": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V119",
+  "nombre": "Conjunto Dakota",
+  "piezas": [],
+  "atributos": {
+   "silueta": {
+    "valor": "Diseño entallado",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Top estructurado con escote corazón",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": {
+    "valor": "Cinturón integrado",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan: firme, elegante y con excelente estructura",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Volantes arquitectónicos en hombros que aportan impacto y sofisticación",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Perfecto para llevar el cabello recogido y resaltar los volantes",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Top estructurado con escote corazón que realza el busto con elegancia",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Diseño entallado que define el torso sin incomodar",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pantalón de tiro alto que estiliza y alarga la figura",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Cinturón integrado que marca la cintura y aporta carácter",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro",
+   "qué piezas trae"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo_top": 22,
+    "largo_pantalon": 112.5,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo_top": 23,
+    "largo_pantalon": 113,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo_top": 24,
+    "largo_pantalon": 113.5,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo_top": 25,
+    "largo_pantalon": 114,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo_top": 26,
+    "largo_pantalon": 114.5,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/DAKOTA_DE_INTESIS_eafef034-ad87-4419-9649-827499799420.png?v=1766009558"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CINTURA/XS": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V120",
+  "nombre": "Enterizo Riviera",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte estructurado",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote asimétrico de un solo hombro",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Escote asimétrico de un solo hombro",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Cinturón integrado",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": {
+    "valor": "Cierre posterior invisible",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela Morgan (con cuerpo y caída elegante)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Volante frontal estructurado",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Escote asimétrico con volante que realza hombros y cuello",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Cinturón integrado que define la cintura y estiliza la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pierna recta que alarga visualmente la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 125
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 126
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 127
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 128
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 129
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/RIVIERA_50a08586-0f54-4d6e-9f8f-5d1158a7e267.png?v=1765992615"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V121",
+  "nombre": "Enterizo Murad",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte alto en cintura",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote cruzado",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": {
+    "valor": "Corte alto en cintura",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan: firme, elegante y cómoda",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote cruzado que realza el busto de forma elegante",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Diseño superior estructurado que define el torso con firmeza",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte alto en cintura que estiliza y alarga la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 113
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 113
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 114
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 114
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 114
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ENTERIZO_MURAD_64965e46-8a83-4fe0-9824-80f341fc1c4b.png?v=1765993955"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CINTURA/XS": "ocr_celda",
+    "CADERA/XS": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V122",
+  "nombre": "Enterizo Camila",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte en la cintura",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote en V",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga larga con ligero volumen en hombros",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Corte en la cintura",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan: firme, elegante y cómoda",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote en V que realza el busto con elegancia",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte en la cintura que define la silueta sin incomodar",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Manga larga con ligero volumen en hombros que estiliza y equilibra el look",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pantalón de pierna recta que alarga visualmente la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 153,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 153,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 154,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 154,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 155,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/1744129766997-de900dff-1029-4682-855c-de765ca0d606_10_be65d0d3-6c2d-4ace-963a-5f7ec817dd03.jpg?v=1765994306"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V123",
+  "nombre": "Enterizo Gretta",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Cinturón que define la cintura y estiliza la silueta",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote en V sutil",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga larga con volumen en puños",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Cinturón",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan: firme, elegante y cómoda",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote en V sutil que estiliza el cuello y realza el busto con elegancia",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Cinturón que define la cintura y estiliza la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pantalón de pierna recta que alarga visualmente la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 153,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 153,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 154,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 154,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 155,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/GRETA_9137aa36-9878-421a-a188-4d95fdaa97b3.png?v=1765998712"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V124",
+  "nombre": "Enterizo Tokio",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V125",
+  "nombre": "Enterizo Rosalin",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V126",
+  "nombre": "Enterizo Kalet",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte en la cintura",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote off-shoulder con cruce frontal",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga tipo volante",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Corte en la cintura",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote off-shoulder con cruce frontal que realza hombros y busto con elegancia",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Diseño drapeado en el torso que estiliza y define la silueta",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte en la cintura que alarga visualmente la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "tela",
+   "si tiene forro"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 139,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 139,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 139,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 139,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 139,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_24.jpg?v=1765999960"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V127",
+  "nombre": "Enterizo Ambar",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte alto en la cintura",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote en V cruzado",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": {
+    "valor": "Corte alto en la cintura",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote en V cruzado que realza el busto con elegancia",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Diseño cut-out frontal que define la cintura y aporta un toque moderno",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte alto en la cintura que estiliza y alarga la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_25.jpg?v=1766000331",
+   "tela",
+   "si tiene forro"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V128",
+  "nombre": "Enterizo Arlet",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte en cintura",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote en V",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga corta con volumen",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Corte en cintura",
+    "fuente": "baruka.pe"
+   },
+   "espalda": {
+    "valor": "Espalda descubierta con lazo ajustable",
+    "fuente": "baruka.pe"
+   },
+   "cierre": {
+    "valor": "Cierre posterior invisible",
+    "fuente": "baruka.pe"
+   },
+   "tela": {
+    "valor": "Tela Morgan (con cuerpo y caída elegante)",
+    "fuente": "baruka.pe"
+   },
+   "forro": {
+    "valor": "Forro interior",
+    "fuente": "baruka.pe"
+   },
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote en V que realza el busto de forma elegante",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte en la cintura que define la silueta y estiliza el torso",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pantalón de pierna amplia que alarga visualmente la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 150
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 150
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 151
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 151
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 151
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ENTERIZO_ARLET_0ffe43a8-9057-4902-9fa0-7a0f93bf0013.png?v=1765993141"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*LARGO MEDIDO DESDE EL HOMBRO"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo",
+   "celdas_releidas": {
+    "CADERA/XS": "ocr_celda"
+   }
+  },
+  "web": null
+ },
+ {
+  "codigo": "V129",
+  "nombre": "Enterizo Sol",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte entallado en la cintura",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote en V profundo",
+    "fuente": "baruka.pe"
+   },
+   "mangas": {
+    "valor": "Manga larga con hombro ligeramente estructurado",
+    "fuente": "baruka.pe"
+   },
+   "cintura": {
+    "valor": "Corte entallado en la cintura",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan: firme, elegante y cómoda",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [
+   {
+    "valor": "Escote en V profundo que realza el busto con elegancia",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte entallado en la cintura que define la silueta sin incomodar",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Manga larga con hombro ligeramente estructurado que estiliza el look",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pantalón de pierna amplia que alarga visualmente la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 149,
+    "talla_pantalon": 26
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 150,
+    "talla_pantalon": 28
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 151,
+    "talla_pantalon": 30
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 152,
+    "talla_pantalon": 32
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 153,
+    "talla_pantalon": 34
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/1744129766997-de900dff-1029-4682-855c-de765ca0d606_1_57c539f3-cfcb-49c6-8db5-b5944858dcb3.jpg?v=1766000554"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*Largo medido desde el hombro"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
+ },
+ {
+  "codigo": "V130",
+  "nombre": "Enterizo Verona",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": null,
+   "largo": null,
+   "escote": null,
+   "mangas": null,
+   "cintura": null,
+   "espalda": null,
+   "cierre": null,
+   "tela": null,
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [],
+  "como_queda": [],
+  "cuidados": null,
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
+   "tela",
+   "si tiene forro",
+   "cuidados de lavado",
+   "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+  ],
+  "web": null
+ },
+ {
+  "codigo": "V131",
+  "nombre": "Enterizo Amapola",
+  "piezas": [
+   "enterizo"
+  ],
+  "atributos": {
+   "silueta": {
+    "valor": "Corte en la cintura",
+    "fuente": "baruka.pe"
+   },
+   "largo": null,
+   "escote": {
+    "valor": "Escote en V cruzado",
+    "fuente": "baruka.pe"
+   },
+   "mangas": null,
+   "cintura": {
+    "valor": "Corte en la cintura",
+    "fuente": "baruka.pe"
+   },
+   "espalda": null,
+   "cierre": null,
+   "tela": {
+    "valor": "Tela Morgan: firme, elegante y cómoda",
+    "fuente": "baruka.pe"
+   },
+   "forro": null,
+   "transparencias": null,
+   "estampado": null,
+   "color_visto": null
+  },
+  "detalles": [
+   {
+    "valor": "Volantes en hombros que aportan feminidad y movimiento",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Bolsillos laterales funcionales que suman comodidad",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "como_queda": [
+   {
+    "valor": "Escote en V cruzado que realza el busto con elegancia",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Corte en la cintura que define la silueta sin incomodar",
+    "fuente": "baruka.pe"
+   },
+   {
+    "valor": "Pantalón de pierna amplia que alarga visualmente la figura",
+    "fuente": "baruka.pe"
+   }
+  ],
+  "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
+  "resumen": "",
+  "discrepancias": [
+   "no figura en baruka.pe (2026-10-12): confirmar si sigue a la venta"
+  ],
+  "pendiente_tienda": [
+   "si tiene forro"
+  ],
+  "medidas": {
+   "XS": {
+    "busto": 85,
+    "cintura": 65,
+    "cadera": 91,
+    "largo": 150
+   },
+   "S": {
+    "busto": 90,
+    "cintura": 72,
+    "cadera": 95,
+    "largo": 150
+   },
+   "M": {
+    "busto": 97,
+    "cintura": 80,
+    "cadera": 107,
+    "largo": 151
+   },
+   "L": {
+    "busto": 106,
+    "cintura": 90,
+    "cadera": 110,
+    "largo": 151
+   },
+   "XL": {
+    "busto": 110,
+    "cintura": 100,
+    "cadera": 115,
+    "largo": 151
+   }
+  },
+  "medidas_origen": {
+   "fuente": "baruka.pe",
+   "imagenes": [
+    "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ENTERIZO_AMAPOLA_ecb19fed-d64a-446c-a2ca-3d4a3330d74e.png?v=1766000822"
+   ],
+   "metodo": "OCR (Vision de macOS) de la tabla de medidas, que en la web es una imagen; validada por rangos, crecimiento por talla y contra la tabla común de la tienda",
+   "unidad": "cm; talla_pantalon es la talla equivalente de pantalón, no cm",
+   "notas_de_la_tabla": [
+    "*LARGO MEDIDO DESDE EL HOMBRO"
+   ],
+   "observacion": "busto, cintura y cadera son iguales en todas las tablas de baruka.pe y la imagen trae «Recomendaciones para tomar tus medidas»: sirven para comparar con las medidas de la clienta; lo propio de cada prenda es el largo"
+  },
+  "web": null
  }
 ]

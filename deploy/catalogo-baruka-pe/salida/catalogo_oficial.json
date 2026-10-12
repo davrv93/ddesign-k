@@ -1109,94 +1109,49 @@
    "nuevo": false,
    "ficha": {
     "codigo": "V42",
+    "nombre": "Vestido Alma",
     "piezas": [
      "vestido"
     ],
     "atributos": {
      "silueta": {
-      "valor": "cintura marcada con falda amplia y con caída (línea A)",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Pretina de corte imperio"
+      "valor": "Pretina de corte imperio",
+      "fuente": "baruka.pe"
      },
      "largo": {
-      "valor": "al piso",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Falda larga con amplio vuelo"
+      "valor": "Falda larga con amplio vuelo",
+      "fuente": "baruka.pe"
      },
      "escote": {
-      "valor": "en V profundo",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Escote en V profundo, estiliza visualmente el torso y realza el escote de manera elegante"
+      "valor": "Escote en V profundo, estiliza visualmente el torso y realza el escote de manera elegante",
+      "fuente": "baruka.pe"
      },
      "mangas": {
-      "valor": "tipo capa, largas, de gasa",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Mangas tipo capa, con caída fluida"
+      "valor": "Mangas tipo capa, con caída fluida",
+      "fuente": "baruka.pe"
      },
      "cintura": {
-      "valor": "marcada con pretina ancha",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Pretina de corte imperio"
+      "valor": "Pretina de corte imperio",
+      "fuente": "baruka.pe"
      },
      "espalda": null,
      "cierre": null,
      "tela": {
       "valor": "Confeccionado en gasa con fondo de podesuá, combinación que aporta fluidez, cobertura y una excelente caída",
-      "fuente": "diners+baruka.pe",
-      "antes": {
-       "valor": "base de podesuá rígida con acabado en gasa",
-       "fuente": "diners"
-      }
+      "fuente": "baruka.pe"
      },
      "forro": null,
-     "transparencias": {
-      "valor": "mangas capa de gasa translúcida",
-      "fuente": "foto"
-     },
-     "estampado": {
-      "valor": "corpiño bordado con pedrería; resto liso",
-      "fuente": "ambas"
-     },
-     "color_visto": {
-      "valor": "azul, tono petróleo",
-      "fuente": "ambas"
-     }
+     "transparencias": null,
+     "estampado": null,
+     "color_visto": null
     },
     "detalles": [
-     {
-      "valor": "corpiño bordado con pedrería",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "mangas tipo capa largas con borde ondulado",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "panel color piel al centro del escote",
-      "fuente": "foto"
-     },
-     {
-      "valor": "pretina ancha en la cintura",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "falda larga con caída",
-      "fuente": "ambas"
-     },
      {
       "valor": "Bordado delicado en el busto, aporta un acabado sofisticado y especial al diseño",
       "fuente": "baruka.pe"
      }
     ],
     "como_queda": [
-     {
-      "valor": "la base de podesuá aporta firmeza y mantiene la forma del vestido",
-      "fuente": "diners"
-     },
-     {
-      "valor": "la gasa da ligereza y un movimiento fluido",
-      "fuente": "diners"
-     },
      {
       "valor": "Escote en V profundo, estiliza visualmente el torso y realza el escote de manera elegante",
       "fuente": "baruka.pe"
@@ -1215,16 +1170,10 @@
      }
     ],
     "cuidados": null,
-    "resumen": "El vestido Gala Capa Azul es largo al piso, con escote en V, corpiño bordado con pedrería, cintura marcada y mangas tipo capa de gasa. Tiene base de podesuá, que mantiene la forma, y acabado en gasa con caída fluida.",
-    "discrepancias": [
-     "silueta: baruka.pe dice «Pretina de corte imperio»; la ficha dice «cintura marcada con falda amplia y con caída (línea A)» (fuente: ambas). ¿Dicen lo mismo con otras palabras? Revisar.",
-     "largo: baruka.pe dice «Falda larga con amplio vuelo»; la ficha dice «al piso» (fuente: ambas). ¿Dicen lo mismo con otras palabras? Revisar."
-    ],
+    "resumen": "",
+    "discrepancias": [],
     "pendiente_tienda": [
-     "cómo es la espalda y dónde va el cierre (la foto es de frente, en maniquí)",
-     "si el panel del escote es transparente",
-     "forro",
-     "elasticidad de la tela",
+     "si tiene forro",
      "cuidados de lavado"
     ],
     "medidas": {
@@ -1274,7 +1223,6 @@
     "web": {
      "url": "https://baruka.pe/products/vestido-alma",
      "handle": "vestido-alma",
-     "nombre": "Vestido Alma",
      "colores": [
       "Celeste",
       "Terracota",
@@ -1287,9 +1235,6 @@
       "Rojo",
       "Color personalizado"
      ],
-     "color_que_casa": [
-      "Azul Cobalto"
-     ],
      "tallas": [
       "XS",
       "S",
@@ -1299,14 +1244,26 @@
       "2XL"
      ],
      "precio": 350.0,
-     "mapeo": "manual",
+     "fotos": [
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Maniquiconelegantevestidoazulcielo.png?v=1791391130",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Maniquiconelegantevestidoterracota.png?v=1791391129",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestidodenocheverdeolivaenestudioluminoso.png?v=1791391130",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Eleganciaazulmarinoenelatelier.png?v=1791391129",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Elegantevestidodegalacolorteal.png?v=1791391129",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Maniquiconvestidoburgundyenestudioelegante_1.png?v=1791391129",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestidodegalachampagneenatelier.png?v=1791391129",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestidonupcialetereoenshowroomelegante_1.png?v=1791391129",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestidorojoenshowroomluminoso.png?v=1791391129",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestido_blanco_y_colores_personalizados.png?v=1791394759",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Infografia_de_elegante_vestido_azul_cielo.png?v=1791392392",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Tabla_de_medidas_de_vestido_rojo.png?v=1791391668"
+     ],
      "bajo_pedido": [
       "XS",
       "XL",
       "2XL"
      ]
-    },
-    "nombre": "Vestido Alma"
+    }
    }
   },
   {
@@ -3028,7 +2985,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/kero",
@@ -3104,90 +3061,36 @@
    "nuevo": false,
    "ficha": {
     "codigo": "V39",
+    "nombre": "Blusa Bernadette",
     "piezas": [
      "blusa"
     ],
     "atributos": {
-     "silueta": {
-      "valor": "holgada, tipo blusón con basta elástica",
-      "fuente": "ambas"
-     },
-     "largo": {
-      "valor": "a la cintura",
-      "fuente": "foto"
-     },
-     "escote": {
-      "valor": "en V con cuello lazo de tiras ajustables",
-      "fuente": "ambas"
-     },
-     "mangas": {
-      "valor": "largas y amplias, fruncidas con elástico antes del puño y con volante al final",
-      "fuente": "ambas"
-     },
-     "cintura": {
-      "valor": "elástico en la basta",
-      "fuente": "ambas"
-     },
-     "espalda": {
-      "valor": "con elástico grueso en la basta",
-      "fuente": "diners"
-     },
-     "cierre": {
-      "valor": "sin cierre visible",
-      "fuente": "foto"
-     },
-     "tela": {
-      "valor": "gasa",
-      "fuente": "diners"
-     },
+     "silueta": null,
+     "largo": null,
+     "escote": null,
+     "mangas": null,
+     "cintura": null,
+     "espalda": null,
+     "cierre": null,
+     "tela": null,
      "forro": null,
      "transparencias": null,
-     "estampado": {
-      "valor": "liso",
-      "fuente": "foto"
-     },
-     "color_visto": {
-      "valor": "verde oscuro, tono petróleo",
-      "fuente": "ambas"
-     }
+     "estampado": null,
+     "color_visto": null
     },
-    "detalles": [
-     {
-      "valor": "cuello de tiras ajustables que se anuda en lazo",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "escote en V",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "pliegues en los hombros",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "elástico en la basta",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "puños fruncidos con elástico y volante",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "corte en el centro del delantero",
-      "fuente": "diners"
-     }
-    ],
+    "detalles": [],
     "como_queda": [],
     "cuidados": null,
-    "resumen": "La blusa Bernadette es de gasa verde oscuro, con cuello de tiras que se anuda en lazo, escote en V, pliegues en los hombros y elástico en la basta. Las mangas son amplias, fruncidas con elástico y terminan en volante.",
+    "resumen": "",
     "discrepancias": [
-     "el texto habla de volantes largos al final de la manga; en las fotos el volante del puño se ve corto",
      "la tabla de medidas da largo_blusa = 126–128 cm para una blusa: parece copiada de otra prenda; confirmar con la tienda"
     ],
     "pendiente_tienda": [
-     "si la gasa transparenta y si lleva forro",
+     "tela",
+     "si tiene forro",
      "cuidados de lavado",
-     "si el pantalón de la foto se vende aparte"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "medidas": {
      "XS": {
@@ -3229,14 +3132,10 @@
     "web": {
      "url": "https://baruka.pe/products/bernadette",
      "handle": "bernadette",
-     "nombre": "Blusa Bernadette",
      "colores": [
       "Verde Botella",
       "Blanco",
       "Rosa"
-     ],
-     "color_que_casa": [
-      "Verde Botella"
      ],
      "tallas": [
       "S",
@@ -3245,12 +3144,14 @@
       "XL"
      ],
      "precio": 150.0,
-     "mapeo": "nombre y tipo",
+     "fotos": [
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/blusa_bernadette2.jpg?v=1745182885",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/blusa_bernadette3.jpg?v=1745182885"
+     ],
      "bajo_pedido": [
       "XL"
      ]
-    },
-    "nombre": "Blusa Bernadette"
+    }
    }
   },
   {
@@ -3329,7 +3230,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/franchesca",
@@ -3429,7 +3330,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/rochelle",
@@ -3528,7 +3429,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/hobeika",
@@ -3601,101 +3502,42 @@
    "nuevo": false,
    "ficha": {
     "codigo": "V36",
+    "nombre": "Blusa Emet",
     "piezas": [
      "blusa"
     ],
     "atributos": {
-     "silueta": {
-      "valor": "entallada con peplum",
-      "fuente": "ambas"
-     },
-     "largo": {
-      "valor": "a la cadera",
-      "fuente": "foto"
-     },
-     "escote": {
-      "valor": "en V",
-      "fuente": "ambas"
-     },
-     "mangas": {
-      "valor": "largas, tradicionales con yugo, con puño",
-      "fuente": "ambas"
-     },
-     "cintura": {
-      "valor": "marcada con corte en la cintura y lazo anudado al frente",
-      "fuente": "ambas"
-     },
-     "espalda": {
-      "valor": "con pinzas desde la sisa hasta la cintura",
-      "fuente": "diners"
-     },
-     "cierre": {
-      "valor": "botones al frente hasta la cintura",
-      "fuente": "foto"
-     },
-     "tela": {
-      "valor": "seda de rayas (seda estampada)",
-      "fuente": "diners"
-     },
+     "silueta": null,
+     "largo": null,
+     "escote": null,
+     "mangas": null,
+     "cintura": null,
+     "espalda": null,
+     "cierre": null,
+     "tela": null,
      "forro": null,
      "transparencias": null,
-     "estampado": {
-      "valor": "rayas",
-      "fuente": "ambas"
-     },
-     "color_visto": {
-      "valor": "rojo con rayas blancas",
-      "fuente": "foto"
-     }
+     "estampado": null,
+     "color_visto": null
     },
-    "detalles": [
-     {
-      "valor": "corte princesa al frente hasta la cintura",
-      "fuente": "diners"
-     },
-     {
-      "valor": "parte baja estilo peplum",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "lazo anudado en la cintura",
-      "fuente": "foto"
-     },
-     {
-      "valor": "botoncitos rojos al frente",
-      "fuente": "foto"
-     },
-     {
-      "valor": "mangas con yugo",
-      "fuente": "diners"
-     },
-     {
-      "valor": "pinzas en la espalda",
-      "fuente": "diners"
-     }
-    ],
+    "detalles": [],
     "como_queda": [],
     "cuidados": null,
-    "resumen": "La blusa Emet es de seda a rayas rojas y blancas, con escote en V, corte en la cintura y parte baja estilo peplum. Tiene mangas largas con yugo y, en la foto, botones al frente y un lazo en la cintura.",
+    "resumen": "",
     "discrepancias": [],
     "pendiente_tienda": [
-     "medidas por talla (busto, cintura, cadera, largo)",
-     "si el lazo de la cintura es fijo o se desata",
-     "forro",
-     "elasticidad de la tela",
+     "medidas por talla (la web no trae tabla)",
+     "tela",
+     "si tiene forro",
      "cuidados de lavado",
-     "si el pantalón blanco de la foto se vende aparte"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/emet",
      "handle": "emet",
-     "nombre": "Blusa Emet",
      "colores": [
       "Rojo",
       "A rayas"
-     ],
-     "color_que_casa": [
-      "Rojo"
      ],
      "tallas": [
       "S",
@@ -3704,12 +3546,14 @@
       "XL"
      ],
      "precio": 160.0,
-     "mapeo": "nombre y tipo",
+     "fotos": [
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/BLUSAEMET.jpg?v=1745181413",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/BLUSAEMET_1.jpg?v=1745181413"
+     ],
      "bajo_pedido": [
       "XL"
      ]
-    },
-    "nombre": "Blusa Emet"
+    }
    }
   },
   {
@@ -3758,89 +3602,41 @@
    "nuevo": false,
    "ficha": {
     "codigo": "V33",
+    "nombre": "Blusa Celestine",
     "piezas": [
      "blusa"
     ],
     "atributos": {
-     "silueta": {
-      "valor": "entallada, con pinzas en el busto",
-      "fuente": "ambas"
-     },
+     "silueta": null,
      "largo": null,
-     "escote": {
-      "valor": "en V, con cuello de tiras que se anudan en lazo",
-      "fuente": "ambas"
-     },
-     "mangas": {
-      "valor": "cortas abullonadas (tipo princesa) con basta ancha",
-      "fuente": "ambas"
-     },
+     "escote": null,
+     "mangas": null,
      "cintura": null,
-     "espalda": {
-      "valor": "simple",
-      "fuente": "diners"
-     },
-     "cierre": {
-      "valor": "botones de broche al frente",
-      "fuente": "ambas"
-     },
-     "tela": {
-      "valor": "denim delgado",
-      "fuente": "diners"
-     },
+     "espalda": null,
+     "cierre": null,
+     "tela": null,
      "forro": null,
      "transparencias": null,
-     "estampado": {
-      "valor": "liso",
-      "fuente": "foto"
-     },
-     "color_visto": {
-      "valor": "azul denim",
-      "fuente": "foto"
-     }
+     "estampado": null,
+     "color_visto": null
     },
-    "detalles": [
-     {
-      "valor": "cuello con tiras ajustables que se anudan en lazo",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "botones de broche metálicos al frente",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "mangas abullonadas con basta ancha",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "cortes a los lados con pespunte",
-      "fuente": "diners"
-     },
-     {
-      "valor": "pinzas a la altura del busto",
-      "fuente": "diners"
-     }
-    ],
+    "detalles": [],
     "como_queda": [],
     "cuidados": null,
-    "resumen": "Blusa de denim delgado azul, con cuello de tiras que se anuda en lazo, escote en V, mangas cortas abullonadas y botones de broche al frente.",
+    "resumen": "",
     "discrepancias": [],
     "pendiente_tienda": [
-     "medidas por talla (busto, cintura, cadera, largo)",
-     "largo de la blusa (en las fotos va metida en el pantalón)",
-     "forro",
-     "elasticidad",
-     "si el pantalón azul marino de las fotos se vende aparte (no es parte de esta prenda)"
+     "medidas por talla (la web no trae tabla)",
+     "tela",
+     "si tiene forro",
+     "cuidados de lavado",
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/celestine",
      "handle": "celestine",
-     "nombre": "Blusa Celestine",
      "colores": [
       "Celeste oscuro"
-     ],
-     "color_que_casa": [
-      "CELESTE OSCURO"
      ],
      "tallas": [
       "S",
@@ -3849,12 +3645,13 @@
       "XL"
      ],
      "precio": 170.0,
-     "mapeo": "nombre y tipo",
+     "fotos": [
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/barukaoficinas00273.jpg?v=1745180804"
+     ],
      "bajo_pedido": [
       "XL"
      ]
-    },
-    "nombre": "Blusa Celestine"
+    }
    }
   },
   {
@@ -3933,7 +3730,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/narciso",
@@ -4034,7 +3831,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/lila",
@@ -4108,104 +3905,41 @@
    "nuevo": false,
    "ficha": {
     "codigo": "V27",
+    "nombre": "Blusa Ankara",
     "piezas": [
      "blusa"
     ],
     "atributos": {
-     "silueta": {
-      "valor": "entallada al torso",
-      "fuente": "foto"
-     },
+     "silueta": null,
      "largo": null,
-     "escote": {
-      "valor": "cuello lazo",
-      "fuente": "ambas"
-     },
-     "mangas": {
-      "valor": "largas transparentes, con volantes en los hombros y puño con volante",
-      "fuente": "ambas"
-     },
+     "escote": null,
+     "mangas": null,
      "cintura": null,
-     "espalda": {
-      "valor": "cerrada y transparente",
-      "fuente": "ambas"
-     },
-     "cierre": {
-      "valor": "botones forrados al frente",
-      "fuente": "ambas"
-     },
-     "tela": {
-      "valor": "organza francesa en las mangas",
-      "fuente": "diners"
-     },
+     "espalda": null,
+     "cierre": null,
+     "tela": null,
      "forro": null,
-     "transparencias": {
-      "valor": "mangas y espalda; el delantero es opaco",
-      "fuente": "ambas"
-     },
-     "estampado": {
-      "valor": "liso",
-      "fuente": "foto"
-     },
-     "color_visto": {
-      "valor": "negro",
-      "fuente": "ambas"
-     }
+     "transparencias": null,
+     "estampado": null,
+     "color_visto": null
     },
-    "detalles": [
-     {
-      "valor": "lazo grande en el cuello",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "volantes dobles en los hombros",
-      "fuente": "foto"
-     },
-     {
-      "valor": "botones forrados al frente",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "mangas de organza francesa",
-      "fuente": "diners"
-     },
-     {
-      "valor": "puño fruncido con volante",
-      "fuente": "foto"
-     },
-     {
-      "valor": "espalda transparente",
-      "fuente": "ambas"
-     }
-    ],
-    "como_queda": [
-     {
-      "valor": "hace destacar el torso",
-      "fuente": "diners"
-     },
-     {
-      "valor": "el cuello lazo realza los hombros",
-      "fuente": "diners"
-     }
-    ],
+    "detalles": [],
+    "como_queda": [],
     "cuidados": null,
-    "resumen": "Blusa negra con cuello lazo, botones forrados al frente y mangas largas de organza francesa transparente con volantes en los hombros; la espalda es cerrada y transparente.",
+    "resumen": "",
     "discrepancias": [],
     "pendiente_tienda": [
-     "medidas por talla (busto, cintura, cadera, largo)",
-     "largo de la blusa (en las fotos va metida)",
-     "si tiene forro en el delantero",
-     "si se ve transparencia del sostén por la espalda"
+     "medidas por talla (la web no trae tabla)",
+     "tela",
+     "si tiene forro",
+     "cuidados de lavado",
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/ankara",
      "handle": "ankara",
-     "nombre": "Blusa Ankara",
      "colores": [
       "Blanco",
-      "Negro"
-     ],
-     "color_que_casa": [
       "Negro"
      ],
      "tallas": [
@@ -4215,12 +3949,16 @@
       "XL"
      ],
      "precio": 220.0,
-     "mapeo": "nombre y tipo",
+     "fotos": [
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/4-1-3.png?v=1745176054",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/5-1-1.png?v=1745176054",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/blusa_ankara1.jpg?v=1745176099",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/blusa_ankara3.jpg?v=1745176099"
+     ],
      "bajo_pedido": [
       "XL"
      ]
-    },
-    "nombre": "Blusa Ankara"
+    }
    }
   },
   {
@@ -4298,7 +4036,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/henrrieta",
@@ -4399,7 +4137,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/evangeline",
@@ -4500,7 +4238,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/anastacia",
@@ -4600,7 +4338,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/jewell",
@@ -4701,7 +4439,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/hob",
@@ -4802,7 +4540,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/blum",
@@ -4903,7 +4641,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/isis",
@@ -5006,7 +4744,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/nieve",
@@ -5110,7 +4848,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/faye",
@@ -5213,7 +4951,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/camila-1",
@@ -5294,7 +5032,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/piume",
@@ -5391,7 +5129,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/yukio",
@@ -5495,7 +5233,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/olwen",
@@ -5601,7 +5339,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/margarita",
@@ -5706,7 +5444,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/bianca",
@@ -5808,7 +5546,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/eva",
@@ -5909,7 +5647,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/charlotte",
@@ -6192,7 +5930,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/elowen",
@@ -6309,7 +6047,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/sereia",
@@ -6569,78 +6307,37 @@
    "nuevo": false,
    "ficha": {
     "codigo": "V22",
+    "nombre": "Pantalón Codman",
     "piezas": [
      "pantalón"
     ],
     "atributos": {
      "silueta": {
-      "valor": "recta",
-      "fuente": "foto+baruka.pe",
-      "baruka_pe": "Corte recto clásico"
+      "valor": "Corte recto clásico",
+      "fuente": "baruka.pe"
      },
-     "largo": {
-      "valor": "largo completo",
-      "fuente": "foto"
-     },
+     "largo": null,
      "escote": null,
      "mangas": null,
      "cintura": {
-      "valor": "tiro alto con pretina",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Cintura alta con botones decorativos"
+      "valor": "Cintura alta con botones decorativos",
+      "fuente": "baruka.pe"
      },
-     "espalda": {
-      "valor": "con pinzas y cierre invisible",
-      "fuente": "diners"
-     },
-     "cierre": {
-      "valor": "cierre invisible en la espalda",
-      "fuente": "diners"
-     },
+     "espalda": null,
+     "cierre": null,
      "tela": {
       "valor": "Tela Loma con cuerpo que mantiene la forma y aporta elegancia",
-      "fuente": "baruka.pe",
-      "antes": {
-       "valor": "Prada stretch",
-       "fuente": "diners"
-      }
+      "fuente": "baruka.pe"
      },
      "forro": null,
      "transparencias": {
       "valor": "No se transparenta ni se marca, brinda seguridad al vestir",
       "fuente": "baruka.pe"
      },
-     "estampado": {
-      "valor": "liso",
-      "fuente": "foto"
-     },
-     "color_visto": {
-      "valor": "azul noche",
-      "fuente": "ambas"
-     }
+     "estampado": null,
+     "color_visto": null
     },
-    "detalles": [
-     {
-      "valor": "sobrepuestos delanteros con dos filas de botones dorados",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "corte en la línea de planchado al frente",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "abertura con botones al costado de cada basta",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "pinzas en la espalda",
-      "fuente": "diners"
-     },
-     {
-      "valor": "estilo formal",
-      "fuente": "diners"
-     }
-    ],
+    "detalles": [],
     "como_queda": [
      {
       "valor": "Cintura alta con botones decorativos que estiliza el abdomen y define la cintura",
@@ -6652,19 +6349,11 @@
      }
     ],
     "cuidados": null,
-    "resumen": "Pantalón formal azul noche de tiro alto y corte recto, en tela Prada stretch, con dos filas de botones dorados al frente y aberturas con botones en la basta. Cierra con cierre invisible en la espalda.",
-    "discrepancias": [
-     "El texto llama a los botones primero «nacarados» y luego «de metal»; en la foto se ven dorados metálicos.",
-     "silueta: baruka.pe dice «Corte recto clásico»; la ficha dice «recta» (fuente: foto). ¿Dicen lo mismo con otras palabras? Revisar.",
-     "cintura: baruka.pe dice «Cintura alta con botones decorativos»; la ficha dice «tiro alto con pretina» (fuente: ambas). ¿Dicen lo mismo con otras palabras? Revisar.",
-     "tela: baruka.pe dice «Tela Loma con cuerpo que mantiene la forma y aporta elegancia»; la ficha decía «Prada stretch» (fuente: diners). Se toma la web: confirmar con la tienda.",
-     "baruka.pe no vende el color «azul»: solo Negro"
-    ],
+    "resumen": "",
+    "discrepancias": [],
     "pendiente_tienda": [
-     "largo de entrepierna",
      "si tiene forro",
-     "cuánto estira la tela",
-     "si las blusas de las fotos se venden aparte"
+     "cuidados de lavado"
     ],
     "medidas": {
      "XS": {
@@ -6716,11 +6405,9 @@
     "web": {
      "url": "https://baruka.pe/products/codman",
      "handle": "codman",
-     "nombre": "Pantalon Codman",
      "colores": [
       "Negro"
      ],
-     "color_que_casa": [],
      "tallas": [
       "S",
       "M",
@@ -6728,12 +6415,14 @@
       "XL"
      ],
      "precio": 170.0,
-     "mapeo": "nombre y tipo",
+     "fotos": [
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_28.jpg?v=1745284852",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/2_3.jpg?v=1745284852"
+     ],
      "bajo_pedido": [
       "XL"
      ]
-    },
-    "nombre": "Pantalón Codman"
+    }
    }
   },
   {
@@ -6784,79 +6473,40 @@
    "nuevo": false,
    "ficha": {
     "codigo": "V26",
+    "nombre": "Pantalón Cristal",
     "piezas": [
      "pantalón"
     ],
     "atributos": {
      "silueta": {
-      "valor": "palazzo",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Silueta elegante gracias a su pierna palazzo"
+      "valor": "Silueta elegante gracias a su pierna palazzo",
+      "fuente": "baruka.pe"
      },
-     "largo": {
-      "valor": "largo completo",
-      "fuente": "foto"
-     },
+     "largo": null,
      "escote": null,
      "mangas": null,
      "cintura": {
-      "valor": "tiro alto con pretina ancha tipo corsé",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Pretina: Estructurada con soporte"
+      "valor": "Pretina: Estructurada con soporte",
+      "fuente": "baruka.pe"
      },
      "espalda": {
-      "valor": "pretina tipo corsé con cortes princesa; los tirantes se unen al delantero",
-      "fuente": "diners+baruka.pe",
-      "baruka_pe": "Cierre: Invisible en la espalda"
+      "valor": "Cierre: Invisible en la espalda",
+      "fuente": "baruka.pe"
      },
      "cierre": {
       "valor": "Invisible en la espalda",
-      "fuente": "diners+baruka.pe",
-      "antes": {
-       "valor": "cierre invisible en la espalda",
-       "fuente": "diners"
-      }
+      "fuente": "baruka.pe"
      },
      "tela": {
       "valor": "Morgan (resistente, con caída y textura elegante)",
-      "fuente": "baruka.pe",
-      "antes": {
-       "valor": "Prada",
-       "fuente": "diners"
-      }
+      "fuente": "baruka.pe"
      },
      "forro": null,
      "transparencias": null,
-     "estampado": {
-      "valor": "liso",
-      "fuente": "foto"
-     },
-     "color_visto": {
-      "valor": "beige",
-      "fuente": "ambas"
-     }
+     "estampado": null,
+     "color_visto": null
     },
     "detalles": [
-     {
-      "valor": "tirantes regulables con ganchos metálicos",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "pliegues al frente",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "bolsillos laterales",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "bastas anchas con doblez",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "trabillas",
-      "fuente": "diners"
-     },
      {
       "valor": "Tiras con herrajes ajustables para un calce personalizado",
       "fuente": "baruka.pe"
@@ -6877,18 +6527,11 @@
      }
     ],
     "cuidados": null,
-    "resumen": "Pantalón palazzo beige de tela Prada, de tiro alto con pretina ancha tipo corsé y tirantes regulables; lleva pliegues al frente, bolsillos laterales y bastas anchas con doblez.",
-    "discrepancias": [
-     "El texto lo llama «tipo overol»; en la foto es un pantalón con tirantes, sin peto.",
-     "espalda: baruka.pe dice «Cierre: Invisible en la espalda»; la ficha dice «pretina tipo corsé con cortes princesa; los tirantes se unen al delantero» (fuente: diners). ¿Dicen lo mismo con otras palabras? Revisar.",
-     "tela: baruka.pe dice «Morgan (resistente, con caída y textura elegante)»; la ficha decía «Prada» (fuente: diners). Se toma la web: confirmar con la tienda."
-    ],
+    "resumen": "",
+    "discrepancias": [],
     "pendiente_tienda": [
-     "largo de entrepierna",
      "si tiene forro",
-     "si la tela estira",
-     "si los tirantes se pueden quitar",
-     "si las blusas de las fotos se venden aparte"
+     "cuidados de lavado"
     ],
     "medidas": {
      "XS": {
@@ -6940,15 +6583,11 @@
     "web": {
      "url": "https://baruka.pe/products/cristal",
      "handle": "cristal",
-     "nombre": "Pantalon Cristal",
      "colores": [
       "Azul noche",
       "Verde Botella",
       "Marrón",
       "Beige oscuro"
-     ],
-     "color_que_casa": [
-      "BEIGE OSCURO"
      ],
      "tallas": [
       "S",
@@ -6957,10 +6596,12 @@
       "XL"
      ],
      "precio": 220.0,
-     "mapeo": "nombre y tipo",
+     "fotos": [
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/PANTALONCRISTAL_844a608c-c38d-435f-b5fb-0bc7a67b07f6.jpg?v=1744933680",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/PANTALONCRISTAL_1_14652c5f-5cc0-43ac-8740-a779d72d4280.jpg?v=1744933680"
+     ],
      "bajo_pedido": []
-    },
-    "nombre": "Pantalón Cristal"
+    }
    }
   },
   {
@@ -10747,107 +10388,52 @@
    "nuevo": false,
    "ficha": {
     "codigo": "V41",
+    "nombre": "Vestido Holly",
     "piezas": [
      "vestido"
     ],
     "atributos": {
      "silueta": {
-      "valor": "ajustada al cuerpo",
-      "fuente": "foto+baruka.pe",
-      "baruka_pe": "Corte mini entallado"
+      "valor": "Corte mini entallado",
+      "fuente": "baruka.pe"
      },
      "largo": {
-      "valor": "mini",
-      "fuente": "foto+baruka.pe",
-      "baruka_pe": "Corte mini entallado"
+      "valor": "Corte mini entallado",
+      "fuente": "baruka.pe"
      },
      "escote": {
-      "valor": "en V profundo",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Escote en V profundo"
+      "valor": "Escote en V profundo",
+      "fuente": "baruka.pe"
      },
      "mangas": {
-      "valor": "largas, abullonadas en el hombro, con puños anchos",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Manga larga"
+      "valor": "Manga larga",
+      "fuente": "baruka.pe"
      },
-     "cintura": {
-      "valor": "pretina drapeada",
-      "fuente": "ambas"
-     },
-     "espalda": {
-      "valor": "cerrada",
-      "fuente": "foto"
-     },
+     "cintura": null,
+     "espalda": null,
      "cierre": {
       "valor": "Cierre posterior invisible",
       "fuente": "baruka.pe"
      },
      "tela": {
       "valor": "Tela Roma stretch (elástica, con cuerpo)",
-      "fuente": "diners+baruka.pe",
-      "antes": {
-       "valor": "roma",
-       "fuente": "diners"
-      }
+      "fuente": "baruka.pe"
      },
      "forro": {
       "valor": "Forro interior",
       "fuente": "baruka.pe"
      },
      "transparencias": null,
-     "estampado": {
-      "valor": "liso",
-      "fuente": "ambas"
-     },
-     "color_visto": {
-      "valor": "nude durazno y guinda (dos colores en las fotos)",
-      "fuente": "foto"
-     }
+     "estampado": null,
+     "color_visto": null
     },
     "detalles": [
-     {
-      "valor": "volante (bobo) forrado en el lado izquierdo de la falda",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "ligero recogido debajo del busto",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "pretina drapeada",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "mangas abullonadas",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "puños anchos con botones forrados",
-      "fuente": "ambas"
-     },
      {
       "valor": "Volante lateral frontal",
       "fuente": "baruka.pe"
      }
     ],
     "como_queda": [
-     {
-      "valor": "el escote en V da volumen al busto",
-      "fuente": "diners"
-     },
-     {
-      "valor": "la pretina drapeada afina la cintura",
-      "fuente": "diners"
-     },
-     {
-      "valor": "el volante de la falda disimula y aumenta caderas",
-      "fuente": "diners"
-     },
-     {
-      "valor": "las mangas abullonadas y los puños estilizan",
-      "fuente": "diners"
-     },
      {
       "valor": "Escote profundo en V que realza el busto",
       "fuente": "baruka.pe"
@@ -10862,14 +10448,9 @@
      }
     ],
     "cuidados": "Lavar a mano o en ciclo delicado. Secar a la sombra",
-    "resumen": "El vestido Holly es ajustado y corto, de tela roma, con escote en V, pretina drapeada que afina la cintura y un volante en el lado izquierdo de la falda. Lleva mangas abullonadas con puños anchos y botones forrados.",
-    "discrepancias": [
-     "el catálogo lo registra en palo rosa, pero en las fotos aparece en nude durazno y en guinda",
-     "silueta: baruka.pe dice «Corte mini entallado»; la ficha dice «ajustada al cuerpo» (fuente: foto). ¿Dicen lo mismo con otras palabras? Revisar.",
-     "baruka.pe no vende el color «palo rosa»: solo Black, Beige, Vino"
-    ],
+    "resumen": "",
+    "discrepancias": [],
     "pendiente_tienda": [],
-    "cuidados_fuente": "baruka.pe",
     "medidas": {
      "XS": {
       "busto": 85,
@@ -10917,13 +10498,11 @@
     "web": {
      "url": "https://baruka.pe/products/holly",
      "handle": "holly",
-     "nombre": "Vestido Holly",
      "colores": [
       "Black",
       "Beige",
       "Vino"
      ],
-     "color_que_casa": [],
      "tallas": [
       "S",
       "M",
@@ -10931,10 +10510,13 @@
       "XL"
      ],
      "precio": 350.0,
-     "mapeo": "nombre y tipo",
+     "fotos": [
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/vestido_holly_vino1.jpg?v=1744494150",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/holly3.jpg?v=1744494150",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/vestido_holly_palorosa1.jpg?v=1744494150"
+     ],
      "bajo_pedido": []
-    },
-    "nombre": "Vestido Holly"
+    }
    }
   },
   {
@@ -11357,7 +10939,7 @@
      "si tiene forro",
      "cuidados de lavado",
      "qué piezas trae",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/luz",
@@ -11805,7 +11387,7 @@
      "si tiene forro",
      "cuidados de lavado",
      "qué piezas trae",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/ethel",
@@ -12083,7 +11665,7 @@
      "si tiene forro",
      "cuidados de lavado",
      "qué piezas trae",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/silvine",
@@ -12688,96 +12270,46 @@
    "nuevo": false,
    "ficha": {
     "codigo": "V30",
+    "nombre": "Enterizo Elvi",
     "piezas": [
      "enterizo"
     ],
     "atributos": {
      "silueta": {
-      "valor": "ajustado arriba, con peplum en la cintura y pantalón wide leg",
-      "fuente": "foto+baruka.pe",
-      "baruka_pe": "Corte en la cintura"
+      "valor": "Corte en la cintura",
+      "fuente": "baruka.pe"
      },
-     "largo": {
-      "valor": "largo completo",
-      "fuente": "foto"
-     },
+     "largo": null,
      "escote": {
-      "valor": "un hombro (asimétrico)",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Escote asimétrico de un solo hombro"
+      "valor": "Escote asimétrico de un solo hombro",
+      "fuente": "baruka.pe"
      },
      "mangas": {
-      "valor": "sin mangas",
-      "fuente": "foto+baruka.pe",
-      "baruka_pe": "Escote asimétrico de un solo hombro"
+      "valor": "Escote asimétrico de un solo hombro",
+      "fuente": "baruka.pe"
      },
      "cintura": {
-      "valor": "marcada con cinturón",
-      "fuente": "ambas+baruka.pe",
-      "baruka_pe": "Cinturón integrado"
+      "valor": "Cinturón integrado",
+      "fuente": "baruka.pe"
      },
-     "espalda": {
-      "valor": "cerrada, deja un hombro al descubierto",
-      "fuente": "foto"
-     },
-     "cierre": {
-      "valor": "cierre invisible en la espalda",
-      "fuente": "ambas"
-     },
+     "espalda": null,
+     "cierre": null,
      "tela": {
       "valor": "Tela Morgan: firme, elegante y cómoda",
       "fuente": "baruka.pe"
      },
      "forro": null,
      "transparencias": null,
-     "estampado": {
-      "valor": "liso",
-      "fuente": "foto"
-     },
-     "color_visto": {
-      "valor": "rosado",
-      "fuente": "foto"
-     }
+     "estampado": null,
+     "color_visto": null
     },
     "detalles": [
-     {
-      "valor": "volado en cascada a lo largo de una pierna (forma de caracol)",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "cinturón tejido blanco plateado con hebilla redonda",
-      "fuente": "ambas"
-     },
-     {
-      "valor": "peplum en la cintura",
-      "fuente": "foto"
-     },
-     {
-      "valor": "pinzas para levantar el busto",
-      "fuente": "diners"
-     },
-     {
-      "valor": "asimétrico en el hombro",
-      "fuente": "ambas"
-     },
      {
       "valor": "Volante lateral estructurado que aporta movimiento y elegancia",
       "fuente": "baruka.pe"
      }
     ],
     "como_queda": [
-     {
-      "valor": "el cinturón ajusta y acentúa la silueta",
-      "fuente": "diners"
-     },
-     {
-      "valor": "las pinzas levantan el busto",
-      "fuente": "diners"
-     },
-     {
-      "valor": "disimula zonas que suelen incomodar",
-      "fuente": "diners"
-     },
      {
       "valor": "Escote asimétrico de un solo hombro que realza cuello y hombros",
       "fuente": "baruka.pe"
@@ -12796,18 +12328,11 @@
      }
     ],
     "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
-    "resumen": "Enterizo rosado de un hombro, con cinturón tejido, peplum en la cintura, pantalón ancho de largo completo y un volado en cascada a lo largo de una pierna.",
-    "discrepancias": [
-     "el texto habla de «cinturón de cuero» y luego de «correa tejida»; en la foto el cinturón se ve tejido en blanco plateado y no se puede confirmar que sea de cuero",
-     "mangas: baruka.pe dice «Escote asimétrico de un solo hombro»; la ficha dice «sin mangas» (fuente: foto). ¿Dicen lo mismo con otras palabras? Revisar."
-    ],
+    "resumen": "",
+    "discrepancias": [],
     "pendiente_tienda": [
-     "forro",
-     "elasticidad",
-     "material del cinturón y si viene incluido",
-     "largo del pantalón según la estatura"
+     "si tiene forro"
     ],
-    "cuidados_fuente": "baruka.pe",
     "medidas": {
      "XS": {
       "busto": 85,
@@ -12861,15 +12386,11 @@
     "web": {
      "url": "https://baruka.pe/products/elvi",
      "handle": "elvi",
-     "nombre": "Enterizo Elvi",
      "colores": [
       "Rosa",
       "Blanco",
       "Celeste",
       "Beige"
-     ],
-     "color_que_casa": [
-      "Rosa"
      ],
      "tallas": [
       "S",
@@ -12878,10 +12399,14 @@
       "XL"
      ],
      "precio": 270.0,
-     "mapeo": "nombre y tipo",
+     "fotos": [
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_19.jpg?v=1745281926",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/elvi1080x1080_2.jpg?v=1745281926",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/elvi5.jpg?v=1745281926",
+      "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/elvi4.jpg?v=1745281926"
+     ],
      "bajo_pedido": []
-    },
-    "nombre": "Enterizo Elvi"
+    }
    }
   },
   {
@@ -13499,7 +13024,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/tokio",
@@ -13603,7 +13128,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/rosalin",
@@ -14389,7 +13914,7 @@
      "tela",
      "si tiene forro",
      "cuidados de lavado",
-     "la web no trae descripción: silueta, largo, escote y mangas habría que sacarlos de las fotos"
+     "silueta, largo, escote y mangas (la web no trae descripción)"
     ],
     "web": {
      "url": "https://baruka.pe/products/verona",

@@ -9,7 +9,7 @@ from . import ficha_producto as F
 from . import memoria, venta
 
 fallos, total = [], 0
-FUENTES = {"diners", "foto", "ambas", "baruka.pe", "diners+baruka.pe", "foto+baruka.pe", "ambas+baruka.pe"}
+FUENTES = {"baruka.pe"}   # desde el 12-10-2026 las fichas son SOLO según baruka.pe (pedido del usuario)
 
 
 def caso(ok: bool, msg: str):
@@ -38,8 +38,10 @@ for cod, f in fichas.items():
     caso(f.get("cuidados") is None or isinstance(f["cuidados"], str), f"{cod}: cuidados")
     caso(f.get("retirado") or bool(f.get("medidas")) or any("medida" in p for p in f.get("pendiente_tienda") or []),
          f"{cod}: sin tabla de medidas válida, las medidas deben figurar como pendientes")
-    caso(all(d.get("fuente") in ("diners", "baruka.pe") for d in f.get("como_queda") or []),
-         f"{cod}: «cómo queda» solo puede venir de la tienda (Diners o baruka.pe)")
+    caso(all(d.get("fuente") == "baruka.pe" for d in f.get("como_queda") or []),
+         f"{cod}: «cómo queda» solo puede venir de baruka.pe")
+    caso(not f.get("retirado") or set(f) == {"codigo", "nombre", "retirado"},
+         f"{cod}: un retirado solo lleva código, nombre y la marca (ningún dato de Diners)")
 
 # --- detección: lo que pregunta (y lo que NO es pregunta de atributo)
 DETECTA = [
@@ -58,16 +60,19 @@ for m, esp in DETECTA:
 caso(not F.RE_PREGUNTA.search(memoria._plano("quiero un vestido largo para boda")), "«quiero un vestido largo» no es una pregunta de atributo")
 
 # --- respuestas: el dato de la ficha, y lo que no figura va a la asesora (nunca se inventa)
-r = F.respuesta("V35", "*V35* Vestido Irla", ["mangas"])
-caso(r.startswith("Las mangas del *V35* Vestido Irla:") and "sin mangas" in r, f"mangas del Irla: {r}")
-r = F.respuesta("V35", "*V35* Vestido Irla", ["forro"])
-caso("asesora" in r and "*4*" in r, f"forro del Irla (no figura) debe ir a la asesora: {r}")
-r = F.respuesta("V24", "*V24* Conjunto Kabanova Azul", ["mangas", "medidas"])
-caso("jamón" in r and "medidas" in r and "asesora" in r, f"mangas + medidas del Kabanova: {r}")
+# (12-10-2026: con modelos vigentes de baruka.pe; los retirados ya no llevan datos)
+r = F.respuesta("V100", "*V100* Vestido Daleska", ["mangas"])
+caso(r.startswith("Las mangas del *V100* Vestido Daleska:") and "larga" in r, f"mangas del Daleska: {r}")
+r = F.respuesta("V45", "*V45* Vestido Merlina", ["forro"])
+caso("asesora" in r and "*4*" in r, f"forro del Merlina (no figura) debe ir a la asesora: {r}")
+r = F.respuesta("V104", "*V104* Vestido Aurora", ["mangas", "medidas"])
+caso("larga" in r.lower() and "medidas" in r and "asesora" in r, f"mangas + medidas del Aurora: {r}")
+r = F.respuesta("V41", "*V41* Vestido Holly", ["medidas"])
+caso("busto 97" in r and "largo 90" in r, f"medidas del Holly (tabla de baruka.pe): {r}")
 caso(F.respuesta("V01", "*V01* x", ["mangas"]) == "", "sin ficha no hay respuesta del código")
-caso(F.dicho("V35", ["largo"], "Es a la rodilla 😊") and not F.dicho("V35", ["largo"], "¡Es precioso!"), "dicho(): reconoce si contestó el largo")
-caso("FICHA TÉCNICA" in venta.extras_texto("V24") and "NO FIGURA" in venta.extras_texto("V24"), "la ficha llega al LLM con lo que no figura")
-caso(venta.tela("V24", "") == "", "«no se indica» no es una tela que se diga")
+caso(F.dicho("V41", ["largo"], "Es mini 😊") and not F.dicho("V41", ["largo"], "¡Es precioso!"), "dicho(): reconoce si contestó el largo")
+caso("FICHA TÉCNICA" in venta.extras_texto("V45") and "NO FIGURA" in venta.extras_texto("V45"), "la ficha llega al LLM con lo que no figura")
+caso(venta.tela("V24", "") == "", "un retirado no tiene tela que decir")
 caso("roma" in venta.tela("V41", "").lower(), f"tela del Holly desde la ficha (baruka.pe: Roma stretch): {venta.tela('V41', '')}")
 
 print(f"ficha técnica de producto: {total - len(fallos)}/{total} casos")
