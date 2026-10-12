@@ -33,10 +33,10 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 DESTINOS = {
     "kddesign": {"api": "http://127.0.0.1:18480", "env": "~/kddesign/.env"},
     # jmdventas no publica puerto: la IP del contenedor en su red (la saca `podman inspect`, ver --api).
-    # Su columna color es VARCHAR(100) (MariaDB): la lista se recorta por colores enteros; la completa va en la
-    # descripción («Colores: …») y el agente lee el catálogo de kddesign, que la guarda entera.
+    # color pasó de VARCHAR(100) a VARCHAR(255) el 12-10-2026 (la lista de la web llega a 113 caracteres). `max_color`
+    # queda como red: con una base vieja recorta por colores enteros en vez de dar 500.
     "jmdventas": {"api": "", "env": "~/jmdventas/deploy/jmdventas/.env", "empresa": "baruka", "tenant": 1,
-                  "max_color": 100},
+                  "max_color": 255},
 }
 FOTO_PROPIA = {"V42"}   # su foto es la del anuncio (la mandó la tienda), no la de la web
 

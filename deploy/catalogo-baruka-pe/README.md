@@ -21,7 +21,7 @@ Cargado ese día en los dos CRM: 96 modelos activos (9 conservan su código: V22
 V42 = Vestido Alma; 87 nuevos V45–V131), 15 desactivados (no borrados). Precio, colores, tallas y descripción = los de la
 web. Stock: la web no lo lleva; los nuevos entraron con 10 por talla y la tienda lo corrige en el panel. XS/XL/2XL
 «pre orden» = bajo pedido. Respaldos previos en el servidor: `~/respaldos/*-pre-catalogo-20261012-1913.*`.
-En jmdventas la columna `color` es VARCHAR(100): ahí la lista de colores se recorta (la completa va en la descripción).
+En jmdventas la columna `color` pasó a VARCHAR(255) el 12-10-2026 (era 100 y la lista de la web llega a 113).
 
 Solo stdlib de Python. El OCR necesita **macOS** con `swiftc` (Xcode CLT); sin eso, `extraer.py --sin-ocr` deja las
 tablas de medidas solo como URL.
