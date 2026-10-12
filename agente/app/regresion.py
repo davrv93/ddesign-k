@@ -54,6 +54,9 @@ CONVERSACIONES = os.path.join(DATOS, "regresion_conversaciones.jsonl")
 # Overrides de línea de comandos: correr el mismo banco contra V2/V3 y con el LLM encendido (con costo).
 VERSION_OVERRIDE = ""
 USAR_LLM_OVERRIDE = False
+# Historial como lo manda hoy el bot Go (F1): un turno por mensaje de la clienta y UNO por la respuesta (párrafos y pies de
+# foto fusionados), hasta 30. Por defecto se mantiene el de antes (un mensaje por párrafo, 11) para no mover la regresión de V1.
+HISTORIAL_FUSIONADO = False
 # La vara que dictó la tienda: envío a Lima S/ 15, a provincia S/ 20; showroom en Juan Ayllón 459.
 ENVIO = {"lima": 15.0, "provincia": 20.0}
 SHOWROOM = "Juan Ayllón 459"
@@ -173,6 +176,13 @@ class Chat:
 
     def _anota(self, cliente: str, respuesta: str, sugerencias=()):
         self.historial.append({"rol": "cliente", "texto": cliente})
+        if HISTORIAL_FUSIONADO:
+            pies = [x.get("pie", "") for x in sugerencias if x.get("pie")]
+            texto = "\n\n".join(p.strip() for p in (respuesta or "").split("\n\n") if p.strip())
+            texto = (texto + ("\n" if texto and pies else "") + "\n".join(pies)).strip()
+            if texto:
+                self.historial.append({"rol": "bot", "texto": texto})
+            return
         for p in (respuesta or "").split("\n\n"):
             if p.strip():
                 self.historial.append({"rol": "bot", "texto": p.strip()})
@@ -181,7 +191,7 @@ class Chat:
 
     def pedir(self, texto: str, llm: str = "") -> tuple[int, dict]:
         """POST /chat con el estado de la conversación. Actualiza etapa y memoria con lo que vuelve."""
-        ventana = 20 if self.canal == "web" else 11          # el bot Go manda los últimos 11 mensajes
+        ventana = 30 if HISTORIAL_FUSIONADO else (20 if self.canal == "web" else 11)          # el bot Go manda los últimos 11 mensajes (30 turnos desde la F1)
         cuerpo = {"mensaje": texto, "historial": self.historial[-ventana:], "cliente": self.cliente, "canal": self.canal,
                   "motor": "deepseek", "usar_llm": self.usar_llm, "etapa": self.etapa, "conversacion": self.id, "estado": self.estado,
                   "desde_anuncio": self.anuncio, "anuncio": self.anuncio_titulo, "version": self.version}

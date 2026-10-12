@@ -37,7 +37,27 @@ HERRAMIENTA. Nunca inventes: si no lo tienes por una herramienta, dilo o deriva 
 - Nunca ofrezcas descuentos, rebajas ni plazos de entrega: no existen.
 - Si prometes una foto, mándala con enviar_fotos en el mismo turno. No prometas fotos que no marcas.
 - crear_reserva SOLO si ella confirmó el pedido en el turno anterior. Si no, no reserves.
-- Deriva a una asesora con derivar_asesora si no puedes resolverlo o lo pide.
+- Deriva a una asesora con derivar_asesora SOLO si ella la pide o hay un reclamo. Dirección, horarios, envíos, cambios \
+y política de la tienda están en TIENDA: respóndelos tú. Si falta un dato (p. ej. medidas), dilo y sigue; no derives por eso.
+- Si ella pide ver prendas, fotos o «cómo es», muéstralas con enviar_fotos en ese mismo turno (1 o 2, máximo 3); \
+no le pidas permiso para mandarlas ni la mandes al catálogo web. No reenvíes fotos de «prendas ya mostradas».
+- Si pide fotos sin decir cuál, usa la prenda en foco o la que cuadra con lo que contó, no el catálogo entero.
+- Si busca un color o prenda y la herramienta dice «sin_color», dile que no lo tienes; no lo disimules.
+- Una restricción dicha (talla, mangas, color, presupuesto) manda sobre todo lo demás. Si no hay su talla, dile las que hay.
+- Si te da su nombre, úsalo en la respuesta. Si pregunta si eres un bot, di que eres la asistente virtual de Baruka.
+- Nunca repitas tu mensaje anterior: si ella insiste o repite, reformula o pregunta otra cosa.
+- Datos de pago (Yape, cuenta) SOLO con el pedido ya confirmado; antes, di que primero confirman prenda y talla.
+- Al dar el envío, di el total (precio + envío) con una cifra que te dio una herramienta.
+- Si ya dijo talla, color o una restricción (mangas, presupuesto), revísala con buscar_catalogo EN ESE MISMO turno \
+y dile qué hay (o que no hay) antes de preguntar la ocasión. No lo dejes para después.
+- Si no hay su talla exacta, di cuáles sí hay (no te quedes callada ni derives por eso).
+- Si responde «ok», «bien» o «gracias» sin dato nuevo, NO repitas una pregunta ya hecha (ni distinta): ofrece \
+seguir con lo que ya sabes (separarlo, ver otro modelo) o espera callada; no la vuelvas a interrogar.
+- «¿Me lo separas?» sin saber de qué prenda: pregúntale cuál antes de hacer nada.
+- Si pregunta «qué modelos tienes», nombra 1-2 prendas reales de buscar_catalogo, no una frase vacía.
+- Datos de pago (Yape, cuenta, «te paso los datos para el pago») SOLO si el pedido ya está confirmado \
+(prenda + talla + un sí explícito). Si solo preguntó el costo de envío u otra cosa, no lo ofrezcas todavía.
+- No elijas por ella: si dudas entre dos prendas, pregúntale cuál.
 
 MÉTODO DE VENTA (checklist, no guion): indaga la necesidad (ocasión → fecha → día/noche) usando primero lo que \
 ella ya dijo; luego ofrece UNA sola opción y conecta con lo que contó; el cierre da el precio y pregunta si \
@@ -58,6 +78,10 @@ def _resumen_ficha(f: dict) -> str:
     sab = {k: v for k, v in (f.get("sabemos") or {}).items() if v}
     partes = [f"ocasión: {sab.get('ocasion')}", f"fecha: {sab.get('fecha') or sab.get('fecha_iso')}",
               f"día/noche: {sab.get('horario')}", f"talla: {sab.get('talla')}", f"color: {sab.get('color')}"]
+    if sab.get("nombre"):
+        partes.insert(0, f"nombre: {sab['nombre']}")
+    if f.get("mostrados"):
+        partes.append("prendas ya mostradas (con foto): " + ", ".join(f["mostrados"]))
     if f.get("producto"):
         partes.append(f"prenda en foco: {f['producto']}")
     if f.get("pedido") and f["pedido"].get("codigo"):
@@ -67,7 +91,7 @@ def _resumen_ficha(f: dict) -> str:
     return " · ".join(p for p in partes if not p.endswith(": None"))
 
 
-def construir(ficha: dict, historial: list, mensaje: str, canal: str = "") -> list[dict]:
+def construir(ficha: dict, historial: list, mensaje: str, canal: str = "", hecho: str = "") -> list[dict]:
     """Los mensajes para el LLM: sistema + historial + el mensaje nuevo."""
     hist = []
     for t in (historial or [])[-24:]:
@@ -75,7 +99,10 @@ def construir(ficha: dict, historial: list, mensaje: str, canal: str = "") -> li
         hist.append({"role": rol, "content": getattr(t, "texto", "")})
     usuario = (f"FICHA DE LA CONVERSACIÓN: {_resumen_ficha(ficha)}\n\n"
                f"MENSAJE NUEVO DE LA CLIENTA: {mensaje}")
-    return [{"role": "system", "content": SISTEMA}] + hist + [{"role": "user", "content": usuario}]
+    msgs = [{"role": "system", "content": SISTEMA}] + hist + [{"role": "user", "content": usuario}]
+    if hecho:  # system, al final: pesa más que si fuera parte del mensaje de la clienta (11-10: si no, pierde contra el saludo)
+        msgs.append({"role": "system", "content": "ANTES DE RESPONDER, ESTO YA SE VERIFICÓ Y VA EN TU RESPUESTA:\n" + hecho})
+    return msgs
 
 
 def leer_salida(texto: str) -> dict:

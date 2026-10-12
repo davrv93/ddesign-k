@@ -13,10 +13,32 @@ import argparse
 import json
 import os
 import sys
+import time
 
-from .. import regresion
+from .. import memoria, regresion
 
 BANCO = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "data", "v3_conversaciones.jsonl"))
+
+
+def _norm(t: str) -> str:
+    return " ".join("".join(c if c.isalnum() or c == " " else " " for c in (t or "").lower()).split())
+
+
+def repeticiones(r: dict) -> list[str]:
+    """Lo que ninguna regla del runner mira: el mismo texto (o la misma pregunta) dos veces en una conversación."""
+    f, vistos, preguntas = [], {}, {}
+    for t in r.get("turnos", []):
+        n = _norm(t.get("bot", ""))
+        if len(n) > 12:
+            if n in vistos:
+                f.append(f"t{t['k']}: repite el mensaje del turno {vistos[n]}")
+            vistos.setdefault(n, t["k"])
+        for q in memoria.preguntas_en(t.get("bot", "")):
+            nq = _norm(q)
+            if nq in preguntas and preguntas[nq] != t["k"]:
+                f.append(f"t{t['k']}: repite la pregunta del turno {preguntas[nq]}: {q.strip()[:60]!r}")
+            preguntas.setdefault(nq, t["k"])
+    return f
 
 
 def main(argv=None) -> int:
@@ -26,10 +48,14 @@ def main(argv=None) -> int:
     ap.add_argument("--caso", default="")
     ap.add_argument("--salida", default="", help="guardar la transcripción completa en este JSONL (para el juez)")
     ap.add_argument("--detalle", action="store_true", help="listar también los aprobados")
+    ap.add_argument("--version", default="v3", help="v1 | v3: con qué versión se corre el banco (para comparar)")
+    ap.add_argument("--pausa", type=float, default=0.0, help="segundos entre conversaciones (cuota del LLM)")
+    ap.add_argument("--paralelo", type=int, default=1, help="conversaciones a la vez (cada una sigue siendo secuencial)")
     a = ap.parse_args(argv)
 
-    regresion.VERSION_OVERRIDE = "v3"
+    regresion.VERSION_OVERRIDE = a.version
     regresion.USAR_LLM_OVERRIDE = True
+    regresion.HISTORIAL_FUSIONADO = True
     url = a.url.rstrip("/")
     cat = regresion.Catalogo(url)
     if not cat.salud.get("ok"):
@@ -37,7 +63,21 @@ def main(argv=None) -> int:
         return 2
 
     convs = [c for c in regresion.cargar_conversaciones(a.banco) if not a.caso or a.caso in c["id"]]
-    resultados = [regresion.correr_conversacion(url, c, cat) for c in convs]
+
+    def una(c):
+        r = regresion.correr_conversacion(url, c, cat)
+        if not r.get("omitida"):
+            r["fallos"] = list(r.get("fallos", [])) + repeticiones(r)
+        if a.pausa:
+            time.sleep(a.pausa)
+        return r
+
+    if a.paralelo > 1:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=a.paralelo) as pool:
+            resultados = list(pool.map(una, convs))
+    else:
+        resultados = [una(c) for c in convs]
     if a.salida:
         with open(a.salida, "w", encoding="utf-8") as fh:
             for r in resultados:

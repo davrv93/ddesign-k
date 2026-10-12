@@ -17,6 +17,12 @@ from .. import datos, ficha_producto, memoria, stock as stk, venta
 from .validador import hechos_vacios
 
 MAX_CATALOGO = 6
+RE_PIDE_VARIAS = re.compile(r"\b(fotos|modelos|opciones|vestidos|conjuntos|otros|otras|cat[aá]logo|todos|todas|qu[eé] tienes|qu[eé] m[aá]s)\b")
+RE_PIDE_FOTO = re.compile(r"\b(foto|ver|veo|mu[eé]stra\w*|p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|c[oó]mo es|como es|c[oó]mo se ve)\b")
+MAX_FOTOS = 3          # un mensaje con 6 fotos es un catálogo, no una conversación
+ENVIOS = (15.0, 20.0)  # envío a Lima / provincia (tienda.md): precios que el modelo sí puede decir
+COLORES = ("rojo", "vino", "azul", "negro", "negra", "blanco", "blanca", "verde", "rosa", "rosado", "celeste", "beige",
+           "naranja", "turquesa", "morado", "lila", "amarillo", "gris", "plomo", "marron", "marrón", "dorado", "plateado", "fucsia")
 
 ESQUEMA = [
     {"type": "function", "function": {
@@ -72,17 +78,23 @@ class Recolector:
     - `permitir_reserva`: False en sombra (la reserva la hace el flujo de V1).
     """
 
-    def __init__(self, fichas, consultar_stock, pie=None, permitir_reserva: bool = False):
+    def __init__(self, fichas, consultar_stock, pie=None, permitir_reserva: bool = False, mensaje: str = "",
+                 mostrados=(), pago_ok: bool = False):
+        self.mensaje = (mensaje or "").lower()
+        self.mostrados = {str(c).upper() for c in mostrados or ()}
         self.fichas = list(fichas)
         self._stock = consultar_stock
         self._pie = pie
         self.permitir_reserva = permitir_reserva
         self.hechos = hechos_vacios()
+        self.hechos["precios"].update(ENVIOS)
+        self.hechos["pago_ok"] = bool(pago_ok)
         self.fotos: list[dict] = []
         self.usadas: list[str] = []
         self.reserva: dict | None = None
         self.cita: dict | None = None
         self.derivar = False
+        self.sugerencia_foto: str | None = None
 
     # -- puerta -----------------------------------------------------------
     def esquema(self) -> list[dict]:
@@ -107,6 +119,7 @@ class Recolector:
         self.hechos["codigos"].add(f.codigo.upper())
         if f.precio is not None:
             self.hechos["precios"].add(round(float(f.precio), 2))
+            self.hechos["precios"].update(round(float(f.precio) + e, 2) for e in ENVIOS)   # total con envío
         if st is None:
             st = (self._stock([f.codigo]) or {}).get(f.codigo.upper(), {})
         disp, agot = stk.tallas_online(st)
@@ -132,9 +145,19 @@ class Recolector:
                 break
         if not out:  # sin coincidencia por texto, devuelve la categoría entera (si la pidió)
             out = [f for f in self.fichas if cat and f.categoria.lower() == cat][:MAX_CATALOGO]
+        if palabras:  # lo que mejor calza con lo pedido primero (nunca el primero del catálogo porque sí)
+            out.sort(key=lambda f: -sum(p in f"{f.nombre} {f.color} {f.detalle}".lower() for p in palabras))
         codigos = [f.codigo for f in out]
         estados = self._stock(codigos) if codigos else {}
-        return {"prendas": [self._anota_prenda(f, estados.get(f.codigo.upper())) for f in out]}
+        res = {"prendas": [self._anota_prenda(f, estados.get(f.codigo.upper())) for f in out]}
+        # El color que pidió y que NINGUNA prenda tiene: se dice, no se disimula con otras prendas.
+        hay = " ".join(f"{f.color} {f.nombre} {f.detalle}".lower() for f in self.fichas)
+        falta = [c for c in COLORES if c in consulta.split() and c not in hay]
+        if falta:
+            res["sin_color"] = falta
+            res["aviso"] = (f"NO tenemos nada color {', '.join(falta)}. Dilo claro y ofrece lo más cercano; "
+                            "no afirmes que lo tienes.")
+        return res
 
     def _t_stock(self, args: dict) -> dict:
         f = self._ficha(args.get("codigo", ""))
@@ -158,9 +181,16 @@ class Recolector:
 
     def _t_enviar_fotos(self, args: dict) -> dict:
         out = []
-        for c in (args.get("codigos") or [])[:MAX_CATALOGO]:
+        # Una foto salvo que pida varias; y una ya enviada solo se repite si la pide de nuevo.
+        tope = MAX_FOTOS if RE_PIDE_VARIAS.search(self.mensaje) else 1
+        explicita = bool(RE_PIDE_FOTO.search(self.mensaje))
+        for c in (args.get("codigos") or []):
+            if len(out) >= tope:
+                break
             f = self._ficha(c)
             if f is None or not f.imagen:
+                continue
+            if f.codigo.upper() in self.mostrados and not explicita:
                 continue
             pie = self._pie(f, self._stock([f.codigo]).get(f.codigo.upper(), {})) if self._pie else f"{f.codigo} {f.nombre}"
             out.append({"codigo": f.codigo, "nombre": f.nombre, "imagen": f.imagen, "pie": pie})
