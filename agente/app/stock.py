@@ -104,10 +104,19 @@ class Stock:
 
 # -- cálculo de disponibilidad (código, no LLM) -------------------------------
 
+ORDEN_TALLAS = ("XXS", "XS", "S", "M", "L", "XL", "2XL", "XXL", "3XL")
+
+
+def _orden(t: str) -> tuple[int, str]:
+    return (ORDEN_TALLAS.index(t.upper()) if t.upper() in ORDEN_TALLAS else 99, t)
+
+
 def tallas_online(st: dict) -> tuple[list[str], list[str]]:
-    """(disponibles, agotadas) en la tienda virtual."""
+    """(disponibles, agotadas) en la tienda virtual, en orden de talla (XS, S, M, L, XL…): el catálogo las devolvía
+    por orden alfabético y el pie decía «Tallas: L, M, S, XL, XS» (12-10-2026)."""
     online = st.get("online") or {}
-    return [t for t, n in online.items() if n > 0], [t for t, n in online.items() if n <= 0]
+    return (sorted((t for t, n in online.items() if n > 0), key=_orden),
+            sorted((t for t, n in online.items() if n <= 0), key=_orden))
 
 
 def estado(st: dict) -> str:

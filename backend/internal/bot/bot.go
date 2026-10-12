@@ -1361,6 +1361,13 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 // las sirve este backend; las del catálogo de 100 modelos, el agente. En el panel ambas se ven
 // por /media/ (el nginx del frontend reparte /media/catalogo/ al agente).
 func (b *Bot) replySuggestion(ctx context.Context, conv *store.Conversation, sg agente.Sugerencia) {
+	// La foto es la de NUESTRO producto con ese código, no la ruta que trae el agente: el agente lee el catálogo de
+	// kddesign y sus archivos se llaman distinto (12-10-2026: «v46-tmt6t3.jpg» no existía aquí → 404 → sin foto).
+	if sg.Codigo != "" {
+		if p, err := b.store.GetProductByCode(ctx, sg.Codigo); err == nil && strings.HasPrefix(p.Image, "/media/") {
+			sg.Imagen = p.Image
+		}
+	}
 	if !strings.HasPrefix(sg.Imagen, "/media/") || strings.Contains(sg.Imagen, "..") {
 		return
 	}

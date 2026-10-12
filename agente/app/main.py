@@ -822,7 +822,12 @@ def _pie(f, st: dict) -> str:
                 return f"*{f.codigo}* {f.nombre}\nAgotado en la tienda virtual, pero hay en:\n{suc}\n👉 Escribe *4* y te lo separamos"
             return f"*{f.codigo}* {f.nombre}\nAgotado por ahora 😔 Escribe *4* y te avisamos cuando llegue."
         precio = f" — *{MONEDA} {f.precio:.2f}*" if f.precio is not None else ""
-        return f"*{f.codigo}* {f.nombre}{precio}\nTallas: {', '.join(disp)}\n👉 Escribe *{f.codigo}* para pedirlo"
+        # Las «pre orden» de baruka.pe se dicen como tales: no son stock (12-10-2026).
+        pedido = [x for x in disp if x.upper() in {t.upper() for t in ficha_producto.web(f.codigo).get("bajo_pedido") or []}]
+        tallas = ", ".join(x for x in disp if x not in pedido)
+        if pedido:
+            tallas = f"{tallas} · {' y '.join(pedido)} bajo pedido" if tallas else f"{' y '.join(pedido)} bajo pedido"
+        return f"*{f.codigo}* {f.nombre}{precio}\nTallas: {tallas}\n👉 Escribe *{f.codigo}* para pedirlo"
     if suc:
         if f.precio is not None:
             return f"*{f.codigo}* {f.nombre} — *{MONEDA} {f.precio:.2f}*\n{f.detalle}.\nHay en:\n{suc}\n👉 Escribe *4* y una asesora te lo separa"
