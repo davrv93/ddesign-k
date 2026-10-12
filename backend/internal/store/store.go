@@ -483,7 +483,7 @@ var schemaMySQL = []string{
 	name        VARCHAR(255) NOT NULL,
 	description TEXT NOT NULL DEFAULT '',
 	category    VARCHAR(100) NOT NULL DEFAULT '',
-	color       VARCHAR(100) NOT NULL DEFAULT '',
+	color       VARCHAR(255) NOT NULL DEFAULT '',
 	price       DOUBLE NOT NULL DEFAULT 0,
 	image       VARCHAR(500) NOT NULL DEFAULT '',
 	ai_tags     TEXT NOT NULL DEFAULT '',
@@ -740,6 +740,9 @@ func (s *Store) migrateMySQL() error {
 		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS logo VARCHAR(500) NOT NULL DEFAULT ''`,
 		// Ficha técnica de la prenda (JSON, store/ficha.go).
 		`ALTER TABLE products ADD COLUMN IF NOT EXISTS ficha MEDIUMTEXT NOT NULL DEFAULT ''`,
+		// Colores de la prenda: la lista de baruka.pe llega a 113 caracteres y VARCHAR(100) daba 500 al cargarla
+		// (12-10-2026). MODIFY es idempotente.
+		`ALTER TABLE products MODIFY color VARCHAR(255) NOT NULL DEFAULT ''`,
 		// Datos públicos de la tienda para su login: dirección, horario y fotos de la galería (JSON).
 		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS direccion VARCHAR(300) NOT NULL DEFAULT ''`,
 		`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS horario VARCHAR(200) NOT NULL DEFAULT ''`,
