@@ -113,7 +113,10 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     rec = Recolector(fichas, consultar_stock, pie=pie, permitir_reserva=permitir_reserva, mensaje=mensaje,
                      mostrados=f.get("mostrados") or [], pago_ok=pago_ok,
                      contesta_cual=bool(RE_PREGUNTO_CUAL.search(ultimo_bot)))
+    clienta = " ".join(memoria._plano(x.get("texto", "") if isinstance(x, dict) else getattr(x, "texto", ""))
+                       for x in hist if (x.get("rol", "") if isinstance(x, dict) else getattr(x, "rol", "")) == "cliente")
     hecho = _precalculo(rec, {**(lectura.get("datos") or {}),
+                              "otra_persona": bool(plantillas.RE_OTRA_PERSONA.search(f"{clienta} {memoria._plano(mensaje)}")),
                               "producto": getattr(req, "producto", "") or f.get("producto")
                                           or ((f.get("mostrados") or [""])[-1])})
     pedido = _pedido_en_curso(rec, req, f)
@@ -270,6 +273,10 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
         partes.append("HECHO: dio su estatura. Dile casi textual: «Excelente, sí está diseñado para tu estatura. Si en "
                       "caso te queda un poquito larguito, lo puedes ajustar con tu modista de confianza. ¡Es súper "
                       "sencillo!» y luego pregunta lo que falte del paso 3.")
+    if datos.get("otra_persona") and any("casi textual" in x for x in partes):
+        # 12-10-2026: «sí está diseñado para TU estatura» a quien compraba para su hermana.
+        partes.append("OJO: compra para OTRA persona: di esas frases en tercera persona («su estatura», «su talla», "
+                      "«cómo quiere sentirse ella»), nunca «tu».")
     color = datos.get("color")
     if color:
         r = rec.ejecutar("buscar_catalogo", {"consulta": color})
@@ -543,6 +550,53 @@ OPCIONES = (
 )
 
 
+RE_DOS_EN_UNA = re.compile(r"(\by|,)\s+(cuanto|cuantos|que|como|cual|cuando|donde|para cuando|en que|de que)\b")
+
+# Preguntas del guion que se pueden hacer juntas (paso 3) y cómo reconocerlas en el texto del bot.
+RE_PREGUNTA_DE = {"talla": re.compile(r"\btalla\b"), "horario": re.compile(r"\bde dia o de noche\b"),
+                  "estatura": re.compile(r"\bestatura\b|\bcuanto (mide|mides)\b"),
+                  "fecha": re.compile(r"\bpara cuando\b")}
+FALTA_TU = {"talla": "¿Y en qué talla te encuentras?", "horario": "¿Y el evento es de día o de noche?",
+            "estatura": "¿Y cuánto mides de estatura?", "fecha": "¿Y para cuándo lo necesitas?"}
+FALTA_ELLA = {"talla": "¿Y en qué talla se encuentra ella?", "horario": "¿Y el evento es de día o de noche?",
+              "estatura": "¿Y cuánto mide de estatura?", "fecha": "¿Y para cuándo lo necesitan?"}
+
+
+def _ultimo_turno_bot(historial) -> str:
+    """Lo que dijo el bot desde el último mensaje de la clienta (en WhatsApp puede ir en varios mensajes)."""
+    out = []
+    for turno in reversed(list(historial or [])):
+        rol = turno.get("rol", "") if isinstance(turno, dict) else getattr(turno, "rol", "")
+        if rol == "cliente":
+            break
+        out.append(turno.get("texto", "") if isinstance(turno, dict) else getattr(turno, "texto", ""))
+    return " ".join(reversed(out))
+
+
+def _con_la_que_falta(texto: str, f: dict, historial) -> str:
+    """Se le hicieron dos o más preguntas del guion y contestó solo una parte («de noche» a «¿de día o de noche y cuánto
+    mide?»): la respuesta termina preguntando la que falta, una sola. Si no contestó ninguna, no se insiste aquí (eso ya lo
+    hace el guion); si la respuesta ya la pregunta o ya trae dos preguntas, tampoco (12-10-2026)."""
+    # Solo lo que va entre «¿…?»: «sí está diseñado para tu estatura» no es preguntar la estatura.
+    previo = " ".join(re.findall(r"¿[^?]*\?", memoria._plano(_ultimo_turno_bot(historial))))
+    hechas = [k for k, rx in RE_PREGUNTA_DE.items() if rx.search(previo)]
+    if len(hechas) < 2:
+        return texto
+    sab = f.get("sabemos") or {}
+    tiene = lambda k: bool(sab.get(k) or (k == "fecha" and sab.get("fecha_iso")))
+    faltan = [k for k in hechas if not tiene(k)]
+    if not faltan or len(faltan) == len(hechas) or (texto or "").count("?") >= 2:
+        return texto
+    plano = " ".join(re.findall(r"¿[^?]*\?", memoria._plano(texto)))
+    if any(RE_PREGUNTA_DE[k].search(plano) for k in faltan):
+        return texto
+    clienta = " ".join(memoria._plano(t.get("texto", "") if isinstance(t, dict) else getattr(t, "texto", ""))
+                       for t in historial or []
+                       if (t.get("rol", "") if isinstance(t, dict) else getattr(t, "rol", "")) == "cliente")
+    preguntas = FALTA_ELLA if plantillas.RE_OTRA_PERSONA.search(clienta) else FALTA_TU
+    return f"{(texto or '').rstrip()} {preguntas[faltan[0]]}".strip()
+
+
 def _opciones(texto: str) -> list[str]:
     """Las opciones de la ÚLTIMA pregunta, si es de respuesta cerrada y va sola (el paso 3 con tres preguntas, no)."""
     t = texto or ""
@@ -550,7 +604,9 @@ def _opciones(texto: str) -> list[str]:
         return []
     ini = t.rfind("¿", 0, t.rfind("?"))
     ultima = memoria._plano(t[ini:] if ini >= 0 else t)
-    if t.count("?") > 2 or (t.count("?") == 2 and not re.search(r"llamar|atencion", ultima)):
+    # Encuesta solo con UNA pregunta (pedido del usuario, 12-10-2026): con dos, la encuesta contesta una y la otra queda
+    # sin respuesta. También cuando van unidas en un solo «¿…?»: «¿es de día o de noche y cuánto mide de estatura?».
+    if t.count("?") > 1 or RE_DOS_EN_UNA.search(ultima):
         return []
     for rx, ops in OPCIONES:
         if rx.search(ultima):
@@ -573,6 +629,8 @@ def _una_muletilla(texto: str) -> str:
 
 def _respuesta(f: dict, texto: str, accion: str, fotos, reserva, traza: dict, req) -> dict:
     texto = _una_muletilla(texto)
+    if accion == "responder" and not ((f.get("pedido") or {}).get("confirmado")):
+        texto = _con_la_que_falta(texto, f, getattr(req, "historial", []) or [])
     sugerencias = [{"codigo": x["codigo"], "fuente": _fuente(x["codigo"]), "imagen": x["imagen"], "pie": x["pie"],
                     "titulo": x.get("titulo", ""), "tallas": x.get("tallas", [])}
                    for x in (fotos or [])]

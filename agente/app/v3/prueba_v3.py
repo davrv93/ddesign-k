@@ -111,10 +111,32 @@ def prueba_herramientas():
     caso("herramienta desconocida", rec.ejecutar("nope", {}).get("error") is not None, True)
 
 
+def prueba_encuestas():
+    """12-10-2026, pedido del usuario: encuesta solo con UNA pregunta; si se hicieron dos y contestó una, se pregunta la
+    que falta."""
+    from .agente import _con_la_que_falta, _opciones
+    caso("dos preguntas en un «¿…?»: sin encuesta",
+         _opciones("¿El bautizo es de día o de noche y cuánto mide de estatura?"), [])
+    caso("dos «?»: sin encuesta", _opciones("¿Cómo quiere sentirse ese día? ¿Prefiere llamar un poco más la atención?"), [])
+    caso("una pregunta cerrada: encuesta", _opciones("Perfecto 😊 ¿El envío sería para Lima o provincia?"), ["Lima", "Provincia"])
+    hist = [{"rol": "cliente", "texto": "es para mi hermana, su bautizo"},
+            {"rol": "bot", "texto": "¡Qué lindo detalle! 😊"},
+            {"rol": "bot", "texto": "¿El bautizo es de día o de noche y cuánto mide de estatura?"}]
+    caso("contestó una de dos: pregunta la otra (en tercera persona)",
+         _con_la_que_falta("Perfecto 😊 ¿Cómo quiere sentirse ese día?", {"sabemos": {"horario": "noche"}}, hist),
+         "Perfecto 😊 ¿Cómo quiere sentirse ese día? ¿Y cuánto mide de estatura?")
+    caso("contestó las dos: no se agrega nada",
+         _con_la_que_falta("¿Cómo quiere sentirse?", {"sabemos": {"horario": "noche", "estatura": "1.60"}}, hist),
+         "¿Cómo quiere sentirse?")
+    caso("no contestó ninguna: no se insiste aquí", _con_la_que_falta("¿Me cuentas más?", {"sabemos": {}}, hist),
+         "¿Me cuentas más?")
+
+
 def main() -> int:
     prueba_ficha()
     prueba_validador()
     prueba_herramientas()
+    prueba_encuestas()
     if FALLOS:
         print("FALLOS V3:")
         for f in FALLOS:
