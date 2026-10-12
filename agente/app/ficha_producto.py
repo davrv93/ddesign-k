@@ -7,7 +7,10 @@ la frase, o se derivaba a una asesora algo que se ve en la foto.
 De dónde sale cada dato (campo `fuente`): `diners` = el texto de la tienda en baruka.dinersclubmall.pe (o la lámina de
 materiales en V42); `foto` = análisis visual de TODAS las fotos de la prenda (solo lo visible: largo, mangas, escote,
 espalda…; la tela NUNCA sale de una foto); `ambas` = el texto lo dice y la foto lo confirma. Lo que no se sabe va a
-`pendiente_tienda` (medidas por talla siempre) y el bot dice que lo confirma una asesora. Nada se rellena por adivinar.
+`pendiente_tienda` y el bot dice que lo confirma una asesora. Nada se rellena por adivinar.
+
+Desde el 12-10-2026 baruka.pe es el catálogo oficial: las fichas salen de deploy/catalogo-baruka-pe (oficial.py), con
+`fuente: "baruka.pe"`, `medidas` por talla (tabla de la web) y `web` (url, colores, tallas y las que van bajo pedido).
 
 Uso:
 - `texto(codigo)`  → lo que se suma a la ficha que lee el LLM (y contra lo que Jev verifica).
@@ -94,6 +97,13 @@ def texto(codigo: str) -> str:
         partes.append("cómo queda (según la tienda): " + "; ".join(_lista(codigo, "como_queda")))
     if f.get("cuidados"):
         partes.append("cuidados: " + f["cuidados"])
+    if medidas(codigo):
+        partes.append("medidas por talla: " + medidas(codigo))
+    w = web(codigo)
+    if w.get("colores"):
+        partes.append("colores: " + ", ".join(w["colores"]))
+    if w.get("bajo_pedido"):
+        partes.append("tallas bajo pedido (se confeccionan, no hay en stock): " + ", ".join(w["bajo_pedido"]))
     if f.get("pendiente_tienda"):
         partes.append("NO FIGURA (no lo afirmes; lo confirma una asesora): " + "; ".join(f["pendiente_tienda"]))
     # El párrafo de Diners a veces contradice la foto («falda lisa» en un Kabanova floreado): manda la ficha.
@@ -121,8 +131,30 @@ def _dato(codigo: str, k: str) -> str:
     if k == "cuidados":
         return ficha(codigo).get("cuidados") or ""
     if k == "medidas":
-        return ""
+        return medidas(codigo)
     return valor(codigo, k)
+
+
+def medidas(codigo: str) -> str:
+    """Medidas por talla en cm, de la tabla de baruka.pe (leída por OCR y validada en deploy/catalogo-baruka-pe).
+
+    «S: busto 90, cintura 72, cadera 95, largo 89 cm; M: …». Vacío si la web no trae una tabla válida."""
+    m = ficha(codigo).get("medidas") or {}
+    vende = {t.upper() for t in web(codigo).get("tallas") or []}   # la tabla de la web es común: solo las tallas del modelo
+    partes = []
+    for talla, d in m.items():
+        if vende and talla.upper() not in vende:
+            continue
+        cm = [f"{k.replace('_pantalon', '').replace('_', ' ')} {v}" for k, v in d.items()
+              if k != "talla_pantalon" and isinstance(v, (int, float))]
+        if cm:
+            partes.append(f"{talla}: {', '.join(cm)} cm")
+    return "; ".join(partes)
+
+
+def web(codigo: str) -> dict:
+    """Lo que dice baruka.pe del modelo: url, colores, tallas, las que van bajo pedido y el precio."""
+    return ficha(codigo).get("web") or {}
 
 
 _ETIQUETA = dict(ATRIBUTOS, piezas="piezas", medidas="medidas", como_queda="cómo queda", cuidados="cuidados")

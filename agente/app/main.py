@@ -546,7 +546,7 @@ def _hist_llm(turnos) -> str:
 def _sin_pies(texto: str) -> str:
     """Quita de la respuesta del LLM los párrafos que son pies de foto copiados, y las listas de códigos con precio
     («*V31 – Vestido Pandora* – S/ 330 / *V21…*»): cada foto ya lleva el suyo."""
-    texto = "\n\n".join(p for p in texto.split("\n\n") if len(set(re.findall(r"\bV\d{2}\b", p))) < 2 or "?" in p) or texto
+    texto = "\n\n".join(p for p in texto.split("\n\n") if len(set(re.findall(r"\bV\d{2,3}\b", p))) < 2 or "?" in p) or texto
     # Tampoco rutas de imagen: «/media/products/v04.jpg V04 Vestido Arena - S/ 89.00» es la foto escrita a mano.
     partes = [p for p in texto.split("\n\n") if not RE_PARRAFO_PIE.search(p) and "/media/" not in p]
     return "\n\n".join(partes) or texto
@@ -2760,7 +2760,7 @@ def imagen_catalogo(archivo: str):
 @app.get("/media/products/{archivo}")
 def imagen_tienda(archivo: str):
     """Copia de las fotos del seed para la UI de prueba; el bot usa las del backend, que son las vivas."""
-    if not re.fullmatch(r"v\d{2}\.jpg", archivo):
+    if not re.fullmatch(r"v\d{2,3}\.jpg", archivo):
         raise HTTPException(404)
     ruta = os.path.join(IMG_DIR, "tienda", archivo)
     if not os.path.exists(ruta):

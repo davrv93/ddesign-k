@@ -15,7 +15,7 @@ import unicodedata
 from typing import Callable
 
 PRECIO_RE = re.compile(r"S/\s?(\d+(?:[.,]\d{1,2})?)")
-CODIGO_RE = re.compile(r"\bV\d{2}\b")
+CODIGO_RE = re.compile(r"\bV\d{2,3}\b")
 PROMESA_RE = re.compile(
     r"(entrega (en|para|el) |llega (en|el) |\d+\s*d[ií]as|env[ií]o gratis|gratis|descuento|\d+\s?%|"
     r"[uú]ltimas? unidades?|oferta)", re.I)

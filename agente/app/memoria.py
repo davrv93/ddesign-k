@@ -256,15 +256,15 @@ def pregunta_de(texto: str) -> str:
 
 TALLAS = ("XXL", "XL", "XS", "S", "M", "L")
 _ALIAS_TALLA = {"chica": "S", "pequena": "S", "small": "S", "mediana": "M", "medium": "M", "grande": "L", "large": "L"}
-RE_TALLA_EXPLICITA = re.compile(r"\b(?:talla|soy|uso|usaria|visto|seria)\s+(?:es\s+)?(?:una\s+|la\s+)?(xxl|xl|xs|s|m|l)\b(?!\s*/)")
+RE_TALLA_EXPLICITA = re.compile(r"\b(?:talla|soy|uso|usaria|visto|seria)\s+(?:es\s+)?(?:una\s+|la\s+)?(2xl|xxl|xl|xs|s|m|l)\b(?!\s*/)")
 # «¿lo tienen en M?», «sería en L»: la talla que pide, dicha con «en». «en S/ 330» no es talla S.
-RE_TALLA_EN = re.compile(r"\ben\s+(?:talla\s+|la\s+)?(xxl|xl|xs|s|m|l)\b(?!\s*/)")
+RE_TALLA_EN = re.compile(r"\ben\s+(?:talla\s+|la\s+)?(2xl|xxl|xl|xs|s|m|l)\b(?!\s*/)")
 # La letra dicha con su nombre («la ele», «eme»): solo si se preguntó la talla, porque «ese» es también «ese vestido».
 # «ya pues, la S», «dame la M»: la talla con su artículo.
-RE_TALLA_LA = re.compile(r"\bla\s+(xxl|xl|xs|s|m|l)\b(?!\s*/)")
+RE_TALLA_LA = re.compile(r"\bla\s+(2xl|xxl|xl|xs|s|m|l)\b(?!\s*/)")
 RE_TALLA_LETRA = re.compile(r"^(?:la |talla |una |en )?(ele|eme|ese)$")
 _LETRA_TALLA = {"ele": "L", "eme": "M", "ese": "S"}
-RE_TALLA_SUELTA = re.compile(r"(?<!\d)(?<!\d )\b(xxl|xl|xs|s|m|l)\b(?!\s*/)")   # «1.60 m» no es talla M
+RE_TALLA_SUELTA = re.compile(r"(?<!\d)(?<!\d )\b(2xl|xxl|xl|xs|s|m|l)\b(?!\s*/)")   # «1.60 m» no es talla M
 RE_TALLA_ALIAS = re.compile(r"\b(?:talla|soy|uso)\s+(chica|pequena|small|mediana|medium|grande|large)\b")
 
 _MESES = r"ene(?:ro)?|feb(?:rero)?|mar(?:zo)?|abr(?:il)?|may(?:o)?|jun(?:io)?|jul(?:io)?|ago(?:sto)?|sep(?:tiembre)?|set(?:iembre)?|oct(?:ubre)?|nov(?:iembre)?|dic(?:iembre)?"
@@ -954,7 +954,7 @@ def leer(mem: dict, texto: str, jev: dict | None = None, ahora: _dt.datetime | N
     elif pend in ("separar", "pago", "otras_opciones", "voucher"):
         res["respondio"] = bool(afirma(texto) or RE_NIEGA.match(t))
     elif pend == "aclarar":
-        res["respondio"] = bool(re.search(r"\bv\d{2}\b|primer[oa]?|segund[oa]?|tercer[oa]?|\b[123]\b", t))
+        res["respondio"] = bool(re.search(r"\bv\d{2,3}\b|primer[oa]?|segund[oa]?|tercer[oa]?|\b[123]\b", t))
     elif pend == "confirmar":
         res["respondio"] = bool(RE_AFIRMA.match(t) or RE_NIEGA.match(t) or re.search(r"\bconfirm", t))
     if not res["respondio"] and RE_ESPERA.search(t) and not pregunta:

@@ -463,7 +463,7 @@ _P = memoria._plano
 RE_PIDE_FOTOS = re.compile(r"muestr|ensen|foto|ver (los|las|unos|unas|el|la|tus|sus|algun|otros|otras|mas|que)|quiero ver|modelos|opciones|catalogo|"
                            r"recomiend|sugier|que (tienes|tienen|hay)|(tienen?|tienes) (vestidos|conjuntos|blazers?|blusas|faldas|pantalones|enterizos|algo)|"
                            r"(vestidos|conjuntos|blazers|blusas|faldas|pantalones|enterizos)\b|otro|mas barat|algo mas|pasame|mandame|enviame|ensename|"
-                           r"\bv\d{2}\b|cual (me )?(recomiendas|sugieres)")
+                           r"\bv\d{2,3}\b|cual (me )?(recomiendas|sugieres)")
 RE_VARIAS = re.compile(r"otr[oa]s?\b|\bmas\b|opciones|modelos|catalogo|vestidos|conjuntos|blazers|blusas|faldas|pantalones|que (tienes|tienen|hay)|"
                        r"variedad|alternativ|parecid")
 RE_LO_SIN_PRENDA = re.compile(r"\b(lo|la|los|las) (buscas|necesitas|quieres|usaras|usarias|vas a usar|estas buscando)\b|"
@@ -508,7 +508,7 @@ def reglas_turno(conv: dict, t: dict, prev: list[dict], cat: dict) -> list[tuple
         e.append(("latencia", f"{t['ms']} ms"))
     # Fotos antes de conocer la necesidad sin que las pida (sin anuncio, sin foto suya, sin prenda nombrada).
     cliente_previo = " ".join(_P(x["cliente"]) for x in prev) + " " + cli
-    nombra = bool(re.search(r"\bv\d{2}\b", cli)) or any(_P(p["nombre"]).split()[-1] in cli for p in cat.values() if p.get("nombre"))
+    nombra = bool(re.search(r"\bv\d{2,3}\b", cli)) or any(_P(p["nombre"]).split()[-1] in cli for p in cat.values() if p.get("nombre"))
     fotos = [f for f in t["fotos"] if f]
     mem_d = t.get("memoria") or mem_a
     sab_d = mem_d.get("sabemos") or {}
@@ -627,7 +627,7 @@ def _datos_reales(r: dict) -> str:
         cods |= set(t["fotos"])
         if (t.get("memoria") or {}).get("producto"):
             cods.add(t["memoria"]["producto"])
-        cods |= set(re.findall(r"\bV\d{2}\b", t["bot"] or ""))
+        cods |= set(re.findall(r"\bV\d{2,3}\b", t["bot"] or ""))
         for c, p in CAT.items():
             if p.get("nombre") and _P(p["nombre"]).split()[-1] in _P(t["bot"] or ""):
                 cods.add(c)

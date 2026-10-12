@@ -33,7 +33,7 @@ import os
 import re
 import sys
 
-CODIGO_RE = re.compile(r"\bV\d{2}\b")
+CODIGO_RE = re.compile(r"\bV\d{2,3}\b")
 ACCIONES_DERIVA = ("pedir_asesora", "derivar", "asesora")
 
 

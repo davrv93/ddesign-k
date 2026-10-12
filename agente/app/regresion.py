@@ -136,7 +136,7 @@ def dinero(v: float) -> str:
 # ---------------------------------------------------------------------------
 # Una conversación contra el agente, con lo mínimo del bot Go
 
-RE_CODIGO = re.compile(r"\bv\d{2}\b", re.I)
+RE_CODIGO = re.compile(r"\bv\d{2,3}\b", re.I)
 GO_SI = {"si", "s", "ok", "dale", "confirmo", "confirmar", "si confirmo", "yes", "claro", "de acuerdo", "listo"}
 GO_NO = {"no", "n", "cancelar", "cancela", "no gracias"}
 GO_MENU = {"menu", "inicio", "0", "volver"}

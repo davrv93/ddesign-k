@@ -140,7 +140,7 @@ class CompuertaFactual:
                 errores.append(f"introduce {nombre}: {', '.join(sorted(nuevas)[:3])}")
         if re.search(r"\d", sin_tokens(s)) and not re.search(r"\d", sin_tokens(esp.base)):
             errores.append("introduce cifras")
-        if re.search(r"\b[Vv]\d{2}\b", sin_tokens(s)):
+        if re.search(r"\b[Vv]\d{2,3}\b", sin_tokens(s)):
             errores.append("introduce un código de producto")
 
         # 3) nombres propios que la base no tiene

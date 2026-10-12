@@ -197,7 +197,7 @@ def fichas_seed(productos: list[dict] | None = None) -> list[Ficha]:
     return out
 
 
-RE_CODIGO = re.compile(r"\b((?:VES|POL|BLU|JEA)\s*-?\s*\d{1,3}|V\s*-?\s*\d{1,2})\b", re.I)
+RE_CODIGO = re.compile(r"\b((?:VES|POL|BLU|JEA)\s*-?\s*\d{1,3}|V\s*-?\s*\d{1,3})\b", re.I)
 
 
 def codigos_en(texto: str) -> list[str]:

@@ -10,7 +10,7 @@ import logging
 import re
 import time
 
-from .. import memoria
+from .. import ficha_producto, memoria
 from . import cliente_llm, ficha as ficha_mod, plantillas, prompt, validador
 from .herramientas import Recolector
 
@@ -39,6 +39,7 @@ RE_FUERA_GIRO = re.compile(r"\b(historia|c[oó]mo (se )?calcul|capital de|pol[i�
                            r"software|programaci[oó]n|desarroll\w* (de|un) (software|app|web|sistema)|contrat\w* (de|un) "
                            r"(software|desarroll\w*)|tarea (de|del) colegio|receta de cocina)\b", re.I)
 TALLAS_REALES = ("S", "M", "L")
+TALLAS_BAJO_PEDIDO = ("XS", "XL", "2XL", "XXL")   # «pre orden» en baruka.pe: se confeccionan
 
 
 class Rechazado(RuntimeError):
@@ -105,7 +106,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     rec = Recolector(fichas, consultar_stock, pie=pie, permitir_reserva=permitir_reserva, mensaje=mensaje,
                      mostrados=f.get("mostrados") or [], pago_ok=pago_ok,
                      contesta_cual=bool(RE_PREGUNTO_CUAL.search(ultimo_bot)))
-    hecho = _precalculo(rec, lectura.get("datos") or {})
+    hecho = _precalculo(rec, {**(lectura.get("datos") or {}),
+                              "producto": getattr(req, "producto", "") or f.get("producto") or ""})
     pedido = _pedido_en_curso(rec, req, f)
     if pedido:
         hecho = (hecho + "\n" + pedido).strip()
@@ -213,10 +215,28 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
     """Lo que el código ya sabe sin preguntarle al modelo si lo consulta: evita que la revise «después» del
     embudo de ocasión/fecha (11-10-2026: con 20 reglas en el prompt, la excepción pierde contra el guion)."""
     partes = []
+    retirado = _retirado(rec.mensaje, rec.fichas)
+    if retirado:
+        rec.retirado = retirado
+        partes.append(f"HECHO YA VERIFICADO: el {retirado} ya no está en el catálogo (baruka.pe es el catálogo oficial). "
+                      "Díselo con amabilidad y pregúntale si quiere ver opciones parecidas; no mandes otra prenda como si "
+                      "fuera esa.")
     talla = (datos.get("talla") or "").upper()
-    if talla and talla not in TALLAS_REALES:
-        partes.append(f"HECHO YA VERIFICADO: pidió talla {talla}; esa talla no existe, solo hay S, M y L. "
-                       "Díselo en tu respuesta (no lo dejes para después ni preguntes la ocasión primero).")
+    if talla in TALLAS_BAJO_PEDIDO:
+        # baruka.pe vende XS, XL y 2XL «pre orden» en muchos modelos (12-10-2026): se confeccionan, no hay en stock.
+        cod = (datos.get("producto") or "").upper()
+        tallas_web = [x.upper() for x in ficha_producto.web(cod).get("tallas", [])] if cod else []
+        if tallas_web and talla not in tallas_web:
+            partes.append(f"HECHO YA VERIFICADO: pidió talla {talla}; el {cod} no viene en esa talla "
+                          f"(tallas: {', '.join(tallas_web)}). Díselo en tu respuesta.")
+        else:
+            partes.append(f"HECHO YA VERIFICADO: pidió talla {talla}; esa talla va BAJO PEDIDO (se confecciona; no hay en "
+                          "stock) en los modelos que la tienen en baruka.pe. Díselo en tu respuesta; el plazo lo confirma una "
+                          "asesora (no lo inventes).")
+    elif talla and talla not in TALLAS_REALES:
+        partes.append(f"HECHO YA VERIFICADO: pidió talla {talla}; esa talla no existe: hay S, M y L, y XS, XL o 2XL bajo "
+                       "pedido en algunos modelos. Díselo en tu respuesta (no lo dejes para después ni preguntes la "
+                       "ocasión primero).")
     t = (datos.get("talla") or "").upper()
     if t in TALLAS_REALES:  # guion, paso 4: el modelo a veces lo dejaba en «tomo nota de que eres talla L»
         partes.append("HECHO: dio su talla. Dile casi textual: «¡Perfecto, sí lo tenemos aún disponible en tu talla! 😊 "
@@ -260,7 +280,9 @@ def _nombradas(texto: str, fichas) -> list[str]:
     hallados = []
     for x in fichas:
         nombre = " ".join(p for p in memoria._plano(x.nombre).split() if p not in GENERICAS_NOMBRE)
-        for clave in {nombre, x.codigo.lower()}:
+        # El nombre completo también cuenta y, por largo, gana: «pantalón Holly» es el pantalón aunque el «Vestido
+        # Holly» comparta «holly» (baruka.pe tiene Holly, Camila y Zoraida en dos prendas, 12-10-2026).
+        for clave in {nombre, memoria._plano(x.nombre), x.codigo.lower()}:
             if len(clave) >= 3:
                 for m in re.finditer(r"\b" + re.escape(clave) + r"\b", plano):
                     hallados.append((m.start(), m.end(), x.codigo.upper()))
@@ -275,13 +297,29 @@ def _nombradas(texto: str, fichas) -> list[str]:
     return out
 
 
+def _retirado(mensaje: str, fichas) -> str:
+    """Nombre del modelo retirado que nombra el mensaje («el Irla», «kabanova azul»), si ningún modelo vigente se llama
+    igual. Sale de seed/fichas_producto.json (las fichas con `retirado`, con su nombre del CRM)."""
+    plano = memoria._plano(mensaje or "")
+    vigentes = " ".join(memoria._plano(x.nombre) for x in fichas)
+    for cod, fx in ficha_producto.cargar().items():
+        if not fx.get("retirado") or not fx.get("nombre"):
+            continue
+        clave = " ".join(p for p in memoria._plano(fx["nombre"]).split() if p not in GENERICAS_NOMBRE)
+        primera = clave.split()[0] if clave else ""
+        if len(primera) >= 3 and re.search(r"\b" + re.escape(primera) + r"\b", plano) \
+                and not re.search(r"\b" + re.escape(primera) + r"\b", vigentes):
+            return fx["nombre"]
+    return ""
+
+
 def _foto_de_la_nombrada(rec: Recolector, texto: str) -> None:
     """El texto habla de una prenda y la foto es de otra (12-10-2026: «te recomiendo el Vestido Pandora» con la foto del
     V21 Kendall). Manda lo que se dice: se cambia la foto por la de la prenda nombrada."""
     nombradas = _nombradas(texto, rec.fichas)
     if not rec.fotos:
         # Pidió ver modelos y el texto presenta una prenda («Te muestro el Vestido Kendall…») sin foto: se manda.
-        if nombradas and rec._pide_modelos() and not rec.sin_cual and not rec.sin_color:
+        if nombradas and rec._pide_modelos() and not rec.sin_cual and not rec.sin_color and not rec.retirado:
             rec.ejecutar("enviar_fotos", {"codigos": nombradas[:1]})
         return
     enviadas = [x["codigo"].upper() for x in rec.fotos]

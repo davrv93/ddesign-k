@@ -1,0 +1,2349 @@
+{
+ "generado_desde": {
+  "web": "https://baruka.pe",
+  "extraido": "2026-10-12T18:50:25+00:00",
+  "crm": "https://proyectopostventa.site/baruka/api/public/catalog"
+ },
+ "resumen": {
+  "productos_web": 96,
+  "codigos_crm": 24,
+  "codigos_crm_mapeados": 9,
+  "codigos_crm_que_ya_no_estan": [
+   "V21",
+   "V23",
+   "V24",
+   "V25",
+   "V28",
+   "V29",
+   "V31",
+   "V32",
+   "V34",
+   "V35",
+   "V37",
+   "V38",
+   "V40",
+   "V43",
+   "V44"
+  ],
+  "productos_web_con_codigo": 9,
+  "productos_web_nuevos": 87
+ },
+ "crm_a_web": [
+  {
+   "codigo": "V21",
+   "nombre_crm": "Vestido Kendall",
+   "color_crm": "palo rosa",
+   "precio_crm": 320,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «vestido kendall» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V22",
+   "nombre_crm": "Pantalón Codman",
+   "color_crm": "azul",
+   "precio_crm": 230,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "mapeado",
+   "precio_web_del_color": [
+    170.0
+   ],
+   "por": "nombre y tipo",
+   "coincidencia_color": null,
+   "colores_web_que_casan": [],
+   "web": {
+    "handle": "codman",
+    "nombre": "Pantalon Codman",
+    "url": "https://baruka.pe/products/codman",
+    "precio": 170.0,
+    "precio_max": 170.0,
+    "precio_tachado": null,
+    "colores": [
+     "Negro"
+    ],
+    "tallas": [
+     "S",
+     "M",
+     "L",
+     "XL (pre orden)"
+    ],
+    "medidas_validas": true
+   },
+   "notas": [
+    "baruka.pe no vende el color «azul»: solo Negro",
+    "precio distinto: CRM S/ 230 · web S/ 170"
+   ]
+  },
+  {
+   "codigo": "V23",
+   "nombre_crm": "Blusa Anika",
+   "color_crm": "floreado",
+   "precio_crm": 180,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «blusa anika» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V24",
+   "nombre_crm": "Conjunto Kabanova Azul",
+   "color_crm": "azul",
+   "precio_crm": 330,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «conjunto kabanova» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V25",
+   "nombre_crm": "Conjunto Kabanova Rojo",
+   "color_crm": "rojo",
+   "precio_crm": 330,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «conjunto kabanova» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V26",
+   "nombre_crm": "Pantalón Cristal",
+   "color_crm": "beige",
+   "precio_crm": 290,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "mapeado",
+   "precio_web_del_color": [
+    220.0
+   ],
+   "por": "nombre y tipo",
+   "coincidencia_color": "familia",
+   "colores_web_que_casan": [
+    "BEIGE OSCURO"
+   ],
+   "web": {
+    "handle": "cristal",
+    "nombre": "Pantalon Cristal",
+    "url": "https://baruka.pe/products/cristal",
+    "precio": 220.0,
+    "precio_max": 220.0,
+    "precio_tachado": null,
+    "colores": [
+     "Azul noche",
+     "Verde Botella",
+     "Marrón",
+     "BEIGE OSCURO"
+    ],
+    "tallas": [
+     "S",
+     "M",
+     "L",
+     "XL"
+    ],
+    "medidas_validas": true
+   },
+   "notas": [
+    "precio distinto: CRM S/ 290 · web S/ 220 (en BEIGE OSCURO)"
+   ]
+  },
+  {
+   "codigo": "V27",
+   "nombre_crm": "Blusa Ankara",
+   "color_crm": "negra",
+   "precio_crm": 220,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "mapeado",
+   "precio_web_del_color": [
+    220.0
+   ],
+   "por": "nombre y tipo",
+   "coincidencia_color": "exacta",
+   "colores_web_que_casan": [
+    "Negro"
+   ],
+   "web": {
+    "handle": "ankara",
+    "nombre": "Blusa Ankara",
+    "url": "https://baruka.pe/products/ankara",
+    "precio": 220.0,
+    "precio_max": 220.0,
+    "precio_tachado": null,
+    "colores": [
+     "Blanco",
+     "Negro"
+    ],
+    "tallas": [
+     "S",
+     "M",
+     "L",
+     "XL (pre orden)"
+    ],
+    "medidas_validas": false
+   },
+   "notas": []
+  },
+  {
+   "codigo": "V28",
+   "nombre_crm": "Vestido Azra Turquesa",
+   "color_crm": "turquesa",
+   "precio_crm": 520,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «vestido azra» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V29",
+   "nombre_crm": "Vestido Azra Palo Rosa",
+   "color_crm": "palo rosa",
+   "precio_crm": 520,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «vestido azra» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V30",
+   "nombre_crm": "Enterizo Elvi",
+   "color_crm": "rosado",
+   "precio_crm": 330,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "mapeado",
+   "precio_web_del_color": [
+    270.0
+   ],
+   "por": "nombre y tipo",
+   "coincidencia_color": "exacta",
+   "colores_web_que_casan": [
+    "Rosa"
+   ],
+   "web": {
+    "handle": "elvi",
+    "nombre": "Enterizo Elvi",
+    "url": "https://baruka.pe/products/elvi",
+    "precio": 270.0,
+    "precio_max": 270.0,
+    "precio_tachado": null,
+    "colores": [
+     "Rosa",
+     "Blanco",
+     "Celeste",
+     "Beige"
+    ],
+    "tallas": [
+     "S",
+     "M",
+     "L",
+     "XL"
+    ],
+    "medidas_validas": true
+   },
+   "notas": [
+    "precio distinto: CRM S/ 330 · web S/ 270 (en Rosa)"
+   ]
+  },
+  {
+   "codigo": "V31",
+   "nombre_crm": "Vestido Pandora",
+   "color_crm": "negro",
+   "precio_crm": 330,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «vestido pandora» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V32",
+   "nombre_crm": "Conjunto Xela",
+   "color_crm": "celeste",
+   "precio_crm": 460,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «conjunto xela» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V33",
+   "nombre_crm": "Blusa Celestine",
+   "color_crm": "azul",
+   "precio_crm": 180,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "mapeado",
+   "precio_web_del_color": [
+    170.0
+   ],
+   "por": "nombre y tipo",
+   "coincidencia_color": "familia",
+   "colores_web_que_casan": [
+    "CELESTE OSCURO"
+   ],
+   "web": {
+    "handle": "celestine",
+    "nombre": "Blusa Celestine",
+    "url": "https://baruka.pe/products/celestine",
+    "precio": 170.0,
+    "precio_max": 170.0,
+    "precio_tachado": null,
+    "colores": [
+     "CELESTE OSCURO"
+    ],
+    "tallas": [
+     "S",
+     "M",
+     "L",
+     "XL (pre orden)"
+    ],
+    "medidas_validas": false
+   },
+   "notas": [
+    "precio distinto: CRM S/ 180 · web S/ 170 (en CELESTE OSCURO)"
+   ]
+  },
+  {
+   "codigo": "V34",
+   "nombre_crm": "Pantalón Ivy",
+   "color_crm": "naranja",
+   "precio_crm": 250,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «pantalon ivy» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V35",
+   "nombre_crm": "Vestido Irla",
+   "color_crm": "negro",
+   "precio_crm": 220,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «vestido irla» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V36",
+   "nombre_crm": "Blusa Emet",
+   "color_crm": "rojo",
+   "precio_crm": 180,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "mapeado",
+   "precio_web_del_color": [
+    160.0
+   ],
+   "por": "nombre y tipo",
+   "coincidencia_color": "exacta",
+   "colores_web_que_casan": [
+    "Rojo"
+   ],
+   "web": {
+    "handle": "emet",
+    "nombre": "Blusa Emet",
+    "url": "https://baruka.pe/products/emet",
+    "precio": 160.0,
+    "precio_max": 160.0,
+    "precio_tachado": null,
+    "colores": [
+     "Rojo",
+     "A rayas"
+    ],
+    "tallas": [
+     "S",
+     "M",
+     "L",
+     "XL (pre orden)"
+    ],
+    "medidas_validas": false
+   },
+   "notas": [
+    "precio distinto: CRM S/ 180 · web S/ 160 (en Rojo)"
+   ]
+  },
+  {
+   "codigo": "V37",
+   "nombre_crm": "Conjunto Kaylee",
+   "color_crm": "palo rosa",
+   "precio_crm": 290,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «conjunto kaylee» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V38",
+   "nombre_crm": "Blazer Begonia",
+   "color_crm": "rosado",
+   "precio_crm": 288,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «blazer begonia» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V39",
+   "nombre_crm": "Blusa Bernadette",
+   "color_crm": "verde",
+   "precio_crm": 140,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "mapeado",
+   "precio_web_del_color": [
+    150.0
+   ],
+   "por": "nombre y tipo",
+   "coincidencia_color": "familia",
+   "colores_web_que_casan": [
+    "Verde Botella"
+   ],
+   "web": {
+    "handle": "bernadette",
+    "nombre": "Blusa Bernadette",
+    "url": "https://baruka.pe/products/bernadette",
+    "precio": 150.0,
+    "precio_max": 150.0,
+    "precio_tachado": null,
+    "colores": [
+     "Verde Botella",
+     "Blanco",
+     "Rosa"
+    ],
+    "tallas": [
+     "S",
+     "M",
+     "L",
+     "XL (pre orden)"
+    ],
+    "medidas_validas": true
+   },
+   "notas": [
+    "precio distinto: CRM S/ 140 · web S/ 150 (en Verde Botella)"
+   ]
+  },
+  {
+   "codigo": "V40",
+   "nombre_crm": "Falda Paola",
+   "color_crm": "beige",
+   "precio_crm": 210,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «falda paola» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V41",
+   "nombre_crm": "Vestido Holly",
+   "color_crm": "palo rosa",
+   "precio_crm": 330,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "mapeado",
+   "precio_web_del_color": [
+    350.0
+   ],
+   "por": "nombre y tipo",
+   "coincidencia_color": null,
+   "colores_web_que_casan": [],
+   "web": {
+    "handle": "holly",
+    "nombre": "Vestido Holly",
+    "url": "https://baruka.pe/products/holly",
+    "precio": 350.0,
+    "precio_max": 350.0,
+    "precio_tachado": null,
+    "colores": [
+     "Black",
+     "Beige",
+     "Vino"
+    ],
+    "tallas": [
+     "S",
+     "M",
+     "L",
+     "XL"
+    ],
+    "medidas_validas": true
+   },
+   "notas": [
+    "baruka.pe no vende el color «palo rosa»: solo Black, Beige, Vino",
+    "aunque hay una foto con «palo rosa» en el nombre: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/vestido_holly_palorosa1.jpg?v=1744494150",
+    "precio distinto: CRM S/ 330 · web S/ 350"
+   ]
+  },
+  {
+   "codigo": "V42",
+   "nombre_crm": "Vestido Gala Capa Azul",
+   "color_crm": "azul",
+   "precio_crm": 260,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "mapeado",
+   "precio_web_del_color": [
+    350.0,
+    450.0
+   ],
+   "por": "manual",
+   "coincidencia_color": "manual",
+   "colores_web_que_casan": [
+    "Azul Cobalto"
+   ],
+   "web": {
+    "handle": "vestido-alma",
+    "nombre": "Vestido Alma",
+    "url": "https://baruka.pe/products/vestido-alma",
+    "precio": 350.0,
+    "precio_max": 450.0,
+    "precio_tachado": null,
+    "colores": [
+     "Celeste",
+     "Terracota",
+     "Verde Olivo",
+     "Azul noche",
+     "Vino",
+     "NUDE.",
+     "Azul Cobalto",
+     "Blanco",
+     "Rojo",
+     "Color personalizado"
+    ],
+    "tallas": [
+     "XS (pre orden)",
+     "S",
+     "M",
+     "L",
+     "XL (pre orden)",
+     "2XL (pre orden)"
+    ],
+    "medidas_validas": true
+   },
+   "notas": [
+    "V42 «Vestido Gala Capa Azul» tiene nombre provisional. Su lámina (escote en V, corpiño bordado, cintura marcada, mangas tipo capa de gasa, base de podesuá con acabado en gasa) coincide con la descripción del Vestido Alma, y la foto real del V42 es el mismo modelo en el mismo montaje (maniquí, sala, ventana) que las fotos del Alma en baruka.pe; el tono es el de la variante «Azul Cobalto» (su foto en la web se llama «Elegantevestidodegalacolorteal.png»). Comparado a ojo el 12-10-2026.",
+    "precio distinto: CRM S/ 260 · web S/ 350–450 (en Azul Cobalto)"
+   ]
+  },
+  {
+   "codigo": "V43",
+   "nombre_crm": "Conjunto Kabanova",
+   "color_crm": null,
+   "precio_crm": 330,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «conjunto kabanova» (ni por nombre ni por handle)"
+   ]
+  },
+  {
+   "codigo": "V44",
+   "nombre_crm": "Vestido Azra",
+   "color_crm": null,
+   "precio_crm": 520,
+   "tallas_crm": [
+    "S",
+    "M",
+    "L"
+   ],
+   "estado": "no_esta_en_web",
+   "notas": [
+    "no hay en baruka.pe un producto «vestido azra» (ni por nombre ni por handle)"
+   ]
+  }
+ ],
+ "nuevos_en_web": [
+  {
+   "handle": "vestido-merlina",
+   "nombre": "Vestido Merlina",
+   "categoria": "vestido",
+   "precio": 220.0,
+   "colores": [
+    "Azul noche",
+    "Vino",
+    "Barney",
+    "Acero",
+    "Palo rosa",
+    "Terracota",
+    "Verde Olivo",
+    "Rojo",
+    "Celeste",
+    "Blanco",
+    "Color personalizado"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-merlina",
+   "medidas_validas": true
+  },
+  {
+   "handle": "vestido-blear",
+   "nombre": "Vestido Blear",
+   "categoria": "vestido",
+   "precio": 260.0,
+   "colores": [
+    "Barney",
+    "Verde Olivo",
+    "Acero",
+    "Azul noche",
+    "Vino",
+    "Dorado",
+    "Rojo",
+    "Blanco",
+    "Color personalizado"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-blear",
+   "medidas_validas": true
+  },
+  {
+   "handle": "vestido-zoraida",
+   "nombre": "Vestido Zoraida",
+   "categoria": "vestido",
+   "precio": 260.0,
+   "colores": [
+    "Azul Petrolio",
+    "Azul noche",
+    "Vino",
+    "Rojo",
+    "Marrón",
+    "Champagne",
+    "Verde Olivo"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-zoraida",
+   "medidas_validas": true
+  },
+  {
+   "handle": "vestido-saira",
+   "nombre": "Vestido Saira",
+   "categoria": "vestido",
+   "precio": 320.0,
+   "colores": [
+    "Champagne",
+    "Terracota",
+    "Verde Olivo",
+    "Vino",
+    "Azul noche",
+    "Blanco",
+    "Azulino",
+    "Color personalizado"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "2XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-saira",
+   "medidas_validas": true
+  },
+  {
+   "handle": "vestido-ilaria",
+   "nombre": "Vestido ilaria",
+   "categoria": "vestido",
+   "precio": 250.0,
+   "colores": [
+    "Verde Cobalto",
+    "Azul noche",
+    "Vino",
+    "Verde Olivo",
+    "Terracota",
+    "Champagne",
+    "Plateado",
+    "Marrón",
+    "Blanco",
+    "Color personalizado"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-ilaria",
+   "medidas_validas": true
+  },
+  {
+   "handle": "vestido-salome",
+   "nombre": "Vestido Salome",
+   "categoria": "vestido",
+   "precio": 290.0,
+   "colores": [
+    "Verde Olivo",
+    "Azul noche",
+    "Vino",
+    "Blanco",
+    "Acero",
+    "Rojo",
+    "Terracota",
+    "Color personalizado"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "2XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-salome",
+   "medidas_validas": true
+  },
+  {
+   "handle": "vestido-celestia",
+   "nombre": "Vestido Celestia",
+   "categoria": "vestido",
+   "precio": 290.0,
+   "colores": [
+    "Barney",
+    "Champagne",
+    "Verde Olivo",
+    "Azulino",
+    "Blanco",
+    "Vino",
+    "Azul noche",
+    "Acero",
+    "Color personalizado"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "2XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-celestia",
+   "medidas_validas": true
+  },
+  {
+   "handle": "vestido-nuria",
+   "nombre": "Vestido Nuria",
+   "categoria": "vestido",
+   "precio": 250.0,
+   "colores": [
+    "Fucsia",
+    "Azulino",
+    "Blanco",
+    "Verde Olivo",
+    "VERDE JADE",
+    "Marrón",
+    "Celeste bebe",
+    "Turqueza"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-nuria",
+   "medidas_validas": true
+  },
+  {
+   "handle": "vestido-bruna",
+   "nombre": "Vestido Bruna",
+   "categoria": "vestido",
+   "precio": 260.0,
+   "colores": [
+    "Terracota",
+    "Azul noche",
+    "Azulino",
+    "Celeste",
+    "Vino",
+    "Fucsia",
+    "Verde Olivo",
+    "Blanco",
+    "Negro"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-bruna",
+   "medidas_validas": false
+  },
+  {
+   "handle": "vestido-santana",
+   "nombre": "Vestido Santana",
+   "categoria": "vestido",
+   "precio": 280.0,
+   "colores": [
+    "Negro",
+    "Rojo",
+    "Blanco",
+    "Celeste bebe",
+    "Azulino"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-santana",
+   "medidas_validas": true
+  },
+  {
+   "handle": "vestido-paloma",
+   "nombre": "Vestido Paloma",
+   "categoria": "vestido",
+   "precio": 260.0,
+   "colores": [
+    "Negro",
+    "Azul noche",
+    "Verde Cobalto",
+    "Fucsia",
+    "Vino"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-paloma",
+   "medidas_validas": true
+  },
+  {
+   "handle": "donna",
+   "nombre": "Vestido Donna",
+   "categoria": "vestido",
+   "precio": 265.0,
+   "colores": [
+    "Vino",
+    "Verde Botella",
+    "Azul Noche",
+    "Fucsia",
+    "Negro",
+    "Rojo"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/donna",
+   "medidas_validas": true
+  },
+  {
+   "handle": "rose-1",
+   "nombre": "Pantalon Rose",
+   "categoria": "pantalón",
+   "precio": 220.0,
+   "colores": [
+    "Azul noche",
+    "Verde",
+    "Verde Botella",
+    "Negro",
+    "Beige"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/rose-1",
+   "medidas_validas": true
+  },
+  {
+   "handle": "amira",
+   "nombre": "Conjunto Amira",
+   "categoria": "conjunto",
+   "precio": 280.0,
+   "colores": [
+    "Negro",
+    "Rojo",
+    "Celeste",
+    "Fucsia"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/amira",
+   "medidas_validas": true
+  },
+  {
+   "handle": "kero",
+   "nombre": "KERO",
+   "categoria": "blazer",
+   "precio": 320.0,
+   "colores": [
+    "Geométrico",
+    "Negro"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/kero",
+   "medidas_validas": false
+  },
+  {
+   "handle": "franchesca",
+   "nombre": "Blusa Franchesca",
+   "categoria": "blusa",
+   "precio": 160.0,
+   "colores": [
+    "Rosa",
+    "Celeste",
+    "Blanco"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/franchesca",
+   "medidas_validas": false
+  },
+  {
+   "handle": "rochelle",
+   "nombre": "Blusa Rochelle",
+   "categoria": "blusa",
+   "precio": 160.0,
+   "colores": [
+    "Blanco"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/rochelle",
+   "medidas_validas": false
+  },
+  {
+   "handle": "hobeika",
+   "nombre": "Blusa Hobeika",
+   "categoria": "blusa",
+   "precio": 170.0,
+   "colores": [
+    "Rojo"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/hobeika",
+   "medidas_validas": false
+  },
+  {
+   "handle": "narciso",
+   "nombre": "Blusa Narciso",
+   "categoria": "blusa",
+   "precio": 170.0,
+   "colores": [
+    "Celeste",
+    "A rayas"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/narciso",
+   "medidas_validas": false
+  },
+  {
+   "handle": "lila",
+   "nombre": "Blusa Lila",
+   "categoria": "blusa",
+   "precio": 150.0,
+   "colores": [
+    "Beige"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/lila",
+   "medidas_validas": false
+  },
+  {
+   "handle": "henrrieta",
+   "nombre": "Blusa Henrrieta",
+   "categoria": "blusa",
+   "precio": 160.0,
+   "colores": [
+    "Clara"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/henrrieta",
+   "medidas_validas": false
+  },
+  {
+   "handle": "evangeline",
+   "nombre": "Blusa Avangelina",
+   "categoria": "blusa",
+   "precio": 170.0,
+   "colores": [
+    "Celeste",
+    "Clara"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/evangeline",
+   "medidas_validas": false
+  },
+  {
+   "handle": "anastacia",
+   "nombre": "Blusa Anastacia",
+   "categoria": "blusa",
+   "precio": 150.0,
+   "colores": [
+    "Clara"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/anastacia",
+   "medidas_validas": false
+  },
+  {
+   "handle": "jewell",
+   "nombre": "Blusa Jewell",
+   "categoria": "blusa",
+   "precio": 220.0,
+   "colores": [
+    "Clara"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/jewell",
+   "medidas_validas": false
+  },
+  {
+   "handle": "hob",
+   "nombre": "Blusa Hob",
+   "categoria": "blusa",
+   "precio": 160.0,
+   "colores": [
+    "CHICLE"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/hob",
+   "medidas_validas": false
+  },
+  {
+   "handle": "blum",
+   "nombre": "Blusa Blum",
+   "categoria": "blusa",
+   "precio": 150.0,
+   "colores": [
+    "Clara"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/blum",
+   "medidas_validas": false
+  },
+  {
+   "handle": "isis",
+   "nombre": "Blusa Isis",
+   "categoria": "blusa",
+   "precio": 160.0,
+   "colores": [
+    "CAMELL",
+    "Clara"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/isis",
+   "medidas_validas": false
+  },
+  {
+   "handle": "nieve",
+   "nombre": "Blusa Nieve",
+   "categoria": "blusa",
+   "precio": 150.0,
+   "colores": [
+    "Clara",
+    "Celeste bebe"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/nieve",
+   "medidas_validas": false
+  },
+  {
+   "handle": "faye",
+   "nombre": "Blusa Faye",
+   "categoria": "blusa",
+   "precio": 120.0,
+   "colores": [
+    "Verde Olivo",
+    "Clara"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/faye",
+   "medidas_validas": false
+  },
+  {
+   "handle": "camila-1",
+   "nombre": "Blusa Camila",
+   "categoria": "blusa",
+   "precio": 120.0,
+   "colores": [
+    "Verde Olivo",
+    "Azul noche"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/camila-1",
+   "medidas_validas": false
+  },
+  {
+   "handle": "piume",
+   "nombre": "Blusa Piume",
+   "categoria": "blusa",
+   "precio": 130.0,
+   "colores": [
+    "Negro",
+    "Animal"
+   ],
+   "tallas": [],
+   "url": "https://baruka.pe/products/piume",
+   "medidas_validas": false
+  },
+  {
+   "handle": "yukio",
+   "nombre": "Blusa Yukio",
+   "categoria": "blusa",
+   "precio": 150.0,
+   "colores": [
+    "A rayas"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/yukio",
+   "medidas_validas": false
+  },
+  {
+   "handle": "olwen",
+   "nombre": "Blusa Olwen",
+   "categoria": "blusa",
+   "precio": 160.0,
+   "colores": [
+    "Clara",
+    "Lila"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/olwen",
+   "medidas_validas": false
+  },
+  {
+   "handle": "margarita",
+   "nombre": "Blusa Margarita",
+   "categoria": "blusa",
+   "precio": 160.0,
+   "colores": [
+    "Blanco",
+    "BEIGE OSCURO",
+    "ITALIANO"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/margarita",
+   "medidas_validas": false
+  },
+  {
+   "handle": "bianca",
+   "nombre": "Blusa Bianca",
+   "categoria": "blusa",
+   "precio": 150.0,
+   "colores": [
+    "Plateado",
+    "Blanco"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/bianca",
+   "medidas_validas": false
+  },
+  {
+   "handle": "eva",
+   "nombre": "Blusa Eva",
+   "categoria": "blusa",
+   "precio": 160.0,
+   "colores": [
+    "Verde Cobalto"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/eva",
+   "medidas_validas": false
+  },
+  {
+   "handle": "charlotte",
+   "nombre": "Blusa Charlotte",
+   "categoria": "blusa",
+   "precio": 120.0,
+   "colores": [
+    "Blanco",
+    "Rosa"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/charlotte",
+   "medidas_validas": false
+  },
+  {
+   "handle": "adana",
+   "nombre": "Vestido Adana",
+   "categoria": "vestido",
+   "precio": 220.0,
+   "colores": [
+    "Gris",
+    "Rojo",
+    "Lila",
+    "Beige",
+    "Italia"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/adana",
+   "medidas_validas": true
+  },
+  {
+   "handle": "elowen",
+   "nombre": "Enterizo Elowen",
+   "categoria": "enterizo",
+   "precio": 350.0,
+   "colores": [
+    "Beige",
+    "Black",
+    "Rojo"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/elowen",
+   "medidas_validas": false
+  },
+  {
+   "handle": "sereia",
+   "nombre": "Enterizo Sereia",
+   "categoria": "enterizo",
+   "precio": 270.0,
+   "colores": [
+    "Vino",
+    "Verde",
+    "Dalia",
+    "BEIGE OSCURO",
+    "Fucsia",
+    "Azulino",
+    "Verde Botella",
+    "Lila",
+    "Negro",
+    "Rojo",
+    "Celeste",
+    "Rosa",
+    "Blanco"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/sereia",
+   "medidas_validas": false
+  },
+  {
+   "handle": "annette",
+   "nombre": "Pantalon Annette",
+   "categoria": "pantalón",
+   "precio": 150.0,
+   "colores": [
+    "Blanco",
+    "Negro"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/annette",
+   "medidas_validas": true
+  },
+  {
+   "handle": "de-dee",
+   "nombre": "Pantalon De Dee",
+   "categoria": "pantalón",
+   "precio": 170.0,
+   "colores": [
+    "Negro",
+    "Beige",
+    "Vino",
+    "Clara"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/de-dee",
+   "medidas_validas": false
+  },
+  {
+   "handle": "gipsy",
+   "nombre": "Pantalon Gytsi",
+   "categoria": "pantalón",
+   "precio": 170.0,
+   "colores": [
+    "Beige",
+    "Black",
+    "Negro",
+    "Vino",
+    "Marrón"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/gipsy",
+   "medidas_validas": false
+  },
+  {
+   "handle": "holly-1",
+   "nombre": "Pantalon Holly",
+   "categoria": "pantalón",
+   "precio": 150.0,
+   "colores": [
+    "Verde Cobalto",
+    "BEIGE OSCURO",
+    "Negro",
+    "Azul Noche",
+    "Verde Botella"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/holly-1",
+   "medidas_validas": false
+  },
+  {
+   "handle": "lexy",
+   "nombre": "Pantalon Lexy",
+   "categoria": "pantalón",
+   "precio": 150.0,
+   "colores": [
+    "Negro",
+    "Beige",
+    "Italia"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/lexy",
+   "medidas_validas": false
+  },
+  {
+   "handle": "maddy",
+   "nombre": "Pantalon Maddy",
+   "categoria": "pantalón",
+   "precio": 180.0,
+   "colores": [
+    "Verde Botella",
+    "Azul Noche",
+    "BEIGE OSCURO",
+    "Black"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/maddy",
+   "medidas_validas": false
+  },
+  {
+   "handle": "nala",
+   "nombre": "Pantalon Nala",
+   "categoria": "pantalón",
+   "precio": 150.0,
+   "colores": [
+    "Negro",
+    "Beige",
+    "Azul Noche"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/nala",
+   "medidas_validas": false
+  },
+  {
+   "handle": "skady",
+   "nombre": "Pantalon Skady",
+   "categoria": "pantalón",
+   "precio": 160.0,
+   "colores": [
+    "Gris",
+    "Black",
+    "Beige",
+    "Blanco"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/skady",
+   "medidas_validas": false
+  },
+  {
+   "handle": "sadie",
+   "nombre": "Pantalon Sadie",
+   "categoria": "pantalón",
+   "precio": 220.0,
+   "colores": [
+    "Negro",
+    "Rojo",
+    "Beige"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/sadie",
+   "medidas_validas": true
+  },
+  {
+   "handle": "soyala",
+   "nombre": "Pantalon Soyala",
+   "categoria": "pantalón",
+   "precio": 150.0,
+   "colores": [
+    "Black",
+    "Beige",
+    "Marrón",
+    "CAMELL"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/soyala",
+   "medidas_validas": true
+  },
+  {
+   "handle": "tulipan",
+   "nombre": "Pantalon Tulipan",
+   "categoria": "pantalón",
+   "precio": 220.0,
+   "colores": [
+    "Black",
+    "Beige",
+    "Rojo",
+    "VERDE JADE"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/tulipan",
+   "medidas_validas": true
+  },
+  {
+   "handle": "zury",
+   "nombre": "Pantalon Zury",
+   "categoria": "pantalón",
+   "precio": 180.0,
+   "colores": [
+    "Verde Botella",
+    "Azul Noche",
+    "Negro",
+    "Beige"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/zury",
+   "medidas_validas": true
+  },
+  {
+   "handle": "miranda",
+   "nombre": "Vestido Miranda",
+   "categoria": "vestido",
+   "precio": 250.0,
+   "colores": [
+    "Negro"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/miranda",
+   "medidas_validas": true
+  },
+  {
+   "handle": "petra",
+   "nombre": "Vestido Petra",
+   "categoria": "vestido",
+   "precio": 250.0,
+   "colores": [
+    "Verde Cobalto",
+    "Azulino",
+    "Fucsia",
+    "Negro",
+    "Azul Noche",
+    "Verde Olivo",
+    "Celeste bebe",
+    "Blanco"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/petra",
+   "medidas_validas": true
+  },
+  {
+   "handle": "persefone",
+   "nombre": "Vestido Persefone",
+   "categoria": "vestido",
+   "precio": 250.0,
+   "colores": [
+    "Negro",
+    "Rojo"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/persefone",
+   "medidas_validas": true
+  },
+  {
+   "handle": "daleska",
+   "nombre": "Vestido Daleska",
+   "categoria": "vestido",
+   "precio": 250.0,
+   "colores": [
+    "Fucsia",
+    "Negro",
+    "Blanco"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/daleska",
+   "medidas_validas": true
+  },
+  {
+   "handle": "athena",
+   "nombre": "Vestido Athena",
+   "categoria": "vestido",
+   "precio": 320.0,
+   "colores": [
+    "Vino",
+    "Negro"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/athena",
+   "medidas_validas": true
+  },
+  {
+   "handle": "maura",
+   "nombre": "Vestido Maura",
+   "categoria": "vestido",
+   "precio": 250.0,
+   "colores": [
+    "Negro",
+    "Rojo",
+    "Azulino",
+    "Fucsia",
+    "Vino",
+    "Blanco"
+   ],
+   "tallas": [
+    "Talla única",
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/maura",
+   "medidas_validas": true
+  },
+  {
+   "handle": "sophia",
+   "nombre": "Vestido Sophia",
+   "categoria": "vestido",
+   "precio": 240.0,
+   "colores": [
+    "Rojo",
+    "Negro"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/sophia",
+   "medidas_validas": true
+  },
+  {
+   "handle": "aurora",
+   "nombre": "Vestido Aurora",
+   "categoria": "vestido",
+   "precio": 250.0,
+   "colores": [
+    "Negro",
+    "Rojo"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/aurora",
+   "medidas_validas": false
+  },
+  {
+   "handle": "milan",
+   "nombre": "Vestido Milan",
+   "categoria": "vestido",
+   "precio": 270.0,
+   "colores": [
+    "Azulino"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/milan",
+   "medidas_validas": true
+  },
+  {
+   "handle": "zoraida",
+   "nombre": "Vestido Zoraida",
+   "categoria": "vestido",
+   "precio": 270.0,
+   "colores": [
+    "Negro",
+    "Clara"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/zoraida",
+   "medidas_validas": true
+  },
+  {
+   "handle": "merida",
+   "nombre": "Vestido Merida",
+   "categoria": "vestido",
+   "precio": 250.0,
+   "colores": [
+    "Dalia"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L"
+   ],
+   "url": "https://baruka.pe/products/merida",
+   "medidas_validas": true
+  },
+  {
+   "handle": "addison",
+   "nombre": "Vestido Addison",
+   "categoria": "vestido",
+   "precio": 290.0,
+   "colores": [
+    "Rojo",
+    "Negro"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/addison",
+   "medidas_validas": true
+  },
+  {
+   "handle": "selma",
+   "nombre": "Vestido Selma",
+   "categoria": "vestido",
+   "precio": 220.0,
+   "colores": [
+    "NUDE."
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/selma",
+   "medidas_validas": false
+  },
+  {
+   "handle": "vestido-moolena",
+   "nombre": "Vestido Moolenna",
+   "categoria": "vestido",
+   "precio": 400.0,
+   "colores": [
+    "Rojo"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/vestido-moolena",
+   "medidas_validas": true
+  },
+  {
+   "handle": "samara",
+   "nombre": "Vestido Samara",
+   "categoria": "vestido",
+   "precio": 250.0,
+   "colores": [
+    "Blanco"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/samara",
+   "medidas_validas": true
+  },
+  {
+   "handle": "luz",
+   "nombre": "LUZ",
+   "categoria": "conjunto",
+   "precio": 220.0,
+   "colores": [
+    "Blanco"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/luz",
+   "medidas_validas": false
+  },
+  {
+   "handle": "roberta",
+   "nombre": "Vestido Roberta",
+   "categoria": "vestido",
+   "precio": 220.0,
+   "colores": [
+    "MOSTAZA",
+    "Negro",
+    "Azulino",
+    "Fucsia",
+    "Rojo"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/roberta",
+   "medidas_validas": true
+  },
+  {
+   "handle": "miara",
+   "nombre": "Enterizo Miara",
+   "categoria": "enterizo",
+   "precio": 250.0,
+   "colores": [
+    "Beige",
+    "Dalia",
+    "Verde",
+    "Negro",
+    "Blanco"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/miara",
+   "medidas_validas": true
+  },
+  {
+   "handle": "ethel",
+   "nombre": "ETHEL",
+   "categoria": "conjunto",
+   "precio": 250.0,
+   "colores": [
+    "VERDE AGUA",
+    "NUDE."
+   ],
+   "tallas": [],
+   "url": "https://baruka.pe/products/ethel",
+   "medidas_validas": false
+  },
+  {
+   "handle": "faris",
+   "nombre": "Conjunto Faris",
+   "categoria": "conjunto",
+   "precio": 250.0,
+   "colores": [
+    "MAIZ",
+    "Fucsia"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/faris",
+   "medidas_validas": true
+  },
+  {
+   "handle": "silvine",
+   "nombre": "Conjunto Silvine",
+   "categoria": "conjunto",
+   "precio": 550.0,
+   "colores": [
+    "Negro",
+    "BEIGE OSCURO"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/silvine",
+   "medidas_validas": false
+  },
+  {
+   "handle": "almudena",
+   "nombre": "Conjunto Almudena",
+   "categoria": "conjunto",
+   "precio": 350.0,
+   "colores": [
+    "Amarillo"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/almudena",
+   "medidas_validas": true
+  },
+  {
+   "handle": "dakota",
+   "nombre": "Conjunto Dakota",
+   "categoria": "conjunto",
+   "precio": 420.0,
+   "colores": [
+    "Rojo",
+    "Celeste",
+    "Negro",
+    "Beige"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/dakota",
+   "medidas_validas": true
+  },
+  {
+   "handle": "riviera",
+   "nombre": "Enterizo Riviera",
+   "categoria": "enterizo",
+   "precio": 350.0,
+   "colores": [
+    "Celeste",
+    "Lila",
+    "VERDE AGUA",
+    "Celeste bebe"
+   ],
+   "tallas": [],
+   "url": "https://baruka.pe/products/riviera",
+   "medidas_validas": true
+  },
+  {
+   "handle": "murad",
+   "nombre": "Enterizo Murad",
+   "categoria": "enterizo",
+   "precio": 290.0,
+   "colores": [
+    "Rojo",
+    "Beige",
+    "Fucsia",
+    "Azulino",
+    "Azul Noche",
+    "Celeste",
+    "Rosa"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/murad",
+   "medidas_validas": true
+  },
+  {
+   "handle": "camila",
+   "nombre": "Enterizo Camila",
+   "categoria": "enterizo",
+   "precio": 270.0,
+   "colores": [
+    "Azulino",
+    "Beige"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/camila",
+   "medidas_validas": true
+  },
+  {
+   "handle": "gretta",
+   "nombre": "Enterizo Gretta",
+   "categoria": "enterizo",
+   "precio": 350.0,
+   "colores": [
+    "Rosa",
+    "Verde Botella"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/gretta",
+   "medidas_validas": true
+  },
+  {
+   "handle": "tokio",
+   "nombre": "TOKIO",
+   "categoria": "enterizo",
+   "precio": 270.0,
+   "colores": [
+    "Azulino",
+    "Negro"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/tokio",
+   "medidas_validas": false
+  },
+  {
+   "handle": "rosalin",
+   "nombre": "ROSALIN",
+   "categoria": "enterizo",
+   "precio": 290.0,
+   "colores": [
+    "Celeste",
+    "Azul Noche"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/rosalin",
+   "medidas_validas": false
+  },
+  {
+   "handle": "kalet",
+   "nombre": "Enterizo Kalet",
+   "categoria": "enterizo",
+   "precio": 250.0,
+   "colores": [
+    "Negro",
+    "Rosa",
+    "Azulino"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/kalet",
+   "medidas_validas": true
+  },
+  {
+   "handle": "ambar",
+   "nombre": "Enterizo Ambar",
+   "categoria": "enterizo",
+   "precio": 290.0,
+   "colores": [
+    "Fucsia",
+    "Negro",
+    "Celeste"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/ambar",
+   "medidas_validas": false
+  },
+  {
+   "handle": "arlet",
+   "nombre": "Enterizo Arlet",
+   "categoria": "enterizo",
+   "precio": 290.0,
+   "colores": [
+    "Rosa",
+    "Fucsia"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/arlet",
+   "medidas_validas": true
+  },
+  {
+   "handle": "sol",
+   "nombre": "Enterizo Sol",
+   "categoria": "enterizo",
+   "precio": 290.0,
+   "colores": [
+    "Green",
+    "Rojo",
+    "Negro",
+    "Beige"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/sol",
+   "medidas_validas": true
+  },
+  {
+   "handle": "verona",
+   "nombre": "VERONA",
+   "categoria": "enterizo",
+   "precio": 250.0,
+   "colores": [
+    "Beige",
+    "Blanco",
+    "Black"
+   ],
+   "tallas": [
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/verona",
+   "medidas_validas": false
+  },
+  {
+   "handle": "amapola",
+   "nombre": "Enterizo Amapola",
+   "categoria": "enterizo",
+   "precio": 270.0,
+   "colores": [
+    "Celeste",
+    "Green",
+    "Fucsia",
+    "Rosa",
+    "Black",
+    "Beige",
+    "Blanco"
+   ],
+   "tallas": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL"
+   ],
+   "url": "https://baruka.pe/products/amapola",
+   "medidas_validas": true
+  }
+ ]
+}

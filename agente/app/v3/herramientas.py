@@ -21,12 +21,19 @@ RE_PIDE_VARIAS = re.compile(r"\b(fotos|modelos|opciones|vestidos|conjuntos|otros
 RE_PIDE_FOTO = re.compile(r"\b(foto|ver|veo|mu[eé]stra\w*|p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|c[oó]mo es(?!\s+(el|la|su)\s+(material|tela|forro|talla|envio|env[ií]o|pago))|c[oó]mo se ve)\b")
 # Pide ver modelos (12-10-2026, la tienda: «que no ofrezca modelos a menos que la clienta lo solicite»). «Busco un
 # vestido» es una necesidad, no un pedido de fotos: ahí se indaga (guion, pasos 1-4).
-RE_PIDE_MODELOS = re.compile(r"\b(fotos?|ver|veo|verlo|verla|mu[eé]stra\w*|p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|"
-                             r"modelos?|opciones|cat[aá]logo|tienes|tienen|tendr[aá]s|hay|recomienda\w*|"
-                             r"c[oó]mo es(?!\s+(el|la|su)\s+(material|tela|forro|talla|envio|env[ií]o|pago))|qu[eé] m[aá]s|otros?|otras?)\b|\bv\d{2}\b", re.I)
+RE_PIDE_MODELOS = re.compile(r"\b(fotos?|ver|veo|verlo|verla|mu[eé]stra\w*|modelos?|opciones|cat[aá]logo|"
+                             r"recomienda\w*|c[oó]mo es(?!\s+(el|la|su)\s+(material|tela|forro|talla|envio|env[ií]o|pago))|"
+                             r"qu[eé] m[aá]s|otros?|otras?)\b|\bv\d{2,3}\b", re.I)
+# «pásame», «tienen», «hay»… piden prendas solo si nombran una prenda: «pásame el yape» o «¿tienen tienda en Miraflores?»
+# no son pedir modelos (12-10-2026: con 96 modelos el LLM aprovechaba y mandaba uno que nadie pidió).
+RE_VERBO_PEDIR = re.compile(r"\b(p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|tienes|tienen|tendr[aá]s|hay)\b", re.I)
+RE_PRENDA = re.compile(r"\b(vestid\w*|conjunt\w*|blus\w*|pantal\w*|enteriz\w*|blazer\w*|fald\w*|ropa|prendas?|"
+                       r"algo|outfits?|look)\b", re.I)
 MAX_FOTOS = 3          # un mensaje con 6 fotos es un catálogo, no una conversación
 GENERICAS = {"vestido", "conjunto", "blusa", "pantalon", "falda", "enterizo", "blazer"}
-ORDEN_TALLAS = ("XS", "S", "M", "L", "XL", "XXL")
+# Pide alternativas («algo parecido», «otras opciones»): ahí sí se muestran otras prendas aunque nombre un retirado.
+RE_OTRAS = re.compile(r"\b(parecid\w*|similar\w*|otr[oa]s?|alternativ\w*|reemplaz\w*|en su lugar)\b", re.I)
+ORDEN_TALLAS = ("XS", "S", "M", "L", "XL", "2XL", "XXL")
 MONEDA = "S/"
 ENVIOS = (15.0, 20.0)  # envío a Lima / provincia (tienda.md): precios que el modelo sí puede decir
 COLORES = ("rojo", "vino", "azul", "negro", "negra", "blanco", "blanca", "verde", "rosa", "rosado", "celeste", "beige",
@@ -91,6 +98,7 @@ class Recolector:
         self.contesta_cual = contesta_cual   # el bot le preguntó «¿cuál?»: lo que describa es pedir verlo
         self.sin_cual = False                # «¿tienen este vestido?» sin decir cuál: no se adivina
         self.sin_color = ""                  # pidió un color que no hay: no se manda otra prenda en su lugar
+        self.retirado = ""                   # nombró un modelo que ya no se vende (no está en baruka.pe)
         self.mensaje = (mensaje or "").lower()
         self.mostrados = {str(c).upper() for c in mostrados or ()}
         self.fichas = list(fichas)
@@ -99,7 +107,9 @@ class Recolector:
         self.permitir_reserva = permitir_reserva
         self.hechos = hechos_vacios()
         self.hechos["precios"].update(ENVIOS)
-        self.hechos["tallas"].update({"S", "M", "L"})   # tallas de la tienda (tienda.md); XL no existe y sigue sin respaldo
+        # Tallas de la tienda (tienda.md): S, M y L en stock; XS, XL y 2XL bajo pedido en los modelos que lo dicen en
+        # baruka.pe (catálogo oficial desde el 12-10-2026).
+        self.hechos["tallas"].update({"S", "M", "L", "XS", "XL", "2XL", "XXL"})
         self.hechos["pago_ok"] = bool(pago_ok)
         self.fotos: list[dict] = []
         self.usadas: list[str] = []
@@ -126,6 +136,8 @@ class Recolector:
         """El mensaje pide ver prendas o nombra una (por código o por su nombre), o contesta a «¿cuál?»."""
         if self.contesta_cual or RE_PIDE_MODELOS.search(self.mensaje):
             return True
+        if RE_VERBO_PEDIR.search(self.mensaje) and RE_PRENDA.search(self.mensaje):
+            return True
         plano = memoria._plano(self.mensaje)
         for f in self.fichas:
             clave = [p for p in memoria._plano(f.nombre).split() if len(p) >= 4 and p not in GENERICAS]
@@ -148,8 +160,13 @@ class Recolector:
         disp, agot = stk.tallas_online(st)
         for t in list(disp) + list(agot):
             self.hechos["tallas"].add(t.upper())
+        web = ficha_producto.web(f.codigo)
+        # Colores y tallas bajo pedido de baruka.pe: sin ellos, «¿lo tienes en otros colores?» se contestaba «solo en
+        # el que te mostré» aunque el modelo venga en tres (12-10-2026).
         return {"codigo": f.codigo, "nombre": f.nombre, "precio": f.precio,
-                "tallas": disp, "agotadas": agot, "disponible": stk.estado(st)}
+                "colores": web.get("colores") or [c.strip() for c in (f.color or "").split(",") if c.strip()],
+                "tallas": disp, "agotadas": agot, "bajo_pedido": web.get("bajo_pedido") or [],
+                "disponible": stk.estado(st)}
 
     # -- herramientas -----------------------------------------------------
     def _t_buscar_catalogo(self, args: dict) -> dict:
@@ -164,12 +181,14 @@ class Recolector:
             if palabras and not any(p in texto for p in palabras):
                 continue
             out.append(f)
-            if len(out) >= MAX_CATALOGO:
-                break
         if not out:  # sin coincidencia por texto, devuelve la categoría entera (si la pidió)
-            out = [f for f in self.fichas if cat and f.categoria.lower() == cat][:MAX_CATALOGO]
+            out = [f for f in self.fichas if cat and f.categoria.lower() == cat]
         if palabras:  # lo que mejor calza con lo pedido primero (nunca el primero del catálogo porque sí)
-            out.sort(key=lambda f: -sum(p in f"{f.nombre} {f.color} {f.detalle}".lower() for p in palabras))
+            # Se ordena ANTES de recortar: con 96 modelos (baruka.pe, 12-10-2026) «vestido Holly» calzaba con todos los
+            # vestidos y el corte dejaba fuera al Holly. El nombre pesa más que el color o la descripción.
+            out.sort(key=lambda f: -sum(3 * (p in f.nombre.lower()) + (p in f"{f.color} {f.detalle}".lower())
+                                        for p in palabras))
+        out = out[:MAX_CATALOGO]
         codigos = [f.codigo for f in out]
         estados = self._stock(codigos) if codigos else {}
         res = {"prendas": [self._anota_prenda(f, estados.get(f.codigo.upper())) for f in out]}
@@ -211,6 +230,9 @@ class Recolector:
         if self.sin_color:
             return {"error": f"No tenemos nada color {self.sin_color}: dilo y pregúntale si quiere ver otro color; no "
                              "mandes otra prenda como si fuera de ese color."}
+        if self.retirado and not RE_OTRAS.search(self.mensaje):
+            return {"error": f"El {self.retirado} ya no se vende: díselo y pregúntale si quiere ver otras opciones; no "
+                             "mandes otra prenda en su lugar."}
         if self.sin_cual:
             return {"error": "Pregunta por «este» modelo sin decir cuál: pídele la foto o el nombre; no adivines."}
         if self.mensaje and not self._pide_modelos():   # sin mensaje = llamada interna, no un turno de la clienta
