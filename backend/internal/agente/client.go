@@ -52,6 +52,9 @@ type Request struct {
 	Memoria json.RawMessage `json:"memoria,omitempty"`
 	// Perfil: lo que sabemos de la clienta por sus pedidos anteriores (clienta que vuelve).
 	Perfil *Perfil `json:"perfil,omitempty"`
+	// Version (v1|v2|v3) y Modo (sombra|activo) del agente para este turno; vacíos = los del agente.
+	Version string `json:"version,omitempty"`
+	Modo    string `json:"modo,omitempty"`
 }
 
 // Perfil de una clienta que ya compró: el agente prellena la talla y puede mencionarlo con naturalidad.

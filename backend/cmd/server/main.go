@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -36,11 +37,17 @@ func main() {
 	// multiempresa, la de WHATSAPP_TENANT, o ninguna (tid 0: no lee ni escribe nada).
 	botSt := st
 	var botTenant int64
+	// El bot se presenta con el nombre de SU empresa, no con BUSINESS_NAME (que en multiempresa es «JMD Ventas», la
+	// marca del portal): el agente decía «Soy Rosmary, de JMD Ventas» por el WhatsApp de Baruka (12-10-2026).
+	botCfg := *cfg
 	if cfg.MultiTenant {
 		botSt = st.ForTenant(0)
 		if cfg.WhatsAppTenant != "" {
 			if t, err := st.TenantBySlug(ctx, cfg.WhatsAppTenant); err == nil {
 				botSt, botTenant = st.ForTenant(t.ID), t.ID
+				if strings.TrimSpace(t.Name) != "" {
+					botCfg.BusinessName = t.Name
+				}
 			} else {
 				log.Printf("whatsapp: la empresa %q no existe; el bot queda sin empresa", cfg.WhatsAppTenant)
 			}
@@ -59,7 +66,7 @@ func main() {
 	evo := evolution.New(cfg.EvolutionURL, cfg.EvolutionGlobalKey, cfg.EvolutionInstance, cfg.EvolutionInstanceToken)
 	aic := ai.New(cfg.GeminiAPIKey, cfg.GeminiModel, cfg.GeminiFallbackModel, time.Duration(cfg.GeminiTimeoutSec)*time.Second)
 	hub := api.NewHub()
-	b := bot.New(cfg, botSt, evo, aic)
+	b := bot.New(&botCfg, botSt, evo, aic)
 	b.Notify = hub.Publish
 	if cfg.MultiTenant {
 		b.Notify = func(topic string) { hub.PublishTo(botTenant, topic) }

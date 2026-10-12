@@ -1180,7 +1180,8 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 		Cliente: b.customerName(conv), Historial: b.agentHistory(ctx, conv, raw),
 		Etapa: cc.Etapa, Conversacion: strconv.FormatInt(conv.ID, 10), Talla: cc.Size,
 		DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
-		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc)}
+		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc),
+		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo}
 	if conv.State != stIdle && cc.ProductID > 0 {
 		if p, err := b.store.GetProduct(ctx, cc.ProductID); err == nil {
 			req.Producto = p.Code

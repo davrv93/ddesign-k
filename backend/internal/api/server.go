@@ -357,8 +357,15 @@ func (s *Server) webhook(w http.ResponseWriter, r *http.Request) {
 // ---------------------------------------------------------------------------
 // WhatsApp
 
+// WebhookURL es la que se le registra a evolution-go. En multiempresa toda ruta pasa por tenantRouter, que
+// exige /<empresa>/ al inicio: sin el slug del bot, «webhook» se leía como empresa y todo mensaje daba 404
+// (12-10-2026, primer WhatsApp de jmdventas). Con el prefijo, el router fija la empresa y waEnabled la valida.
 func (s *Server) WebhookURL() string {
-	return s.cfg.WebhookBaseURL + "/webhook/evolution/" + s.cfg.WebhookSecret
+	base := s.cfg.WebhookBaseURL
+	if s.cfg.MultiTenant && s.cfg.WhatsAppTenant != "" {
+		base += "/" + s.cfg.WhatsAppTenant
+	}
+	return base + "/webhook/evolution/" + s.cfg.WebhookSecret
 }
 
 // Bootstrap crea la instancia y, si ya hay sesión, actualiza el webhook. Reintenta hasta que evolution-go responda.

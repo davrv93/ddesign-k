@@ -34,6 +34,10 @@ type Config struct {
 
 	AgentURL        string // servicio agente (embeddings + DeepSeek); vacío = sólo Gemini
 	AgentTimeoutSec int
+	// AgentVersion/AgentModo: qué versión del agente contesta (v1|v2|v3) y en qué modo (sombra|activo). Este backend
+	// no tiene la política por ajustes de kddesign: va fija por entorno. Vacío = la del agente (V1).
+	AgentVersion string
+	AgentModo    string
 
 	WhatsAppNumber string // número público de la tienda (sólo dígitos) para los enlaces wa.me del catálogo
 
@@ -92,6 +96,8 @@ func Load() *Config {
 
 		AgentURL:        strings.TrimRight(env("AGENT_URL", ""), "/"),
 		AgentTimeoutSec: envInt("AGENT_TIMEOUT_SECONDS", 35),
+		AgentVersion:    strings.ToLower(strings.TrimSpace(env("AGENT_VERSION", ""))),
+		AgentModo:       strings.ToLower(strings.TrimSpace(env("AGENT_MODO", ""))),
 
 		WhatsAppNumber: strings.Trim(env("WHATSAPP_NUMBER", ""), "+ "),
 
@@ -122,6 +128,11 @@ func Load() *Config {
 	}
 	if c.MediaBaseURL == "" {
 		c.MediaBaseURL = c.WebhookBaseURL
+		// Multiempresa: toda ruta pasa por tenantRouter y exige /<empresa>/. Sin el slug, evolution-go bajaba
+		// «/media/…» como empresa «media» y recibía un JSON de error: la foto no salía (12-10-2026).
+		if c.MultiTenant && c.WhatsAppTenant != "" {
+			c.MediaBaseURL += "/" + c.WhatsAppTenant
+		}
 	}
 	if c.AdminPassword == "" && !c.MultiTenant {
 		log.Fatal("ADMIN_PASSWORD es obligatorio")
