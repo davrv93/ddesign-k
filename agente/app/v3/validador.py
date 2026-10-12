@@ -30,6 +30,7 @@ RE_PROMESA_FOTO = re.compile(r"\b(te\s+(paso|mando|env[ií]o|muestro|dejo)|aqu[i
 RE_PAGO = re.compile(r"(yape|plin)\s*:|a nombre de|\b9\d{8}\b|n[uú]mero de cuenta|\bcci\b", re.I)
 # El guion de la tienda (seed/speech.md) tiene mensajes de dos preguntas («¿cómo quieres sentirte? ¿prefieres…?») y
 # uno de tres (talla, día/noche y estatura juntas). Más que eso es un interrogatorio.
+RE_CITA_CTX = re.compile(r"\b(venir|vengas|pasar|pases|ir|vayas|visitar|visita|cita|acomoda|probar\w*|showroom|atend\w*)\b", re.I)
 MAX_PREGUNTAS = 2
 MAX_PREGUNTAS_INDAGAR = 3
 RE_INDAGA = re.compile(r"talla|estatura|mides|d[ií]a o de noche|de d[ií]a|de noche", re.I)
@@ -74,6 +75,9 @@ def validar(respuesta: str, hechos: dict, pregunta_hecha: str = "", preguntas_re
                 errores.append("promete un descuento")
                 break
     for m in RE_PLAZO.finditer(r):
+        frase = re.split(r"[.!?\n]", r[:m.start()])[-1] + r[m.start():m.end() + 40]
+        if m.group(0).lower() == "mañana" and RE_CITA_CTX.search(frase):   # «¿te acomoda venir mañana?» es la cita, no una entrega
+            continue
         if m.group(0).strip().lower() not in {x.lower() for x in h.get("plazos", set())}:
             errores.append(f"plazo no respaldado: {m.group(0).strip()}")
     telas = {x.lower() for x in h.get("telas", set())}

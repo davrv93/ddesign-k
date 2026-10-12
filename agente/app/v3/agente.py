@@ -11,7 +11,7 @@ import re
 import time
 
 from .. import memoria
-from . import cliente_llm, ficha as ficha_mod, prompt, validador
+from . import cliente_llm, ficha as ficha_mod, plantillas, prompt, validador
 from .herramientas import Recolector
 
 log = logging.getLogger("agente.v3")
@@ -82,6 +82,21 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
         return _respuesta(f, "Eso no es mi giro 😅 ¿Te ayudo con algo de la tienda?", "responder", [], None,
                           _traza("", [], [], 0, _ms(t0)), req)
 
+    # 2b. Pasos del guion por plantilla (app/v3/plantillas.py): el dato esperado y nada más, sin pago en curso.
+    en_pago = (bool((f.get("pedido") or {}).get("confirmado")) or getattr(req, "etapa", "") == "venta_confirmada"
+               or getattr(req, "estado", "") == "esperando_pago")
+    if not en_pago:
+        txt = ""
+        if RE_SALUDO_SOLO.match(mensaje) and not _bots(hist):
+            txt = plantillas.saludo(getattr(req, "cliente", ""), hist)
+            plantillas._marca(f, "ocasion")
+        else:
+            txt = (plantillas.toque(mensaje, hist) or plantillas.ok_sin_dato(f, mensaje, hist)
+                   or plantillas.responder(f, lectura.get("datos") or {}, mensaje, hist, getattr(req, "cliente", "")) or "")
+        if txt:
+            log.info("V3 plantilla: %s", txt[:80])
+            return _respuesta(f, txt, "responder", [], None, _traza("", [], ["plantilla"], 0, _ms(t0)), req)
+
     # 3. LLM con herramientas.
     # Pago habilitado: el pedido lo confirmó V3 (crear_reserva) o el bot Go ya lo confirmó (el *SI* del flujo fijo
     # deja la etapa en venta_confirmada y el estado en esperando_pago). Sin esto V3 nunca daba el Yape (12-10-2026).
@@ -95,7 +110,13 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     if pedido:
         hecho = (hecho + "\n" + pedido).strip()
     paso = "" if (lectura.get("datos") or {}).get("horario") else _paso_guion(f, getattr(req, "historial", []) or [], pago_ok)
-    if RE_ESTE_SIN_CUAL.search(mensaje) and not _nombradas(mensaje, rec.fichas):
+    if re.search(r"\bsepar", memoria._plano(mensaje)) and not (f.get("producto") or f.get("mostrados")
+                                                               or (f.get("pedido") or {}).get("codigo")) \
+            and not _nombradas(mensaje, rec.fichas):
+        rec.sin_cual = True
+        paso = ("QUIERE SEPARAR SIN DECIR QUÉ PRENDA: pregúntale cuál (el nombre, el código o una foto); no inventes "
+                "una ni mandes fotos. " + (paso or "")).strip()
+    elif RE_ESTE_SIN_CUAL.search(mensaje) and not _nombradas(mensaje, rec.fichas):
         rec.sin_cual = True
         paso = ("PREGUNTA POR «ESTE» MODELO SIN DECIR CUÁL: pídele la foto o el nombre/código del modelo que vio; no "
                 "mandes fotos ni adivines. " + (paso or "")).strip()
@@ -257,9 +278,12 @@ def _nombradas(texto: str, fichas) -> list[str]:
 def _foto_de_la_nombrada(rec: Recolector, texto: str) -> None:
     """El texto habla de una prenda y la foto es de otra (12-10-2026: «te recomiendo el Vestido Pandora» con la foto del
     V21 Kendall). Manda lo que se dice: se cambia la foto por la de la prenda nombrada."""
-    if not rec.fotos:
-        return
     nombradas = _nombradas(texto, rec.fichas)
+    if not rec.fotos:
+        # Pidió ver modelos y el texto presenta una prenda («Te muestro el Vestido Kendall…») sin foto: se manda.
+        if nombradas and rec._pide_modelos() and not rec.sin_cual and not rec.sin_color:
+            rec.ejecutar("enviar_fotos", {"codigos": nombradas[:1]})
+        return
     enviadas = [x["codigo"].upper() for x in rec.fotos]
     if nombradas and not set(enviadas) & set(nombradas):
         log.info("V3: nombra %s pero la foto era %s; se corrige", nombradas, enviadas)
