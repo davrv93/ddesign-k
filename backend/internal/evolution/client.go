@@ -188,6 +188,28 @@ func (c *Client) SendText(ctx context.Context, to, text string) (string, error) 
 	return out.Info.ID, err
 }
 
+// SendPoll envía una encuesta de respuesta única: el menú «con botones» que SÍ se ve en WhatsApp desde una cuenta no
+// oficial (los botones y listas dan 200 y el teléfono no pinta nada; fork evolution-go, commit 6366085, 25-09-2026).
+// El voto vuelve por el webhook en data.pollVote.selectedOptions con el texto de la opción.
+func (c *Client) SendPoll(ctx context.Context, to, question string, options []string) (string, error) {
+	body := numberField(to)
+	body["question"] = question
+	body["options"] = options
+	body["maxAnswer"] = 1
+	var out sendResult
+	err := c.do(ctx, http.MethodPost, "/send/poll", c.InstanceToken, body, &out)
+	return out.Info.ID, err
+}
+
+// Presence muestra «escribiendo…» (state "composing") o lo quita ("paused"). /message/presence marca primero
+// «disponible»: sin eso WhatsApp descarta el «escribiendo» en silencio.
+func (c *Client) Presence(ctx context.Context, to, state string) error {
+	body := numberField(to)
+	body["state"] = state
+	body["isAudio"] = false
+	return c.do(ctx, http.MethodPost, "/message/presence", c.InstanceToken, body, nil)
+}
+
 // SendImage envía una imagen por URL (debe ser accesible desde el contenedor de evolution-go).
 func (c *Client) SendImage(ctx context.Context, to, url, caption string) (string, error) {
 	body := numberField(to)

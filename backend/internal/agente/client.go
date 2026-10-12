@@ -77,6 +77,9 @@ type Reply struct {
 	ModeloLLM string `json:"modelo_llm"`
 	// Sugerencias son prendas para ofrecer con foto después del texto.
 	Sugerencias []Sugerencia `json:"sugerencias"`
+	// RespuestasRapidas: opciones para contestar la pregunta del mensaje («Lima» / «Provincia»). Por WhatsApp van como
+	// encuesta; el texto de la opción es lo que el agente ya entiende escrito.
+	RespuestasRapidas []RespuestaRapida `json:"respuestas_rapidas,omitempty"`
 	// Etapa comercial en la que queda la conversación; se devuelve tal cual en el siguiente mensaje.
 	Etapa string `json:"etapa"`
 	// Sentimiento (-1..1) y urgencia (0..1) del mensaje, por reglas (agente/app/animo.py). Alimentan la
@@ -94,6 +97,10 @@ type Reply struct {
 
 type Comercial struct {
 	Intent string `json:"intent"`
+}
+
+type RespuestaRapida struct {
+	Label string `json:"label"`
 }
 
 type Sugerencia struct {

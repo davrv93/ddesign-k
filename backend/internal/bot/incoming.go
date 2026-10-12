@@ -45,6 +45,11 @@ type webhook struct {
 			PushName  string `json:"PushName"`
 		} `json:"Info"`
 		Message json.RawMessage `json:"Message"`
+		// Voto de una encuesta (el fork lo descifra y lo traduce a texto: encuesta_voto.go).
+		PollVote *struct {
+			PollMessageID   string   `json:"pollMessageId"`
+			SelectedOptions []string `json:"selectedOptions"`
+		} `json:"pollVote"`
 	} `json:"data"`
 }
 
@@ -105,6 +110,17 @@ type location struct {
 	Address string  `json:"address"`
 }
 
+// votoComoTexto: la opción votada es lo que la clienta habría escrito. «1️⃣ Ver catálogo» → «1», para que el menú
+// numérico la entienda igual que si hubiera escrito el número.
+func votoComoTexto(op string) string {
+	op = strings.TrimSpace(op)
+	r := []rune(op)
+	if len(r) > 1 && r[0] >= '0' && r[0] <= '9' && (r[1] < '0' || r[1] > '9') {
+		return string(r[0])
+	}
+	return op
+}
+
 // ParseWebhook devuelve nil si el evento no es un mensaje que el bot deba procesar.
 func ParseWebhook(body []byte) (*Incoming, error) {
 	var w webhook
@@ -151,6 +167,12 @@ func ParseWebhook(body []byte) (*Incoming, error) {
 			in.Text = m.ListResponse.SingleSelectReply.SelectedRowID
 		}
 		in.Text = firstNonEmpty(in.Text, m.ListResponse.Title)
+	}
+	if pv := w.Data.PollVote; pv != nil {
+		if len(pv.SelectedOptions) == 0 {
+			return nil, nil // voto retirado: no es un mensaje
+		}
+		in.Text = votoComoTexto(pv.SelectedOptions[0])
 	}
 	if m.ImageMessage != nil {
 		in.HasImage = true

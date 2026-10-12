@@ -18,6 +18,12 @@ type outJob struct {
 	text    string
 	image   string // URL; si falla se envía sólo el texto
 	caption string
+	poll    *pollJob
+}
+
+type pollJob struct {
+	question string
+	options  []string
 }
 
 const (
@@ -76,7 +82,13 @@ func (b *Bot) send(j outJob) {
 	defer cancel()
 	var id string
 	var err error
-	if j.image != "" {
+	if j.poll != nil {
+		id, err = b.evo.SendPoll(ctx, j.to, j.poll.question, j.poll.options)
+		if err != nil {
+			// La pregunta ya salió en el texto anterior: la encuesta es un extra; si falla, no se insiste.
+			log.Printf("bot: encuesta a %s falló (%v); queda la pregunta escrita", j.to, err)
+		}
+	} else if j.image != "" {
 		id, err = b.evo.SendImage(ctx, j.to, j.image, j.caption)
 		if err != nil {
 			log.Printf("bot: imagen a %s falló (%v); se envía el texto", j.to, err)

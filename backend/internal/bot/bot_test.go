@@ -27,6 +27,11 @@ type fakeEvolution struct {
 
 func (f *fakeEvolution) handler(w http.ResponseWriter, r *http.Request) {
 	time.Sleep(f.delay)
+	if r.URL.Path == "/message/presence" { // «escribiendo…»: no es un mensaje enviado (va en paralelo, sin orden)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"message":"success"}`)
+		return
+	}
 	var body map[string]any
 	_ = json.NewDecoder(r.Body).Decode(&body)
 	body["_path"] = r.URL.Path
@@ -44,8 +49,18 @@ func (f *fakeEvolution) last() map[string]any {
 	return f.sent[len(f.sent)-1]
 }
 
+// lastText es el último TEXTO enviado (o pie de foto): las encuestas que siguen al menú, al resumen o a una pregunta
+// del agente no son texto y no cuentan.
 func (f *fakeEvolution) lastText() string {
-	m := f.last()
+	f.mu.Lock()
+	m := f.sent[len(f.sent)-1]
+	for i := len(f.sent) - 1; i >= 0; i-- {
+		if f.sent[i]["_path"] != "/send/poll" {
+			m = f.sent[i]
+			break
+		}
+	}
+	f.mu.Unlock()
 	if t, ok := m["text"].(string); ok {
 		return t
 	}
@@ -280,17 +295,20 @@ func TestEnvioLentoNoBloqueaAlBot(t *testing.T) {
 	}
 	conv, _ := st.ConversationByCustomer(ctx, 1)
 	msgs, _ := st.ListMessages(ctx, conv.ID, 100)
-	if len(msgs) != 4 || msgs[1].Status != "pending" || !strings.Contains(msgs[3].Body, "Catálogo") {
-		t.Fatalf("se esperaban 2 entrantes y 2 respuestas pendientes en orden: %+v", msgs)
+	// hola → menú (texto + encuesta del menú, 12-10-2026) → «1» → catálogo: todo encolado y en orden.
+	if len(msgs) != 5 || msgs[1].Status != "pending" || !strings.HasPrefix(msgs[2].Body, "📊") ||
+		!strings.Contains(msgs[4].Body, "Catálogo") {
+		t.Fatalf("se esperaban 2 entrantes y 3 respuestas pendientes en orden (menú, su encuesta, catálogo): %+v", msgs)
 	}
 	if !b.Drain(10 * time.Second) {
 		t.Fatal("la cola no se vació")
 	}
 	msgs, _ = st.ListMessages(ctx, conv.ID, 100)
-	if msgs[1].Status != "sent" || msgs[1].WAID == "" || msgs[3].Status != "sent" {
-		t.Fatalf("las respuestas debían quedar enviadas: %+v %+v", msgs[1], msgs[3])
+	if msgs[1].Status != "sent" || msgs[1].WAID == "" || msgs[2].Status != "sent" || msgs[4].Status != "sent" {
+		t.Fatalf("las respuestas debían quedar enviadas: %+v %+v %+v", msgs[1], msgs[2], msgs[4])
 	}
-	if !strings.Contains(fe.sent[0]["text"].(string), "Hola Ana") || !strings.Contains(fe.sent[1]["text"].(string), "Catálogo") {
+	if !strings.Contains(fe.sent[0]["text"].(string), "Hola Ana") || fe.sent[1]["_path"] != "/send/poll" ||
+		!strings.Contains(fe.sent[2]["text"].(string), "Catálogo") {
 		t.Fatal("las respuestas debían salir en orden")
 	}
 }

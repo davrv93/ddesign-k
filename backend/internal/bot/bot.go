@@ -393,6 +393,8 @@ func (b *Bot) sendMenu(ctx context.Context, conv *store.Conversation) {
 		"3️⃣ Estado de mi pedido\n"+
 		"4️⃣ Hablar con una asesora\n\n"+
 		"Responde con el *número* de la opción.")
+	b.replyPoll(ctx, conv, "¿En qué te ayudamos hoy?", []string{"1️⃣ Ver catálogo y precios", "2️⃣ Consultar un modelo",
+		"3️⃣ Estado de mi pedido", "4️⃣ Hablar con una asesora"})
 }
 
 func (b *Bot) sendCatalog(ctx context.Context, conv *store.Conversation) {
@@ -784,6 +786,7 @@ func (b *Bot) sendSummary(ctx context.Context, conv *store.Conversation, cc *con
 	b.setState(ctx, conv, stConfirm, *cc)
 	b.reply(ctx, conv, fmt.Sprintf("🧾 *Resumen de tu pedido #%d*\n\n• %s %s\n• Talla: *%s*\n• Cantidad: *%d*\n• Total: *%s*\n\nTe la apartamos por *%d minutos* ⏳\n¿Confirmas tu pedido? Responde *SI* para confirmar o *NO* para cancelar.\n(Para cambiar la cantidad, escribe el número.)",
 		cc.OrderID, p.Code, p.Name, v.Size, cc.Qty, b.money(p.Price*float64(cc.Qty)), int(reserveTTL.Minutes())))
+	b.replyPoll(ctx, conv, "¿Confirmas tu pedido?", []string{"Sí, confirmo", "Cancelar"})
 }
 
 func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *convContext, text, raw string) {
@@ -1171,6 +1174,7 @@ func (b *Bot) customerName(conv *store.Conversation) string {
 
 // askAgent consulta al agente con la etapa comercial y el pedido en curso. nil si no hay agente o no respondió.
 func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) *agente.Reply {
+	b.escribiendo(conv)
 	if b.Agent == nil || strings.TrimSpace(raw) == "" {
 		return nil
 	}
@@ -1281,6 +1285,32 @@ func (b *Bot) sendAgentText(ctx context.Context, conv *store.Conversation, r *ag
 	if cierre != "" {
 		b.reply(ctx, conv, cierre)
 	}
+	if n := len(r.RespuestasRapidas); n >= 2 && n <= 12 {
+		var ops []string
+		for _, o := range r.RespuestasRapidas {
+			if o.Label = strings.TrimSpace(o.Label); o.Label != "" && len([]rune(o.Label)) <= 100 {
+				ops = append(ops, o.Label)
+			}
+		}
+		if len(ops) >= 2 {
+			b.replyPoll(ctx, conv, ultimaPregunta(r.Respuesta), ops)
+		}
+	}
+}
+
+// ultimaPregunta: la última pregunta del texto, para titular la encuesta («¿El envío sería para Lima o provincia?»).
+func ultimaPregunta(t string) string {
+	if i := strings.LastIndex(t, "?"); i >= 0 {
+		ini := strings.LastIndexAny(t[:i], ".!\n") + 1
+		if j := strings.LastIndex(t[:i], "¿"); j >= ini {
+			ini = j // desde el «¿»: sin el «Excelente 😊» de antes
+		}
+		q := strings.TrimSpace(t[ini : i+1])
+		if q != "" && len([]rune(q)) <= 255 {
+			return q
+		}
+	}
+	return "Elige una opción 👇"
 }
 
 // agentPhoto busca la prenda de la foto con el agente (embeddings de imagen locales).
@@ -1347,6 +1377,27 @@ func (b *Bot) reply(ctx context.Context, conv *store.Conversation, text string) 
 	if err := b.queueMessage(ctx, conv, m, outJob{text: text}); err != nil {
 		log.Printf("bot: guardar respuesta: %v", err)
 	}
+}
+
+// replyPoll manda una encuesta de respuesta única (el «botón» que sí se ve por WhatsApp). La pregunta ya va escrita
+// antes: si la encuesta no se ve en un teléfono viejo, la clienta contesta escribiendo y funciona igual.
+func (b *Bot) replyPoll(ctx context.Context, conv *store.Conversation, question string, options []string) {
+	m := &store.Message{Kind: "text", Body: "📊 " + question + " · " + strings.Join(options, " / "), Author: "bot"}
+	if err := b.queueMessage(ctx, conv, m, outJob{poll: &pollJob{question: question, options: options}}); err != nil {
+		log.Printf("bot: guardar encuesta: %v", err)
+	}
+}
+
+// escribiendo muestra «escribiendo…» mientras el agente piensa (unos segundos). Sin bloquear: si falla, no pasa nada.
+func (b *Bot) escribiendo(conv *store.Conversation) {
+	if b.evo == nil || conv == nil || conv.Customer.JID == "" {
+		return
+	}
+	go func(to string) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = b.evo.Presence(ctx, to, "composing")
+	}(conv.Customer.JID)
 }
 
 func (b *Bot) replyImage(ctx context.Context, conv *store.Conversation, url, caption string) {
