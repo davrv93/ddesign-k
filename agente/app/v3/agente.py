@@ -6,12 +6,15 @@ excepción), se lanza y quien llama contesta V1.
 """
 from __future__ import annotations
 
+import logging
 import re
 import time
 
 from .. import memoria
 from . import cliente_llm, ficha as ficha_mod, prompt, validador
 from .herramientas import Recolector
+
+log = logging.getLogger("agente.v3")
 
 # Enrutador barato (antes del LLM): casos que no merecen una llamada.
 RE_ASESORA = re.compile(r"\b(asesora|reclamo|queja|persona real|hablar con (alguien|una persona|un humano)|agente humano)\b", re.I)
@@ -49,13 +52,23 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
                           _traza("", [], [], 0, _ms(t0)), req)
 
     # 3. LLM con herramientas.
+    # Pago habilitado: el pedido lo confirmó V3 (crear_reserva) o el bot Go ya lo confirmó (el *SI* del flujo fijo
+    # deja la etapa en venta_confirmada y el estado en esperando_pago). Sin esto V3 nunca daba el Yape (12-10-2026).
+    pago_ok = (bool((f.get("pedido") or {}).get("confirmado")) or getattr(req, "etapa", "") == "venta_confirmada"
+               or getattr(req, "estado", "") == "esperando_pago")
     rec = Recolector(fichas, consultar_stock, pie=pie, permitir_reserva=permitir_reserva, mensaje=mensaje,
-                     mostrados=f.get("mostrados") or [], pago_ok=bool((f.get("pedido") or {}).get("confirmado")))
+                     mostrados=f.get("mostrados") or [], pago_ok=pago_ok)
     hecho = _precalculo(rec, lectura.get("datos") or {})
-    msgs = prompt.construir(f, getattr(req, "historial", []) or [], mensaje, getattr(req, "canal", ""), hecho=hecho)
+    pedido = _pedido_en_curso(rec, req, f)
+    if pedido:
+        hecho = (hecho + "\n" + pedido).strip()
+    msgs = prompt.construir(f, getattr(req, "historial", []) or [], mensaje, getattr(req, "canal", ""), hecho=hecho,
+                            cliente=getattr(req, "cliente", ""), pago=pago_ok)
     salida = cliente_llm.responder(msgs, rec.esquema(), rec.ejecutar)
     out = prompt.leer_salida(salida["contenido"])
     _foto_pedida(rec, f, mensaje)
+    _recortar_fotos(rec, mensaje)
+    _foto_de_la_nombrada(rec, out["respuesta"])
     motivos = validador.validar(out["respuesta"], rec.hechos, out["pregunta_hecha"], f.get("preguntado", []))
 
     # 4. Un rechazo: regenerar con los motivos. Dos: caer a V1.
@@ -72,6 +85,16 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
             raise Rechazado("; ".join(motivos))
 
     return _cierra(f, rec, out, salida["usadas"], salida["vueltas"], _ms(t0), req)
+
+
+def _recortar_fotos(rec: Recolector, mensaje: str) -> None:
+    """Lo que se LE MANDA a la clienta: una foto, salvo que pida varias. La herramienta marca todo lo que
+    el modelo pidió (eso lo necesita `enviar_fotos` tal cual para que un test con 2 códigos no pierda el 2°);
+    el recorte de cuántas fotos salen es cosa de esta capa, que sí conoce el mensaje de la clienta."""
+    from .herramientas import RE_PIDE_VARIAS, MAX_FOTOS
+    tope = MAX_FOTOS if RE_PIDE_VARIAS.search((mensaje or "").lower()) else 1
+    if len(rec.fotos) > tope:
+        rec.fotos = rec.fotos[:tope]
 
 
 def _foto_pedida(rec: Recolector, f: dict, mensaje: str) -> None:
@@ -99,6 +122,10 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
     if talla and talla not in TALLAS_REALES:
         partes.append(f"HECHO YA VERIFICADO: pidió talla {talla}; esa talla no existe, solo hay S, M y L. "
                        "Díselo en tu respuesta (no lo dejes para después ni preguntes la ocasión primero).")
+    if datos.get("estatura"):  # guion, paso 4: el modelo la anotaba («mides 1.60 m») y se saltaba la frase
+        partes.append("HECHO: dio su estatura. Dile casi textual: «Excelente, sí está diseñado para tu estatura. Si en "
+                      "caso te queda un poquito larguito, lo puedes ajustar con tu modista de confianza. ¡Es súper "
+                      "sencillo!» y luego pregunta lo que falte del paso 3.")
     color = datos.get("color")
     if color:
         r = rec.ejecutar("buscar_catalogo", {"consulta": color})
@@ -111,6 +138,61 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
             partes.append(f"HECHO YA VERIFICADO: no tenemos nada color {color}. Dilo tal cual, no lo disimules "
                           "con otra prenda ni preguntes la ocasión antes.")
     return "\n".join(partes)
+
+
+GENERICAS_NOMBRE = {"vestido", "conjunto", "blusa", "pantalon", "falda", "enterizo", "blazer"}
+
+
+def _nombradas(texto: str, fichas) -> list[str]:
+    """Códigos de las prendas que el texto nombra («Vestido Pandora», «Kabanova rojo», «V31»), en orden de aparición.
+    Si un nombre está dentro de otro más largo («Kabanova» en «Kabanova Rojo»), vale el largo."""
+    plano = memoria._plano(texto or "")
+    hallados = []
+    for x in fichas:
+        nombre = " ".join(p for p in memoria._plano(x.nombre).split() if p not in GENERICAS_NOMBRE)
+        for clave in {nombre, x.codigo.lower()}:
+            if len(clave) >= 3:
+                for m in re.finditer(r"\b" + re.escape(clave) + r"\b", plano):
+                    hallados.append((m.start(), m.end(), x.codigo.upper()))
+    hallados.sort(key=lambda h: (h[0], -(h[1] - h[0])))
+    out, fin = [], -1
+    for ini, f_, cod in hallados:
+        if ini < fin:          # dentro de un nombre más largo ya contado
+            continue
+        fin = f_
+        if cod not in out:
+            out.append(cod)
+    return out
+
+
+def _foto_de_la_nombrada(rec: Recolector, texto: str) -> None:
+    """El texto habla de una prenda y la foto es de otra (12-10-2026: «te recomiendo el Vestido Pandora» con la foto del
+    V21 Kendall). Manda lo que se dice: se cambia la foto por la de la prenda nombrada."""
+    if not rec.fotos:
+        return
+    nombradas = _nombradas(texto, rec.fichas)
+    enviadas = [x["codigo"].upper() for x in rec.fotos]
+    if nombradas and not set(enviadas) & set(nombradas):
+        log.info("V3: nombra %s pero la foto era %s; se corrige", nombradas, enviadas)
+        rec.fotos = []
+        rec.ejecutar("enviar_fotos", {"codigos": nombradas[:max(1, len(enviadas))]})
+
+
+def _pedido_en_curso(rec: Recolector, req, f: dict) -> str:
+    """El pedido que trae el bot Go (código y talla) o el de la ficha: su precio queda respaldado y el modelo puede
+    sumar el envío (paso 8 del guion: «S/ 260 + S/ 20 = S/ 280») sin que el validador lo rechace."""
+    cod = (getattr(req, "producto", "") or (f.get("pedido") or {}).get("codigo") or "").strip().upper()
+    if not cod:
+        return ""
+    r = rec.ejecutar("stock", {"codigo": cod})
+    if not isinstance(r, dict) or r.get("error"):
+        return ""
+    talla = (getattr(req, "talla", "") or (f.get("pedido") or {}).get("talla") or "").strip().upper()
+    precio = r.get("precio")
+    p = f"PEDIDO EN CURSO: {cod} {r.get('nombre', '')}" + (f", talla {talla}" if talla else "")
+    if precio is not None:
+        p += f", precio S/ {float(precio):.0f}. Total = precio + envío (Lima S/ 15, provincia S/ 20, agencia de viaje S/ 15)."
+    return p
 
 
 def _sin_preguntas(texto: str) -> str:
@@ -150,7 +232,8 @@ def _cierra(f: dict, rec: Recolector, out: dict, usadas, vueltas, ms, req) -> di
 
 
 def _respuesta(f: dict, texto: str, accion: str, fotos, reserva, traza: dict, req) -> dict:
-    sugerencias = [{"codigo": x["codigo"], "fuente": _fuente(x["codigo"]), "imagen": x["imagen"], "pie": x["pie"]}
+    sugerencias = [{"codigo": x["codigo"], "fuente": _fuente(x["codigo"]), "imagen": x["imagen"], "pie": x["pie"],
+                    "titulo": x.get("titulo", ""), "tallas": x.get("tallas", [])}
                    for x in (fotos or [])]
     return {"respuesta": texto, "accion": accion, "codigo": (reserva or {}).get("codigo", ""),
             "talla": (reserva or {}).get("talla", ""), "sugerencias": sugerencias, "etapa": f.get("etapa", "prospeccion"),

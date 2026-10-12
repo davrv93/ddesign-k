@@ -28,7 +28,11 @@ RE_PLAZO = re.compile(r"\b(en\s+\d+\s+d[ií]as?|de\s+\d+\s+a\s+\d+\s+d[ií]as?|m
 RE_PROMESA_FOTO = re.compile(r"\b(te\s+(paso|mando|env[ií]o|muestro|dejo)|aqu[ií]\s+(tienes|van)|ah[ií]\s+van)\b[^.!?\n]*\bfotos?\b", re.I)
 
 RE_PAGO = re.compile(r"(yape|plin)\s*:|a nombre de|\b9\d{8}\b|n[uú]mero de cuenta|\bcci\b", re.I)
-MAX_PREGUNTAS = 1
+# El guion de la tienda (seed/speech.md) tiene mensajes de dos preguntas («¿cómo quieres sentirte? ¿prefieres…?») y
+# uno de tres (talla, día/noche y estatura juntas). Más que eso es un interrogatorio.
+MAX_PREGUNTAS = 2
+MAX_PREGUNTAS_INDAGAR = 3
+RE_INDAGA = re.compile(r"talla|estatura|mides|d[ií]a o de noche|de d[ií]a|de noche", re.I)
 
 
 def hechos_vacios() -> dict:
@@ -82,7 +86,10 @@ def validar(respuesta: str, hechos: dict, pregunta_hecha: str = "", preguntas_re
         errores.append("respuesta vacía")
     if RE_PAGO.search(r) and not h.get("pago_ok"):
         errores.append("da datos de pago sin pedido confirmado")
-    if r.count("?") > MAX_PREGUNTAS:
+    n_preg = r.count("?")
+    preguntas = [q for q in re.findall(r"¿[^?]*\?", r)]
+    indaga = len(preguntas) == n_preg and all(RE_INDAGA.search(q) for q in preguntas)
+    if n_preg > (MAX_PREGUNTAS_INDAGAR if indaga else MAX_PREGUNTAS):
         errores.append("más de una pregunta")
     if pregunta_hecha and pregunta_hecha in set(preguntas_respondidas):
         errores.append(f"pregunta ya respondida: {pregunta_hecha}")

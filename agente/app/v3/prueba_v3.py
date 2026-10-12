@@ -68,7 +68,11 @@ def prueba_validador():
     caso("talla no respaldada", V.validar("Lo tengo en talla XL.", h) != [], True)
     caso("talla respaldada", V.validar("Lo tengo en talla M.", h), [])
     caso("descuento prohibido", V.validar("Te hago un descuento del 10%.", h) != [], True)
-    caso("dos preguntas", V.validar("¿Te gusta? ¿Qué talla usas?", h) != [], True)
+    # Guion de la tienda (seed/speech.md, 12-10-2026): hasta dos preguntas; tres solo si son talla/día-noche/estatura.
+    caso("tres preguntas sueltas", V.validar("¿Te gusta? ¿Qué color? ¿Para cuándo?", h) != [], True)
+    caso("dos preguntas del guion", V.validar("¿Cómo quieres sentirte ese día? ¿Prefieres llamar la atención?", h), [])
+    caso("paso 3: talla, día/noche y estatura juntas",
+         V.validar("¿En qué talla te encuentras?, ¿el evento es de día o de noche?, ¿cuánto mides de estatura?", h), [])
     caso("una pregunta", V.validar("¿Qué talla usas?", h), [])
     caso("pregunta repetida", V.validar("¿Qué talla usas?", h, "talla", ["talla"]) != [], True)
     caso("tela respaldada", V.validar("Es de tela roma, muy fresca.", h), [])

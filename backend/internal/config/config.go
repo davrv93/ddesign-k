@@ -16,7 +16,10 @@ type Config struct {
 
 	AdminUser     string
 	AdminPassword string
-	JWTSecret     string
+	// AdminExtra: usuarios adicionales del panel, "usuario:clave,usuario2:clave2". El primero (AdminUser/
+	// AdminPassword) sigue siendo obligatorio; estos se suman, no lo reemplazan.
+	AdminExtra string
+	JWTSecret  string
 
 	EvolutionURL           string // URL interna de evolution-go (http://evolution:8080)
 	EvolutionGlobalKey     string
@@ -65,6 +68,7 @@ func Load() *Config {
 
 		AdminUser:     env("ADMIN_USER", "admin"),
 		AdminPassword: env("ADMIN_PASSWORD", ""),
+		AdminExtra:    env("ADMIN_USERS_EXTRA", ""),
 		JWTSecret:     env("JWT_SECRET", ""),
 
 		EvolutionURL:           strings.TrimRight(env("EVOLUTION_URL", "http://evolution:8080"), "/"),
@@ -112,6 +116,19 @@ func Load() *Config {
 		log.Println("aviso: GEMINI_API_KEY vacío; el reconocimiento de fotos queda desactivado")
 	}
 	return c
+}
+
+// AdminPares junta el login obligatorio (AdminUser/AdminPassword) con los extra de ADMIN_USERS_EXTRA
+// ("usuario:clave,usuario2:clave2"). Un par mal formado (sin ":") se descarta, no tumba el arranque.
+func (c *Config) AdminPares() [][2]string {
+	pares := [][2]string{{c.AdminUser, c.AdminPassword}}
+	for _, par := range strings.Split(c.AdminExtra, ",") {
+		u, p, ok := strings.Cut(strings.TrimSpace(par), ":")
+		if ok && u != "" && p != "" {
+			pares = append(pares, [2]string{u, p})
+		}
+	}
+	return pares
 }
 
 func env(k, def string) string {

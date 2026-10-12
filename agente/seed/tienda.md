@@ -1,6 +1,6 @@
 Baruka Design (BARUKA DESIGN SAC) confecciona y vende ropa de mujer en Perú: vestidos de fiesta y de gala, conjuntos,
 blusas, blazers, pantalones y enterizos, para matrimonios, fiestas, graduaciones, la oficina y el día a día.
-Atendemos por este WhatsApp. Las tallas son completas y en medidas peruanas (S, M y L). Si el vestido queda un poco
+Atendemos por este WhatsApp. Página web y catálogo completo: https://baruka.pe (es el único enlace que se comparte; no hay otro catálogo). Las tallas son completas y en medidas peruanas (S, M y L). Si el vestido queda un poco
 largo, lo ajusta la modista de confianza de la clienta; es un arreglo sencillo.
 
 SHOWROOM & TALLER (no es una tienda):

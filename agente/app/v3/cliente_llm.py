@@ -60,7 +60,12 @@ def responder(mensajes: list[dict], tools: list[dict], ejecutar, modelo: str = "
     msgs = list(mensajes)
     usadas: list[str] = []
     for vuelta in range(tope):
-        cuerpo = {"model": modelo, "messages": msgs, "temperature": 0.5, "max_tokens": 700,
+        envio = msgs
+        if vuelta == tope - 1:  # última vuelta CON herramientas: que actúe ahora, no que lo prometa y lo deje narrado
+            envio = msgs + [{"role": "user", "content": "Es tu última vuelta: si ya tienes lo que necesitas, llama "
+                             "ahora a enviar_fotos/crear_reserva/agendar_cita y responde; si no, responde con lo que "
+                             "ya sabes. No sigas buscando ni digas que vas a revisar algo."}]
+        cuerpo = {"model": modelo, "messages": envio, "temperature": 0.5, "max_tokens": 700,
                   "tools": tools, "tool_choice": "auto"}
         js = _post(cuerpo)
         msg = js["choices"][0]["message"]
@@ -78,7 +83,8 @@ def responder(mensajes: list[dict], tools: list[dict], ejecutar, modelo: str = "
             usadas.append(nombre)
             msgs.append({"role": "tool", "tool_call_id": call.get("id", ""),
                          "content": json.dumps(resultado, ensure_ascii=False)})
-    # Se agotaron las vueltas: última respuesta sin herramientas.
+    # Último recurso: incluso con el aviso de «es tu última vuelta» siguió pidiendo herramientas (ya las
+    # corrimos arriba). Ahora sí, sin tools: que redacte con lo que ya tiene, en vez de quedar sin responder.
     cuerpo = {"model": modelo, "messages": msgs, "temperature": 0.5, "max_tokens": 700}
     js = _post(cuerpo)
     return {"contenido": (js["choices"][0]["message"].get("content") or "").strip(),

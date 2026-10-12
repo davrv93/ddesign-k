@@ -29,7 +29,7 @@ func servidor(t *testing.T, secreto string) (*Server, *store.Store) {
 	evo := evolution.New("http://127.0.0.1:1", "g", "kd", "t")
 	aic := ai.New("", "m", "", time.Second)
 	b := bot.New(cfg, st, evo, aic)
-	return New(cfg, st, evo, aic, b, auth.New("jwt", "admin", "clave"), NewHub()), st
+	return New(cfg, st, evo, aic, b, auth.New("jwt", [2]string{"admin", "clave"}), NewHub()), st
 }
 
 const cuerpoWeb = `{"canal":"web","conversacion":"sesion-1234","etapa":"seguimiento","mensaje":"de qué tela es?","respuesta":"De crepe",

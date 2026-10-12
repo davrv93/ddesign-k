@@ -247,6 +247,8 @@
       <button type="button" role="menuitemradio" data-agente="v1" aria-checked="true" title="El agente de siempre">Agente: V1<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
       <button type="button" role="menuitemradio" data-agente="v2s" aria-checked="false" title="V2 decide y se mide, pero la respuesta que ves es la de V1">Agente: V2 en sombra<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
       <button type="button" role="menuitemradio" data-agente="v2a" aria-checked="false" title="V2 contesta cuando su plan coincide con V1 y su texto pasa el control de calidad; si no, contesta V1">Agente: V2 activo<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
+      <button type="button" role="menuitemradio" data-agente="v3s" aria-checked="false" title="V3 decide y se mide (modelo + herramientas), pero la respuesta que ves es la de V1">Agente: V3 en sombra<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
+      <button type="button" role="menuitemradio" data-agente="v3a" aria-checked="false" title="V3 contesta directo (el modelo decide con herramientas); si falla, contesta V1">Agente: V3 activo<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
       <hr>
       <button type="button" role="menuitemcheckbox" id="verRapidas" aria-checked="true" title="Muestra u oculta la fila de mensajes de ejemplo">Respuestas rápidas<svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></button>
       <button type="button" role="menuitem" id="verInfo" title="Ver cómo entendió el mensaje">Análisis</button>
@@ -315,12 +317,16 @@ let desdeAnuncio = false;
 let motor = '';
 try { motor = localStorage.getItem('motor') || ''; } catch (e) {}
 const NOMBRE_MOTOR = { actual: 'Actual', deepseek: 'DeepSeek' };
-// Versión del agente para este navegador: v1 | v2s (V2 en sombra) | v2a (V2 activo). Se manda en cada mensaje.
+// Versión del agente para este navegador: v1 | v2s/v2a (V2) | v3s/v3a (V3). Se manda en cada mensaje.
 let agente = 'v2a';
 try { agente = localStorage.getItem('agente') || 'v2a'; } catch (e) {}
-if (!['v1', 'v2s', 'v2a'].includes(agente)) agente = 'v2a';
-const NOMBRE_AGENTE = { v1: 'V1', v2s: 'V2 en sombra', v2a: 'V2 activo' };
-const versionDe = () => agente === 'v1' ? { version: 'v1' } : { version: 'v2', modo: agente === 'v2a' ? 'activo' : 'sombra' };
+if (!['v1', 'v2s', 'v2a', 'v3s', 'v3a'].includes(agente)) agente = 'v2a';
+const NOMBRE_AGENTE = { v1: 'V1', v2s: 'V2 en sombra', v2a: 'V2 activo', v3s: 'V3 en sombra', v3a: 'V3 activo' };
+const versionDe = () => {
+  if (agente === 'v1') return { version: 'v1' };
+  if (agente === 'v3s' || agente === 'v3a') return { version: 'v3', modo: agente === 'v3a' ? 'activo' : 'sombra' };
+  return { version: 'v2', modo: agente === 'v2a' ? 'activo' : 'sombra' };
+};
 function pintarAgente() {
   document.querySelectorAll('#menu [data-agente]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.agente === agente)));
   pintarAjustes();
@@ -399,6 +405,12 @@ async function enviar(texto, payload) {
 }
 
 async function mostrar(j) {
+  // try/finally: un campo que una versión nueva del agente no manda (12-10: top_intenciones/codigos de V3)
+  // no debe dejar «enviar» bloqueado para siempre si algo de aquí abajo truena a medias.
+  try { await mostrarCuerpo(j); } finally { ocupar(false); campo.focus(); }
+}
+
+async function mostrarCuerpo(j) {
   // Los párrafos salen como mensajes separados, igual que escribe una persona.
   const partes = (j.respuesta || '').split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
   // Con foto, la pregunta final va DESPUÉS de la foto: «te recomiendo este» → foto → «¿qué talla usas?».
@@ -450,7 +462,6 @@ async function mostrar(j) {
   }
   hist = hist.slice(-20);
   pintarInfo(j);
-  ocupar(false); campo.focus();
 }
 
 // Botones de respuesta rápida, como los de WhatsApp Business: cuelgan del último mensaje del bot y
@@ -525,6 +536,19 @@ function bars(list) { return list.map(x => `<div class="row"><div>${esc(x.etique
 const ETAPAS = [['prospeccion', 'Prospección'], ['seguimiento', 'Seguimiento'], ['cierre', 'Cierre'], ['venta_confirmada', 'Venta']];
 // Panel de la venta: en qué etapa está, qué entendió el clasificador y por qué decidió así.
 // Lo que hizo la V2 en este turno (solo si el agente corrió en V2): quién habló, el plan y por qué no habló.
+// Lo que hizo V3 en este turno (el modelo decide con herramientas; el código valida). `j.v3.caida`: V3 falló y
+// contestó V1 (sin clave, rechazo doble o excepción); sin `caida`, V3 (en activo) o V1 (en sombra) es quien habló.
+function panelV3(j) {
+  const v = j.v3;
+  if (!v) return '';
+  const quien = v.caida ? `<b>habló V1</b> (V3 falló: ${esc(v.caida)})`
+              : v.modo === 'activo' ? '<b>habló V3</b>' : '<b>habló V1</b> (V3 en sombra)';
+  return `<h3>Agente V3 · ${esc(v.modo || 'sombra')}</h3>
+    <div class="sub">${quien} · ${esc(j.modelo_llm || '—')} · ${v.vueltas || 0} vuelta${v.vueltas === 1 ? '' : 's'} · ${v.ms} ms</div>
+    ${v.herramientas && v.herramientas.length ? `<div class="sub">Herramientas: ${v.herramientas.map(esc).join(', ')}</div>` : ''}
+    ${v.motivos && v.motivos.length ? `<div class="sub">Rechazos: ${v.motivos.map(esc).join('; ')}</div>` : ''}`;
+}
+
 function panelV2(j) {
   const v = j.v2;
   if (!v) return j.version === 'v1' ? '<h3>Agente</h3><div class="sub">V1: el agente de siempre.</div>' : '';
@@ -615,7 +639,15 @@ function pintarInfo(j) {
       <h3>Acción</h3><div>${esc(j.accion)}${j.codigo ? ' · ' + esc(j.codigo) : ''}</div>${panelVenta(j)}`;
     return;
   }
-  info.innerHTML = `${panelV2(j)}${panelVenta(j)}
+  // V3 (hablando de verdad, no sombra) no trae clasificador/RAG de V1: top_intenciones, codigos, fichas,
+  // ejemplos y categoria_prenda faltan. Leerlos sin más tumbaba mostrar() a medias y dejaba «enviar» bloqueado
+  // para siempre (ocupar(false) nunca llegaba a correr). Panel corto para esos casos.
+  if (!j.codigos) {
+    info.innerHTML = `${panelV3(j)}${panelV2(j)}${panelVenta(j)}
+      <div class="sub">motor: <b>${esc(j.motor || '—')}</b> · acción: <b>${esc(j.accion)}</b> · ${esc(j.modelo_llm || 'sin LLM')} · ${j.ms} ms</div>`;
+    return;
+  }
+  info.innerHTML = `${panelV3(j)}${panelV2(j)}${panelVenta(j)}
     <h3>Intención general</h3>${bars(j.top_intenciones)}
     <div class="sub">motor: <b>${esc(j.motor || '—')}</b> · acción: <b>${esc(j.accion)}</b> · ${esc(j.modelo_llm || 'sin LLM')} · ${j.ms} ms · stock: ${esc(j.stock_fuente || '—')}</div>
     <h3>Prenda</h3><div>${esc(j.categoria_prenda)} (${(j.confianza_categoria*100).toFixed(0)}%)</div>

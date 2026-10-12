@@ -14,25 +14,30 @@ from .. import memoria
 _SEED = os.path.join(os.path.dirname(__file__), "..", "..", "seed")
 
 
-def _tienda_md() -> str:
+def _seed(nombre: str) -> str:
     try:
-        with open(os.path.join(_SEED, "tienda.md"), encoding="utf-8") as fh:
+        with open(os.path.join(_SEED, nombre), encoding="utf-8") as fh:
             return fh.read().strip()
     except OSError:
         return ""
 
 
-TIENDA = _tienda_md()
+TIENDA = _seed("tienda.md")
+# Guion de venta de la tienda (spech.docx → seed/speech.md). Manda sobre el «método» genérico.
+SPEECH = _seed("speech.md")
+# Yape y titular: seed/pago.md vive FUERA de git (el repo es público). Solo entra al prompt con el pedido confirmado.
+PAGO = _seed("pago.md")
 
 PREGUNTAS_TXT = "\n".join(f"- {k}: {v}" for k, v in memoria.PREGUNTAS.items())
 
 SISTEMA = """Eres Rosmary, asesora de ventas de Baruka Design (ropa de mujer, Perú), por WhatsApp. Hablas \
-natural, cálido y breve (máximo 2 o 3 frases). Tuteas. Un emoji a lo sumo.
+natural, cálido y breve (máximo 2 o 3 frases). Tuteas. Uno o dos emojis, como en el guion.
 
 CÓMO DECIDES
 - Antes de afirmar cualquier dato de una prenda (precio, talla, tela, cómo es, si está disponible) LLAMA A UNA \
 HERRAMIENTA. Nunca inventes: si no lo tienes por una herramienta, dilo o deriva a una asesora.
-- Hay una sola pregunta por mensaje. Responde lo que ella preguntó ANTES de preguntar lo tuyo.
+- Una sola pregunta por mensaje, salvo el paso 3 del guion (talla, día/noche y estatura van juntas). Responde lo \
+que ella preguntó ANTES de preguntar lo tuyo.
 - No repitas una pregunta que ya está respondida en la ficha.
 - Nunca ofrezcas descuentos, rebajas ni plazos de entrega: no existen.
 - Si prometes una foto, mándala con enviar_fotos en el mismo turno. No prometas fotos que no marcas.
@@ -59,9 +64,7 @@ seguir con lo que ya sabes (separarlo, ver otro modelo) o espera callada; no la 
 (prenda + talla + un sí explícito). Si solo preguntó el costo de envío u otra cosa, no lo ofrezcas todavía.
 - No elijas por ella: si dudas entre dos prendas, pregúntale cuál.
 
-MÉTODO DE VENTA (checklist, no guion): indaga la necesidad (ocasión → fecha → día/noche) usando primero lo que \
-ella ya dijo; luego ofrece UNA sola opción y conecta con lo que contó; el cierre da el precio y pregunta si \
-quiere probárselo en el showroom o se lo separas.
+<<GUION>>
 
 TIENDA (lo que sí puedes contar; lo que no esté, no lo inventes):
 {tienda}
@@ -71,7 +74,8 @@ PREGUNTAS DISPONIBLES (usa la clave exacta en "pregunta_hecha" si preguntas algo
 
 SALIDA: responde SIEMPRE con un objeto JSON, sin texto fuera de él:
 {{"respuesta": "el texto que se le envía a la clienta", "pregunta_hecha": "clave de la pregunta o vacío"}}
-""".format(tienda=TIENDA or "(sin datos de la tienda)", preguntas=PREGUNTAS_TXT)
+""".format(tienda=TIENDA or "(sin datos de la tienda)", preguntas=PREGUNTAS_TXT).replace(
+    "<<GUION>>", SPEECH or "MÉTODO DE VENTA: indaga la necesidad (ocasión, fecha, día/noche); ofrece UNA opción; cierra con precio.")
 
 
 def _resumen_ficha(f: dict) -> str:
@@ -91,15 +95,22 @@ def _resumen_ficha(f: dict) -> str:
     return " · ".join(p for p in partes if not p.endswith(": None"))
 
 
-def construir(ficha: dict, historial: list, mensaje: str, canal: str = "", hecho: str = "") -> list[dict]:
-    """Los mensajes para el LLM: sistema + historial + el mensaje nuevo."""
+def construir(ficha: dict, historial: list, mensaje: str, canal: str = "", hecho: str = "",
+              cliente: str = "", pago: bool = False) -> list[dict]:
+    """Los mensajes para el LLM: sistema + historial + el mensaje nuevo. `pago`: el pedido ya está confirmado y
+    se le pasan los datos de pago (seed/pago.md) para que los dé tal cual."""
     hist = []
     for t in (historial or [])[-24:]:
         rol = "assistant" if getattr(t, "rol", "") != "cliente" else "user"
         hist.append({"role": rol, "content": getattr(t, "texto", "")})
+    nombre = (cliente or "").strip().split(" ")[0] if (cliente or "").strip() else ""
     usuario = (f"FICHA DE LA CONVERSACIÓN: {_resumen_ficha(ficha)}\n\n"
-               f"MENSAJE NUEVO DE LA CLIENTA: {mensaje}")
+               + (f"NOMBRE DE LA CLIENTA (de WhatsApp): {nombre}\n\n" if nombre else "")
+               + f"MENSAJE NUEVO DE LA CLIENTA: {mensaje}")
     msgs = [{"role": "system", "content": SISTEMA}] + hist + [{"role": "user", "content": usuario}]
+    if pago and PAGO:
+        msgs.append({"role": "system", "content": "EL PEDIDO YA ESTÁ CONFIRMADO. DATOS DE PAGO (dalos tal cual cuando toque "
+                     "el paso 9 del guion o ella los pida):\n" + PAGO})
     if hecho:  # system, al final: pesa más que si fuera parte del mensaje de la clienta (11-10: si no, pierde contra el saludo)
         msgs.append({"role": "system", "content": "ANTES DE RESPONDER, ESTO YA SE VERIFICÓ Y VA EN TU RESPUESTA:\n" + hecho})
     return msgs

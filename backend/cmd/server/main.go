@@ -48,7 +48,7 @@ func main() {
 	b := bot.New(cfg, st, evo, aic)
 	b.Notify = hub.Publish
 	b.Agent = agente.New(cfg.AgentURL, time.Duration(cfg.AgentTimeoutSec)*time.Second)
-	srv := api.New(cfg, st, evo, aic, b, auth.New(cfg.JWTSecret, cfg.AdminUser, cfg.AdminPassword), hub)
+	srv := api.New(cfg, st, evo, aic, b, auth.New(cfg.JWTSecret, cfg.AdminPares()...), hub)
 	// Kommo CRM: apagado por defecto. Va en segundo plano: si Kommo cae, el bot contesta igual.
 	var crm *kommo.Sincronizador
 	switch {

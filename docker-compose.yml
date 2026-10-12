@@ -164,6 +164,8 @@ services:
       V2_REALIZADOR: ${KD_V2_REALIZADOR:-variantes}
       # Agente V3 (app/v3/): el modelo decide con herramientas. Sin V3_URL/V3_API_KEY propios usa el motor
       # «actual» (LLM_*, hoy Gemini). V3_MODO: sombra (mide; habla V1) | activo (habla V3).
+      # Enlace del catálogo que da el bot (12-10-2026: la tienda pide su web, baruka.pe, para no tener dos).
+      CATALOGO_WEB: ${CATALOGO_WEB:-https://baruka.pe}
       V3_URL: ${V3_URL:-}
       V3_API_KEY: ${V3_API_KEY:-}
       V3_MODELO: ${V3_MODELO:-}

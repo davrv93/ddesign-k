@@ -19,7 +19,15 @@ from .validador import hechos_vacios
 MAX_CATALOGO = 6
 RE_PIDE_VARIAS = re.compile(r"\b(fotos|modelos|opciones|vestidos|conjuntos|otros|otras|cat[aá]logo|todos|todas|qu[eé] tienes|qu[eé] m[aá]s)\b")
 RE_PIDE_FOTO = re.compile(r"\b(foto|ver|veo|mu[eé]stra\w*|p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|c[oó]mo es|como es|c[oó]mo se ve)\b")
+# Pide ver modelos (12-10-2026, la tienda: «que no ofrezca modelos a menos que la clienta lo solicite»). «Busco un
+# vestido» es una necesidad, no un pedido de fotos: ahí se indaga (guion, pasos 1-4).
+RE_PIDE_MODELOS = re.compile(r"\b(fotos?|ver|veo|verlo|verla|mu[eé]stra\w*|p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|"
+                             r"modelos?|opciones|cat[aá]logo|tienes|tienen|tendr[aá]s|hay|recomienda\w*|"
+                             r"c[oó]mo es|c[oó]mo son|qu[eé] m[aá]s|otros?|otras?)\b|\bv\d{2}\b", re.I)
 MAX_FOTOS = 3          # un mensaje con 6 fotos es un catálogo, no una conversación
+GENERICAS = {"vestido", "conjunto", "blusa", "pantalon", "falda", "enterizo", "blazer"}
+ORDEN_TALLAS = ("XS", "S", "M", "L", "XL", "XXL")
+MONEDA = "S/"
 ENVIOS = (15.0, 20.0)  # envío a Lima / provincia (tienda.md): precios que el modelo sí puede decir
 COLORES = ("rojo", "vino", "azul", "negro", "negra", "blanco", "blanca", "verde", "rosa", "rosado", "celeste", "beige",
            "naranja", "turquesa", "morado", "lila", "amarillo", "gris", "plomo", "marron", "marrón", "dorado", "plateado", "fucsia")
@@ -110,6 +118,17 @@ class Recolector:
         except Exception as e:  # una herramienta rota no tumba el turno: el modelo recibe el error
             return {"error": str(e)}
 
+    def _pide_modelos(self) -> bool:
+        """El mensaje pide ver prendas o nombra una (por código o por su nombre)."""
+        if RE_PIDE_MODELOS.search(self.mensaje):
+            return True
+        plano = memoria._plano(self.mensaje)
+        for f in self.fichas:
+            clave = [p for p in memoria._plano(f.nombre).split() if len(p) >= 4 and p not in GENERICAS]
+            if clave and all(re.search(r"\b" + re.escape(p) + r"\b", plano) for p in clave[:1]):
+                return True
+        return False
+
     # -- fichas -----------------------------------------------------------
     def _ficha(self, codigo: str):
         c = (codigo or "").strip().upper()
@@ -181,19 +200,26 @@ class Recolector:
 
     def _t_enviar_fotos(self, args: dict) -> dict:
         out = []
-        # Una foto salvo que pida varias; y una ya enviada solo se repite si la pide de nuevo.
-        tope = MAX_FOTOS if RE_PIDE_VARIAS.search(self.mensaje) else 1
+        # Una foto ya enviada solo se repite si la pide de nuevo. El tope de cuántas mandar (1, salvo que
+        # pida varias) lo aplica agente.py sobre lo que se le muestra a la clienta, no aquí: la herramienta
+        # debe marcar TODO lo que el modelo pida explícitamente (si no, un test de 2 códigos pierde el 2°).
         explicita = bool(RE_PIDE_FOTO.search(self.mensaje))
-        for c in (args.get("codigos") or []):
-            if len(out) >= tope:
-                break
+        if self.mensaje and not self._pide_modelos():   # sin mensaje = llamada interna, no un turno de la clienta
+            return {"error": "No mandes fotos ni ofrezcas modelos: ella no pidió verlos. Sigue el guion (indagar) "
+                             "y muéstralos solo cuando los pida."}
+        for c in (args.get("codigos") or [])[:MAX_FOTOS]:
             f = self._ficha(c)
             if f is None or not f.imagen:
                 continue
             if f.codigo.upper() in self.mostrados and not explicita:
                 continue
-            pie = self._pie(f, self._stock([f.codigo]).get(f.codigo.upper(), {})) if self._pie else f"{f.codigo} {f.nombre}"
-            out.append({"codigo": f.codigo, "nombre": f.nombre, "imagen": f.imagen, "pie": pie})
+            st = self._stock([f.codigo]).get(f.codigo.upper(), {})
+            pie = self._pie(f, st) if self._pie else f"{f.codigo} {f.nombre}"
+            online = (st.get("online") or {}) if st.get("product") else {}
+            tallas = [{"talla": t, "disponible": online[t] > 0, "precio": f.precio, "codigo": f.codigo}
+                      for t in sorted(online, key=lambda t: ORDEN_TALLAS.index(t) if t in ORDEN_TALLAS else 99)]
+            titulo = f"*{f.codigo}* {f.nombre}" + (f" — *{MONEDA} {f.precio:.2f}*" if f.precio is not None else "")
+            out.append({"codigo": f.codigo, "nombre": f.nombre, "imagen": f.imagen, "pie": pie, "titulo": titulo, "tallas": tallas})
             self.hechos["codigos"].add(f.codigo.upper())
             self.hechos["fotos"].add(f.codigo.upper())
             if f.precio is not None:

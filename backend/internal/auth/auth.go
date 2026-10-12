@@ -17,25 +17,35 @@ type Claims struct {
 	Exp  int64  `json:"exp"`
 }
 
+type cred struct{ user, password string }
+
 type Auth struct {
-	secret   []byte
-	user     string
-	password string
-	TTL      time.Duration
+	secret []byte
+	creds  []cred
+	TTL    time.Duration
 }
 
-func New(secret, user, password string) *Auth {
-	return &Auth{secret: []byte(secret), user: user, password: password, TTL: 7 * 24 * time.Hour}
-}
-
-// Login compara en tiempo constante y devuelve un token.
-func (a *Auth) Login(user, password string) (string, error) {
-	okU := subtle.ConstantTimeCompare([]byte(user), []byte(a.user)) == 1
-	okP := subtle.ConstantTimeCompare([]byte(password), []byte(a.password)) == 1
-	if !okU || !okP {
-		return "", errors.New("usuario o contraseña incorrectos")
+// New acepta uno o más pares {usuario, clave} del panel: cualquiera de ellos abre sesión.
+func New(secret string, pares ...[2]string) *Auth {
+	creds := make([]cred, 0, len(pares))
+	for _, p := range pares {
+		if p[0] != "" {
+			creds = append(creds, cred{p[0], p[1]})
+		}
 	}
-	return a.sign(Claims{User: user, Exp: time.Now().Add(a.TTL).Unix()}), nil
+	return &Auth{secret: []byte(secret), creds: creds, TTL: 7 * 24 * time.Hour}
+}
+
+// Login compara en tiempo constante contra cada par y devuelve un token con el que entró.
+func (a *Auth) Login(user, password string) (string, error) {
+	for _, c := range a.creds {
+		okU := subtle.ConstantTimeCompare([]byte(user), []byte(c.user)) == 1
+		okP := subtle.ConstantTimeCompare([]byte(password), []byte(c.password)) == 1
+		if okU && okP {
+			return a.sign(Claims{User: user, Exp: time.Now().Add(a.TTL).Unix()}), nil
+		}
+	}
+	return "", errors.New("usuario o contraseña incorrectos")
 }
 
 func (a *Auth) sign(c Claims) string {

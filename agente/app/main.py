@@ -994,7 +994,8 @@ def categorias_con_stock() -> list[dict]:
 def texto_categorias(cats: list[dict]) -> str:
     nombres = [c["texto"].lower() for c in cats]
     lista = (", ".join(nombres[:-1]) + " y " + nombres[-1]) if len(nombres) > 1 else "".join(nombres)
-    enlace = f"\n\nSi prefieres verlo todo, el catálogo completo está aquí: {PUBLIC_URL}/catalogo" if PUBLIC_URL else ""
+    web = os.environ.get("CATALOGO_WEB", "").strip() or (f"{PUBLIC_URL}/catalogo" if PUBLIC_URL else "")
+    enlace = f"\n\nSi prefieres verlo todo, el catálogo completo está aquí: {web}" if web else ""
     return f"¡Claro! 😊 Tenemos {lista}.\n\n¿Qué te gustaría ver?{enlace}"
 
 
