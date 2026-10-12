@@ -9,6 +9,7 @@ from . import ficha_producto as F
 from . import memoria, venta
 
 fallos, total = [], 0
+FUENTES = {"diners", "foto", "ambas", "baruka.pe", "diners+baruka.pe", "foto+baruka.pe", "ambas+baruka.pe"}
 
 
 def caso(ok: bool, msg: str):
@@ -19,19 +20,26 @@ def caso(ok: bool, msg: str):
 
 
 # --- integridad: una ficha por prenda real, con el esquema, y la tela nunca sale de una foto
+# Desde el 12-10-2026 el catálogo oficial es baruka.pe (deploy/catalogo-baruka-pe): 96 modelos vigentes y los 15
+# retirados (V21–V44 que la web ya no vende) conservan su ficha con `retirado` y su nombre.
 fichas = F.cargar()
-caso(set(fichas) == {f"V{n}" for n in range(21, 43)}, f"faltan o sobran fichas: {sorted(fichas)}")
+vigentes = {c for c, f in fichas.items() if not f.get("retirado")}
+caso(len(vigentes) == 96, f"deben ser 96 fichas vigentes (baruka.pe): {len(vigentes)}")
+caso({f"V{n}" for n in range(21, 43)} <= set(fichas), f"las fichas V21–V42 (vigentes o retiradas) no se pierden: {sorted(fichas)[:30]}")
+caso(all(fichas[c].get("nombre") for c in fichas if fichas[c].get("retirado")), "un retirado sin nombre no se reconoce al pedirlo")
 cat = json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "catalogo_seed.json"), encoding="utf-8"))
 reales = {p.get("code") or p.get("codigo") for p in (cat if isinstance(cat, list) else cat.get("products", []))}
 caso(not ({c for c in reales if c and "V21" <= c <= "V42"} - set(fichas)), "una prenda real del catálogo no tiene ficha")
 for cod, f in fichas.items():
     for k, a in (f.get("atributos") or {}).items():
-        caso(a is None or (isinstance(a, dict) and a.get("valor") and a.get("fuente") in ("diners", "foto", "ambas")),
+        caso(a is None or (isinstance(a, dict) and a.get("valor") and a.get("fuente") in FUENTES),
              f"{cod}.{k}: atributo mal formado {a}")
-    caso((f["atributos"].get("tela") or {}).get("fuente") != "foto", f"{cod}: la tela no puede salir de una foto")
+    caso(((f.get("atributos") or {}).get("tela") or {}).get("fuente") != "foto", f"{cod}: la tela no puede salir de una foto")
     caso(f.get("cuidados") is None or isinstance(f["cuidados"], str), f"{cod}: cuidados")
-    caso(any("medidas" in p for p in f.get("pendiente_tienda") or []), f"{cod}: las medidas por talla deben figurar como pendientes")
-    caso(all(d.get("fuente") == "diners" for d in f.get("como_queda") or []), f"{cod}: «cómo queda» solo puede venir de la tienda")
+    caso(f.get("retirado") or bool(f.get("medidas")) or any("medida" in p for p in f.get("pendiente_tienda") or []),
+         f"{cod}: sin tabla de medidas válida, las medidas deben figurar como pendientes")
+    caso(all(d.get("fuente") in ("diners", "baruka.pe") for d in f.get("como_queda") or []),
+         f"{cod}: «cómo queda» solo puede venir de la tienda (Diners o baruka.pe)")
 
 # --- detección: lo que pregunta (y lo que NO es pregunta de atributo)
 DETECTA = [
@@ -60,7 +68,7 @@ caso(F.respuesta("V01", "*V01* x", ["mangas"]) == "", "sin ficha no hay respuest
 caso(F.dicho("V35", ["largo"], "Es a la rodilla 😊") and not F.dicho("V35", ["largo"], "¡Es precioso!"), "dicho(): reconoce si contestó el largo")
 caso("FICHA TÉCNICA" in venta.extras_texto("V24") and "NO FIGURA" in venta.extras_texto("V24"), "la ficha llega al LLM con lo que no figura")
 caso(venta.tela("V24", "") == "", "«no se indica» no es una tela que se diga")
-caso(venta.tela("V41", "") == "tela roma", f"tela del Holly desde la ficha: {venta.tela('V41', '')}")
+caso("roma" in venta.tela("V41", "").lower(), f"tela del Holly desde la ficha (baruka.pe: Roma stretch): {venta.tela('V41', '')}")
 
 print(f"ficha técnica de producto: {total - len(fallos)}/{total} casos")
 for f in fallos:

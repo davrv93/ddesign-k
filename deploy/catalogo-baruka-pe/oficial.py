@@ -89,9 +89,13 @@ def main():
         ficha["nombre"] = nombre(p)
         # Lo que la web ya responde deja de estar «pendiente de la tienda»: colores y tallas siempre; medidas si su
         # tabla es válida. (La ficha anterior decía «palo rosa según catálogo» del Holly, que la web vende en otros.)
-        ficha["pendiente_tienda"] = [x for x in ficha.get("pendiente_tienda") or []
-                                     if not re.search(r"colou?r|talla", x, re.I)
-                                     and not (ficha.get("medidas") and re.search(r"medida", x, re.I))]
+        pend = [x for x in ficha.get("pendiente_tienda") or []
+                if not re.search(r"colou?r|^(qu[eé] )?tallas?\b", x, re.I)
+                and not (ficha.get("medidas") and re.search(r"medida", x, re.I))]
+        # Sin tabla válida en la web, las medidas siguen pendientes: así el LLM no las inventa.
+        if not ficha.get("medidas") and not any(re.search(r"medida", x, re.I) for x in pend):
+            pend.append("medidas por talla")
+        ficha["pendiente_tienda"] = pend
         ficha.setdefault("web", {})
         ficha["web"] = {**ficha["web"], "url": p["url"], "handle": p["handle"], "colores": colores,
                         "tallas": tallas, "bajo_pedido": preorden, "precio": p["precio"]}

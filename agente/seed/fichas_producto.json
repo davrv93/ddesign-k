@@ -827,6 +827,7 @@
   "resumen": "Blusa negra con cuello lazo, botones forrados al frente y mangas largas de organza francesa transparente con volantes en los hombros; la espalda es cerrada y transparente.",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
    "largo de la blusa (en las fotos va metida)",
    "si tiene forro en el delantero",
    "si se ve transparencia del sostén por la espalda"
@@ -1485,6 +1486,7 @@
   "resumen": "Blusa de denim delgado azul, con cuello de tiras que se anuda en lazo, escote en V, mangas cortas abullonadas y botones de broche al frente.",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
    "largo de la blusa (en las fotos va metida en el pantalón)",
    "forro",
    "elasticidad",
@@ -1772,6 +1774,7 @@
   "resumen": "La blusa Emet es de seda a rayas rojas y blancas, con escote en V, corte en la cintura y parte baja estilo peplum. Tiene mangas largas con yugo y, en la foto, botones al frente y un lazo en la cintura.",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (busto, cintura, cadera, largo)",
    "si el lazo de la cintura es fijo o se desata",
    "forro",
    "elasticidad de la tela",
@@ -3800,6 +3803,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/file_7.jpg?v=1766882795",
    "cuidados de lavado"
   ],
   "web": {
@@ -4489,6 +4493,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -4544,6 +4549,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -4598,6 +4604,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -4650,6 +4657,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -4703,6 +4711,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -4757,6 +4766,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -4810,6 +4820,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -4863,6 +4874,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -4917,6 +4929,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -4970,6 +4983,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5023,6 +5037,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5077,6 +5092,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5130,6 +5146,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5184,6 +5201,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5240,6 +5258,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5294,6 +5313,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5350,6 +5370,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5399,6 +5420,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5454,6 +5476,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5510,6 +5533,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5566,6 +5590,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5621,6 +5646,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5674,6 +5700,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5856,6 +5883,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -5913,6 +5941,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -6125,6 +6154,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_27.jpg?v=1766078505",
    "si tiene forro",
    "cuidados de lavado"
   ],
@@ -6199,6 +6229,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_27.jpg?v=1766078505",
    "si tiene forro",
    "cuidados de lavado"
   ],
@@ -6275,6 +6306,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_26.jpg?v=1766076846",
    "si tiene forro"
   ],
   "web": {
@@ -6354,6 +6386,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/WhatsApp_Image_2025-12-18_at_12.17.32_PM_1.jpg?v=1766078303",
    "si tiene forro"
   ],
   "web": {
@@ -6428,6 +6461,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_27.jpg?v=1766078505",
    "si tiene forro",
    "cuidados de lavado"
   ],
@@ -6500,6 +6534,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_27.jpg?v=1766078505",
    "si tiene forro",
    "cuidados de lavado"
   ],
@@ -6571,6 +6606,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/WhatsApp_Image_2025-12-18_at_12.43.49_PM.jpg?v=1766079848",
    "si tiene forro",
    "cuidados de lavado"
   ],
@@ -8052,7 +8088,9 @@
   "cuidados": "Lavar a mano o en ciclo delicado. Secar a la sombra. Planchar por el reverso a temperatura media",
   "resumen": "",
   "discrepancias": [],
-  "pendiente_tienda": [],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/AURORA.png?v=1765920058"
+  ],
   "web": {
    "url": "https://baruka.pe/products/aurora",
    "handle": "aurora",
@@ -8616,7 +8654,9 @@
   "cuidados": "Lavar a mano o en ciclo delicado. No usar secadora. Secar a la sombra",
   "resumen": "",
   "discrepancias": [],
-  "pendiente_tienda": [],
+  "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_22.jpg?v=1765990213"
+  ],
   "web": {
    "url": "https://baruka.pe/products/selma",
    "handle": "selma",
@@ -8917,6 +8957,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -9239,6 +9280,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -9422,6 +9464,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -10276,6 +10319,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -10331,6 +10375,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
@@ -10542,6 +10587,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla: la tabla de baruka.pe es una imagen que el OCR no leyó bien; revisarla a mano: https://cdn.shopify.com/s/files/1/0820/6591/6194/files/image_25.jpg?v=1766000331",
    "tela",
    "si tiene forro"
   ],
@@ -10870,6 +10916,7 @@
   "resumen": "",
   "discrepancias": [],
   "pendiente_tienda": [
+   "medidas por talla (la web no trae tabla)",
    "tela",
    "si tiene forro",
    "cuidados de lavado",
