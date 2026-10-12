@@ -18,12 +18,12 @@ from .validador import hechos_vacios
 
 MAX_CATALOGO = 6
 RE_PIDE_VARIAS = re.compile(r"\b(fotos|modelos|opciones|vestidos|conjuntos|otros|otras|cat[aá]logo|todos|todas|qu[eé] tienes|qu[eé] m[aá]s)\b")
-RE_PIDE_FOTO = re.compile(r"\b(foto|ver|veo|mu[eé]stra\w*|p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|c[oó]mo es|como es|c[oó]mo se ve)\b")
+RE_PIDE_FOTO = re.compile(r"\b(foto|ver|veo|mu[eé]stra\w*|p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|c[oó]mo es(?!\s+(el|la|su)\s+(material|tela|forro|talla|envio|env[ií]o|pago))|c[oó]mo se ve)\b")
 # Pide ver modelos (12-10-2026, la tienda: «que no ofrezca modelos a menos que la clienta lo solicite»). «Busco un
 # vestido» es una necesidad, no un pedido de fotos: ahí se indaga (guion, pasos 1-4).
 RE_PIDE_MODELOS = re.compile(r"\b(fotos?|ver|veo|verlo|verla|mu[eé]stra\w*|p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|"
                              r"modelos?|opciones|cat[aá]logo|tienes|tienen|tendr[aá]s|hay|recomienda\w*|"
-                             r"c[oó]mo es|c[oó]mo son|qu[eé] m[aá]s|otros?|otras?)\b|\bv\d{2}\b", re.I)
+                             r"c[oó]mo es(?!\s+(el|la|su)\s+(material|tela|forro|talla|envio|env[ií]o|pago))|qu[eé] m[aá]s|otros?|otras?)\b|\bv\d{2}\b", re.I)
 MAX_FOTOS = 3          # un mensaje con 6 fotos es un catálogo, no una conversación
 GENERICAS = {"vestido", "conjunto", "blusa", "pantalon", "falda", "enterizo", "blazer"}
 ORDEN_TALLAS = ("XS", "S", "M", "L", "XL", "XXL")
@@ -87,7 +87,10 @@ class Recolector:
     """
 
     def __init__(self, fichas, consultar_stock, pie=None, permitir_reserva: bool = False, mensaje: str = "",
-                 mostrados=(), pago_ok: bool = False):
+                 mostrados=(), pago_ok: bool = False, contesta_cual: bool = False):
+        self.contesta_cual = contesta_cual   # el bot le preguntó «¿cuál?»: lo que describa es pedir verlo
+        self.sin_cual = False                # «¿tienen este vestido?» sin decir cuál: no se adivina
+        self.sin_color = ""                  # pidió un color que no hay: no se manda otra prenda en su lugar
         self.mensaje = (mensaje or "").lower()
         self.mostrados = {str(c).upper() for c in mostrados or ()}
         self.fichas = list(fichas)
@@ -96,6 +99,7 @@ class Recolector:
         self.permitir_reserva = permitir_reserva
         self.hechos = hechos_vacios()
         self.hechos["precios"].update(ENVIOS)
+        self.hechos["tallas"].update({"S", "M", "L"})   # tallas de la tienda (tienda.md); XL no existe y sigue sin respaldo
         self.hechos["pago_ok"] = bool(pago_ok)
         self.fotos: list[dict] = []
         self.usadas: list[str] = []
@@ -119,8 +123,8 @@ class Recolector:
             return {"error": str(e)}
 
     def _pide_modelos(self) -> bool:
-        """El mensaje pide ver prendas o nombra una (por código o por su nombre)."""
-        if RE_PIDE_MODELOS.search(self.mensaje):
+        """El mensaje pide ver prendas o nombra una (por código o por su nombre), o contesta a «¿cuál?»."""
+        if self.contesta_cual or RE_PIDE_MODELOS.search(self.mensaje):
             return True
         plano = memoria._plano(self.mensaje)
         for f in self.fichas:
@@ -204,6 +208,11 @@ class Recolector:
         # pida varias) lo aplica agente.py sobre lo que se le muestra a la clienta, no aquí: la herramienta
         # debe marcar TODO lo que el modelo pida explícitamente (si no, un test de 2 códigos pierde el 2°).
         explicita = bool(RE_PIDE_FOTO.search(self.mensaje))
+        if self.sin_color:
+            return {"error": f"No tenemos nada color {self.sin_color}: dilo y pregúntale si quiere ver otro color; no "
+                             "mandes otra prenda como si fuera de ese color."}
+        if self.sin_cual:
+            return {"error": "Pregunta por «este» modelo sin decir cuál: pídele la foto o el nombre; no adivines."}
         if self.mensaje and not self._pide_modelos():   # sin mensaje = llamada interna, no un turno de la clienta
             return {"error": "No mandes fotos ni ofrezcas modelos: ella no pidió verlos. Sigue el guion (indagar) "
                              "y muéstralos solo cuando los pida."}

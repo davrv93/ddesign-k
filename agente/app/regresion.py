@@ -57,6 +57,7 @@ USAR_LLM_OVERRIDE = False
 # Historial como lo manda hoy el bot Go (F1): un turno por mensaje de la clienta y UNO por la respuesta (párrafos y pies de
 # foto fusionados), hasta 30. Por defecto se mantiene el de antes (un mensaje por párrafo, 11) para no mover la regresión de V1.
 HISTORIAL_FUSIONADO = False
+PREGUNTAS_MAX = 1   # V3 lo sube a 2 (guion de la tienda): ver app/v3/regresion.py
 # La vara que dictó la tienda: envío a Lima S/ 15, a provincia S/ 20; showroom en Juan Ayllón 459.
 ENVIO = {"lima": 15.0, "provincia": 20.0}
 SHOWROOM = "Juan Ayllón 459"
@@ -408,10 +409,17 @@ def universales(j: dict, antes: dict | None, etapa_antes: str, esp: dict, cat: C
     mem = j.get("memoria") or {}
     if not texto.strip() and accion in ("responder", ""):
         f.append("respuesta vacía")
-    # Una pregunta por mensaje.
+    # Una pregunta por mensaje (V1/V2). Con el guion de la tienda (V3, seed/speech.md): hasta 2, y 3 solo si son
+    # talla, día/noche y estatura juntas, igual que app/v3/validador.py.
     n_preg = len(memoria.preguntas_en(texto))
-    if n_preg > esp.get("preguntas_max", 1):
-        f.append(f"{n_preg} preguntas en un mensaje (máx. {esp.get('preguntas_max', 1)})")
+    tope = esp.get("preguntas_max", PREGUNTAS_MAX)
+    if PREGUNTAS_MAX > 1 and "preguntas_max" not in esp:
+        from .v3 import validador as _v3val
+        qs = re.findall(r"¿[^?]*\?", texto)
+        if qs and all(_v3val.RE_INDAGA.search(q) for q in qs):
+            tope = _v3val.MAX_PREGUNTAS_INDAGAR
+    if n_preg > tope:
+        f.append(f"{n_preg} preguntas en un mensaje (máx. {tope})")
     # Derivar a una persona solo si lo pide; armar pedido solo en cierre y con talla.
     if accion == "asesora" and "asesora" not in _lista(esp.get("accion", [])):
         f.append("derivó a una asesora sin que la pidan")

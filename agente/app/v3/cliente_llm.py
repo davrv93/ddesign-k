@@ -35,6 +35,11 @@ def _cfg() -> tuple[str, str, str]:
 URL, KEY, MODELO = _cfg()
 TIMEOUT = float(os.environ.get("V3_TIMEOUT_MS", "8000")) / 1000.0
 MAX_VUELTAS = max(1, int(os.environ.get("V3_MAX_VUELTAS", "3")))
+# Tope de salida y esfuerzo de razonamiento. Con 700 tokens, gpt-6-luna razonaba en la 3.ª vuelta hasta agotarlos y
+# devolvía contenido nulo (finish_reason=length) → «respuesta vacía» → V1 (12-10-2026). «low» no dejó vacías y abarata.
+MAX_TOKENS = int(os.environ.get("V3_MAX_TOKENS", "1500"))
+RAZONAMIENTO = os.environ.get("V3_RAZONAMIENTO", "low").strip().lower()
+EXTRA = {"reasoning": {"effort": RAZONAMIENTO}} if RAZONAMIENTO not in ("", "default", "off") else {}
 
 _http = httpx.Client(timeout=TIMEOUT)
 
@@ -59,19 +64,24 @@ def responder(mensajes: list[dict], tools: list[dict], ejecutar, modelo: str = "
     tope = max_vueltas or MAX_VUELTAS
     msgs = list(mensajes)
     usadas: list[str] = []
+    uso: dict = {}
     for vuelta in range(tope):
         envio = msgs
         if vuelta == tope - 1:  # última vuelta CON herramientas: que actúe ahora, no que lo prometa y lo deje narrado
             envio = msgs + [{"role": "user", "content": "Es tu última vuelta: si ya tienes lo que necesitas, llama "
                              "ahora a enviar_fotos/crear_reserva/agendar_cita y responde; si no, responde con lo que "
                              "ya sabes. No sigas buscando ni digas que vas a revisar algo."}]
-        cuerpo = {"model": modelo, "messages": envio, "temperature": 0.5, "max_tokens": 700,
-                  "tools": tools, "tool_choice": "auto"}
+        cuerpo = {"model": modelo, "messages": envio, "temperature": 0.5, "max_tokens": MAX_TOKENS, **EXTRA,
+                  "tools": tools, "tool_choice": "auto", "usage": {"include": True}}
         js = _post(cuerpo)
+        uso = sumar_uso(uso, js.get("usage"))
         msg = js["choices"][0]["message"]
         llamadas = msg.get("tool_calls") or []
         if not llamadas:
-            return {"contenido": (msg.get("content") or "").strip(), "vueltas": vuelta + 1, "usadas": usadas}
+            if not (msg.get("content") or "").strip():
+                log.warning("V3 LLM: contenido vacío (vuelta %d, fin=%s, msg=%s)", vuelta + 1,
+                            js["choices"][0].get("finish_reason"), json.dumps(msg, ensure_ascii=False)[:400])
+            return {"contenido": (msg.get("content") or "").strip(), "vueltas": vuelta + 1, "usadas": usadas, "uso": uso}
         msgs.append({"role": "assistant", "content": msg.get("content") or "", "tool_calls": llamadas})
         for call in llamadas:
             nombre = call.get("function", {}).get("name", "")
@@ -85,10 +95,29 @@ def responder(mensajes: list[dict], tools: list[dict], ejecutar, modelo: str = "
                          "content": json.dumps(resultado, ensure_ascii=False)})
     # Último recurso: incluso con el aviso de «es tu última vuelta» siguió pidiendo herramientas (ya las
     # corrimos arriba). Ahora sí, sin tools: que redacte con lo que ya tiene, en vez de quedar sin responder.
-    cuerpo = {"model": modelo, "messages": msgs, "temperature": 0.5, "max_tokens": 700}
+    cuerpo = {"model": modelo, "messages": msgs, "temperature": 0.5, "max_tokens": MAX_TOKENS, **EXTRA, "usage": {"include": True}}
     js = _post(cuerpo)
+    uso = sumar_uso(uso, js.get("usage"))
     return {"contenido": (js["choices"][0]["message"].get("content") or "").strip(),
-            "vueltas": tope, "usadas": usadas}
+            "vueltas": tope, "usadas": usadas, "uso": uso}
+
+
+def sumar_uso(a: dict | None, b: dict | None) -> dict:
+    """Suma el `usage` de varias llamadas: tokens de entrada (y en caché), salida (y razonamiento) y costo en US$
+    (OpenRouter lo informa con usage.include). Para medir el costo real por turno (análisis de costos, 12-10-2026)."""
+    out = dict(a or {})
+    for u in (b,) if b else ():
+        det_in = u.get("prompt_tokens_details") or {}
+        det_out = u.get("completion_tokens_details") or {}
+        for k, v in (("entrada", u.get("prompt_tokens")), ("cache", det_in.get("cached_tokens")),
+                     ("salida", u.get("completion_tokens")), ("razonamiento", det_out.get("reasoning_tokens")),
+                     ("costo", u.get("cost")), ("entrada", u.get("entrada")), ("cache", u.get("cache")),
+                     ("salida", u.get("salida")), ("razonamiento", u.get("razonamiento")), ("llamadas", u.get("llamadas"))):
+            if isinstance(v, (int, float)):
+                out[k] = round(out.get(k, 0) + v, 6)
+        if "prompt_tokens" in u:
+            out["llamadas"] = out.get("llamadas", 0) + 1
+    return out
 
 
 def _post(cuerpo: dict) -> dict:

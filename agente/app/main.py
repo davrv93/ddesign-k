@@ -35,6 +35,7 @@ from .solicitud import (RE_CATALOGO, RE_MAS_BARATO, RE_MAS_OPCIONES, RE_OTRAS, R
                         color_dicho, color_pedido, color_que_pide, interpretar)
 from .solicitud import pide_otro_color as _pide_otro_color
 from .v2 import config as v2cfg
+from . import vision
 from .v3 import agente as v3agente
 from .v2.agente import AgentV2
 from .v2.contexto import ContextBuilder
@@ -2636,8 +2637,14 @@ def conversar_foto(req: FotoIn) -> dict:
     if not top:
         raise HTTPException(503, "catálogo sin fotos indexadas")
     codigo, sim = top[0]
-    f = fichas[por_codigo[codigo]]
     nivel = E.img.nivel(sim)
+    # Visión antes que parecido (app/vision.py): una captura del catálogo trae el código o el nombre escrito y el
+    # parecido visual no la reconocía (12-10-2026, «me interesa este modelo» con la captura del V28).
+    vis = vision.identificar(crudo, fichas, req.mensaje)
+    if vis and vis["codigo"] in por_codigo and vis["confianza"] >= vision.CONFIANZA_MIN:
+        codigo, sim, nivel = vis["codigo"], max(sim, 0.99), "exacto"
+        top = [(codigo, sim)] + [(c, s_) for c, s_ in top if c != codigo]
+    f = fichas[por_codigo[codigo]]
     otras = [fichas[por_codigo[c]] for c, _ in top[1:]]
     st = E.stock.consultar([c for c, _ in top])
     d = lambda x: disponible(x, st.get(x.codigo, {}))
@@ -2711,7 +2718,7 @@ Máximo 3 frases."""
     return {
         "intencion": "foto", "confianza": round(sim, 3), "accion": accion, "codigo": codigo_oferta,
         "respuesta": respuesta, "modelo_llm": modelo, "motor": _motor(req.motor),
-        "foto": {"nivel": nivel, "caso": caso, "codigo": f.codigo, "similitud": round(sim, 3),
+        "foto": {"nivel": nivel, "caso": caso, "codigo": f.codigo, "similitud": round(sim, 3), "vision": vis,
                  "umbrales": {"exacto": E.img.metricas["umbral_exacto"], "parecido": E.img.metricas["umbral_parecido"]},
                  "top": [{"codigo": c, "sim": round(x, 3)} for c, x in top[:5]]},
         "sugerencias": _sugerencias_json(sugeridas),

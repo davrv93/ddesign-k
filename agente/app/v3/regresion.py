@@ -56,6 +56,7 @@ def main(argv=None) -> int:
     regresion.VERSION_OVERRIDE = a.version
     regresion.USAR_LLM_OVERRIDE = True
     regresion.HISTORIAL_FUSIONADO = True
+    regresion.PREGUNTAS_MAX = 2 if a.version == "v3" else 1
     url = a.url.rstrip("/")
     cat = regresion.Catalogo(url)
     if not cat.salud.get("ok"):
