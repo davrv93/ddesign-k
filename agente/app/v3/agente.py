@@ -471,13 +471,42 @@ def _cierra(f: dict, rec: Recolector, out: dict, usadas, vueltas, ms, req) -> di
                       _traza(out["respuesta"], [], usadas, vueltas, ms), req)
 
 
+# Opciones para la pregunta con que termina el mensaje: por WhatsApp salen como encuesta (el «botón» que sí se ve
+# desde una cuenta no oficial) y en el chat web como botones. El texto de cada opción es lo que ya se entiende escrito.
+OPCIONES = (
+    (re.compile(r"lima o (para )?provincia"), ("Lima", "Provincia")),
+    (re.compile(r"olva courier o shalom|cual de ellas prefieres|cual prefieres"), ("Olva Courier", "Shalom")),
+    (re.compile(r"no lo consideras"), ("Sí, tienes razón", "Lo voy a pensar")),
+    (re.compile(r"llamar un poco mas la atencion|llamar la atencion"), ("Llamar la atención", "Elegante y discreta")),
+    (re.compile(r"te parece bien"), ("Sí, me parece bien", "Tengo una duda")),
+    (re.compile(r"de dia o de noche"), ("De día", "De noche")),
+    (re.compile(r"(en )?que talla (te encuentras|usas)|tu talla"), ("S", "M", "L")),
+)
+
+
+def _opciones(texto: str) -> list[str]:
+    """Las opciones de la ÚLTIMA pregunta, si es de respuesta cerrada y va sola (el paso 3 con tres preguntas, no)."""
+    t = texto or ""
+    if t.count("?") == 0:
+        return []
+    ini = t.rfind("¿", 0, t.rfind("?"))
+    ultima = memoria._plano(t[ini:] if ini >= 0 else t)
+    if t.count("?") > 2 or (t.count("?") == 2 and not re.search(r"llamar|atencion", ultima)):
+        return []
+    for rx, ops in OPCIONES:
+        if rx.search(ultima):
+            return list(ops)
+    return []
+
+
 def _respuesta(f: dict, texto: str, accion: str, fotos, reserva, traza: dict, req) -> dict:
     sugerencias = [{"codigo": x["codigo"], "fuente": _fuente(x["codigo"]), "imagen": x["imagen"], "pie": x["pie"],
                     "titulo": x.get("titulo", ""), "tallas": x.get("tallas", [])}
                    for x in (fotos or [])]
     return {"respuesta": texto, "accion": accion, "codigo": (reserva or {}).get("codigo", ""),
             "talla": (reserva or {}).get("talla", ""), "sugerencias": sugerencias, "etapa": f.get("etapa", "prospeccion"),
-            "memoria": f, "modelo_llm": cliente_llm.MODELO, "motor": "v3", "version": "v3", "v3": traza}
+            "memoria": f, "modelo_llm": cliente_llm.MODELO, "motor": "v3", "version": "v3", "v3": traza,
+            "respuestas_rapidas": [{"label": o} for o in _opciones(texto)] if accion == "responder" else []}
 
 
 def _fuente(codigo: str) -> str:
