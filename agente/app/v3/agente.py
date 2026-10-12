@@ -58,7 +58,14 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     if getattr(req, "etapa", ""):
         f["etapa"] = req.etapa
 
-    hist = getattr(req, "historial", []) or []
+    # La encuesta de WhatsApp queda en el historial como «📊 pregunta · Opción A / Opción B» (bot Go, replyPoll). Repite
+    # la pregunta del mensaje anterior y sus opciones parecen dichas: el 12-10-2026 el modelo leyó «Elegante y discreta»
+    # como la elección de la clienta («¡elegante y discreta será ideal!») sin que la eligiera. Se descarta.
+    hist = [t for t in (getattr(req, "historial", []) or []) if not _es_encuesta(t)]
+    try:
+        req.historial = hist
+    except (AttributeError, ValueError):
+        pass
     ultimo_bot = memoria._plano((_bots(hist) or [""])[-1])
     if RE_SALUDO_SOLO.match(mensaje) and not (f.get("pedido") or {}).get("confirmado") \
             and f.get("etapa", "prospeccion") in ("", "prospeccion", "seguimiento") and "rosmary" not in ultimo_bot:
@@ -385,6 +392,12 @@ def _sin_repetidas(texto: str, historial) -> str:
     return " ".join(quedan).strip()
 
 
+def _es_encuesta(turno) -> bool:
+    rol = turno.get("rol", "") if isinstance(turno, dict) else getattr(turno, "rol", "")
+    txt = turno.get("texto", "") if isinstance(turno, dict) else getattr(turno, "texto", "")
+    return rol != "cliente" and (txt or "").lstrip().startswith("📊")
+
+
 def _bots(historial) -> list[str]:
     return [getattr(t, "texto", "") if not isinstance(t, dict) else t.get("texto", "")
             for t in historial if (getattr(t, "rol", "") if not isinstance(t, dict) else t.get("rol", "")) != "cliente"]
@@ -545,7 +558,21 @@ def _opciones(texto: str) -> list[str]:
     return []
 
 
+RE_PERFECTO = re.compile(r"(?<=[.!?…😊🥰]\s)¡?Perfecto[!,.]?\s*(😊\s*)?", re.I)
+
+
+def _una_muletilla(texto: str) -> str:
+    """Dos frases del guion juntas dejaban «¡Perfecto, sí lo tenemos…! … Perfecto 😊 Tengo colores…» (12-10-2026):
+    desde el segundo «Perfecto», se quita la muletilla y queda el resto de la frase."""
+    if len(re.findall(r"\bperfecto\b", texto or "", re.I)) < 2:
+        return texto
+    primero = re.search(r"\bperfecto\b", texto, re.I).end()
+    resto = RE_PERFECTO.sub("", texto[primero:])
+    return texto[:primero] + (resto[:1].upper() + resto[1:] if resto[:1].islower() else resto)
+
+
 def _respuesta(f: dict, texto: str, accion: str, fotos, reserva, traza: dict, req) -> dict:
+    texto = _una_muletilla(texto)
     sugerencias = [{"codigo": x["codigo"], "fuente": _fuente(x["codigo"]), "imagen": x["imagen"], "pie": x["pie"],
                     "titulo": x.get("titulo", ""), "tallas": x.get("tallas", [])}
                    for x in (fotos or [])]

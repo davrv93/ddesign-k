@@ -39,6 +39,10 @@ EXTRAER = [
     ("M", "talla", {"talla": "M"}),
     ("mediana", "talla", {"talla": "M"}),
     ("mido 1.60 m", "", {"estatura": "1.60"}),          # la «m» de metros no es la talla M
+    # 12-10-2026, real (compra para su hermana): «es M y de noche» perdía la M y se volvía a preguntar.
+    ("es M y de noche", "", {"talla": "M", "horario": "noche"}),
+    ("ella usa S", "", {"talla": "S"}),
+    ("es mi novia", "", {}),
     ("1,65", "estatura", {"estatura": "1.65"}),
     ("mido 158", "", {"estatura": "1.58"}),
     ("es para un matrimonio", "", {"ocasion": "matrimonio"}),

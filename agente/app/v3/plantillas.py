@@ -64,8 +64,10 @@ ENVIO = {
 }
 RE_TOQUE = re.compile(r"^\s*(hola+|holi|hey|al[oó]|buenas)?\s*[?¿!.]+\s*$|^\s*(hola+|holi|hey|al[oó])\s*$", re.I)
 RE_OK = re.compile(r"^\s*(ok+|okey|oki|ya|bien|dale|listo|perfecto|est[aá] bien|de acuerdo|ah ya|okk)\s*[!.]*\s*$", re.I)
-TOQUE = ("¡Aquí estoy! 😊 Te leo, cuéntame con confianza.", "Sí, aquí sigo 🥰 Cuando quieras me cuentas.",
-         "¡Hola de nuevo! Aquí estoy para ayudarte 😊")
+# Toda respuesta termina en pregunta (seed/speech.md). 12-10-2026, real: «hola» tras unas horas → «¡Hola de nuevo! Aquí
+# estoy para ayudarte 😊» y la charla quedaba sin rumbo.
+TOQUE = ("¡Aquí estoy! 😊 ¿En qué te ayudo?", "Sí, aquí sigo 🥰 ¿Qué estás buscando hoy?",
+         "¡Hola de nuevo! 😊 ¿En qué te puedo ayudar hoy?")
 OK_PREFIJO = ("¡Listo! ", "Dale 😊 ", "Genial. ", "¡Bien! ")
 SALUDO = ("¡Hola{nombre}! 😊 Te saluda Rosmary, desde ahora considérame tu asesora personal. Cuéntame, ¿qué evento se te aproxima?",
           "¡Hola{nombre}! 🥰 Te saluda Rosmary, desde ahora considérame tu asesora personal. ¿Qué evento se te aproxima?")

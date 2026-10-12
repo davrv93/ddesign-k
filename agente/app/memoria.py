@@ -256,7 +256,8 @@ def pregunta_de(texto: str) -> str:
 
 TALLAS = ("XXL", "XL", "XS", "S", "M", "L")
 _ALIAS_TALLA = {"chica": "S", "pequena": "S", "small": "S", "mediana": "M", "medium": "M", "grande": "L", "large": "L"}
-RE_TALLA_EXPLICITA = re.compile(r"\b(?:talla|soy|uso|usaria|visto|seria)\s+(?:es\s+)?(?:una\s+|la\s+)?(2xl|xxl|xl|xs|s|m|l)\b(?!\s*/)")
+# «es M y de noche», «ella usa S» (compra para otra persona, 12-10-2026: la M se perdía y se volvía a preguntar).
+RE_TALLA_EXPLICITA = re.compile(r"\b(?:talla|soy|uso|usa|usaria|visto|viste|seria|es)\s+(?:es\s+)?(?:una\s+|la\s+)?(2xl|xxl|xl|xs|s|m|l)\b(?!\s*/)")
 # «¿lo tienen en M?», «sería en L»: la talla que pide, dicha con «en». «en S/ 330» no es talla S.
 RE_TALLA_EN = re.compile(r"\ben\s+(?:talla\s+|la\s+)?(2xl|xxl|xl|xs|s|m|l)\b(?!\s*/)")
 # La letra dicha con su nombre («la ele», «eme»): solo si se preguntó la talla, porque «ese» es también «ese vestido».
