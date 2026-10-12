@@ -294,3 +294,26 @@ func TestEnvioLentoNoBloqueaAlBot(t *testing.T) {
 		t.Fatal("las respuestas debían salir en orden")
 	}
 }
+
+// Sesión nueva: a las 6 h siempre; desde las 2 h solo si el mensaje empieza otra charla (12-10-2026: tres horas después,
+// «hola» + «quiero un vestido» seguía hablando de la novia de la sesión anterior).
+func TestSesionNueva(t *testing.T) {
+	casos := []struct {
+		silencio time.Duration
+		texto    string
+		nueva    bool
+	}{
+		{3 * time.Hour, "hola", true},
+		{3 * time.Hour, "Quiero un vestido", true},
+		{3 * time.Hour, "Buenas tardes, tienen blusas?", true},
+		{3 * time.Hour, "ya, la M", false},     // contesta el hilo: se conserva
+		{3 * time.Hour, "y el precio?", false}, // idem
+		{30 * time.Minute, "hola", false},      // poco silencio: misma charla
+		{7 * time.Hour, "ya, la M", true},      // pasadas las 6 h, siempre
+	}
+	for _, c := range casos {
+		if got := sesionNueva(c.silencio, c.texto); got != c.nueva {
+			t.Errorf("sesionNueva(%v, %q) = %v, quería %v", c.silencio, c.texto, got, c.nueva)
+		}
+	}
+}

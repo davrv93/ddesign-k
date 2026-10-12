@@ -163,7 +163,7 @@ func (b *Bot) Handle(ctx context.Context, in *Incoming) {
 
 	// Vuelve después de horas: es una conversación nueva. Sin esto el agente seguía «hablando» de las prendas de la
 	// mañana (ofrecía una sin que la pidan) y arrastraba la etapa y la pregunta pendiente de entonces.
-	vuelve := !prevAt.IsZero() && time.Since(prevAt) > sessionGap
+	vuelve := !prevAt.IsZero() && sesionNueva(time.Since(prevAt), in.Text)
 	if vuelve && (conv.State == stIdle || conv.State == stPhoto || conv.State == stHumanAsked) {
 		b.nuevaSesion(ctx, conv)
 	}
@@ -180,6 +180,19 @@ func (b *Bot) Handle(ctx context.Context, in *Incoming) {
 
 // sessionGap: silencio a partir del cual el siguiente mensaje abre una conversación nueva.
 const sessionGap = 6 * time.Hour
+
+// sessionGapInicio: con este silencio basta si el mensaje empieza otra charla («hola», «quiero un vestido»). 12-10-2026:
+// a las 3 h de «es para mi novia», «hola» + «quiero un vestido» seguía hablando de la novia (el cliente buscaba para
+// su hermana). Si en cambio contesta el hilo («ya, la M», «¿y el precio?») se conserva hasta las 6 h.
+const sessionGapInicio = 2 * time.Hour
+
+var reInicio = regexp.MustCompile(`^(hola|holi|ola|buenas|buenos|buen dia|buenas tardes|buenas noches|quiero|quisiera|busco|` +
+	`estoy buscando|necesito|tienen|tienes|info|informacion|me interesa|consulta)\b`)
+
+// sesionNueva: ¿el mensaje que llega tras `silencio` abre una conversación nueva?
+func sesionNueva(silencio time.Duration, texto string) bool {
+	return silencio > sessionGap || silencio > sessionGapInicio && reInicio.MatchString(normalize(texto))
+}
 
 // nuevaSesion olvida el hilo anterior (etapa, memoria, pendiente, anuncio) y marca desde cuándo cuenta el historial
 // que ve el agente. Lo que se sabe de la clienta por sus pedidos vuelve por el perfil. Si el bot estaba en pausa
