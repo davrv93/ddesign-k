@@ -189,15 +189,15 @@ responde. **No los arranques**: serían dos bots con el mismo número de WhatsAp
 
 | Dato | Estado |
 |---|---|
-| Productos **V21–V41** | **Reales.** Precio, tallas S/M/L, stock, descripción y fotos copiados de `baruka.dinersclubmall.pe` el 03-10-2026 (19 productos; Kabanova y Azra, que traen dos colores, se separan en uno por color). Scripts en `deploy/catalogo-diners/` |
-| Ficha técnica V21–V42 (`agente/seed/fichas_producto.json`) | Silueta, largo, escote, mangas, espalda… sacados de las **fotos reales** (análisis visual, 07-10-2026) y del texto de Diners, con la fuente de cada dato. Medidas por talla, forro y varias telas: **pendientes de la tienda**. Lista de contradicciones texto ↔ foto en cada ficha (`discrepancias`) |
+| Catálogo (**96 modelos**) | **baruka.pe es el catálogo OFICIAL desde el 12-10-2026**: precio, colores, tallas (XS/XL/2XL «pre orden» = bajo pedido), descripción y fotos de la web, en kddesign y en la empresa «baruka» de jmdventas con los mismos códigos. 9 conservan su código (V22, V26, V27, V30, V33, V36, V39, V41, V42); 87 nuevos V45–V131; 15 retirados (V21, V23–V25, V28, V29, V31, V32, V34, V35, V37, V38, V40, V43, V44) quedan inactivos, no borrados. **Stock: la web no lo lleva**; los nuevos entraron con 10 por talla. Scripts y pasos en `deploy/catalogo-baruka-pe/` (el de Diners, `deploy/catalogo-diners/`, es historia) |
+| Ficha técnica (`agente/seed/fichas_producto.json`) | **Solo según baruka.pe** (fuente `baruka.pe`): atributos, cómo queda, colores, tallas bajo pedido y **medidas por talla** (OCR de la tabla de la web, 51 válidas). Lo que la web no dice va a `pendiente_tienda` y lo confirma una asesora. Los retirados solo llevan código y nombre, para decir que ya no se venden |
 | Política de cambios y devoluciones | **Real** (de la ficha de Diners), en `tienda.md` |
 | Productos V01–V20 | Ejemplo, **inactivos**. No se borran porque los pedidos de prueba #4, #5 y #7 los referencian |
 | Sucursales (Centro de Lima, Miraflores, Gamarra) | **Demostración, con direcciones inventadas.** Apagadas con `KD_SUCURSALES=0`: el bot ya no las menciona |
 | Showroom, horario, envíos | **Reales** (los dio la tienda el 04-10-2026): Juan Ayllón 459, Santa Anita; L–D 9–19 h, solo con cita; Lima S/ 15, provincia S/ 20. En `tienda.md` y `venta.json` (copia en `showroom` para confirmar citas; el horario que valida la cita está en `memoria.py`: si cambia, se cambia en los tres) |
-| Vestido **V42** «Vestido Gala Capa Azul» | Foto y lámina de materiales **reales** (las mandó la tienda). **Nombre, precio (S/ 260) y stock provisionales**: falta que Baruka los confirme |
+| Vestido **V42** = **Vestido Alma** | En la web es el Vestido Alma (S/ 350, 10 colores); la foto del CRM sigue siendo la del anuncio que mandó la tienda (azul cobalto) |
 | Precios de `agente/seed/precios_catalogo100.json` | Inventados. Con `CATALOGO100=0` no se usan |
-| Vestido Irla (V35) | Diners lo registra en «palo rosa», pero en su foto es negro. Se copió tal cual |
+| Modelos retirados (Irla, Kendall, Kabanova…) | No están en baruka.pe: inactivos en el CRM; si una clienta los pide, el bot dice que ya no están y no manda otra prenda en su lugar |
 | 9 pedidos y 14 conversaciones | Del 30-09 y 01-10, migrados del servidor anterior |
 
 ## Trampas conocidas
