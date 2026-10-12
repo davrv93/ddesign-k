@@ -31,6 +31,10 @@ func fakeAgente(t *testing.T, last *agente.Request) *agente.Client {
 		case "quiero ver su catalogo":
 			rep = agente.Reply{Intencion: "catalogo", Accion: "responder", Respuesta: "¡Claro! Mira estos 😍\n\n¿Para qué ocasión buscas?",
 				Sugerencias: []agente.Sugerencia{{Codigo: "V01", Fuente: "seed", Imagen: "/media/products/v01.jpg", Pie: "*V01* Vestido Esmeralda"}}}
+		case "muestrame el esmeralda":
+			// La ruta que trae el agente es la de OTRO catálogo (kddesign): aquí no existe.
+			rep = agente.Reply{Intencion: "catalogo", Accion: "responder", Respuesta: "Te muestro el Esmeralda 😍",
+				Sugerencias: []agente.Sugerencia{{Codigo: "V01", Fuente: "seed", Imagen: "/media/products/v01-de-kddesign.jpg", Pie: "*V01* Vestido Esmeralda"}}}
 		case "hola":
 			rep = agente.Reply{Intencion: "saludo", Accion: "responder", Respuesta: "¡Hola Ana! Bienvenida 😊\n\n¿Qué estás buscando hoy?"}
 		case "como hago mi pedido":
@@ -198,5 +202,27 @@ func TestAgentePedidoConTalla(t *testing.T) {
 		if s, _ := m["text"].(string); strings.Contains(s, "¿Qué talla deseas?") {
 			t.Fatal("no debía volver a preguntar la talla")
 		}
+	}
+}
+
+// La foto sale de NUESTRO producto con ese código, no de la ruta del agente (que lee el catálogo de kddesign y nombra
+// sus archivos distinto). 12-10-2026, jmdventas: «v46-tmt6t3.jpg» → 404 → la clienta recibía solo el pie, sin foto.
+func TestSugerenciaUsaLaFotoDelProductoPropio(t *testing.T) {
+	b, st, fe := setup(t, `{}`, false)
+	var last agente.Request
+	b.Agent = fakeAgente(t, &last)
+	p, err := st.GetProductByCode(context.Background(), "V01")
+	if err != nil || p.Image == "" {
+		t.Fatalf("el seed debía traer V01 con foto: %v %+v", err, p)
+	}
+	handle(b, text("muestrame el esmeralda"))
+	var url string
+	for _, m := range fe.sent {
+		if m["_path"] == "/send/media" {
+			url, _ = m["url"].(string)
+		}
+	}
+	if !strings.HasSuffix(url, p.Image) || strings.Contains(url, "de-kddesign") {
+		t.Fatalf("la foto debía ser la del producto propio (%s), salió %q", p.Image, url)
 	}
 }
