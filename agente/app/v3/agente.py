@@ -627,8 +627,14 @@ def _una_muletilla(texto: str) -> str:
     return texto[:primero] + (resto[:1].upper() + resto[1:] if resto[:1].islower() else resto)
 
 
+# La frase de noche del guion parte UNA pregunta en dos («¿Cómo quiere sentirse ese día? ¿Prefiere llamar…?»). Contada
+# como dos, no salía la encuesta ni cabía la pregunta que faltaba (12-10-2026): se une en una.
+RE_SENTIR_PARTIDA = re.compile(r"(¿[^?¿]*\bsentir(?:se|te)?\b[^?¿]*)\?\s*¿\s*(prefier\w*|busca\w*|quier\w*)", re.I)
+
+
 def _respuesta(f: dict, texto: str, accion: str, fotos, reserva, traza: dict, req) -> dict:
     texto = _una_muletilla(texto)
+    texto = RE_SENTIR_PARTIDA.sub(lambda m: f"{m.group(1)}: {m.group(2).lower()}", texto or "")
     if accion == "responder" and not ((f.get("pedido") or {}).get("confirmado")):
         texto = _con_la_que_falta(texto, f, getattr(req, "historial", []) or [])
     sugerencias = [{"codigo": x["codigo"], "fuente": _fuente(x["codigo"]), "imagen": x["imagen"], "pie": x["pie"],

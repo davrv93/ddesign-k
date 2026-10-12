@@ -128,6 +128,12 @@ def prueba_encuestas():
     caso("contestó las dos: no se agrega nada",
          _con_la_que_falta("¿Cómo quiere sentirse?", {"sabemos": {"horario": "noche", "estatura": "1.60"}}, hist),
          "¿Cómo quiere sentirse?")
+    from .agente import RE_SENTIR_PARTIDA
+    unida = RE_SENTIR_PARTIDA.sub(lambda m: f"{m.group(1)}: {m.group(2).lower()}",
+                                  "Perfecto 😊 ¿Cómo quiere sentirse ella ese día? ¿Prefiere llamar un poco más la atención?")
+    caso("la pregunta de noche partida en dos se une en una", unida,
+         "Perfecto 😊 ¿Cómo quiere sentirse ella ese día: prefiere llamar un poco más la atención?")
+    caso("unida, vuelve a tener encuesta", _opciones(unida), ["Llamar la atención", "Elegante y discreta"])
     caso("no contestó ninguna: no se insiste aquí", _con_la_que_falta("¿Me cuentas más?", {"sabemos": {}}, hist),
          "¿Me cuentas más?")
 
