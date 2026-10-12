@@ -134,6 +134,19 @@ def prueba_encuestas():
     caso("la pregunta de noche partida en dos se une en una", unida,
          "Perfecto 😊 ¿Cómo quiere sentirse ella ese día: prefiere llamar un poco más la atención?")
     caso("unida, vuelve a tener encuesta", _opciones(unida), ["Llamar la atención", "Elegante y discreta"])
+    # Escasez una sola vez y por caso; «Sí, tienes razón» a la encuesta lleva al envío; JSON nunca llega a la clienta.
+    from . import plantillas, prompt
+    from .agente import _sin_escasez_repetida, _sin_opciones
+    hist_esc = [{"rol": "bot", "texto": "¡Uy, estamos muy pronto! 🤭 Sería genial dejarlo listo ya, mientras dispongo de stock."},
+                {"rol": "bot", "texto": "📊 ¿No lo consideras? · Sí, tienes razón / Lo voy a pensar"}]
+    caso("la encuesta queda solo con su pregunta", _sin_opciones(hist_esc[1])["texto"], "¿No lo consideras?")
+    caso("escasez ya dicha: no se repite; pasa al envío",
+         _sin_escasez_repetida("Sería genial tenerlo listo mientras dispongo de stock. ¿No lo consideras? 💛", {"sabemos": {}}, hist_esc),
+         "Excelente 😊 ¿El envío sería para Lima o provincia?")
+    caso("plantilla de fecha no repite la escasez", plantillas.ya_hubo_escasez(hist_esc), True)
+    caso("JSON con salto de línea literal se lee",
+         prompt.leer_salida('{"respuesta": "Hola\nque tal", "pregunta_hecha": "fecha"}'), {"respuesta": "Hola\nque tal", "pregunta_hecha": "fecha"})
+    caso("resto de JSON se limpia", prompt.leer_salida('¿No lo consideras? 💛","pregunta_hecha":"fecha"}')["respuesta"], "¿No lo consideras? 💛")
     caso("no contestó ninguna: no se insiste aquí", _con_la_que_falta("¿Me cuentas más?", {"sabemos": {}}, hist),
          "¿Me cuentas más?")
 

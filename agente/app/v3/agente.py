@@ -61,7 +61,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     # La encuesta de WhatsApp queda en el historial como «📊 pregunta · Opción A / Opción B» (bot Go, replyPoll). Repite
     # la pregunta del mensaje anterior y sus opciones parecen dichas: el 12-10-2026 el modelo leyó «Elegante y discreta»
     # como la elección de la clienta («¡elegante y discreta será ideal!») sin que la eligiera. Se descarta.
-    hist = [t for t in (getattr(req, "historial", []) or []) if not _es_encuesta(t)]
+    hist = [_sin_opciones(t) for t in (getattr(req, "historial", []) or [])]
     try:
         req.historial = hist
     except (AttributeError, ValueError):
@@ -117,6 +117,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
                        for x in hist if (x.get("rol", "") if isinstance(x, dict) else getattr(x, "rol", "")) == "cliente")
     hecho = _precalculo(rec, {**(lectura.get("datos") or {}),
                               "otra_persona": bool(plantillas.RE_OTRA_PERSONA.search(f"{clienta} {memoria._plano(mensaje)}")),
+                              "estilo_ya": (f.get("sabemos") or {}).get("estilo") or "",
                               "producto": getattr(req, "producto", "") or f.get("producto")
                                           or ((f.get("mostrados") or [""])[-1])})
     pedido = _pedido_en_curso(rec, req, f)
@@ -261,7 +262,10 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
                       "Te comento que nuestras tallas son completas y son medidas peruanas.» y luego pregunta lo que "
                       "falte del paso 3.")
     horario = datos.get("horario")
-    if horario == "noche":
+    if horario == "noche" and datos.get("estilo_ya"):
+        partes.append(f"HECHO: el evento es de NOCHE y ya eligió cómo quiere sentirse ({datos['estilo_ya']}). No vuelvas a "
+                      "preguntarlo: sigue con lo que falte del guion.")
+    elif horario == "noche":
         partes.append("HECHO: el evento es de NOCHE. Dile casi textual: «Perfecto 😊 Tengo colores vibrantes y sobrios. "
                       "¿Cómo quieres sentirte ese día? ¿Prefieres llamar un poco más la atención, o buscas verte elegante, "
                       "sofisticada y más discreta?». En este mensaje NO preguntes la fecha.")
@@ -397,6 +401,22 @@ def _sin_repetidas(texto: str, historial) -> str:
     partes = re.split(r"(?<=[.!?…])\s+|\n+", (texto or "").strip())
     quedan = [x for x in partes if _norm(x) not in dichas]
     return " ".join(quedan).strip()
+
+
+def _sin_opciones(turno):
+    """La encuesta queda en el historial SOLO con su pregunta («¿No lo consideras?»), sin las opciones: la pregunta hace
+    falta para entender un «sí» (paso 7) — desde que la pregunta va solo en la encuesta, el texto ya no la trae — y las
+    opciones no, porque el modelo las leía como elegidas."""
+    if not _es_encuesta(turno):
+        return turno
+    txt = (turno.get("texto", "") if isinstance(turno, dict) else getattr(turno, "texto", "")).lstrip().removeprefix("📊").strip()
+    txt = txt.split(" · ")[0].strip()
+    if isinstance(turno, dict):
+        return {**turno, "texto": txt}
+    try:
+        return type(turno)(rol=getattr(turno, "rol", "bot"), texto=txt)
+    except Exception:
+        return {"rol": getattr(turno, "rol", "bot"), "texto": txt}
 
 
 def _es_encuesta(turno) -> bool:
@@ -555,11 +575,14 @@ RE_DOS_EN_UNA = re.compile(r"(\by|,)\s+(cuanto|cuantos|que|como|cual|cuando|dond
 # Preguntas del guion que se pueden hacer juntas (paso 3) y cómo reconocerlas en el texto del bot.
 RE_PREGUNTA_DE = {"talla": re.compile(r"\btalla\b"), "horario": re.compile(r"\bde dia o de noche\b"),
                   "estatura": re.compile(r"\bestatura\b|\bcuanto (mide|mides)\b"),
-                  "fecha": re.compile(r"\bpara cuando\b")}
+                  "fecha": re.compile(r"\bpara cuando\b"),
+                  "estilo": re.compile(r"\bsentir(se|te)?\b|\bllamar (un poco (mas )?)?la atencion\b")}
 FALTA_TU = {"talla": "¿Y en qué talla te encuentras?", "horario": "¿Y el evento es de día o de noche?",
-            "estatura": "¿Y cuánto mides de estatura?", "fecha": "¿Y para cuándo lo necesitas?"}
+            "estatura": "¿Y cuánto mides de estatura?", "fecha": "¿Y para cuándo lo necesitas?",
+            "estilo": "¿Y prefieres llamar un poco más la atención o verte elegante y discreta?"}
 FALTA_ELLA = {"talla": "¿Y en qué talla se encuentra ella?", "horario": "¿Y el evento es de día o de noche?",
-              "estatura": "¿Y cuánto mide de estatura?", "fecha": "¿Y para cuándo lo necesitan?"}
+              "estatura": "¿Y cuánto mide de estatura?", "fecha": "¿Y para cuándo lo necesitan?",
+              "estilo": "¿Y ella prefiere llamar un poco más la atención o verse elegante y discreta?"}
 
 
 def _ultimo_turno_bot(historial) -> str:
@@ -614,6 +637,19 @@ def _opciones(texto: str) -> list[str]:
     return []
 
 
+def _sin_escasez_repetida(texto: str, f: dict, historial) -> str:
+    """La escasez («dispongo de stock», «mujer precavida»…) va una sola vez. Si ya se dijo y el modelo la reescribe, se
+    quitan esas frases; si no queda nada, se pasa al envío (paso 7) cuando aún no se sabe."""
+    if not plantillas.ya_hubo_escasez(historial) or not plantillas.RE_ESCASEZ.search(texto or ""):
+        return texto
+    frases = re.split(r"(?<=[.!?])\s+|\n+", texto)
+    resto = " ".join(x for x in frases if x and not plantillas.RE_ESCASEZ.search(x)
+                     and not re.fullmatch(r"\W*¿?no lo consideras\?\W*", memoria._plano(x)))
+    if resto.strip(" 😊🥰💛🤭"):
+        return resto.strip()
+    return PLANTILLA_PASO7[0] if not (f.get("sabemos") or {}).get("envio") else texto
+
+
 RE_PERFECTO = re.compile(r"(?<=[.!?…😊🥰]\s)¡?Perfecto[!,.]?\s*(😊\s*)?", re.I)
 
 
@@ -633,7 +669,9 @@ RE_SENTIR_PARTIDA = re.compile(r"(¿[^?¿]*\bsentir(?:se|te)?\b[^?¿]*)\?\s*¿\s
 
 
 def _respuesta(f: dict, texto: str, accion: str, fotos, reserva, traza: dict, req) -> dict:
+    texto = prompt.RE_RESTO_JSON.sub("", texto or "").strip()
     texto = _una_muletilla(texto)
+    texto = _sin_escasez_repetida(texto, f, getattr(req, "historial", []) or [])
     texto = RE_SENTIR_PARTIDA.sub(lambda m: f"{m.group(1)}: {m.group(2).lower()}", texto or "")
     if accion == "responder" and not ((f.get("pedido") or {}).get("confirmado")):
         texto = _con_la_que_falta(texto, f, getattr(req, "historial", []) or [])

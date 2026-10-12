@@ -7,6 +7,7 @@ checklist (no como guion). La salida es JSON: {"respuesta", "pregunta_hecha"}.
 from __future__ import annotations
 
 import json
+import re
 import os
 
 from .. import memoria
@@ -118,16 +119,25 @@ def construir(ficha: dict, historial: list, mensaje: str, canal: str = "", hecho
     return msgs
 
 
+RE_SALIDA = re.compile(r'"respuesta"\s*:\s*"(?P<r>.*?)"\s*,\s*"pregunta_hecha"\s*:\s*"(?P<p>[^"]*)"', re.S)
+# Restos de JSON que nunca deben llegar a la clienta (12-10-2026, WhatsApp real: «…¿No lo consideras? 💛","pregunta_hecha":"fecha"}»).
+RE_RESTO_JSON = re.compile(r'^\s*\{?\s*"respuesta"\s*:\s*"|"\s*,\s*"pregunta_hecha"\s*:\s*"[^"]*"\s*\}?\s*$|^\s*\{\s*$|^\s*\}\s*$', re.M)
+
+
 def leer_salida(texto: str) -> dict:
-    """El JSON del modelo, tolerante a ```json```. Devuelve {"respuesta", "pregunta_hecha"}."""
+    """El JSON del modelo, tolerante a ```json``` y a saltos de línea literales dentro del texto (json estricto los
+    rechaza y se enviaba el JSON crudo). Devuelve {"respuesta", "pregunta_hecha"}; nunca deja restos de JSON."""
     t = (texto or "").strip()
     t = t.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
     i, j = t.find("{"), t.rfind("}")
     if i >= 0 and j > i:
         try:
-            js = json.loads(t[i:j + 1])
-            return {"respuesta": str(js.get("respuesta") or "").strip(),
-                    "pregunta_hecha": str(js.get("pregunta_hecha") or "").strip()}
+            js = json.loads(t[i:j + 1], strict=False)
+            if isinstance(js, dict) and "respuesta" in js:
+                return {"respuesta": str(js.get("respuesta") or "").strip(),
+                        "pregunta_hecha": str(js.get("pregunta_hecha") or "").strip()}
         except ValueError:
             pass
-    return {"respuesta": t, "pregunta_hecha": ""}
+    if m := RE_SALIDA.search(t):
+        return {"respuesta": m.group("r").replace('\\"', '"').replace("\\n", "\n").strip(), "pregunta_hecha": m.group("p").strip()}
+    return {"respuesta": RE_RESTO_JSON.sub("", t).strip(), "pregunta_hecha": ""}

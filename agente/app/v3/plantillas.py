@@ -52,6 +52,19 @@ PRONTO = (
     "Wooow, estamos muy pronto. Lo ideal es tenerlo antes, para que puedas tomar tus precauciones y todo salga perfecto. Recuerda que mujer precavida vale por 1000 🤭\nSería genial tenerlo listo antes de tiempo mientras dispongo de stock; si en caso necesitas ajustes o cambio, tranquilamente podemos resolverlo. ¿No lo consideras?",
     "¡Uy, estamos muy pronto! 🤭 Lo ideal es tenerlo antes para que tomes tus precauciones y todo salga perfecto; mujer precavida vale por 1000.\nSería genial dejarlo listo ya, mientras dispongo de stock, y si necesitas algún ajuste o cambio lo resolvemos con calma. ¿No lo consideras?",
 )
+# Escasez 1 (la fecha es la otra semana), textual del guion de la tienda (tabla del 12-10-2026).
+ESCASEZ_1 = (
+    "Sería genial tenerlo listo antes de tiempo mientras dispongo de stock; si en caso necesitas ajustes o cambio, tranquilamente podemos resolverlo. ¿No lo consideras?",
+    "Sería genial tenerlo listo antes de tiempo, mientras dispongo de stock; y si necesitas algún ajuste o cambio, tranquilamente lo resolvemos. ¿No lo consideras?",
+)
+# El mensaje de escasez va UNA sola vez por conversación (pedido del usuario, 12-10-2026: tras «Sí, tienes razón» se repetía).
+RE_ESCASEZ = re.compile(r"dispongo de stock|mujer precavida|estamos muy pronto", re.I)
+
+
+def ya_hubo_escasez(historial) -> bool:
+    return any(RE_ESCASEZ.search(b) for b in _bots(historial))
+
+
 CON_TIEMPO = (
     "Sería genial tenerlo listo antes de tiempo mientras dispongo de stock. Recuerda que estos últimos meses del año son pesados; si en caso necesitas ajustes o cambio, tranquilamente podemos resolverlo. ¿No lo consideras?",
     "¡Qué bueno que tienes tiempo! Aun así, sería genial dejarlo listo mientras dispongo de stock: estos últimos meses del año son pesados, y si necesitas un ajuste o cambio lo vemos con calma. ¿No lo consideras?",
@@ -123,7 +136,14 @@ def responder(f: dict, datos: dict, mensaje: str, historial, cliente: str = "") 
         except (TypeError, ValueError):
             pass
         _marca(f, "fecha")
-        return _una(PRONTO if dias is not None and dias <= 14 else CON_TIEMPO, historial)
+        if ya_hubo_escasez(historial):
+            return None                            # ya se dijo: no se repite
+        # Según cuánto falte (guion): muy pronto (≤ 7 días) · la otra semana (8–14) · con tiempo (más).
+        if dias is not None and dias <= 7:
+            return _una(PRONTO, historial)
+        if dias is not None and dias <= 14:
+            return _una(ESCASEZ_1, historial)
+        return _una(CON_TIEMPO, historial)
 
     # Datos del paso 3/4 (talla S/M/L, estatura, día o noche), con el evento ya contado.
     if not sab.get("ocasion") or not (set(utiles) & {"talla", "estatura", "horario"}) \

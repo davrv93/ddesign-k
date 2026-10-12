@@ -1,0 +1,240 @@
+conversacion_id,turno,evento,para_quien,mensaje_cliente,datos_esperados,que_prueba
+c01,1,boda invitada,ella misma,hola buenas tardes 😊,{},saludo sin datos
+c01,2,boda invitada,ella misma,tengo una boda y no se q ponerme jaja soy invitada,"{""ocasion"":""boda""}",cuenta el evento de forma informal
+c01,3,boda invitada,ella misma,M,"{""talla"":""M""}","contesta 1 de 2 preguntas (talla sí, horario no)"
+c01,4,boda invitada,ella misma,"ah es de noche, la recepcion es en un local en chorrillos","{""horario"":""noche""}",completa el dato faltante en otro mensaje
+c01,5,boda invitada,ella misma,mido 1.60,"{""estatura"":""1.60""}",estatura con punto
+c01,6,boda invitada,ella misma,Llamar la atención,"{""estilo"":""llamar la atención""}",voto de encuesta de estilo
+c01,7,boda invitada,ella misma,es el sabado 24,"{""fecha"":""el sabado 24""}",fecha con día de la semana y número
+c01,8,boda invitada,ella misma,si muestrame modelos x fa,{},pide ver modelos
+c02,1,graduación,hija,"Buenas noches señorita, quisiera un vestido para mi hija que se gradua de la universidad","{""ocasion"":""graduación"",""para_quien"":""hija""}",mamá compra para la hija
+c02,2,graduación,hija,"ella es talla S, es delgadita","{""talla"":""S""}",talla de otra persona
+c02,3,graduación,hija,la ceremonia es de dia y luego hay un almuerzo,"{""horario"":""dia""}",horario dentro de frase larga
+c02,4,graduación,hija,"mide 1,57","{""estatura"":""1.57""}","estatura con coma '1,57'"
+c02,5,graduación,hija,Elegante y discreta,"{""estilo"":""elegante y discreta""}",voto de encuesta de estilo
+c02,6,graduación,hija,el 15 de noviembre,"{""fecha"":""15 de noviembre""}",fecha absoluta
+c02,7,graduación,hija,Lima,"{""envio"":""lima""}",voto de encuesta de envío
+c02,8,graduación,hija,"ya, como hago el pago? tienen yape?",{},pregunta medio de pago al cierre
+c03,1,cena de empresa,ella misma,hola,{},saludo mínimo
+c03,2,cena de empresa,ella misma,"necesito algo para la cena de fin de año de mi chamba, es M, de noche y mido 162","{""ocasion"":""cena de empresa"",""talla"":""M"",""horario"":""noche"",""estatura"":""1.62""}",da 4 datos juntos y estatura sin punto '162'
+c03,3,cena de empresa,ella misma,nada muy escotado xq va mi jefe jaja,{},preferencia discreta en texto libre (no es voto)
+c03,4,cena de empresa,ella misma,el viernes 12 de diciembre,"{""fecha"":""viernes 12 de diciembre""}",fecha con día y mes
+c03,5,cena de empresa,ella misma,algo en negro o vino,"{""color"":""negro o vino""}",dos colores alternativos
+c03,6,cena de empresa,ella misma,si mandame fotos,{},pide ver modelos
+c03,7,cena de empresa,ella misma,a surco cuanto sale el envio?,"{""envio"":""lima""}",envío Lima inferido por distrito (S/ 15)
+c04,1,bautizo,ella misma,"hola buen dia, voy a ser madrina de un bautizo","{""ocasion"":""bautizo""}",madrina de bautizo (no de boda)
+c04,2,bautizo,ella misma,L,"{""talla"":""L""}",respuesta de una sola letra
+c04,3,bautizo,ella misma,De día,"{""horario"":""dia""}",voto de encuesta de horario
+c04,4,bautizo,ella misma,hola,{},vuelve horas después con 'hola'
+c04,5,bautizo,ella misma,"perdon me fui a trabajar, mido 1.55","{""estatura"":""1.55""}",retoma tras pausa sin repetir lo anterior
+c04,6,bautizo,ella misma,es en 2 semanas,"{""fecha"":""en 2 semanas""}",fecha relativa
+c04,7,bautizo,ella misma,"algo claro, beige o celeste, es en la iglesia","{""color"":""beige o celeste""}",color con contexto
+c04,8,bautizo,ella misma,lo recojo en agencia olva de san juan de lurigancho,"{""envio"":""lima""}",elige recojo en agencia en Lima (S/ 15)
+c05,1,quinceañero,ella misma,holaa buenas,{},saludo con letra repetida
+c05,2,quinceañero,ella misma,es el quince de mi hija y yo tb quiero estrenar 🥰,"{""ocasion"":""quinceañero"",""para_quien"":""ella misma""}",menciona a la hija pero compra para ella
+c05,3,quinceañero,ella misma,soy talla L pero a veces M depende del modelo,"{""talla"":""L""}",talla ambigua entre dos
+c05,4,quinceañero,ella misma,"de noche, mido 1,62","{""horario"":""noche"",""estatura"":""1.62""}",dos datos juntos y estatura con coma
+c05,5,quinceañero,ella misma,Llamar la atención,"{""estilo"":""llamar la atención""}",voto de encuesta de estilo
+c05,6,quinceañero,ella misma,el 8 de noviembre,"{""fecha"":""8 de noviembre""}",fecha absoluta
+c05,7,quinceañero,ella misma,tienen el vestido daleska en L?,"{""talla"":""L""}",pide modelo por nombre (Vestido Daleska)
+c05,8,quinceañero,ella misma,de que tela es? no quiero q se arrugue,{},pregunta tela
+c06,1,aniversario,esposa,"Buenas, quiero regalarle un vestido a mi esposa x nuestro aniversario","{""ocasion"":""aniversario"",""para_quien"":""esposa""}",hombre compra para su esposa
+c06,2,aniversario,esposa,la verdad no se su talla 😅,{},no sabe la talla
+c06,3,aniversario,esposa,ella usa M en blusas creo,"{""talla"":""M""}",talla inferida con duda
+c06,4,aniversario,esposa,vamos a cenar de noche a un restaurante,"{""horario"":""noche""}",horario dentro de frase
+c06,5,aniversario,esposa,mide como 1.55 mas o menos,"{""estatura"":""1.55""}",estatura aproximada
+c06,6,aniversario,esposa,el sabado,"{""fecha"":""el sabado""}",fecha relativa corta
+c06,7,aniversario,esposa,hasta 300 nomas,"{""presupuesto"":""hasta 300""}",presupuesto 'hasta 300'
+c06,8,aniversario,esposa,y si no le queda la puede cambiar?,{},pregunta por cambios
+c07,1,boda madrina,ella misma,Hola!! voy a ser madrina de matrimonio en enero,"{""ocasion"":""boda"",""fecha"":""enero""}",evento y mes en el primer mensaje
+c07,2,boda madrina,ella misma,quiero el vestido irla que vi en su insta el año pasado,{},modelo que ya no existe (Vestido Irla)
+c07,3,boda madrina,ella misma,"ay q pena, y algo parecido?",{},pide alternativa al modelo retirado
+c07,4,boda madrina,ella misma,"S, noche, 1.68","{""talla"":""S"",""horario"":""noche"",""estatura"":""1.68""}",da 3 datos sueltos separados por coma
+c07,5,boda madrina,ella misma,Llamar la atención,"{""estilo"":""llamar la atención""}",voto de encuesta de estilo
+c07,6,boda madrina,ella misma,"q sea largo porfa, soy alta",{},preferencia de largo sin dato nuevo
+c07,7,boda madrina,ella misma,el vestido merlina en q colores hay?,{},pide modelo por nombre (Vestido Merlina) y sus colores
+c07,8,boda madrina,ella misma,rojo,"{""color"":""rojo""}",color en una palabra
+c08,1,promoción de colegio,hija,"hola buenas tardes, busco vestido para la promo de mi hija","{""ocasion"":""promoción de colegio"",""para_quien"":""hija""}",compra para la hija; 'promo' abreviado
+c08,2,promoción de colegio,hija,"creo q XS, es bien flaquita","{""talla"":""XS""}",pide XS (bajo pedido)
+c08,3,promoción de colegio,hija,de noche obvio jaja es la fiesta de prom,"{""horario"":""noche""}",horario con relleno coloquial
+c08,4,promoción de colegio,hija,mide .162 cm,"{""estatura"":""1.62""}",estatura escrita rara '.162 cm'
+c08,5,promoción de colegio,hija,Llamar la atención,"{""estilo"":""llamar la atención""}",voto de encuesta de estilo
+c08,6,promoción de colegio,hija,el 5 de diciembre,"{""fecha"":""5 de diciembre""}",fecha absoluta
+c08,7,promoción de colegio,hija,cuanto demora si es bajo pedido?,{},pregunta plazo de talla bajo pedido
+c08,8,promoción de colegio,hija,ok,{},confirmación mínima
+c09,1,baby shower,amiga,"hola, mi amiga tiene su baby shower y le quiero regalar algo","{""ocasion"":""baby shower"",""para_quien"":""amiga""}",compra de regalo para amiga
+c09,2,baby shower,amiga,"esta embarazada de 7 meses, sirve algun vestido?",{},pregunta por prenda para embarazada
+c09,3,baby shower,amiga,antes del embarazo era M,"{""talla"":""M""}",talla previa al embarazo
+c09,4,baby shower,amiga,medidas? cuanto mide de busto el enterizo elvi,{},pregunta medidas de modelo por nombre (Enterizo Elvi)
+c09,5,baby shower,amiga,"es de dia, en un jardin","{""horario"":""dia""}",horario con lugar
+c09,6,baby shower,amiga,mañana 😬,"{""fecha"":""mañana""}",fecha relativa urgente 'mañana'
+c09,7,baby shower,amiga,llega mañana a los olivos?,"{""envio"":""lima""}",pregunta entrega al día siguiente en Lima
+c10,1,cumpleaños,novia,cuanto cuesta un vestido,{},pregunta precio antes de dar datos
+c10,2,cumpleaños,novia,"ok es para mi enamorada, cumple años","{""ocasion"":""cumpleaños"",""para_quien"":""novia""}",hombre compra para su enamorada
+c10,3,cumpleaños,novia,"es S creo, es bajita","{""talla"":""S""}",talla dicha como 'es S creo'
+c10,4,cumpleaños,novia,como 1.50,"{""estatura"":""1.50""}",estatura aproximada
+c10,5,cumpleaños,novia,va a ser de noche en una discoteca,"{""horario"":""noche""}",horario con lugar
+c10,6,cumpleaños,novia,"q sea sorpresa, no le escriban a ella porfa",{},pide discreción; fuera del guion
+c10,7,cumpleaños,novia,"en 2 semanas es su cumple, el 26","{""fecha"":""el 26""}",dos expresiones de fecha; manda la concreta
+c10,8,cumpleaños,novia,y tienen cajita de regalo?,{},pregunta fuera de catálogo (empaque)
+c11,1,entrevista de trabajo,ella misma,"buenas, tengo una entrevista de trabajo y quiero verme profesional","{""ocasion"":""entrevista de trabajo""}",evento no festivo
+c11,2,entrevista de trabajo,ella misma,soy M,"{""talla"":""M""}",contesta 1 de 2 preguntas (sin horario)
+c11,3,entrevista de trabajo,ella misma,es en la mañana,"{""horario"":""dia""}",'en la mañana' equivale a día
+c11,4,entrevista de trabajo,ella misma,me gusto el blazer con el pantalon codman,{},pide modelo por nombre (Pantalón Codman)
+c11,5,entrevista de trabajo,ella misma,mido 1.65 el pantalon me quedaria largo?,"{""estatura"":""1.65""}",estatura más pregunta de largo
+c11,6,entrevista de trabajo,ella misma,el lunes,"{""fecha"":""el lunes""}",fecha relativa
+c11,7,entrevista de trabajo,ella misma,Elegante y discreta,"{""estilo"":""elegante y discreta""}",voto de encuesta de estilo
+c11,8,entrevista de trabajo,ella misma,hasta 350 x todo,"{""presupuesto"":""hasta 350""}",presupuesto por conjunto
+c12,1,matrimonio religioso de noche,ella misma,Buenas noches desde Arequipa 👋,"{""ciudad"":""Arequipa"",""envio"":""provincia""}",provincia con ciudad en el saludo
+c12,2,matrimonio religioso de noche,ella misma,"tengo un matrimonio religioso de noche, soy invitada, talla M y mido 1.58","{""ocasion"":""matrimonio religioso"",""horario"":""noche"",""talla"":""M"",""estatura"":""1.58""}",da 4 datos juntos
+c12,3,matrimonio religioso de noche,ella misma,el vestido holly es de satin o de que tela?,{},pregunta tela de modelo por nombre (Vestido Holly)
+c12,4,matrimonio religioso de noche,ella misma,que medidas tiene la M,{},pregunta medidas de la talla
+c12,5,matrimonio religioso de noche,ella misma,Elegante y discreta,"{""estilo"":""elegante y discreta""}",voto de encuesta de estilo
+c12,6,matrimonio religioso de noche,ella misma,es el 22 de noviembre,"{""fecha"":""22 de noviembre""}",fecha absoluta
+c12,7,matrimonio religioso de noche,ella misma,Provincia,"{""envio"":""provincia""}",voto de encuesta de envío
+c12,8,matrimonio religioso de noche,ella misma,Shalom,"{""envio"":""provincia""}",voto de encuesta de courier (S/ 20)
+c12,9,matrimonio religioso de noche,ella misma,a la agencia de shalom de cerro colorado,"{""ciudad"":""Arequipa""}",agencia concreta dentro de la ciudad
+c13,1,primera comunión,ella misma,"hola, la primera comunion de mi hijo es el domingo, necesito algo para mi","{""ocasion"":""primera comunión"",""fecha"":""el domingo"",""para_quien"":""ella misma""}",menciona al hijo pero compra para ella
+c13,2,primera comunión,ella misma,"de dia, misa a las 10","{""horario"":""dia""}",horario con hora
+c13,3,primera comunión,ella misma,"L, mido 1.6","{""talla"":""L"",""estatura"":""1.60""}",estatura '1.6' sin segundo decimal
+c13,4,primera comunión,ella misma,"algo con blusa y pantalon mejor, no me gustan los vestidos",{},prefiere conjunto a vestido
+c13,5,primera comunión,ella misma,la blusa bernadette tienen en L?,"{""talla"":""L""}",pide modelo por nombre (Blusa Bernadette)
+c13,6,primera comunión,ella misma,Elegante y discreta,"{""estilo"":""elegante y discreta""}",voto de encuesta de estilo
+c13,7,primera comunión,ella misma,Lima,"{""envio"":""lima""}",voto de encuesta de envío
+c13,8,primera comunión,ella misma,llega antes del domingo?,{},pregunta plazo de entrega
+c14,1,viaje,ella misma,hola me voy de viaje a cusco y quiero ropa linda para las fotos 📸,"{""ocasion"":""viaje""}",menciona ciudad de destino que no es de envío
+c14,2,viaje,ella misma,q tal es el clima alla en diciembre jaja,{},mensaje fuera de tema
+c14,3,viaje,ella misma,S,"{""talla"":""S""}",respuesta de una sola letra
+c14,4,viaje,ella misma,"mas de dia, paseos","{""horario"":""dia""}",horario aproximado
+c14,5,viaje,ella misma,el conjunto dakota es abrigador?,{},pide modelo por nombre (Conjunto Dakota) y pregunta tela
+c14,6,viaje,ella misma,"viajo el 3 de diciembre, lo necesito antes","{""fecha"":""3 de diciembre""}",fecha límite de entrega
+c14,7,viaje,ella misma,vivo en la molina,"{""envio"":""lima""}",envío Lima inferido por distrito
+c14,8,viaje,ella misma,"ya, dale",{},confirmación coloquial
+c15,1,boda civil novia,ella misma,Holaaa me caso por civil 💍,"{""ocasion"":""boda civil""}",la clienta es la novia
+c15,2,boda civil novia,ella misma,soy la novia jaja,"{""para_quien"":""ella misma""}",aclara para quién
+c15,3,boda civil novia,ella misma,"quiero algo blanco o marfil, no tan de novia novia","{""color"":""blanco o marfil""}",color antes de que lo pregunten
+c15,4,boda civil novia,ella misma,XS,"{""talla"":""XS""}",pide XS (bajo pedido)
+c15,5,boda civil novia,ella misma,es al mediodia en la muni y luego almuerzo,"{""horario"":""dia""}",'mediodía' equivale a día
+c15,6,boda civil novia,ella misma,1.52,"{""estatura"":""1.52""}",estatura sola
+c15,7,boda civil novia,ella misma,el vestido alma viene en blanco?,"{""color"":""blanco""}",pide modelo por nombre (Vestido Alma)
+c15,8,boda civil novia,ella misma,Elegante y discreta,"{""estilo"":""elegante y discreta""}",voto de encuesta de estilo
+c15,9,boda civil novia,ella misma,15 de enero,"{""fecha"":""15 de enero""}",fecha absoluta
+c16,1,misa,mamá,"Buenas tardes, es para mi mamá, tiene una misa de aniversario de mi abuelito","{""ocasion"":""misa"",""para_quien"":""mamá""}",hija compra para su mamá; 'aniversario' no es la ocasión
+c16,2,misa,mamá,"ella tiene 60 años, algo sobrio",{},edad y preferencia sin dato extraíble
+c16,3,misa,mamá,usa XL,"{""talla"":""XL""}",pide XL (bajo pedido)
+c16,4,misa,mamá,es de dia,"{""horario"":""dia""}",horario simple
+c16,5,misa,mamá,mide 1.50 mas o menos,"{""estatura"":""1.50""}",estatura aproximada
+c16,6,misa,mamá,se puede ir al showroom a probarse? ella prefiere ver,{},pide cita en showroom (Santa Anita)
+c16,7,misa,mamá,el sabado en la mañana pueden?,{},"fecha de la cita, NO del evento: no debe guardarse como fecha"
+c16,8,misa,mamá,la misa es el 2 de noviembre,"{""fecha"":""2 de noviembre""}",fecha del evento después de la cita
+c17,1,evento de oficina,ella misma,"hola, en mi trabajo hay una premiacion y me van a dar reconocimiento","{""ocasion"":""evento de oficina""}",evento descrito sin nombrarlo
+c17,2,evento de oficina,ella misma,es de noche,"{""horario"":""noche""}",contesta 1 de 2 preguntas (sin talla)
+c17,3,evento de oficina,ella misma,"ah perdon, M","{""talla"":""M""}",completa la talla tarde
+c17,4,evento de oficina,ella misma,1.70,"{""estatura"":""1.70""}",estatura sola
+c17,5,evento de oficina,ella misma,Llamar la atención,"{""estilo"":""llamar la atención""}",voto de encuesta de estilo
+c17,6,evento de oficina,ella misma,pero tampoco tan exagerado jaja,{},matiza el voto de encuesta
+c17,7,evento de oficina,ella misma,el jueves de la otra semana,"{""fecha"":""el jueves de la otra semana""}",fecha relativa compuesta
+c17,8,evento de oficina,ella misma,mandame los modelos,{},pide ver modelos
+c18,1,graduación,novia,"hola buenas, mi novia se gradua y quiero sorprenderla con un vestido","{""ocasion"":""graduación"",""para_quien"":""novia""}",hombre compra para su novia
+c18,2,graduación,novia,es M y mide 1.63,"{""talla"":""M"",""estatura"":""1.63""}",talla dicha como 'es M' más estatura
+c18,3,graduación,novia,la ceremonia es de noche,"{""horario"":""noche""}",horario simple
+c18,4,graduación,novia,550?? esta caro no tienen algo mas barato,{},duda/objeción de precio
+c18,5,graduación,novia,no mas de 250,"{""presupuesto"":""no mas de 250""}",presupuesto tras objeción
+c18,6,graduación,novia,es el 29 de este mes,"{""fecha"":""29 de este mes""}",fecha semirrelativa
+c18,7,graduación,novia,"ok ese me gusta, el azul","{""color"":""azul""}",elige modelo y color
+c18,8,graduación,novia,Lima,"{""envio"":""lima""}",voto de encuesta de envío
+c18,9,graduación,novia,listo como pago,{},pide cerrar la venta
+c19,1,cumpleaños,ella misma,"hola soy de trujillo, hacen envios?","{""ciudad"":""Trujillo"",""envio"":""provincia""}",provincia con ciudad antes del evento
+c19,2,cumpleaños,ella misma,"es pa mi cumple, lo celebro de noche, soy talla M y mido 1.59","{""ocasion"":""cumpleaños"",""horario"":""noche"",""talla"":""M"",""estatura"":""1.59""}",da 4 datos juntos
+c19,3,cumpleaños,ella misma,Llamar la atención,"{""estilo"":""llamar la atención""}",voto de encuesta de estilo
+c19,4,cumpleaños,ella misma,"el 30 de octubre, llega a tiempo?","{""fecha"":""30 de octubre""}",fecha más pregunta de plazo
+c19,5,cumpleaños,ella misma,Olva Courier,"{""envio"":""provincia""}",voto de encuesta de courier
+c19,6,cumpleaños,ella misma,cuanto es el envio a trujillo,"{""ciudad"":""Trujillo""}",pregunta costo de envío a provincia (S/ 20)
+c19,7,cumpleaños,ella misma,algo dorado o plateado si hay,"{""color"":""dorado o plateado""}",color tardío
+c20,1,pedida de mano,hermana,"hola, busco un vestido para una pedida de mano","{""ocasion"":""pedida de mano""}",evento poco común
+c20,2,pedida de mano,hermana,"S, de noche","{""talla"":""S"",""horario"":""noche""}",dos datos juntos
+c20,3,pedida de mano,hermana,"ay perdon, no es para mi, es para mi hermana, ella es la que se compromete","{""para_quien"":""hermana""}",cambia de persona a mitad (la talla anterior deja de valer)
+c20,4,pedida de mano,hermana,ella es M,"{""talla"":""M""}",corrige la talla tras el cambio de persona
+c20,5,pedida de mano,hermana,mide 1.66,"{""estatura"":""1.66""}",estatura de la nueva persona
+c20,6,pedida de mano,hermana,Llamar la atención,"{""estilo"":""llamar la atención""}",voto de encuesta de estilo
+c20,7,pedida de mano,hermana,en 3 semanas mas o menos,"{""fecha"":""en 3 semanas""}",fecha relativa aproximada
+c20,8,pedida de mano,hermana,le gusta el verde,"{""color"":""verde""}",color de la otra persona
+c21,1,aniversario,suegra,"buenas tardes, mis suegros cumplen 50 años de casados y quiero regalarle a mi suegra un vestido","{""ocasion"":""aniversario"",""para_quien"":""suegra""}",yerno compra para su suegra
+c21,2,aniversario,suegra,"es una señora de 72 años, algo comodo",{},edad y preferencia sin dato extraíble
+c21,3,aniversario,suegra,mi esposa dice q es XL,"{""talla"":""XL""}",pide XL; dato de tercera persona
+c21,4,aniversario,suegra,"almuerzo, de dia","{""horario"":""dia""}",horario simple
+c21,5,aniversario,suegra,"bajita, 1.48 creo","{""estatura"":""1.48""}",estatura con duda
+c21,6,aniversario,suegra,q no sea muy pegado,{},preferencia de corte
+c21,7,aniversario,suegra,es el 20 de diciembre,"{""fecha"":""20 de diciembre""}",fecha absoluta
+c21,8,aniversario,suegra,Elegante y discreta,"{""estilo"":""elegante y discreta""}",voto de encuesta de estilo
+c22,1,quinceañero,ella misma,"Buenas, escribo de Cusco","{""ciudad"":""Cusco"",""envio"":""provincia""}",provincia con ciudad en el saludo
+c22,2,quinceañero,ella misma,soy madrina de quince de mi sobrina,"{""ocasion"":""quinceañero"",""para_quien"":""ella misma""}",menciona a la sobrina pero compra para ella
+c22,3,quinceañero,ella misma,"talla M, noche, mido 1 58","{""talla"":""M"",""horario"":""noche"",""estatura"":""1.58""}",da 3 datos; estatura con espacio '1 58'
+c22,4,quinceañero,ella misma,cuanto de cintura tiene la M? xq yo tengo 74,{},pregunta medidas con su cintura (74 no es estatura)
+c22,5,quinceañero,ella misma,Llamar la atención,"{""estilo"":""llamar la atención""}",voto de encuesta de estilo
+c22,6,quinceañero,ella misma,fin de mes,"{""fecha"":""fin de mes""}",fecha relativa vaga
+c22,7,quinceañero,ella misma,Provincia,"{""envio"":""provincia""}",voto de encuesta de envío
+c22,8,quinceañero,ella misma,Shalom,"{""envio"":""provincia""}",voto de encuesta de courier
+c23,1,baby shower,ella misma,"hola, es mi baby shower 🍼","{""ocasion"":""baby shower"",""para_quien"":""ella misma""}",la clienta es la homenajeada
+c23,2,baby shower,ella misma,"estoy de 6 meses, antes era S","{""talla"":""S""}",talla previa al embarazo; '6' no es dato
+c23,3,baby shower,ella misma,hay algo que me entre con la pancita? un enterizo quiza,{},pide prenda para embarazada
+c23,4,baby shower,ella misma,de dia,"{""horario"":""dia""}",horario simple
+c23,5,baby shower,ella misma,1.57,"{""estatura"":""1.57""}",estatura sola
+c23,6,baby shower,ella misma,"en 2 semanas, el domingo 26","{""fecha"":""domingo 26""}",dos expresiones de fecha; manda la concreta
+c23,7,baby shower,ella misma,me gustan los tonos pastel,"{""color"":""pastel""}",color como familia de tonos
+c24,1,cena de empresa,esposa,"buenas, mi esposa tiene la cena de su trabajo y le quiero comprar algo","{""ocasion"":""cena de empresa"",""para_quien"":""esposa""}",hombre compra para su esposa
+c24,2,cena de empresa,esposa,ella usa 2XL,"{""talla"":""2XL""}",pide 2XL (bajo pedido)
+c24,3,cena de empresa,esposa,mide un metro sesenta y cinco,"{""estatura"":""1.65""}",estatura escrita en palabras
+c24,4,cena de empresa,esposa,de noche,"{""horario"":""noche""}",horario simple
+c24,5,cena de empresa,esposa,q hay en su talla? q no sea ajustado,{},pide ver modelos en talla bajo pedido
+c24,6,cena de empresa,esposa,unos 400 maximo,"{""presupuesto"":""hasta 400""}",presupuesto 'unos 400 máximo'
+c24,7,cena de empresa,esposa,es el 18 de diciembre,"{""fecha"":""18 de diciembre""}",fecha absoluta
+c24,8,cena de empresa,esposa,Elegante y discreta,"{""estilo"":""elegante y discreta""}",voto de encuesta de estilo
+c25,1,bautizo,mamá,"hola buen dia, mi mama va a ser madrina de bautizo de mi sobrinito","{""ocasion"":""bautizo"",""para_quien"":""mamá""}",hija compra para su mamá; tres personas mencionadas
+c25,2,bautizo,mamá,vivimos en piura,"{""ciudad"":""Piura"",""envio"":""provincia""}",provincia con ciudad en minúscula
+c25,3,bautizo,mamá,ella es L,"{""talla"":""L""}",talla dicha como 'ella es L'
+c25,4,bautizo,mamá,"es de dia, en la iglesia y despues almuerzo","{""horario"":""dia""}",horario con contexto
+c25,5,bautizo,mamá,1.54,"{""estatura"":""1.54""}",estatura sola
+c25,6,bautizo,mamá,Elegante y discreta,"{""estilo"":""elegante y discreta""}",voto de encuesta de estilo
+c25,7,bautizo,mamá,el 6 de diciembre,"{""fecha"":""6 de diciembre""}",fecha absoluta
+c25,8,bautizo,mamá,Olva Courier,"{""envio"":""provincia""}",voto de encuesta de courier
+c25,9,bautizo,mamá,cuanto seria todo con envio?,{},pide total con envío (S/ 20 a provincia)
+c26,1,despedida de soltera,ella misma,hola! despedida de soltera de mi mejor amiga este sabado 🎉,"{""ocasion"":""despedida de soltera"",""fecha"":""este sabado""}",menciona a la amiga pero compra para ella
+c26,2,despedida de soltera,ella misma,quiero el conjunto kabanova en M,"{""talla"":""M""}",modelo que ya no existe (Conjunto Kabanova)
+c26,3,despedida de soltera,ella misma,nooo 😭 y cual se le parece,{},pide alternativa al modelo retirado
+c26,4,despedida de soltera,ella misma,de noche,"{""horario"":""noche""}",horario simple
+c26,5,despedida de soltera,ella misma,1.61,"{""estatura"":""1.61""}",estatura sola
+c26,6,despedida de soltera,ella misma,Llamar la atención,"{""estilo"":""llamar la atención""}",voto de encuesta de estilo
+c26,7,despedida de soltera,ella misma,llega para el sabado a SJM?,"{""envio"":""lima""}",envío Lima por sigla de distrito y plazo corto
+c27,1,almuerzo familiar,ella misma,buenas venden zapatos tb?,{},pregunta fuera de catálogo
+c27,2,almuerzo familiar,ella misma,"ah ok, y carteras?",{},insiste fuera de catálogo
+c27,3,almuerzo familiar,ella misma,"ya bueno, necesito una blusa linda para un almuerzo familiar","{""ocasion"":""almuerzo familiar""}",entra al guion tras desvío
+c27,4,almuerzo familiar,ella misma,de dia pues jaja almuerzo,"{""horario"":""dia""}",horario obvio con relleno
+c27,5,almuerzo familiar,ella misma,soy M de arriba y L de abajo,"{""talla"":""M""}",talla distinta arriba/abajo (para blusa vale M)
+c27,6,almuerzo familiar,ella misma,q horario atienden en santa anita?,{},pregunta horario del showroom
+c27,7,almuerzo familiar,ella misma,1.56,"{""estatura"":""1.56""}",estatura sola
+c27,8,almuerzo familiar,ella misma,el domingo,"{""fecha"":""el domingo""}",fecha relativa
+c28,1,sustentación de tesis,ella misma,"hola, sustento mi tesis y quiero ir formal pero no aburrida","{""ocasion"":""sustentación de tesis""}",evento académico no festivo
+c28,2,sustentación de tesis,ella misma,Elegante y discreta,"{""estilo"":""elegante y discreta""}",voto de encuesta fuera de orden
+c28,3,sustentación de tesis,ella misma,S y mido 155,"{""talla"":""S"",""estatura"":""1.55""}",estatura sin punto '155'
+c28,4,sustentación de tesis,ella misma,"es de dia, a las 9am","{""horario"":""dia""}",horario con hora
+c28,5,sustentación de tesis,ella misma,"un blazer y pantalon, el codman lo tienen en negro?","{""color"":""negro""}",pide modelo por nombre (Pantalón Codman) con color
+c28,6,sustentación de tesis,ella misma,"mañana no, pasado mañana jaja","{""fecha"":""pasado mañana""}",fecha relativa con autocorrección
+c28,7,sustentación de tesis,ella misma,puedo recoger en el showroom hoy?,{},pide recojo urgente en showroom
+c29,1,congreso,ella misma,"Hola, voy a exponer en un congreso medico en lima","{""ocasion"":""congreso""}","'en lima' es el lugar del evento, no el envío"
+c29,2,congreso,ella misma,"mmm prefiero hablar con una persona, eres bot?",{},pide hablar con una asesora
+c29,3,congreso,ella misma,"ok bueno, talla M","{""talla"":""M""}",acepta seguir con el bot
+c29,4,congreso,ella misma,"todo el dia, de 8 a 6","{""horario"":""dia""}",horario con rango de horas
+c29,5,congreso,ella misma,1.64,"{""estatura"":""1.64""}",estatura sola
+c29,6,congreso,ella misma,"el blazer de la foto q mande, q tela es? se arruga?",{},pregunta tela por foto enviada
+c29,7,congreso,ella misma,el 14,"{""fecha"":""el 14""}",fecha solo con el número
+c29,8,congreso,ella misma,igual quiero hablar con una asesora para confirmar xfa,{},insiste en hablar con una asesora
+c30,1,matrimonio religioso de noche,hija,"buenas noches, mi hija va a un matrimonio de noche en la iglesia y luego fiesta","{""ocasion"":""matrimonio religioso"",""horario"":""noche"",""para_quien"":""hija""}",mamá compra para la hija; 3 datos en el primer mensaje
+c30,2,matrimonio religioso de noche,hija,"ella esta en la foto, es S? q opinas",{},pide al bot adivinar la talla por foto
+c30,3,matrimonio religioso de noche,hija,"ya, le pregunte, es S","{""talla"":""S""}",confirma talla tras consultar
+c30,4,matrimonio religioso de noche,hija,1.7,"{""estatura"":""1.70""}",estatura '1.7'
+c30,5,matrimonio religioso de noche,hija,Llamar la atención,"{""estilo"":""llamar la atención""}",voto de encuesta de estilo
+c30,6,matrimonio religioso de noche,hija,hasta 300,"{""presupuesto"":""hasta 300""}",presupuesto 'hasta 300'
+c30,7,matrimonio religioso de noche,hija,el vestido holly entra en eso?,{},modelo por nombre (Vestido Holly) contra presupuesto
+c30,8,matrimonio religioso de noche,hija,el 13 de diciembre,"{""fecha"":""13 de diciembre""}",fecha absoluta
+c30,9,matrimonio religioso de noche,hija,Lima,"{""envio"":""lima""}",voto de encuesta de envío

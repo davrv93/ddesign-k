@@ -36,7 +36,7 @@ except Exception:  # noqa: BLE001
     LIMA = _dt.timezone(_dt.timedelta(hours=-5), "America/Lima")
 
 CAMPOS = ("ocasion", "horario", "fecha", "fecha_iso", "prenda", "talla", "estatura", "color", "presupuesto", "envio",
-          "ciudad", "le_gusto", "cita", "nombre")
+          "ciudad", "le_gusto", "cita", "nombre", "estilo")
 TEMPERATURAS = ("frio", "tibio", "caliente")
 
 
@@ -137,6 +137,7 @@ ESPERA = {
     "describir_prenda": "que te describa la prenda que vio (color, largo, detalles)",
     "ocasion": "la ocasión", "horario": "si el evento es de día o de noche", "talla": "su talla",
     "estatura": "su estatura", "color": "el color que busca", "fecha": "para cuándo lo necesita",
+    "estilo": "si quiere llamar la atención o verse elegante y discreta",
     "que_le_gusto": "qué le gustó del modelo", "separar": "si quiere separarlo",
     "probar": "si quiere pasar a probárselo al showroom (con cita) o que se lo separes",
     "cita": "el día y la hora de su cita para probárselo",
@@ -257,7 +258,7 @@ def pregunta_de(texto: str) -> str:
 TALLAS = ("XXL", "XL", "XS", "S", "M", "L")
 _ALIAS_TALLA = {"chica": "S", "pequena": "S", "small": "S", "mediana": "M", "medium": "M", "grande": "L", "large": "L"}
 # «es M y de noche», «ella usa S» (compra para otra persona, 12-10-2026: la M se perdía y se volvía a preguntar).
-RE_TALLA_EXPLICITA = re.compile(r"\b(?:talla|soy|uso|usa|usaria|visto|viste|seria|es)\s+(?:es\s+)?(?:una\s+|la\s+)?(2xl|xxl|xl|xs|s|m|l)\b(?!\s*/)")
+RE_TALLA_EXPLICITA = re.compile(r"\b(?:talla|soy|uso|usa|usaria|visto|viste|seria|es|era|creo que|creo q)\s+(?:es\s+)?(?:una\s+|la\s+)?(2xl|xxl|xl|xs|s|m|l)\b(?!\s*/)")
 # «¿lo tienen en M?», «sería en L»: la talla que pide, dicha con «en». «en S/ 330» no es talla S.
 RE_TALLA_EN = re.compile(r"\ben\s+(?:talla\s+|la\s+)?(2xl|xxl|xl|xs|s|m|l)\b(?!\s*/)")
 # La letra dicha con su nombre («la ele», «eme»): solo si se preguntó la talla, porque «ese» es también «ese vestido».
@@ -281,6 +282,7 @@ RE_FECHA = re.compile(
     r"|(?:el\s+)?mes que viene|fin de mes|a fin de (?:mes|ano)|fin de ano"
     r"|(?:el\s+)?(?:proximo|siguiente|otro)\s+ano|(?:el\s+)?ano que viene"
     rf"|(?:en|para)\s+(?:{_MESES})\b)")
+RE_DIA_Y_NUMERO = re.compile(r"\b((?:lunes|martes|miercoles|jueves|viernes|sabado|domingo)\s+\d{1,2})\b")   # «el domingo 26»
 RE_FECHA_DIA = re.compile(r"\b(el\s+\d{1,2})\b(?!\s*(?:soles|anos|cm|%|/|:|de la|y media|hrs?\b|h\b|am\b|pm\b))")   # «el 15», si no dijo el mes
 # «hoy», «mañana»: solo son la fecha del evento si el bot preguntó para cuándo («¿puedo ir hoy?» no lo es)…
 RE_FECHA_CORTA = re.compile(r"\b(pasado manana|(?<!la )manana|hoy|esta semana|este fin de semana)\b")
@@ -314,20 +316,26 @@ _DISTRITOS = "|".join(sorted(DISTRITOS_LIMA, key=len, reverse=True))
 RE_DISTRITO = re.compile(r"\b(" + _DISTRITOS + r")\b")
 RE_DISTRITO_DICHO = re.compile(r"\b(?:soy de|vivo en|estoy en|envi\w* a|mand\w* a|llega\w* a|delivery a|despach\w* a)\s+(?:el |la |los )?("
                                + _DISTRITOS + r")\b")
+# «a surco cuánto sale el envío», «llega mañana a los olivos», «lo recojo en agencia olva de SJL»: el distrito es destino.
+RE_HABLA_ENVIO = re.compile(r"\benvi\w*|\bdelivery\b|\bllega\w*|\bagencia\b|\brecoj\w*|\bdespach\w*|\bolva\b|\bshalom\b")
 OCASIONES = [
     ("matrimonio", r"matrimonio|boda|casamiento|me caso|se casa|matri\b"),
     # «la promo de mi hija», «pa mi promo» es la fiesta de promoción; «¿hay alguna promo?» no (eso es un descuento).
-    ("graduacion", r"graduaci|promocion|\bprom\b|(?<=\bmi )promo\b|(?<=\bla )promo\b(?= de (mi|su|la|el|mis)\b)|fiesta de promo"),
-    ("quinceanero", r"quincea|\b15 anos\b|quince anos"),
+    ("graduacion", r"graduaci|\bse gradu|\bme gradu|promocion|\bprom\b|(?<=\bmi )promo\b|(?<=\bla )promo\b(?= de (mi|su|la|el|mis)\b)|fiesta de promo"),
+    ("quinceanero", r"quincea|\b15 anos\b|quince anos|\b(el|su|mi|al|de) quince\b(?! (dias|soles|minutos|de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)))"),
     ("cumpleanos", r"cumplea|\bcumple\b"),
-    ("bautizo", r"bautizo|primera comunion|confirmacion"),
+    # Primera comunión y confirmación no son bautizo (CSV de Opus, 12-10-2026: «primera comunión» salía «bautizo»).
+    ("primera comunion", r"primera comunion|confirmacion"),
+    ("bautizo", r"bautizo"),
+    ("misa", r"\bmisa\b"),
     ("compromiso", r"compromiso|pedida de mano"),
-    ("aniversario", r"aniversario"),
+    ("aniversario", r"aniversario|anos de casados|bodas de (oro|plata|diamante)"),
     ("baby shower", r"baby shower"),
     ("cena", r"\bcena\b"),
     ("gala", r"\bgala\b"),
-    ("trabajo", r"trabajo|oficina|entrevista|conferencia"),
-    ("fiesta", r"fiesta|recepcion|\bparty\b"),
+    ("trabajo", r"trabajo|oficina|entrevista|conferencia|congreso|sustent\w*|\btesis\b"),
+    ("viaje", r"\bviaje\b|me voy de viaje|vacaciones"),
+    ("fiesta", r"fiesta|recepcion|\bparty\b|despedida de soltera|almuerzo|reunion familiar"),
     # Sin evento: para el día a día. No tiene fecha ni día/noche que preguntar.
     ("diario", r"diario\b|dia a dia|todos los dias"),
 ]
@@ -343,13 +351,15 @@ RE_NO_SABE = re.compile(r"\bno (lo )?se\b|\bni idea\b|\bno tengo (fecha|idea|dia
                         r"\bsin fecha\b|\bcualquiera\b|\bda igual\b|\bno importa\b|\bmas adelante\b|\bno (esta|tengo) definid")
 RE_OCASION = [(k, re.compile(rf"\b(?:{rx})")) for k, rx in OCASIONES]
 RE_NOCHE = re.compile(r"\b(de|en la|por la|a la) noche\b|\bnocturn|\bnoche\b")
-RE_DIA = re.compile(r"\b(de|en el|durante el) dia\b|\b(en|por) la (manana|mananita|tarde|tardecita)\b|\bal mediodia\b|\bdiurn|"
+RE_DIA = re.compile(r"\b(de|en el|durante el|todo el) dia\b|\b(en|por) la (manana|mananita|tarde|tardecita)\b|\bal mediodia\b|\bdiurn|"
                     r"\bde tarde\b|\bde manana\b")
 RE_SALUDO_NOCHE = re.compile(r"buenas noches|buenos dias|buen dia|buenas tardes")
 COLORES = ("azul", "rojo", "roja", "rosado", "rosada", "palo rosa", "rosa", "negro", "negra", "blanco", "blanca", "beige",
            "nude", "verde", "celeste", "fucsia", "morado", "morada", "lila", "vino", "guinda", "dorado", "dorada",
-           "plateado", "plateada", "amarillo", "amarilla", "naranja", "marron", "chocolate", "crema", "turquesa", "esmeralda")
+           "plateado", "plateada", "amarillo", "amarilla", "naranja", "marron", "chocolate", "crema", "turquesa", "esmeralda",
+           "pastel")
 RE_COLOR = re.compile(r"\b(" + "|".join(COLORES) + r")(?:e?s)?\b")   # «vestidos verdes», «azules»
+RE_PRESUPUESTO_DESPUES = re.compile(r"\b(\d{2,4})\s*(?:soles\s*)?(?:como\s*)?(?:maximo|max|tope|como mucho)\b")   # «unos 400 máximo»
 RE_PRESUPUESTO = re.compile(r"(?:presupuesto|hasta|maximo|no mas de|menos de|gastar|tengo|cuento con)\s*(?:de\s*|unos\s*)?(?:s/\.?\s*)?(\d{2,4})(?!\s*(?:anos|dias|cm|m\b))")
 
 # «oh sí», «a ver un momento», «ahora te digo el nombre»: todavía no responde, pero va a hacerlo.
@@ -423,8 +433,12 @@ def afirma(texto: str) -> bool:
                 and not re.match(r"^(no|ya no|todavia no)\b", t) and RE_AFIRMA_INICIO.match(t))
 
 
+# «S y mido 155», «M, de noche»: la talla al empezar, seguida de otro dato.
+RE_TALLA_INICIO = re.compile(r"^(2xl|xxl|xl|xs|s|m|l)\b(?=\s*(?:y\b|,|\.|;))")
+
+
 def _talla(t: str, pendiente: str) -> str | None:
-    if m := RE_TALLA_EXPLICITA.search(t):
+    if m := RE_TALLA_EXPLICITA.search(t) or RE_TALLA_INICIO.match(t.strip()):
         return m.group(1).upper()
     if m := RE_TALLA_ALIAS.search(t):
         return _ALIAS_TALLA[m.group(1)]
@@ -441,8 +455,17 @@ def _talla(t: str, pendiente: str) -> str | None:
     return None
 
 
+_DECENAS = {"cuarenta": 40, "cincuenta": 50, "sesenta": 60, "setenta": 70, "ochenta": 80, "noventa": 90}
+_UNIDADES = {"uno": 1, "un": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7, "ocho": 8, "nueve": 9}
+RE_ESTATURA_PALABRAS = re.compile(r"\bun metro (cuarenta|cincuenta|sesenta|setenta|ochenta|noventa)(?: y (uno|un|dos|tres|cuatro|"
+                                  r"cinco|seis|siete|ocho|nueve))?\b")
+
+
 def _estatura(t: str) -> str | None:
     m = RE_ESTATURA.search(t)
+    if not m and (w := RE_ESTATURA_PALABRAS.search(t)):     # «un metro sesenta y cinco»
+        cm = _DECENAS[w.group(1)] + _UNIDADES.get(w.group(2) or "", 0)
+        return f"1.{cm:02d}"
     if not m:
         return None
     if m.group(1):
@@ -464,8 +487,13 @@ def extraer(texto: str, pendiente: str = "") -> dict:
         t = t.replace(trozo, " ", 1)     # su nombre no es un color («Rosa») ni una ocasión
     if v := _talla(t, pendiente):
         out["talla"] = v
-    if m := RE_FECHA.search(t) or RE_FECHA_DIA.search(t):
+    if (m := RE_FECHA.search(t)) and (d := RE_FECHA_DIA.search(t) or RE_DIA_Y_NUMERO.search(t)) \
+            and re.match(r"(en|dentro de) ", m.group(1)):
+        out["fecha"] = d.group(1)          # «en 2 semanas, el 26»: manda el día dicho
+    elif m := RE_FECHA.search(t) or RE_FECHA_DIA.search(t):
         out["fecha"] = m.group(1)
+    elif pendiente == "fecha" and re.search(r"\bpasado manana\b", t):
+        out["fecha"] = "pasado manana"
     elif pendiente == "fecha" and (m := RE_FECHA_CORTA.search(t)):
         out["fecha"] = m.group(1)
     elif m := RE_FECHA_PARA.search(t):
@@ -481,7 +509,8 @@ def extraer(texto: str, pendiente: str = "") -> dict:
         ciudad = m.group(1)
         out["ciudad"] = ciudad.title()
         out["envio"] = "lima" if ciudad in ("lima", "callao") else "provincia"
-    elif m := (RE_DISTRITO.search(t) if pendiente == "lima_o_provincia" else RE_DISTRITO_DICHO.search(t)):
+    elif m := (RE_DISTRITO.search(t) if pendiente == "lima_o_provincia" or RE_HABLA_ENVIO.search(t)
+               else RE_DISTRITO_DICHO.search(t)):
         out["ciudad"], out["envio"] = (m.group(1).title() if len(m.group(1)) > 3 else m.group(1).upper()), "lima"
     if re.search(r"\bprovincia\b", t):
         out["envio"] = "provincia"
@@ -510,9 +539,24 @@ def extraer(texto: str, pendiente: str = "") -> dict:
         out["horario"] = "dia"
     if m := RE_COLOR.search(t):
         out["color"] = m.group(1)
-    if m := RE_PRESUPUESTO.search(t):
+    if m := RE_PRESUPUESTO.search(t) or RE_PRESUPUESTO_DESPUES.search(t):
         out["presupuesto"] = m.group(1)
+    if v := _estilo(t, pendiente):
+        out["estilo"] = v
     return out
+
+
+# Cómo quiere sentirse (paso 4 de noche): lo vota en la encuesta o lo dice. «elegante» suelto solo cuenta si se le preguntó.
+RE_ESTILO_LLAMAR = re.compile(r"\bllamar (un poco (mas )?)?la atencion\b|\bllamativ\w*|\bresaltar\b|\bque (se )?destaque\b|\bvibrante")
+RE_ESTILO_DISCRETA = re.compile(r"\bdiscret\w*|\bsobri\w*|\belegante y discreta\b")
+
+
+def _estilo(t: str, pendiente: str) -> str | None:
+    if RE_ESTILO_LLAMAR.search(t) and not re.search(r"\bno (quiero|me gusta) (llamar|resaltar)", t):
+        return "llamar la atención"
+    if RE_ESTILO_DISCRETA.search(t) or (pendiente == "estilo" and re.search(r"\belegante\b", t)):
+        return "elegante y discreta"
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -1038,6 +1082,7 @@ def siguiente(mem: dict, etapa: str, hay_prenda: bool | None = None, mensaje: st
 # Con el artículo, para «¿Para cuándo es el matrimonio?».
 OCASION_TXT = {"matrimonio": "el matrimonio", "graduacion": "la graduación", "quinceanero": "el quinceañero",
                "cumpleanos": "el cumpleaños", "bautizo": "el bautizo", "compromiso": "el compromiso",
+               "primera comunion": "la primera comunión", "misa": "la misa", "viaje": "el viaje",
                "aniversario": "el aniversario", "baby shower": "el baby shower", "cena": "la cena", "gala": "la gala",
                "fiesta": "la fiesta"}
 
