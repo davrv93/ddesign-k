@@ -258,12 +258,15 @@ class Recolector:
             tallas = [{"talla": t, "disponible": online[t] > 0, "precio": f.precio, "codigo": f.codigo}
                       for t in sorted(online, key=lambda t: ORDEN_TALLAS.index(t) if t in ORDEN_TALLAS else 99)]
             titulo = f"*{f.codigo}* {f.nombre}" + (f" — *{MONEDA} {f.precio:.2f}*" if f.precio is not None else "")
-            imagen = f.imagen
+            imagen, color_foto, sin_color = f.imagen, fotos_color.color_de(f"{f.codigo.lower()}.jpg"), ""
             if self.color_pedido:                # la foto del color que pidió («azul» → Blear azul noche, no la morada)
-                archivo, _c = fotos_color.foto_del_color(f.codigo, self.color_pedido)
+                archivo, c_web = fotos_color.foto_del_color(f.codigo, self.color_pedido)
                 if archivo:
-                    imagen = f"/media/tienda/{archivo}"
-            out.append({"codigo": f.codigo, "nombre": f.nombre, "imagen": imagen, "pie": pie, "titulo": titulo, "tallas": tallas})
+                    imagen, color_foto = f"/media/tienda/{archivo}", c_web
+                else:                            # no hay foto en ese color: va la principal y se dice (13-10-2026)
+                    sin_color = self.color_pedido
+            out.append({"codigo": f.codigo, "nombre": f.nombre, "imagen": imagen, "pie": pie, "titulo": titulo, "tallas": tallas,
+                        "color_foto": color_foto, "sin_color": sin_color})
             self.hechos["codigos"].add(f.codigo.upper())
             self.hechos["fotos"].add(f.codigo.upper())
             if f.precio is not None:
@@ -272,7 +275,11 @@ class Recolector:
         # y el modelo llamaba igual a enviar_fotos con uno solo, pisaba la lista y salía una foto de tres (13-10-2026).
         vistos = {x["codigo"].upper() for x in self.fotos}
         self.fotos += [x for x in out if x["codigo"].upper() not in vistos]
-        return {"enviadas": [x["codigo"] for x in out]}
+        res = {"enviadas": [{"codigo": x["codigo"], "foto_en_color": x["color_foto"] or "el de la foto principal"} for x in out]}
+        if faltan := [f"{x['codigo']} no tiene foto en {x['sin_color']}: va en {x['color_foto'] or 'su color principal'}"
+                      for x in out if x["sin_color"]]:
+            res["aviso"] = "Nombra el color REAL de cada foto; " + "; ".join(faltan) + ". Dilo tal cual, no digas que va en el color pedido."
+        return res
 
     def _t_crear_reserva(self, args: dict) -> dict:
         if not self.permitir_reserva:

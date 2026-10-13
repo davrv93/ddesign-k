@@ -146,9 +146,9 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
             and (RE_PIDE_FOTO.search(memoria._plano(mensaje)) or RE_PIDE_VARIAS.search(memoria._plano(mensaje))):
         rec.contesta_cual = rec.varias_ok = True
         rec.ejecutar("enviar_fotos", {"codigos": nombrados_bot})
-        hecho = (hecho + "\nPIDE VER LOS MODELOS QUE NOMBRASTE: ya se le enviaron las fotos de " + ", ".join(nombrados_bot)
-                 + " (NO llames a enviar_fotos ni cambies de modelo). Preséntalos con nombre y precio y pregúntale cuál le "
-                 "gusta más.").strip()
+        hecho = (hecho + "\nPIDE VER LOS MODELOS QUE NOMBRASTE: ya se le enviaron las fotos de " + _fotos_con_color(rec)
+                 + " (NO llames a enviar_fotos ni cambies de modelo). Preséntalos con nombre, precio y el color REAL de cada "
+                 "foto (si pidió otro color y un modelo no lo tiene, dilo) y pregúntale cuál le gusta más.").strip()
     # Tras una foto que no se reconoció se le preguntó si quiere ver otros modelos: las fotos salen SOLO con su «sí».
     if oferta_foto:
         codigos = [c for c in (f.get("foto_parecidas") or []) if rec._ficha(c)][:3]
@@ -157,8 +157,9 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
             if codigos:                               # los más parecidos a su foto
                 rec.varias_ok = True
                 rec.ejecutar("enviar_fotos", {"codigos": codigos})
-                hecho = (hecho + "\nPIDIÓ VER OTROS MODELOS: ya se le enviaron las fotos de " + ", ".join(codigos)
-                         + " (NO llames a enviar_fotos). Preséntalos por nombre y precio y pregúntale cuál le gusta más.").strip()
+                hecho = (hecho + "\nPIDIÓ VER OTROS MODELOS: ya se le enviaron las fotos de " + _fotos_con_color(rec)
+                         + " (NO llames a enviar_fotos). Preséntalos por nombre, precio y el color real de cada foto y "
+                         "pregúntale cuál le gusta más.").strip()
             else:                                     # sin candidatos: que elija el modelo con lo que ella contó
                 hecho = (hecho + "\nPIDIÓ VER OTROS MODELOS: muestra UNA prenda que cuadre con lo que contó (enviar_fotos), "
                          "nómbrala con su precio y pregúntale qué le gustó.").strip()
@@ -438,6 +439,16 @@ PREGUNTAS_GUION = (("ocasion", "Cuéntame, ¿qué evento se te aproxima?"), ("ta
                    ("horario", "¿El evento es de día o de noche?"), ("estatura", "¿Cuánto mides de estatura?"),
                    ("fecha", "¡Una consulta importante!, ¿para cuándo lo necesitas?"),
                    ("envio", "¿El envío sería para Lima o provincia?"))
+
+
+def _fotos_con_color(rec: Recolector) -> str:
+    """«V46 Vestido Blear (foto en Azul noche), V102 Vestido Maura (foto en Negro; no viene en azul)»."""
+    partes = []
+    for x in rec.fotos:
+        color = x.get("color_foto") or "su color principal"
+        extra = f"; no viene en {x['sin_color']}" if x.get("sin_color") else ""
+        partes.append(f"{x['codigo']} {x['nombre']} (foto en {color}{extra})")
+    return ", ".join(partes) or "ninguna"
 
 
 def _pregunta_sabida(texto: str, f: dict) -> list[str]:
