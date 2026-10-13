@@ -30,6 +30,10 @@ TIMEOUT = float(os.environ.get("VISION_TIMEOUT_S", "20"))
 LADO_MAX = 1024          # px: basta para leer el texto de una captura y abarata la imagen
 CONFIANZA_MIN = 0.85     # por debajo, decide el parecido visual. 12-10: aciertos 0,94–0,99; sin el correcto entre candidatos dio 0,72
 MAX_TOKENS = int(os.environ.get("VISION_MAX_TOKENS", "1500"))
+# Razonamiento propio, MEDIO: con «low» la misma foto daba V50 unas veces y «ninguno» o V49 otras (13-10-2026, 5 lecturas:
+# 2/5 → 5/5 con medium; un negativo 4/5 → 5/5). Cuesta ~1 s más por foto. V3 (texto) sigue en «low».
+RAZONAMIENTO = os.environ.get("VISION_RAZONAMIENTO", "medium").strip().lower()
+EXTRA = {"reasoning": {"effort": RAZONAMIENTO}} if RAZONAMIENTO not in ("", "default", "off") else {}
 
 _http = httpx.Client(timeout=TIMEOUT)
 
@@ -114,7 +118,7 @@ def identificar(crudo: bytes, fichas, mensaje: str = "", candidatos=(), estricto
           'esté o no en la lista; vacío si no hay texto", "motivo": "breve"}')})
     # gpt-6-luna razona antes de contestar: con 200 tokens los gastaba razonando y devolvía vacío (finish_reason=length),
     # así que la visión nunca decidía y mandaba el parecido visual (12-10-2026). Mismo ajuste que V3: tope alto, esfuerzo bajo.
-    cuerpo = {"model": MODELO, "temperature": 0, "max_tokens": MAX_TOKENS, **_v3.EXTRA,
+    cuerpo = {"model": MODELO, "temperature": 0, "max_tokens": MAX_TOKENS, **EXTRA,
               "messages": [{"role": "user", "content": contenido}]}
     try:
         r = _http.post(URL, headers={"Authorization": f"Bearer {KEY}"}, json=cuerpo)
