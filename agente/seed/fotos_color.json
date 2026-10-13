@@ -1,0 +1,1852 @@
+{
+"v45.jpg": {
+"codigo": "V45",
+"color_web": "Azul noche",
+"color_ia": "burdeos"
+},
+"v45_2.jpg": {
+"codigo": "V45",
+"color_web": "Vino",
+"color_ia": "burdeos"
+},
+"v45_3.jpg": {
+"codigo": "V45",
+"color_web": "Barney",
+"color_ia": "morado"
+},
+"v45_4.jpg": {
+"codigo": "V45",
+"color_web": "Acero",
+"color_ia": "azul"
+},
+"v45_5.jpg": {
+"codigo": "V45",
+"color_web": "Verde Olivo",
+"color_ia": "verde oliva"
+},
+"v45_6.jpg": {
+"codigo": "V45",
+"color_web": "Palo rosa",
+"color_ia": "rosa"
+},
+"v45_7.jpg": {
+"codigo": "V45",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v45_8.jpg": {
+"codigo": "V45",
+"color_web": "Terracota",
+"color_ia": "rojo ladrillo"
+},
+"v45_9.jpg": {
+"codigo": "V45",
+"color_web": "Celeste",
+"color_ia": "celeste"
+},
+"v45_10.jpg": {
+"codigo": "V45",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v45_11.jpg": {
+"codigo": "V45",
+"color_web": "Color personalizado",
+"color_ia": "morado"
+},
+"v45_12.jpg": {
+"codigo": "V45",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v45_13.jpg": {
+"codigo": "V45",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v46.jpg": {
+"codigo": "V46",
+"color_web": "Barney",
+"color_ia": "morado"
+},
+"v46_2.jpg": {
+"codigo": "V46",
+"color_web": "Acero",
+"color_ia": "azul"
+},
+"v46_3.jpg": {
+"codigo": "V46",
+"color_web": "Verde Olivo",
+"color_ia": "verde oliva"
+},
+"v46_4.jpg": {
+"codigo": "V46",
+"color_web": "Vino",
+"color_ia": "vino"
+},
+"v46_5.jpg": {
+"codigo": "V46",
+"color_web": "Dorado",
+"color_ia": "dorado"
+},
+"v46_6.jpg": {
+"codigo": "V46",
+"color_web": "Azul noche",
+"color_ia": "azul marino"
+},
+"v46_7.jpg": {
+"codigo": "V46",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v46_8.jpg": {
+"codigo": "V46",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v46_9.jpg": {
+"codigo": "V46",
+"color_web": "Color personalizado",
+"color_ia": "rojo"
+},
+"v46_10.jpg": {
+"codigo": "V46",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v46_11.jpg": {
+"codigo": "V46",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v47.jpg": {
+"codigo": "V47",
+"color_web": "Azul Petrolio",
+"color_ia": "azul turquesa"
+},
+"v47_2.jpg": {
+"codigo": "V47",
+"color_web": "Azul noche",
+"color_ia": "azul marino"
+},
+"v47_3.jpg": {
+"codigo": "V47",
+"color_web": "Vino",
+"color_ia": "burdeos"
+},
+"v47_4.jpg": {
+"codigo": "V47",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v47_5.jpg": {
+"codigo": "V47",
+"color_web": "Marrón",
+"color_ia": "marrón"
+},
+"v47_6.jpg": {
+"codigo": "V47",
+"color_web": "Champagne",
+"color_ia": "champán"
+},
+"v47_7.jpg": {
+"codigo": "V47",
+"color_web": "Verde Olivo",
+"color_ia": "verde menta"
+},
+"v47_8.jpg": {
+"codigo": "V47",
+"color_web": "",
+"color_ia": "verde salvia"
+},
+"v47_10.jpg": {
+"codigo": "V47",
+"color_web": "",
+"color_ia": "azul turquesa"
+},
+"v47_11.jpg": {
+"codigo": "V47",
+"color_web": "",
+"color_ia": "turquesa"
+},
+"v48.jpg": {
+"codigo": "V48",
+"color_web": "Champagne",
+"color_ia": "champán"
+},
+"v48_2.jpg": {
+"codigo": "V48",
+"color_web": "Terracota",
+"color_ia": "terracota"
+},
+"v48_3.jpg": {
+"codigo": "V48",
+"color_web": "Verde Olivo",
+"color_ia": "verde oliva"
+},
+"v48_4.jpg": {
+"codigo": "V48",
+"color_web": "Vino",
+"color_ia": "borgoña"
+},
+"v48_5.jpg": {
+"codigo": "V48",
+"color_web": "Azul noche",
+"color_ia": "azul marino"
+},
+"v48_6.jpg": {
+"codigo": "V48",
+"color_web": "Blanco",
+"color_ia": "marfil"
+},
+"v48_7.jpg": {
+"codigo": "V48",
+"color_web": "Azulino",
+"color_ia": "azul"
+},
+"v48_8.jpg": {
+"codigo": "V48",
+"color_web": "Color personalizado",
+"color_ia": "verde oliva"
+},
+"v48_9.jpg": {
+"codigo": "V48",
+"color_web": "",
+"color_ia": "azul marino"
+},
+"v48_10.jpg": {
+"codigo": "V48",
+"color_web": "",
+"color_ia": "lila"
+},
+"v49.jpg": {
+"codigo": "V49",
+"color_web": "Verde Cobalto",
+"color_ia": "turquesa"
+},
+"v49_2.jpg": {
+"codigo": "V49",
+"color_web": "Azul noche",
+"color_ia": "azul marino"
+},
+"v49_3.jpg": {
+"codigo": "V49",
+"color_web": "Verde Olivo",
+"color_ia": "verde salvia"
+},
+"v49_4.jpg": {
+"codigo": "V49",
+"color_web": "Terracota",
+"color_ia": "terracota"
+},
+"v49_5.jpg": {
+"codigo": "V49",
+"color_web": "Marrón",
+"color_ia": "marrón"
+},
+"v49_6.jpg": {
+"codigo": "V49",
+"color_web": "Champagne",
+"color_ia": "champán"
+},
+"v49_7.jpg": {
+"codigo": "V49",
+"color_web": "Plateado",
+"color_ia": "plateado"
+},
+"v49_8.jpg": {
+"codigo": "V49",
+"color_web": "Vino",
+"color_ia": "borgoña"
+},
+"v49_9.jpg": {
+"codigo": "V49",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v49_10.jpg": {
+"codigo": "V49",
+"color_web": "Color personalizado",
+"color_ia": "turquesa"
+},
+"v49_11.jpg": {
+"codigo": "V49",
+"color_web": "",
+"color_ia": "azul marino"
+},
+"v49_12.jpg": {
+"codigo": "V49",
+"color_web": "",
+"color_ia": "negro"
+},
+"v42_w1.jpg": {
+"codigo": "V42",
+"color_web": "Celeste",
+"color_ia": "celeste"
+},
+"v42_w2.jpg": {
+"codigo": "V42",
+"color_web": "Terracota",
+"color_ia": "terracota"
+},
+"v42_w3.jpg": {
+"codigo": "V42",
+"color_web": "Verde Olivo",
+"color_ia": "verde oliva"
+},
+"v42_w4.jpg": {
+"codigo": "V42",
+"color_web": "Azul noche",
+"color_ia": "azul marino"
+},
+"v42_w5.jpg": {
+"codigo": "V42",
+"color_web": "Azul Cobalto",
+"color_ia": "rojo"
+},
+"v42_w6.jpg": {
+"codigo": "V42",
+"color_web": "Vino",
+"color_ia": "borgoña"
+},
+"v42_w7.jpg": {
+"codigo": "V42",
+"color_web": "NUDE.",
+"color_ia": "rosa pálido"
+},
+"v42_w8.jpg": {
+"codigo": "V42",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v42_w9.jpg": {
+"codigo": "V42",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v42_w10.jpg": {
+"codigo": "V42",
+"color_web": "Color personalizado",
+"color_ia": "blanco"
+},
+"v42_w11.jpg": {
+"codigo": "V42",
+"color_web": "",
+"color_ia": "azul claro"
+},
+"v42_w12.jpg": {
+"codigo": "V42",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v50.jpg": {
+"codigo": "V50",
+"color_web": "Azul noche",
+"color_ia": "azul marino"
+},
+"v50_2.jpg": {
+"codigo": "V50",
+"color_web": "Vino",
+"color_ia": "borgoña"
+},
+"v50_3.jpg": {
+"codigo": "V50",
+"color_web": "",
+"color_ia": "azul"
+},
+"v50_4.jpg": {
+"codigo": "V50",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v50_5.jpg": {
+"codigo": "V50",
+"color_web": "Verde Olivo",
+"color_ia": "verde oliva"
+},
+"v50_6.jpg": {
+"codigo": "V50",
+"color_web": "Terracota",
+"color_ia": "terracota"
+},
+"v50_7.jpg": {
+"codigo": "V50",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v50_8.jpg": {
+"codigo": "V50",
+"color_web": "Acero",
+"color_ia": "azul"
+},
+"v50_9.jpg": {
+"codigo": "V50",
+"color_web": "Color personalizado",
+"color_ia": "azul"
+},
+"v50_10.jpg": {
+"codigo": "V50",
+"color_web": "",
+"color_ia": "vino"
+},
+"v50_11.jpg": {
+"codigo": "V50",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v51.jpg": {
+"codigo": "V51",
+"color_web": "Barney",
+"color_ia": "morado"
+},
+"v51_2.jpg": {
+"codigo": "V51",
+"color_web": "Champagne",
+"color_ia": "champán"
+},
+"v51_3.jpg": {
+"codigo": "V51",
+"color_web": "Verde Olivo",
+"color_ia": "verde oliva"
+},
+"v51_4.jpg": {
+"codigo": "V51",
+"color_web": "Azulino",
+"color_ia": "azul"
+},
+"v51_5.jpg": {
+"codigo": "V51",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v51_6.jpg": {
+"codigo": "V51",
+"color_web": "Vino",
+"color_ia": "burdeos"
+},
+"v51_7.jpg": {
+"codigo": "V51",
+"color_web": "Azul noche",
+"color_ia": "azul marino"
+},
+"v51_8.jpg": {
+"codigo": "V51",
+"color_web": "Acero",
+"color_ia": "azul"
+},
+"v51_9.jpg": {
+"codigo": "V51",
+"color_web": "",
+"color_ia": "verde"
+},
+"v51_10.jpg": {
+"codigo": "V51",
+"color_web": "Color personalizado",
+"color_ia": "azul"
+},
+"v51_11.jpg": {
+"codigo": "V51",
+"color_web": "",
+"color_ia": "morado"
+},
+"v52.jpg": {
+"codigo": "V52",
+"color_web": "Turqueza",
+"color_ia": "turquesa"
+},
+"v52_2.jpg": {
+"codigo": "V52",
+"color_web": "VERDE JADE",
+"color_ia": "verde"
+},
+"v52_3.jpg": {
+"codigo": "V52",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v52_4.jpg": {
+"codigo": "V52",
+"color_web": "Celeste bebe",
+"color_ia": "celeste"
+},
+"v52_5.jpg": {
+"codigo": "V52",
+"color_web": "",
+"color_ia": "negro"
+},
+"v52_6.jpg": {
+"codigo": "V52",
+"color_web": "Fucsia",
+"color_ia": "fucsia"
+},
+"v52_7.jpg": {
+"codigo": "V52",
+"color_web": "Azulino",
+"color_ia": "azul"
+},
+"v52_8.jpg": {
+"codigo": "V52",
+"color_web": "Marrón",
+"color_ia": "marrón"
+},
+"v52_9.jpg": {
+"codigo": "V52",
+"color_web": "Verde Olivo",
+"color_ia": "verde oliva"
+},
+"v53.jpg": {
+"codigo": "V53",
+"color_web": "Terracota",
+"color_ia": "naranja"
+},
+"v53_2.jpg": {
+"codigo": "V53",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v53_3.jpg": {
+"codigo": "V53",
+"color_web": "Azulino",
+"color_ia": "azul"
+},
+"v53_4.jpg": {
+"codigo": "V53",
+"color_web": "Vino",
+"color_ia": "borgoña"
+},
+"v53_5.jpg": {
+"codigo": "V53",
+"color_web": "Fucsia",
+"color_ia": "fucsia"
+},
+"v53_6.jpg": {
+"codigo": "V53",
+"color_web": "Azul noche",
+"color_ia": "azul marino"
+},
+"v53_7.jpg": {
+"codigo": "V53",
+"color_web": "Celeste",
+"color_ia": "azul claro"
+},
+"v54.jpg": {
+"codigo": "V54",
+"color_web": "Azulino",
+"color_ia": "azul"
+},
+"v54_2.jpg": {
+"codigo": "V54",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v54_3.jpg": {
+"codigo": "V54",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v54_4.jpg": {
+"codigo": "V54",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v54_5.jpg": {
+"codigo": "V54",
+"color_web": "Celeste bebe",
+"color_ia": "celeste"
+},
+"v55.jpg": {
+"codigo": "V55",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v55_2.jpg": {
+"codigo": "V55",
+"color_web": "Azul noche",
+"color_ia": "azul marino"
+},
+"v55_3.jpg": {
+"codigo": "V55",
+"color_web": "Verde Cobalto",
+"color_ia": "verde esmeralda"
+},
+"v55_4.jpg": {
+"codigo": "V55",
+"color_web": "Fucsia",
+"color_ia": "fucsia"
+},
+"v55_5.jpg": {
+"codigo": "V55",
+"color_web": "Vino",
+"color_ia": "borgoña"
+},
+"v56.jpg": {
+"codigo": "V56",
+"color_web": "Vino",
+"color_ia": "rojo"
+},
+"v57.jpg": {
+"codigo": "V57",
+"color_web": "",
+"color_ia": "azul marino y blanco"
+},
+"v57_2.jpg": {
+"codigo": "V57",
+"color_web": "",
+"color_ia": "blanco y azul marino"
+},
+"v57_3.jpg": {
+"codigo": "V57",
+"color_web": "",
+"color_ia": "azul oscuro"
+},
+"v58.jpg": {
+"codigo": "V58",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v58_2.jpg": {
+"codigo": "V58",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v58_3.jpg": {
+"codigo": "V58",
+"color_web": "",
+"color_ia": "rojo fucsia"
+},
+"v59.jpg": {
+"codigo": "V59",
+"color_web": "",
+"color_ia": "gris y negro"
+},
+"v59_2.jpg": {
+"codigo": "V59",
+"color_web": "",
+"color_ia": "gris a cuadros"
+},
+"v59_3.jpg": {
+"codigo": "V59",
+"color_web": "",
+"color_ia": "gris y marrón"
+},
+"v39_w1.jpg": {
+"codigo": "V39",
+"color_web": "",
+"color_ia": "verde turquesa"
+},
+"v39_w2.jpg": {
+"codigo": "V39",
+"color_web": "",
+"color_ia": "verde azulado"
+},
+"v60.jpg": {
+"codigo": "V60",
+"color_web": "",
+"color_ia": "beige"
+},
+"v61.jpg": {
+"codigo": "V61",
+"color_web": "",
+"color_ia": "blanco"
+},
+"v62.jpg": {
+"codigo": "V62",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v62_2.jpg": {
+"codigo": "V62",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v36_w1.jpg": {
+"codigo": "V36",
+"color_web": "",
+"color_ia": "rojo y blanco"
+},
+"v36_w2.jpg": {
+"codigo": "V36",
+"color_web": "",
+"color_ia": "rojo y blanco"
+},
+"v33_w1.jpg": {
+"codigo": "V33",
+"color_web": "",
+"color_ia": "azul"
+},
+"v63.jpg": {
+"codigo": "V63",
+"color_web": "",
+"color_ia": "azul y blanco"
+},
+"v63_2.jpg": {
+"codigo": "V63",
+"color_web": "",
+"color_ia": "azul y blanco"
+},
+"v64.jpg": {
+"codigo": "V64",
+"color_web": "",
+"color_ia": "rosa claro"
+},
+"v64_2.jpg": {
+"codigo": "V64",
+"color_web": "",
+"color_ia": "blusa beige y pantalón azul marino"
+},
+"v27_w1.jpg": {
+"codigo": "V27",
+"color_web": "",
+"color_ia": "blanco y negro"
+},
+"v27_w2.jpg": {
+"codigo": "V27",
+"color_web": "",
+"color_ia": "blanco"
+},
+"v27_w3.jpg": {
+"codigo": "V27",
+"color_web": "",
+"color_ia": "negro"
+},
+"v27_w4.jpg": {
+"codigo": "V27",
+"color_web": "",
+"color_ia": "negro"
+},
+"v65.jpg": {
+"codigo": "V65",
+"color_web": "",
+"color_ia": "azul marino y blanco"
+},
+"v65_2.jpg": {
+"codigo": "V65",
+"color_web": "",
+"color_ia": "blanco"
+},
+"v66.jpg": {
+"codigo": "V66",
+"color_web": "",
+"color_ia": "beige y azul claro"
+},
+"v66_2.jpg": {
+"codigo": "V66",
+"color_web": "",
+"color_ia": "azul claro y beige"
+},
+"v67.jpg": {
+"codigo": "V67",
+"color_web": "",
+"color_ia": "verde"
+},
+"v67_2.jpg": {
+"codigo": "V67",
+"color_web": "",
+"color_ia": "blanco"
+},
+"v68.jpg": {
+"codigo": "V68",
+"color_web": "",
+"color_ia": "blanco y gris"
+},
+"v68_2.jpg": {
+"codigo": "V68",
+"color_web": "",
+"color_ia": "gris y blanco"
+},
+"v69.jpg": {
+"codigo": "V69",
+"color_web": "",
+"color_ia": "rojo y negro"
+},
+"v69_2.jpg": {
+"codigo": "V69",
+"color_web": "",
+"color_ia": "rojo y negro"
+},
+"v69_3.jpg": {
+"codigo": "V69",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v70.jpg": {
+"codigo": "V70",
+"color_web": "",
+"color_ia": "verde oscuro y blanco"
+},
+"v70_2.jpg": {
+"codigo": "V70",
+"color_web": "",
+"color_ia": "verde oscuro"
+},
+"v71.jpg": {
+"codigo": "V71",
+"color_web": "",
+"color_ia": "terracota y blanco"
+},
+"v71_2.jpg": {
+"codigo": "V71",
+"color_web": "",
+"color_ia": "blanco y terracota"
+},
+"v72.jpg": {
+"codigo": "V72",
+"color_web": "",
+"color_ia": "beige y blanco"
+},
+"v72_2.jpg": {
+"codigo": "V72",
+"color_web": "",
+"color_ia": "beige"
+},
+"v72_3.jpg": {
+"codigo": "V72",
+"color_web": "",
+"color_ia": "azul y negro"
+},
+"v72_4.jpg": {
+"codigo": "V72",
+"color_web": "",
+"color_ia": "celeste"
+},
+"v73.jpg": {
+"codigo": "V73",
+"color_web": "",
+"color_ia": "blusa verde claro y pantalón verde oscuro"
+},
+"v73_2.jpg": {
+"codigo": "V73",
+"color_web": "",
+"color_ia": "verde oscuro"
+},
+"v74.jpg": {
+"codigo": "V74",
+"color_web": "",
+"color_ia": "azul violeta"
+},
+"v74_2.jpg": {
+"codigo": "V74",
+"color_web": "",
+"color_ia": "azul violeta"
+},
+"v74_3.jpg": {
+"codigo": "V74",
+"color_web": "",
+"color_ia": "terracota"
+},
+"v74_4.jpg": {
+"codigo": "V74",
+"color_web": "",
+"color_ia": "terracota y verde oliva"
+},
+"v75.jpg": {
+"codigo": "V75",
+"color_web": "",
+"color_ia": "verde oscuro"
+},
+"v75_2.jpg": {
+"codigo": "V75",
+"color_web": "Animal",
+"color_ia": "verde oscuro"
+},
+"v75_3.jpg": {
+"codigo": "V75",
+"color_web": "",
+"color_ia": "azul violeta"
+},
+"v75_4.jpg": {
+"codigo": "V75",
+"color_web": "",
+"color_ia": "azul violeta"
+},
+"v76.jpg": {
+"codigo": "V76",
+"color_web": "",
+"color_ia": "azul y blanco"
+},
+"v76_2.jpg": {
+"codigo": "V76",
+"color_web": "",
+"color_ia": "azul y blanco"
+},
+"v76_3.jpg": {
+"codigo": "V76",
+"color_web": "",
+"color_ia": "azul marino"
+},
+"v76_4.jpg": {
+"codigo": "V76",
+"color_web": "",
+"color_ia": "azul y azul marino"
+},
+"v77.jpg": {
+"codigo": "V77",
+"color_web": "",
+"color_ia": "blanco y azul marino"
+},
+"v77_2.jpg": {
+"codigo": "V77",
+"color_web": "",
+"color_ia": "gris oscuro"
+},
+"v77_3.jpg": {
+"codigo": "V77",
+"color_web": "",
+"color_ia": "lila"
+},
+"v77_4.jpg": {
+"codigo": "V77",
+"color_web": "",
+"color_ia": "beige y lila"
+},
+"v78.jpg": {
+"codigo": "V78",
+"color_web": "",
+"color_ia": "rojo y beige"
+},
+"v78_2.jpg": {
+"codigo": "V78",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v78_3.jpg": {
+"codigo": "V78",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v79.jpg": {
+"codigo": "V79",
+"color_web": "",
+"color_ia": "azul petróleo"
+},
+"v79_2.jpg": {
+"codigo": "V79",
+"color_web": "",
+"color_ia": "azul petróleo"
+},
+"v79_3.jpg": {
+"codigo": "V79",
+"color_web": "",
+"color_ia": "plateado"
+},
+"v80.jpg": {
+"codigo": "V80",
+"color_web": "",
+"color_ia": "verde azulado y negro"
+},
+"v80_2.jpg": {
+"codigo": "V80",
+"color_web": "",
+"color_ia": "verde azulado"
+},
+"v81.jpg": {
+"codigo": "V81",
+"color_web": "",
+"color_ia": "azul"
+},
+"v81_2.jpg": {
+"codigo": "V81",
+"color_web": "",
+"color_ia": "terracota"
+},
+"v82.jpg": {
+"codigo": "V82",
+"color_web": "Gris",
+"color_ia": "gris"
+},
+"v82_2.jpg": {
+"codigo": "V82",
+"color_web": "",
+"color_ia": "gris"
+},
+"v82_3.jpg": {
+"codigo": "V82",
+"color_web": "",
+"color_ia": "gris"
+},
+"v82_4.jpg": {
+"codigo": "V82",
+"color_web": "Italia",
+"color_ia": "turquesa y beige"
+},
+"v83.jpg": {
+"codigo": "V83",
+"color_web": "Black",
+"color_ia": "negro"
+},
+"v83_2.jpg": {
+"codigo": "V83",
+"color_web": "",
+"color_ia": "negro"
+},
+"v83_3.jpg": {
+"codigo": "V83",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v83_4.jpg": {
+"codigo": "V83",
+"color_web": "Beige",
+"color_ia": "beige"
+},
+"v84.jpg": {
+"codigo": "V84",
+"color_web": "",
+"color_ia": "beige"
+},
+"v84_2.jpg": {
+"codigo": "V84",
+"color_web": "",
+"color_ia": "verde"
+},
+"v84_3.jpg": {
+"codigo": "V84",
+"color_web": "",
+"color_ia": "negro"
+},
+"v85.jpg": {
+"codigo": "V85",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v85_2.jpg": {
+"codigo": "V85",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v22_w1.jpg": {
+"codigo": "V22",
+"color_web": "",
+"color_ia": "azul"
+},
+"v22_w2.jpg": {
+"codigo": "V22",
+"color_web": "",
+"color_ia": "azul marino"
+},
+"v26_w1.jpg": {
+"codigo": "V26",
+"color_web": "",
+"color_ia": "beige y azul claro"
+},
+"v26_w2.jpg": {
+"codigo": "V26",
+"color_web": "",
+"color_ia": "beige"
+},
+"v86.jpg": {
+"codigo": "V86",
+"color_web": "",
+"color_ia": "azul y blanco"
+},
+"v86_2.jpg": {
+"codigo": "V86",
+"color_web": "",
+"color_ia": "azul y blanco"
+},
+"v86_3.jpg": {
+"codigo": "V86",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v86_4.jpg": {
+"codigo": "V86",
+"color_web": "",
+"color_ia": "rojo y beige"
+},
+"v87.jpg": {
+"codigo": "V87",
+"color_web": "",
+"color_ia": "lila y beige"
+},
+"v87_2.jpg": {
+"codigo": "V87",
+"color_web": "",
+"color_ia": "beige y lila"
+},
+"v88.jpg": {
+"codigo": "V88",
+"color_web": "",
+"color_ia": "azul petróleo"
+},
+"v88_2.jpg": {
+"codigo": "V88",
+"color_web": "",
+"color_ia": "azul petróleo"
+},
+"v88_3.jpg": {
+"codigo": "V88",
+"color_web": "",
+"color_ia": "azul turquesa"
+},
+"v89.jpg": {
+"codigo": "V89",
+"color_web": "",
+"color_ia": "gris y negro"
+},
+"v89_2.jpg": {
+"codigo": "V89",
+"color_web": "",
+"color_ia": "gris y negro"
+},
+"v89_3.jpg": {
+"codigo": "V89",
+"color_web": "",
+"color_ia": "azul y negro"
+},
+"v90.jpg": {
+"codigo": "V90",
+"color_web": "",
+"color_ia": "blusa verde claro y pantalón verde oscuro"
+},
+"v90_2.jpg": {
+"codigo": "V90",
+"color_web": "",
+"color_ia": "verde oscuro"
+},
+"v91.jpg": {
+"codigo": "V91",
+"color_web": "",
+"color_ia": "morado"
+},
+"v91_2.jpg": {
+"codigo": "V91",
+"color_web": "",
+"color_ia": "morado y negro"
+},
+"v92.jpg": {
+"codigo": "V92",
+"color_web": "Gris",
+"color_ia": "azul marino y blanco"
+},
+"v92_2.jpg": {
+"codigo": "V92",
+"color_web": "",
+"color_ia": "gris oscuro y blanco"
+},
+"v93.jpg": {
+"codigo": "V93",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v93_2.jpg": {
+"codigo": "V93",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v94.jpg": {
+"codigo": "V94",
+"color_web": "",
+"color_ia": "azul y negro"
+},
+"v94_2.jpg": {
+"codigo": "V94",
+"color_web": "",
+"color_ia": "celeste"
+},
+"v94_3.jpg": {
+"codigo": "V94",
+"color_web": "",
+"color_ia": "terracota"
+},
+"v94_4.jpg": {
+"codigo": "V94",
+"color_web": "",
+"color_ia": "terracota"
+},
+"v95.jpg": {
+"codigo": "V95",
+"color_web": "",
+"color_ia": "rojo y blanco"
+},
+"v95_2.jpg": {
+"codigo": "V95",
+"color_web": "",
+"color_ia": "rojo y blanco"
+},
+"v95_3.jpg": {
+"codigo": "V95",
+"color_web": "",
+"color_ia": "turquesa"
+},
+"v96.jpg": {
+"codigo": "V96",
+"color_web": "",
+"color_ia": "verde y blanco"
+},
+"v96_2.jpg": {
+"codigo": "V96",
+"color_web": "",
+"color_ia": "verde"
+},
+"v96_3.jpg": {
+"codigo": "V96",
+"color_web": "",
+"color_ia": "verde"
+},
+"v97.jpg": {
+"codigo": "V97",
+"color_web": "",
+"color_ia": "negro"
+},
+"v97_2.jpg": {
+"codigo": "V97",
+"color_web": "",
+"color_ia": "negro"
+},
+"v98.jpg": {
+"codigo": "V98",
+"color_web": "Verde Cobalto",
+"color_ia": "turquesa"
+},
+"v98_2.jpg": {
+"codigo": "V98",
+"color_web": "Azulino",
+"color_ia": "azul"
+},
+"v98_3.jpg": {
+"codigo": "V98",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v98_4.jpg": {
+"codigo": "V98",
+"color_web": "Fucsia",
+"color_ia": "fucsia"
+},
+"v98_5.jpg": {
+"codigo": "V98",
+"color_web": "Azul Noche",
+"color_ia": "azul oscuro"
+},
+"v98_6.jpg": {
+"codigo": "V98",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v98_7.jpg": {
+"codigo": "V98",
+"color_web": "Celeste bebe",
+"color_ia": "azul claro"
+},
+"v98_8.jpg": {
+"codigo": "V98",
+"color_web": "Verde Olivo",
+"color_ia": "verde menta"
+},
+"v98_9.jpg": {
+"codigo": "V98",
+"color_web": "",
+"color_ia": "verde azulado"
+},
+"v99.jpg": {
+"codigo": "V99",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v99_2.jpg": {
+"codigo": "V99",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v100.jpg": {
+"codigo": "V100",
+"color_web": "Fucsia",
+"color_ia": "fucsia"
+},
+"v101.jpg": {
+"codigo": "V101",
+"color_web": "Vino",
+"color_ia": "rojo vino"
+},
+"v101_2.jpg": {
+"codigo": "V101",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v101_3.jpg": {
+"codigo": "V101",
+"color_web": "",
+"color_ia": "negro"
+},
+"v101_4.jpg": {
+"codigo": "V101",
+"color_web": "",
+"color_ia": "negro"
+},
+"v102.jpg": {
+"codigo": "V102",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v102_2.jpg": {
+"codigo": "V102",
+"color_web": "",
+"color_ia": "negro"
+},
+"v102_3.jpg": {
+"codigo": "V102",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v102_4.jpg": {
+"codigo": "V102",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v103.jpg": {
+"codigo": "V103",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v103_2.jpg": {
+"codigo": "V103",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v103_3.jpg": {
+"codigo": "V103",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v104.jpg": {
+"codigo": "V104",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v104_2.jpg": {
+"codigo": "V104",
+"color_web": "",
+"color_ia": "negro"
+},
+"v105.jpg": {
+"codigo": "V105",
+"color_web": "",
+"color_ia": "azul"
+},
+"v105_2.jpg": {
+"codigo": "V105",
+"color_web": "Azulino",
+"color_ia": "azul"
+},
+"v105_3.jpg": {
+"codigo": "V105",
+"color_web": "",
+"color_ia": "azul"
+},
+"v106.jpg": {
+"codigo": "V106",
+"color_web": "Clara",
+"color_ia": "blanco"
+},
+"v106_2.jpg": {
+"codigo": "V106",
+"color_web": "",
+"color_ia": "blanco"
+},
+"v106_3.jpg": {
+"codigo": "V106",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v106_4.jpg": {
+"codigo": "V106",
+"color_web": "",
+"color_ia": "negro"
+},
+"v107.jpg": {
+"codigo": "V107",
+"color_web": "",
+"color_ia": "lila"
+},
+"v107_2.jpg": {
+"codigo": "V107",
+"color_web": "",
+"color_ia": "lila"
+},
+"v108.jpg": {
+"codigo": "V108",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v108_2.jpg": {
+"codigo": "V108",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v109.jpg": {
+"codigo": "V109",
+"color_web": "NUDE.",
+"color_ia": "rosa"
+},
+"v109_2.jpg": {
+"codigo": "V109",
+"color_web": "",
+"color_ia": "rosa claro"
+},
+"v109_3.jpg": {
+"codigo": "V109",
+"color_web": "",
+"color_ia": "rosado"
+},
+"v41_w1.jpg": {
+"codigo": "V41",
+"color_web": "Black",
+"color_ia": "rojo oscuro"
+},
+"v41_w2.jpg": {
+"codigo": "V41",
+"color_web": "",
+"color_ia": "rojo oscuro"
+},
+"v41_w3.jpg": {
+"codigo": "V41",
+"color_web": "Beige",
+"color_ia": "rosa claro"
+},
+"v110.jpg": {
+"codigo": "V110",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v110_2.jpg": {
+"codigo": "V110",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v111.jpg": {
+"codigo": "V111",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v111_2.jpg": {
+"codigo": "V111",
+"color_web": "",
+"color_ia": "blanco"
+},
+"v111_3.jpg": {
+"codigo": "V111",
+"color_web": "",
+"color_ia": "blanco"
+},
+"v112.jpg": {
+"codigo": "V112",
+"color_web": "",
+"color_ia": "blanco"
+},
+"v112_2.jpg": {
+"codigo": "V112",
+"color_web": "",
+"color_ia": "blanco"
+},
+"v113.jpg": {
+"codigo": "V113",
+"color_web": "MOSTAZA",
+"color_ia": "amarillo"
+},
+"v113_2.jpg": {
+"codigo": "V113",
+"color_web": "",
+"color_ia": "amarillo"
+},
+"v113_3.jpg": {
+"codigo": "V113",
+"color_web": "Azulino",
+"color_ia": "azul"
+},
+"v114.jpg": {
+"codigo": "V114",
+"color_web": "Beige",
+"color_ia": "beige"
+},
+"v114_2.jpg": {
+"codigo": "V114",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v114_3.jpg": {
+"codigo": "V114",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v114_4.jpg": {
+"codigo": "V114",
+"color_web": "Dalia",
+"color_ia": "morado"
+},
+"v114_5.jpg": {
+"codigo": "V114",
+"color_web": "Verde",
+"color_ia": "verde"
+},
+"v115.jpg": {
+"codigo": "V115",
+"color_web": "",
+"color_ia": "celeste"
+},
+"v115_2.jpg": {
+"codigo": "V115",
+"color_web": "",
+"color_ia": "celeste"
+},
+"v116.jpg": {
+"codigo": "V116",
+"color_web": "",
+"color_ia": "fucsia y amarillo"
+},
+"v116_2.jpg": {
+"codigo": "V116",
+"color_web": "",
+"color_ia": "amarillo claro"
+},
+"v116_3.jpg": {
+"codigo": "V116",
+"color_web": "MAIZ",
+"color_ia": "amarillo claro"
+},
+"v116_4.jpg": {
+"codigo": "V116",
+"color_web": "Fucsia",
+"color_ia": "fucsia"
+},
+"v117.jpg": {
+"codigo": "V117",
+"color_web": "",
+"color_ia": "beige"
+},
+"v118.jpg": {
+"codigo": "V118",
+"color_web": "Amarillo",
+"color_ia": "amarillo"
+},
+"v118_2.jpg": {
+"codigo": "V118",
+"color_web": "",
+"color_ia": "amarillo"
+},
+"v119.jpg": {
+"codigo": "V119",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v119_2.jpg": {
+"codigo": "V119",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v119_3.jpg": {
+"codigo": "V119",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v119_4.jpg": {
+"codigo": "V119",
+"color_web": "",
+"color_ia": "azul claro"
+},
+"v119_5.jpg": {
+"codigo": "V119",
+"color_web": "Celeste",
+"color_ia": "azul"
+},
+"v119_6.jpg": {
+"codigo": "V119",
+"color_web": "",
+"color_ia": "azul claro"
+},
+"v119_7.jpg": {
+"codigo": "V119",
+"color_web": "",
+"color_ia": "azul claro"
+},
+"v120.jpg": {
+"codigo": "V120",
+"color_web": "Celeste",
+"color_ia": "azul claro"
+},
+"v120_2.jpg": {
+"codigo": "V120",
+"color_web": "Lila",
+"color_ia": "lila"
+},
+"v120_3.jpg": {
+"codigo": "V120",
+"color_web": "Celeste bebe",
+"color_ia": "azul"
+},
+"v120_4.jpg": {
+"codigo": "V120",
+"color_web": "VERDE AGUA",
+"color_ia": "turquesa"
+},
+"v30_w1.jpg": {
+"codigo": "V30",
+"color_web": "Rosa",
+"color_ia": "rosa"
+},
+"v30_w2.jpg": {
+"codigo": "V30",
+"color_web": "",
+"color_ia": "rosa claro"
+},
+"v30_w3.jpg": {
+"codigo": "V30",
+"color_web": "",
+"color_ia": "blanco"
+},
+"v30_w4.jpg": {
+"codigo": "V30",
+"color_web": "Blanco",
+"color_ia": "blanco"
+},
+"v121.jpg": {
+"codigo": "V121",
+"color_web": "Beige",
+"color_ia": "blanco"
+},
+"v121_2.jpg": {
+"codigo": "V121",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v121_3.jpg": {
+"codigo": "V121",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v122.jpg": {
+"codigo": "V122",
+"color_web": "",
+"color_ia": "beige claro"
+},
+"v122_2.jpg": {
+"codigo": "V122",
+"color_web": "Beige",
+"color_ia": "beige claro"
+},
+"v122_3.jpg": {
+"codigo": "V122",
+"color_web": "",
+"color_ia": "crema"
+},
+"v122_4.jpg": {
+"codigo": "V122",
+"color_web": "Azulino",
+"color_ia": "azul"
+},
+"v122_5.jpg": {
+"codigo": "V122",
+"color_web": "",
+"color_ia": "azul"
+},
+"v123.jpg": {
+"codigo": "V123",
+"color_web": "Rosa",
+"color_ia": "rosa palo"
+},
+"v123_2.jpg": {
+"codigo": "V123",
+"color_web": "",
+"color_ia": "rosa claro"
+},
+"v123_3.jpg": {
+"codigo": "V123",
+"color_web": "",
+"color_ia": "verde oliva"
+},
+"v123_4.jpg": {
+"codigo": "V123",
+"color_web": "Verde Botella",
+"color_ia": "marrón oscuro"
+},
+"v124.jpg": {
+"codigo": "V124",
+"color_web": "",
+"color_ia": "azul"
+},
+"v124_2.jpg": {
+"codigo": "V124",
+"color_web": "",
+"color_ia": "azul"
+},
+"v124_3.jpg": {
+"codigo": "V124",
+"color_web": "",
+"color_ia": "azul"
+},
+"v125.jpg": {
+"codigo": "V125",
+"color_web": "",
+"color_ia": "azul marino"
+},
+"v125_2.jpg": {
+"codigo": "V125",
+"color_web": "",
+"color_ia": "azul marino"
+},
+"v125_3.jpg": {
+"codigo": "V125",
+"color_web": "",
+"color_ia": "azul"
+},
+"v125_4.jpg": {
+"codigo": "V125",
+"color_web": "",
+"color_ia": "azul"
+},
+"v125_5.jpg": {
+"codigo": "V125",
+"color_web": "",
+"color_ia": "azul"
+},
+"v125_6.jpg": {
+"codigo": "V125",
+"color_web": "",
+"color_ia": "azul"
+},
+"v125_7.jpg": {
+"codigo": "V125",
+"color_web": "",
+"color_ia": "azul"
+},
+"v126.jpg": {
+"codigo": "V126",
+"color_web": "Rosa",
+"color_ia": "rosa"
+},
+"v126_2.jpg": {
+"codigo": "V126",
+"color_web": "",
+"color_ia": "rosado"
+},
+"v126_3.jpg": {
+"codigo": "V126",
+"color_web": "",
+"color_ia": "rosa"
+},
+"v126_4.jpg": {
+"codigo": "V126",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v126_5.jpg": {
+"codigo": "V126",
+"color_web": "",
+"color_ia": "negro"
+},
+"v127.jpg": {
+"codigo": "V127",
+"color_web": "",
+"color_ia": "fucsia"
+},
+"v127_2.jpg": {
+"codigo": "V127",
+"color_web": "Negro",
+"color_ia": "negro"
+},
+"v127_3.jpg": {
+"codigo": "V127",
+"color_web": "",
+"color_ia": "negro"
+},
+"v128.jpg": {
+"codigo": "V128",
+"color_web": "Fucsia",
+"color_ia": "fucsia"
+},
+"v128_2.jpg": {
+"codigo": "V128",
+"color_web": "",
+"color_ia": "fucsia"
+},
+"v128_3.jpg": {
+"codigo": "V128",
+"color_web": "",
+"color_ia": "fucsia"
+},
+"v128_4.jpg": {
+"codigo": "V128",
+"color_web": "Fucsia",
+"color_ia": "rosa"
+},
+"v128_5.jpg": {
+"codigo": "V128",
+"color_web": "",
+"color_ia": "rosado"
+},
+"v129.jpg": {
+"codigo": "V129",
+"color_web": "Green",
+"color_ia": "verde azulado"
+},
+"v129_2.jpg": {
+"codigo": "V129",
+"color_web": "",
+"color_ia": "verde azulado"
+},
+"v129_3.jpg": {
+"codigo": "V129",
+"color_web": "",
+"color_ia": "verde azulado"
+},
+"v129_4.jpg": {
+"codigo": "V129",
+"color_web": "Rojo",
+"color_ia": "rojo"
+},
+"v129_5.jpg": {
+"codigo": "V129",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v129_6.jpg": {
+"codigo": "V129",
+"color_web": "",
+"color_ia": "rojo"
+},
+"v130.jpg": {
+"codigo": "V130",
+"color_web": "",
+"color_ia": "rosa claro"
+},
+"v130_2.jpg": {
+"codigo": "V130",
+"color_web": "",
+"color_ia": "rosado claro"
+},
+"v130_3.jpg": {
+"codigo": "V130",
+"color_web": "",
+"color_ia": "rosado claro"
+},
+"v131.jpg": {
+"codigo": "V131",
+"color_web": "Celeste",
+"color_ia": "azul claro"
+},
+"v131_2.jpg": {
+"codigo": "V131",
+"color_web": "",
+"color_ia": "azul claro"
+},
+"v131_3.jpg": {
+"codigo": "V131",
+"color_web": "",
+"color_ia": "verde"
+},
+"v131_4.jpg": {
+"codigo": "V131",
+"color_web": "",
+"color_ia": "verde"
+},
+"v131_5.jpg": {
+"codigo": "V131",
+"color_web": "Green",
+"color_ia": "verde"
+},
+"v131_6.jpg": {
+"codigo": "V131",
+"color_web": "",
+"color_ia": "verde"
+}
+}

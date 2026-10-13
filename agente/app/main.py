@@ -29,7 +29,7 @@ import base64
 import json
 from contextvars import ContextVar
 
-from . import comprension, datos, etapas, ficha_producto, jev, memoria, respuestas, venta
+from . import comprension, datos, etapas, ficha_producto, fotos_color, jev, memoria, respuestas, venta
 from . import animo, crm, estructurado, gasto, rerank
 from .solicitud import (RE_CATALOGO, RE_MAS_BARATO, RE_MAS_OPCIONES, RE_OTRAS, RE_PIDE_COLOR_VERBO, _color_txt, _de_color, _raiz_color,
                         color_dicho, color_pedido, color_que_pide, interpretar)
@@ -2669,6 +2669,11 @@ def conversar_foto(req: FotoIn) -> dict:
     else:
         caso, sugeridas = "ninguno", parecidas[:3]
 
+    # La foto del color que mostró ella (app/fotos_color.py): reconocida la prenda, se manda en ESE color y se le dice.
+    foto_color, color_web = "", ""
+    if vis and vis.get("codigo") == f.codigo and vis.get("color"):
+        foto_color, color_web = fotos_color.foto_del_color(f.codigo, vis["color"])
+
     # Memoria: la foto responde a «¿cuál es?»; lo ya sabido no se vuelve a preguntar.
     mem = _memoria_de(req)
     if mem["pendiente"] in ESPERANDO_CUAL + ("foto",):
@@ -2693,6 +2698,7 @@ PRENDA MÁS PARECIDA: {datos_f}
 PARECIDAS DISPONIBLES:
 {par}
 
+{f"COLOR: en su foto la prenda es {vis['color']}; el {f.codigo} SÍ viene en {color_web} y le mandas la foto en ese color. Díselo (nombra el modelo y el color)." if foto_color else ""}
 QUÉ HACER: {GUIA_FOTO[caso]}
 {bloque_memoria(mem, sig, req.perfil, req.mensaje)}
 El bot enviará después de tu texto las fotos de: {", ".join(x.codigo for x in sugeridas) or "ninguna"}. No las listes una por una.
@@ -2726,7 +2732,8 @@ Máximo 3 frases."""
         "foto": {"nivel": nivel, "caso": caso, "codigo": f.codigo, "similitud": round(sim, 3), "vision": vis,
                  "umbrales": {"exacto": E.img.metricas["umbral_exacto"], "parecido": E.img.metricas["umbral_parecido"]},
                  "top": [{"codigo": c, "sim": round(x, 3)} for c, x in top[:5]]},
-        "sugerencias": _sugerencias_json(sugeridas),
+        "sugerencias": [dict(x, imagen=f"/media/tienda/{foto_color}") if foto_color and x.get("codigo") == f.codigo else x
+                        for x in _sugerencias_json(sugeridas)],
         # Mandar la foto de una prenda que sí hay es mostrar interés: de prospección pasa a seguimiento.
         "etapa": etapa_nueva,
         "memoria": mem, "sentimiento": animo_r["sentimiento"], "urgencia": animo_r["urgencia"],
@@ -2757,6 +2764,18 @@ def imagen_catalogo(archivo: str):
     ruta = os.path.join(IMG_DIR, archivo)
     if not os.path.exists(ruta):
         ruta = os.path.join(IMG_DIR, "extra", archivo)   # láminas de la tienda (materiales), fuera del índice de fotos
+    if not os.path.exists(ruta):
+        raise HTTPException(404)
+    return FileResponse(ruta, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=86400"})
+
+
+@app.get("/media/tienda/{archivo}")
+def imagen_tienda_color(archivo: str):
+    """Cualquier foto del índice de la tienda (la del color que mostró la clienta: app/fotos_color.py). El bot la baja y
+    la envía desde su propio servidor: el WhatsApp de jmdventas no llega a este contenedor."""
+    if not re.fullmatch(r"v\d{2,3}(_w?\d{1,2})?\.jpg", archivo):
+        raise HTTPException(404)
+    ruta = os.path.join(IMG_DIR, "tienda", archivo)
     if not os.path.exists(ruta):
         raise HTTPException(404)
     return FileResponse(ruta, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=86400"})

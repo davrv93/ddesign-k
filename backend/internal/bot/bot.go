@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -1361,9 +1362,17 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 // las sirve este backend; las del catálogo de 100 modelos, el agente. En el panel ambas se ven
 // por /media/ (el nginx del frontend reparte /media/catalogo/ al agente).
 func (b *Bot) replySuggestion(ctx context.Context, conv *store.Conversation, sg agente.Sugerencia) {
-	// La foto es la de NUESTRO producto con ese código, no la ruta que trae el agente: el agente lee el catálogo de
+	// La foto del COLOR que mostró la clienta la elige el agente entre todas las fotos de la tienda (/media/tienda/…). El
+	// WhatsApp de jmdventas no llega al contenedor del agente: se baja aquí una vez y se envía desde nuestro servidor.
+	propia := true
+	if strings.HasPrefix(sg.Imagen, "/media/tienda/") {
+		if local := b.fotoDelAgente(ctx, strings.TrimPrefix(sg.Imagen, "/media/tienda/")); local != "" {
+			sg.Imagen, propia = local, false
+		}
+	}
+	// Si no, la foto es la de NUESTRO producto con ese código, no la ruta que trae el agente: el agente lee el catálogo de
 	// kddesign y sus archivos se llaman distinto (12-10-2026: «v46-tmt6t3.jpg» no existía aquí → 404 → sin foto).
-	if sg.Codigo != "" {
+	if propia && sg.Codigo != "" {
 		if p, err := b.store.GetProductByCode(ctx, sg.Codigo); err == nil && strings.HasPrefix(p.Image, "/media/") {
 			sg.Imagen = p.Image
 		}
@@ -1380,6 +1389,46 @@ func (b *Bot) replySuggestion(ctx context.Context, conv *store.Conversation, sg 
 		log.Printf("bot: guardar sugerencia: %v", err)
 	}
 	b.crmMostrado(ctx, sg.Codigo)
+}
+
+var reFotoTienda = regexp.MustCompile(`^v\d{2,3}(_w?\d{1,2})?\.jpg$`)
+
+// fotoDelAgente baja (una sola vez) una foto de la tienda que sirve el agente y devuelve su ruta /media/agente/… en
+// nuestro servidor; "" si no se pudo (entonces va la foto del producto).
+func (b *Bot) fotoDelAgente(ctx context.Context, archivo string) string {
+	if b.Agent == nil || !reFotoTienda.MatchString(archivo) {
+		return ""
+	}
+	dir := filepath.Join(b.cfg.DataDir, "media", "agente")
+	destino := filepath.Join(dir, archivo)
+	if _, err := os.Stat(destino); err == nil {
+		return "/media/agente/" + archivo
+	}
+	actx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(actx, http.MethodGet, b.Agent.BaseURL+"/media/tienda/"+archivo, nil)
+	if err != nil {
+		return ""
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Printf("bot: foto del agente %s: %v", archivo, err)
+		return ""
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK || !strings.HasPrefix(res.Header.Get("Content-Type"), "image/") {
+		log.Printf("bot: foto del agente %s: HTTP %d %s", archivo, res.StatusCode, res.Header.Get("Content-Type"))
+		return ""
+	}
+	data, err := io.ReadAll(io.LimitReader(res.Body, 8<<20))
+	if err != nil || len(data) == 0 || os.MkdirAll(dir, 0o755) != nil {
+		return ""
+	}
+	tmp := destino + ".part"
+	if os.WriteFile(tmp, data, 0o644) != nil || os.Rename(tmp, destino) != nil {
+		return ""
+	}
+	return "/media/agente/" + archivo
 }
 
 // ---------------------------------------------------------------------------

@@ -99,6 +99,23 @@ def main():
             if (f.get("ia") or {}).get("es_prenda") is False and os.path.exists(ruta):
                 shutil.move(ruta, os.path.join(excluidas, f["archivo"]))
                 print("excluida (no muestra la prenda):", f["archivo"], f["ia"].get("que_muestra"))
+    # Color de cada foto para el agente (seed/fotos_color.json): el de la web cuando lo dice; si no, el que vio la IA en
+    # mapa_fotos.py. Sirve para mandar la foto del color que mostró la clienta (12-10-2026: mandó el Salome verde olivo y
+    # el bot respondió con la foto azul noche).
+    colores = {}
+    ia = {}
+    if os.path.exists(mapa):
+        ia = {f["archivo"]: (f.get("ia") or {}).get("color", "") for f in json.load(open(mapa, encoding="utf-8"))}
+    for p in of["productos"]:
+        base = p["code"].lower()
+        for k, url in enumerate(p["fotos"], 1):
+            nombre = (f"{base}.jpg" if k == 1 else f"{base}_{k}.jpg") if p["nuevo"] else f"{base}_w{k}.jpg"
+            if os.path.exists(os.path.join(TIENDA, nombre)):
+                web = (p.get("color_de_foto") or {}).get(url.split("?")[0], "")
+                colores[nombre] = {"codigo": p["code"], "color_web": web, "color_ia": ia.get(nombre, "")}
+    with open(os.path.join(AGENTE, "seed", "fotos_color.json"), "w", encoding="utf-8") as fh:
+        json.dump(colores, fh, ensure_ascii=False, indent=0)
+    print(f"fotos_color.json: {len(colores)} fotos ({sum(1 for c in colores.values() if c['color_web'])} con color de la web)")
     print(f"fotos nuevas: {n}; retiradas movidas a imagenes/retirados/")
 
 
