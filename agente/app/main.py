@@ -2654,8 +2654,11 @@ def conversar_foto(req: FotoIn) -> dict:
     # correcto no llegaba a los primeros candidatos que veía la visión).
     convence = lambda v: bool(v and v["codigo"] and v["confianza"] >= vision.CONFIANZA_MIN)
     if vis is not None and not convence(vis) and len(cands) > vision.CANDIDATOS_MAX:
-        vis2 = vision.identificar(crudo, fichas, req.mensaje, candidatos=cands[vision.CANDIDATOS_MAX:])
-        if vis2 and vis2["codigo"] and vis2["confianza"] > (vis["confianza"] if vis["codigo"] else 0):
+        # Estricta: son candidatos menos parecidos y la visión tendía a afirmar uno (13-10-2026: un vestido degradado que
+        # no vendemos salió «Blear 0,98» en esta ronda). Solo vale con todos los rasgos iguales y ≥ 0,95.
+        vis2 = vision.identificar(crudo, fichas, req.mensaje, candidatos=cands[vision.CANDIDATOS_MAX:], estricto=True)
+        if vis2 and vis2["codigo"] and vis2["confianza"] >= vision.CONFIANZA_RONDA2 \
+                and vis2["confianza"] > (vis["confianza"] if vis["codigo"] else 0):
             vis = vis2
     # Captura con un código escrito que NO está en el catálogo (retirado o de ejemplo: «V04 Vestido Arena», «V28 Azra»):
     # no se vende, aunque la prenda se parezca a otra (13-10-2026: la visión daba el V103 con 0,99 por la forma).

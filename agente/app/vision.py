@@ -53,6 +53,7 @@ def _jpeg(crudo: bytes) -> bytes:
 
 
 CANDIDATOS_MAX = 8       # por ronda; /foto hace una segunda ronda con los siguientes si la primera no convence
+CONFIANZA_RONDA2 = 0.95  # segunda ronda (candidatos menos parecidos): solo con esta confianza
 CONFIANZA_DUDA = 0.6     # entre DUDA y MIN se pregunta «¿es este?» con una sola foto, sin afirmar
 TIENDA = os.path.join(os.environ.get("AGENTE_IMG_DIR", os.path.join(os.path.dirname(__file__), "..", "imagenes")), "tienda")
 
@@ -77,7 +78,7 @@ def _foto_de(codigo: str) -> bytes | None:
         return None
 
 
-def identificar(crudo: bytes, fichas, mensaje: str = "", candidatos=()) -> dict | None:
+def identificar(crudo: bytes, fichas, mensaje: str = "", candidatos=(), estricto: bool = False) -> dict | None:
     """{"codigo": "V50", "confianza": 0.94, "como": "texto|prenda", "motivo": "..."} o None.
 
     `candidatos`: los códigos más parecidos según el parecido visual (embeddings). El modelo ve la foto de la clienta
@@ -100,7 +101,11 @@ def identificar(crudo: bytes, fichas, mensaje: str = "", candidatos=()) -> dict 
         "- Si ves escrito un código o un nombre de esta lista, ese manda:\n" + _lista(fichas) + "\n"
         + (f"- Si es una foto, compárala con los CANDIDATOS ({', '.join(vistos)}): cada uno es un modelo que existe en "
            "VARIOS colores, así que decide por la FORMA (escote, mangas, corte, largo, abertura, tela), no por el color. "
-           "Elige uno solo si es el mismo modelo; si dudas o no es ninguno, código vacío.\n" if vistos else
+           "Elige uno solo si es el mismo modelo; si dudas o no es ninguno, código vacío.\n"
+           + ("OJO: estos candidatos se parecen POCO según el parecido visual (segunda ronda). Elige uno SOLO si "
+              "coinciden TODOS los rasgos: escote, mangas u hombros, largo, abertura y caída de la tela. Ante cualquier "
+              "diferencia, código vacío: es mejor decir que no lo tenemos que afirmar otro modelo.\n" if estricto else "")
+           if vistos else
            "- Si es una foto sin texto, devuelve código vacío.\n")
         + "No inventes códigos. Responde SOLO JSON: "
           '{"codigo": "Vxx o vacío", "confianza": 0..1, "como": "texto|prenda", "color": "color principal de la prenda '
