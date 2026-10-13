@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -12,10 +14,19 @@ import (
 	"github.com/davrv93/ddesign-k/backend/internal/agente"
 )
 
+// fotosPedidas cuenta las fotos de la tienda que el bot le bajó al agente.
+var fotosPedidas int
+
 // fakeAgente responde según el mensaje y guarda la última petición.
 func fakeAgente(t *testing.T, last *agente.Request) *agente.Client {
 	t.Helper()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/media/tienda/") { // fotos de la tienda que sirve el agente
+			fotosPedidas++
+			w.Header().Set("Content-Type", "image/jpeg")
+			_, _ = w.Write([]byte("\xff\xd8\xff\xe0 jpeg de prueba"))
+			return
+		}
 		var req agente.Request
 		_ = json.NewDecoder(r.Body).Decode(&req)
 		*last = req
@@ -31,6 +42,9 @@ func fakeAgente(t *testing.T, last *agente.Request) *agente.Client {
 		case "quiero ver su catalogo":
 			rep = agente.Reply{Intencion: "catalogo", Accion: "responder", Respuesta: "¡Claro! Mira estos 😍\n\n¿Para qué ocasión buscas?",
 				Sugerencias: []agente.Sugerencia{{Codigo: "V01", Fuente: "seed", Imagen: "/media/products/v01.jpg", Pie: "*V01* Vestido Esmeralda"}}}
+		case "me gusta en verde":
+			rep = agente.Reply{Intencion: "catalogo", Accion: "responder", Respuesta: "Lo tengo en verde 😍",
+				Sugerencias: []agente.Sugerencia{{Codigo: "V01", Fuente: "seed", Imagen: "/media/tienda/v01_5.jpg", Pie: "*V01* Vestido Esmeralda"}}}
 		case "muestrame el esmeralda":
 			// La ruta que trae el agente es la de OTRO catálogo (kddesign): aquí no existe.
 			rep = agente.Reply{Intencion: "catalogo", Accion: "responder", Respuesta: "Te muestro el Esmeralda 😍",
@@ -224,5 +238,34 @@ func TestSugerenciaUsaLaFotoDelProductoPropio(t *testing.T) {
 	}
 	if !strings.HasSuffix(url, p.Image) || strings.Contains(url, "de-kddesign") {
 		t.Fatalf("la foto debía ser la del producto propio (%s), salió %q", p.Image, url)
+	}
+}
+
+// La foto del COLOR que eligió el agente (/media/tienda/…) se baja una vez y se envía desde nuestro servidor (el
+// WhatsApp de jmdventas no llega al agente). 12-10-2026: una clienta mandó el Salome verde olivo y le llegó el azul.
+func TestSugerenciaConFotoDelColor(t *testing.T) {
+	b, _, fe := setup(t, `{}`, false)
+	var last agente.Request
+	b.Agent = fakeAgente(t, &last)
+	fotosPedidas = 0
+	enviada := func() string {
+		url := ""
+		for _, m := range fe.sent {
+			if m["_path"] == "/send/media" {
+				url, _ = m["url"].(string)
+			}
+		}
+		return url
+	}
+	handle(b, text("me gusta en verde"))
+	if url := enviada(); !strings.HasSuffix(url, "/media/agente/v01_5.jpg") {
+		t.Fatalf("debía enviarse la foto del color desde nuestro servidor, salió %q", url)
+	}
+	if _, err := os.Stat(filepath.Join(b.cfg.DataDir, "media", "agente", "v01_5.jpg")); err != nil {
+		t.Fatalf("la foto debía quedar guardada: %v", err)
+	}
+	handle(b, text("me gusta en verde"))
+	if fotosPedidas != 1 {
+		t.Fatalf("la segunda vez se reutiliza la guardada: se bajó %d veces", fotosPedidas)
 	}
 }
