@@ -219,3 +219,25 @@ func TestAgentePedidoConTalla(t *testing.T) {
 		}
 	}
 }
+
+// «reiniciar» empieza de cero: el agente recibe «hola» sin historial y la conversación vuelve a una sesión nueva.
+func TestReiniciarEmpiezaDeCero(t *testing.T) {
+	b, st, _ := setup(t, `{}`, false)
+	var last agente.Request
+	b.Agent = fakeAgente(t, &last)
+	handle(b, text("hola"))
+	handle(b, text("quiero ver su catalogo"))
+	if len(last.Historial) == 0 {
+		t.Fatal("antes de reiniciar el agente debía ver historial")
+	}
+	handle(b, text("reiniciar"))
+	if last.Mensaje != "hola" || len(last.Historial) != 0 {
+		t.Fatalf("tras «reiniciar» el agente debía recibir «hola» sin historial: %q %d turnos", last.Mensaje, len(last.Historial))
+	}
+	conv, _ := st.ConversationByCustomer(context.Background(), 1)
+	var cc convContext
+	_ = json.Unmarshal([]byte(conv.Context), &cc)
+	if cc.Desde == 0 || conv.State != stIdle {
+		t.Fatalf("debía quedar en sesión nueva: desde=%d estado=%q", cc.Desde, conv.State)
+	}
+}

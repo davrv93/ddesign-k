@@ -176,7 +176,20 @@ func (b *Bot) Handle(ctx context.Context, in *Incoming) {
 	if conv.BotPaused || b.store.Setting(ctx, "bot_enabled", "true") != "true" {
 		return
 	}
+	// «reiniciar» (13-10-2026, pedido del usuario): la clienta pide empezar de cero. Se olvida el hilo (etapa, memoria,
+	// pendiente, anuncio) y se la atiende como recién llegada: el agente se presenta otra vez.
+	if !in.HasImage && esReinicio(in.Text) {
+		b.nuevaSesion(ctx, conv)
+		b.setState(ctx, conv, stIdle, convContext{Desde: time.Now().Unix() + 1}) // ni este «reiniciar» entra al historial
+		in.Text = "hola"
+	}
 	b.step(ctx, conv, in, msg, img)
+}
+
+// esReinicio: «reiniciar», «empezar de nuevo», «reset»… solo como mensaje entero.
+func esReinicio(texto string) bool {
+	return isAny(normalize(texto), "reiniciar", "reinicio", "reinicia", "reset", "resetear", "empezar de nuevo",
+		"volver a empezar", "comenzar de nuevo", "empecemos de nuevo", "borrar conversacion", "nueva conversacion")
 }
 
 // sessionGap: silencio a partir del cual el siguiente mensaje abre una conversación nueva.
