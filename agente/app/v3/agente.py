@@ -126,6 +126,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
         hecho = (hecho + "\n" + pedido).strip()
     if foto_hecho:
         hecho = (hecho + "\n" + foto_hecho).strip()
+        if getattr(req, "foto_codigo", ""):      # respalda código, precio y tallas: el validador los exigía de una herramienta
+            rec.ejecutar("stock", {"codigo": req.foto_codigo})
     paso = "" if (lectura.get("datos") or {}).get("horario") else _paso_guion(f, getattr(req, "historial", []) or [], pago_ok)
     if re.search(r"\bsepar", memoria._plano(mensaje)) and not (f.get("producto") or f.get("mostrados")
                                                                or (f.get("pedido") or {}).get("codigo")) \
@@ -147,7 +149,9 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
         hecho = (hecho + "\n" + paso).strip()
     msgs = prompt.construir(f, getattr(req, "historial", []) or [], mensaje, getattr(req, "canal", ""), hecho=hecho,
                             cliente=getattr(req, "cliente", ""), pago=pago_ok)
-    salida = cliente_llm.responder(msgs, rec.esquema(), rec.ejecutar)
+    # Respuesta a una foto: todo lo necesario ya viene en el hecho; una sola vuelta (sin herramientas) ahorra 3–5 s.
+    vueltas_max = 1 if foto_hecho else 0
+    salida = cliente_llm.responder(msgs, rec.esquema(), rec.ejecutar, max_vueltas=vueltas_max)
     out = prompt.leer_salida(salida["contenido"])
     _foto_pedida(rec, f, mensaje)
     _recortar_fotos(rec, mensaje)
@@ -165,7 +169,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     if motivos:
         msgs2 = msgs + [{"role": "user", "content": "Tu respuesta se rechazó por: " + "; ".join(motivos) +
                          ". Corrígela y vuelve a responder SOLO el JSON."}]
-        salida2 = cliente_llm.responder(msgs2, rec.esquema(), rec.ejecutar)
+        salida2 = cliente_llm.responder(msgs2, rec.esquema(), rec.ejecutar, max_vueltas=vueltas_max)
         out = prompt.leer_salida(salida2["contenido"])
         motivos = validador.validar(out["respuesta"], rec.hechos, out["pregunta_hecha"], _respondidas(f))
         motivos += _no_avanza(out["respuesta"], mensaje, pago_ok, rec)

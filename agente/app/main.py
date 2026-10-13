@@ -264,6 +264,7 @@ class ChatIn(BaseModel):
     # Versión del agente para este turno: "v1" | "v2". Vacío = AGENT_VERSION del entorno (v1 si no está).
     version: str = ""
     foto_hecho: str = ""   # /foto → V3: lo que ya se sabe de la foto (modelo, color, stock, fotos ya enviadas)
+    foto_codigo: str = ""  # /foto → V3: el modelo reconocido, para respaldar su código, precio y tallas sin herramientas
     # Modo de la V2 para este turno: "sombra" (V2 solo observa) | "activo" (V2 puede hablar). Vacío = V2_MODO del entorno.
     modo: str = ""
     # Respuesta rápida pulsada: {"intent": "provide_size", "size": "M"} (app/v2/temas.py). Solo la lee V2; V1 la ignora. El texto de la
@@ -2791,7 +2792,7 @@ Máximo 3 frases."""
 HECHO_FOTO = {
     "online": "LA CLIENTA ENVIÓ UNA FOTO y ES el {cod} {nom}{color}; hay stock ({stock}). Ya se le envió la foto de ese modelo{en_color} "
               "(NO llames a enviar_fotos). Dile con alegría que sí lo tienen, nómbralo por su nombre y precio, y sigue el guion con la "
-              "siguiente pregunta que falte.",
+              "siguiente pregunta que falte (si ya se le preguntó algo y no contestó, pregúntalo con OTRAS palabras).",
     "sucursal": "LA CLIENTA ENVIÓ UNA FOTO y ES el {cod} {nom}{color}, pero solo hay en sucursal ({stock}). Ya se le envió su foto "
                 "(NO llames a enviar_fotos). Díselo y ofrece separarlo con una asesora.",
     "agotado": "LA CLIENTA ENVIÓ UNA FOTO y ES el {cod} {nom}{color}, pero está agotado. Dilo con empatía; ya se le enviaron fotos de "
@@ -2806,7 +2807,8 @@ HECHO_FOTO = {
 def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, sugeridas, st) -> dict | None:
     """El texto de la respuesta a una foto, redactado por V3 (guion de Rosmary: nombre, precio, color, siguiente paso).
     /foto ya decidió el modelo, el caso y las fotos que van: V3 solo redacta. None si V3 no pudo (sigue V1)."""
-    color = f" en {vis['color']}" if vis and vis.get("color") else ""
+    # El color como lo llama la web si se encontró su foto («Verde Olivo»); si no, como lo vio la visión.
+    color = f" en {color_web or vis['color']}" if vis and (color_web or vis.get("color")) else ""
     otras = ", ".join(f"{x.codigo} {x.nombre}" for x in sugeridas if x is not f)
     hecho = HECHO_FOTO[caso].format(
         cod=f.codigo, nom=f.nombre, color=color, stock=stk.resumen(st.get(f.codigo, {})), otras=otras or "ninguno",
@@ -2816,7 +2818,8 @@ def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, suge
     mem["mostrados"] = list(dict.fromkeys((mem.get("mostrados") or []) + [x.codigo for x in sugeridas]))
     creq = ChatIn(mensaje=req.mensaje or "(envió una foto)", historial=req.historial, cliente=req.cliente, estado=req.estado,
                   negocio=req.negocio, etapa=req.etapa, conversacion=req.conversacion, memoria=mem, perfil=req.perfil,
-                  desde_anuncio=req.desde_anuncio, anuncio=req.anuncio, version="v3", modo="activo", foto_hecho=hecho)
+                  desde_anuncio=req.desde_anuncio, anuncio=req.anuncio, version="v3", modo="activo", foto_hecho=hecho,
+                  foto_codigo=f.codigo if caso in ("online", "sucursal", "agotado", "parecido") else "")
     try:
         res = _v3_conversar(creq, permitir_reserva=False)
     except Exception as e:
