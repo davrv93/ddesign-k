@@ -13,12 +13,13 @@ from __future__ import annotations
 
 import re
 
-from .. import datos, ficha_producto, memoria, stock as stk, venta
+from .. import datos, ficha_producto, fotos_color, memoria, stock as stk, venta
 from .validador import hechos_vacios
 
 MAX_CATALOGO = 6
-RE_PIDE_VARIAS = re.compile(r"\b(fotos|modelos|opciones|vestidos|conjuntos|otros|otras|cat[aá]logo|todos|todas|qu[eé] tienes|qu[eé] m[aá]s)\b")
-RE_PIDE_FOTO = re.compile(r"\b(foto|ver|veo|mu[eé]stra\w*|p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|c[oó]mo es(?!\s+(el|la|su)\s+(material|tela|forro|talla|envio|env[ií]o|pago))|c[oó]mo se ve)\b")
+RE_PIDE_VARIAS = re.compile(r"\b(fotos|fotitos|modelos|opciones|vestidos|conjuntos|otros|otras|cat[aá]logo|todos|todas|ambos|ambas|los (dos|tres)|las (dos|tres)|qu[eé] tienes|qu[eé] m[aá]s)\b")
+# «fot», «fotito», «fotos» (13-10-2026: «¿tienes fot?» con tipeo no contaba como pedir la foto).
+RE_PIDE_FOTO = re.compile(r"\b(fot\w*|ver|veo|mu[eé]stra\w*|p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|c[oó]mo es(?!\s+(el|la|su)\s+(material|tela|forro|talla|envio|env[ií]o|pago))|c[oó]mo se ve)\b")
 # Pide ver modelos (12-10-2026, la tienda: «que no ofrezca modelos a menos que la clienta lo solicite»). «Busco un
 # vestido» es una necesidad, no un pedido de fotos: ahí se indaga (guion, pasos 1-4).
 RE_PIDE_MODELOS = re.compile(r"\b(fotos?|ver|veo|verlo|verla|mu[eé]stra\w*|modelos?|opciones|cat[aá]logo|"
@@ -103,6 +104,7 @@ class Recolector:
         self.sigue = False                   # «No, gracias» a esa oferta no es despedida: la charla sigue por el guion
         self.varias_ok = False               # dijo que sí quiere ver otros modelos: salen hasta MAX_FOTOS, no una
         self.bloquear_fotos = False          # objeción al envío: se contesta y se vuelve a la pregunta pendiente, sin fotos
+        self.color_pedido = ""               # pidió un color: cada foto sale en ESE color si el modelo lo tiene (13-10-2026)
         self.mensaje = (mensaje or "").lower()
         self.mostrados = {str(c).upper() for c in mostrados or ()}
         self.fichas = list(fichas)
@@ -256,7 +258,12 @@ class Recolector:
             tallas = [{"talla": t, "disponible": online[t] > 0, "precio": f.precio, "codigo": f.codigo}
                       for t in sorted(online, key=lambda t: ORDEN_TALLAS.index(t) if t in ORDEN_TALLAS else 99)]
             titulo = f"*{f.codigo}* {f.nombre}" + (f" — *{MONEDA} {f.precio:.2f}*" if f.precio is not None else "")
-            out.append({"codigo": f.codigo, "nombre": f.nombre, "imagen": f.imagen, "pie": pie, "titulo": titulo, "tallas": tallas})
+            imagen = f.imagen
+            if self.color_pedido:                # la foto del color que pidió («azul» → Blear azul noche, no la morada)
+                archivo, _c = fotos_color.foto_del_color(f.codigo, self.color_pedido)
+                if archivo:
+                    imagen = f"/media/tienda/{archivo}"
+            out.append({"codigo": f.codigo, "nombre": f.nombre, "imagen": imagen, "pie": pie, "titulo": titulo, "tallas": tallas})
             self.hechos["codigos"].add(f.codigo.upper())
             self.hechos["fotos"].add(f.codigo.upper())
             if f.precio is not None:

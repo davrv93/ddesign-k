@@ -137,6 +137,18 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     pedido = _pedido_en_curso(rec, req, f)
     if pedido:
         hecho = (hecho + "\n" + pedido).strip()
+    rec.color_pedido = (f.get("sabemos") or {}).get("color") or ""
+    # Pide las fotos de los modelos que el bot acaba de nombrar («¿tienes fot?», «de todos», «los tres») sin decir cuál:
+    # se mandan esos, no otro (13-10-2026: nombró Maura, Milan y Roberta y mandó el Blear).
+    from .herramientas import RE_PIDE_FOTO, RE_PIDE_VARIAS
+    nombrados_bot = [c for c in _nombradas(ultimo_bot, rec.fichas) if rec._ficha(c)][:3]
+    if len(nombrados_bot) >= 1 and not _nombradas(mensaje, rec.fichas) and not foto_hecho \
+            and (RE_PIDE_FOTO.search(memoria._plano(mensaje)) or RE_PIDE_VARIAS.search(memoria._plano(mensaje))):
+        rec.contesta_cual = rec.varias_ok = True
+        rec.ejecutar("enviar_fotos", {"codigos": nombrados_bot})
+        hecho = (hecho + "\nPIDE VER LOS MODELOS QUE NOMBRASTE: ya se le enviaron las fotos de " + ", ".join(nombrados_bot)
+                 + " (NO llames a enviar_fotos ni cambies de modelo). Preséntalos con nombre y precio y pregúntale cuál le "
+                 "gusta más.").strip()
     # Tras una foto que no se reconoció se le preguntó si quiere ver otros modelos: las fotos salen SOLO con su «sí».
     if oferta_foto:
         codigos = [c for c in (f.get("foto_parecidas") or []) if rec._ficha(c)][:3]
@@ -645,7 +657,7 @@ RE_DOS_EN_UNA = re.compile(r"(\by|,)\s+(cuanto|cuantos|que|como|cual|cuando|dond
 
 # Preguntas del guion que se pueden hacer juntas (paso 3) y cómo reconocerlas en el texto del bot.
 RE_PREGUNTA_DE = {"talla": re.compile(r"\btalla\b"), "horario": re.compile(r"\bde dia o de noche\b"),
-                  "estatura": re.compile(r"\bestatura\b|\bcuanto (mide|mides)\b"),
+                  "estatura": re.compile(r"\bestatura\b|\bcuanto (mide|mides)\b|\bmedida\b.{0,14}\b(exact[ao]|precis[ao])\b|\bmide exact"),
                   "fecha": re.compile(r"\bpara cuando\b"),
                   "estilo": re.compile(r"\bsentir(se|te)?\b|\bllamar (un poco (mas )?)?la atencion\b")}
 FALTA_TU = {"talla": "¿Y en qué talla te encuentras?", "horario": "¿Y el evento es de día o de noche?",
@@ -740,7 +752,7 @@ RE_SENTIR_PARTIDA = re.compile(r"(¿[^?¿]*\bsentir(?:se|te)?\b[^?¿]*)\?\s*¿\s
 
 
 def _respuesta(f: dict, texto: str, accion: str, fotos, reserva, traza: dict, req) -> dict:
-    texto = prompt.RE_RESTO_JSON.sub("", texto or "").strip()
+    texto = prompt.RE_RESTO_JSON.sub("", texto or "").strip().rstrip("`{} ")
     texto = _una_muletilla(texto)
     texto = _sin_escasez_repetida(texto, f, getattr(req, "historial", []) or [])
     texto = RE_SENTIR_PARTIDA.sub(lambda m: f"{m.group(1)}: {m.group(2).lower()}", texto or "")

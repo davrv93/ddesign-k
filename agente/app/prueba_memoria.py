@@ -46,6 +46,8 @@ EXTRAER = [
     # 13-10-2026, WhatsApp real: «para dentro e 10 dias» (error de tipeo) no se guardaba; «para mi novia» se olvidaba al acortarse el historial.
     ("lo necesito para dentro e 10 dias", "", {"fecha": "para dentro e 10 dias"}),
     ("es para mi novia", "", {"para_quien": "novia"}),
+    ("ella es M y no se cuanto mide creo que metro 80", "", {"talla": "M", "estatura": "1.80"}),
+    ("mide metro sesenta y cinco", "", {"estatura": "1.65"}),
     ("1,65", "estatura", {"estatura": "1.65"}),
     ("mido 158", "", {"estatura": "1.58"}),
     ("es para un matrimonio", "", {"ocasion": "matrimonio"}),

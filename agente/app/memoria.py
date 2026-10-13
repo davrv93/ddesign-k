@@ -300,7 +300,10 @@ RE_PRENDA = [(k, re.compile(rx)) for k, rx in PRENDAS]
 # (07-10: mandaba la foto de otra prenda y la pregunta se quedaba sin respuesta).
 RE_PIEZA_DE_FOCO = re.compile(r"\b(?:viene con|trae|incluye|lleva)\s+(?:la|el|su)\s+(?:falda|blusa|top|pantal[oó]n|saco|short|blazer)\b"
                               r"|\b(?:la|el|su)\s+(?:falda|blusa|top|pantal[oó]n|saco|short|blazer)\s+(?:es|son|tiene|trae|lleva|viene|est[aá]|queda)\b", re.I)
-RE_ESTATURA = re.compile(r"\b(1[.,]\s?[4-9]\d?|1\s[4-9]\d)\b(?:\s*m\b|\s*mts?\b|\s*metros?\b)?|\bmido\s+(1[4-9]\d)\b|\b(1[4-9]\d)\s*cm\b")
+# «1.80», «1,62», «1 80», «mido 180», «180 cm», «metro 80» / «un metro 80» (13-10-2026: «creo que metro 80» no se guardaba y
+# el bot pedía la estatura tres veces). Aproximada o no, es su estatura.
+RE_ESTATURA = re.compile(r"\b(1[.,]\s?[4-9]\d?|1\s[4-9]\d)\b(?:\s*m\b|\s*mts?\b|\s*metros?\b)?|\b(?:mido|mide)\s+(1[4-9]\d)\b|\b(1[4-9]\d)\s*cm\b"
+                         r"|\b(?:un\s+)?metro\s+(?:con\s+)?([4-9]\d)\b")
 PROVINCIAS = ("arequipa", "cusco", "cuzco", "trujillo", "piura", "chiclayo", "iquitos", "huancayo", "tacna", "puno", "ica",
               "chimbote", "cajamarca", "ayacucho", "huanuco", "pucallpa", "tarapoto", "juliaca", "moquegua", "tumbes",
               "huaraz", "chincha", "abancay", "huancavelica", "puerto maldonado", "moyobamba", "chachapoyas",
@@ -460,7 +463,7 @@ def _talla(t: str, pendiente: str) -> str | None:
 
 _DECENAS = {"cuarenta": 40, "cincuenta": 50, "sesenta": 60, "setenta": 70, "ochenta": 80, "noventa": 90}
 _UNIDADES = {"uno": 1, "un": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7, "ocho": 8, "nueve": 9}
-RE_ESTATURA_PALABRAS = re.compile(r"\bun metro (cuarenta|cincuenta|sesenta|setenta|ochenta|noventa)(?: y (uno|un|dos|tres|cuatro|"
+RE_ESTATURA_PALABRAS = re.compile(r"\b(?:un )?metro (cuarenta|cincuenta|sesenta|setenta|ochenta|noventa)(?: y (uno|un|dos|tres|cuatro|"
                                   r"cinco|seis|siete|ocho|nueve))?\b")
 
 
@@ -476,6 +479,8 @@ def _estatura(t: str) -> str | None:
         partes = cm.split(".")
         cm = partes[0] + "." + (partes[1] + "0")[:2] if len(partes) > 1 else cm
         return cm
+    if m.group(4):                      # «metro 80» → 1.80
+        return f"1.{m.group(4)}"
     n = m.group(2) or m.group(3)
     return f"{n[0]}.{n[1:]}"
 

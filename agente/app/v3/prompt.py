@@ -125,7 +125,7 @@ _CIERRE = r'["\'`\u201c\u201d\u2018\u2019]'
 RE_SALIDA = re.compile(r'"respuesta"\s*:\s*"(?P<r>.*?)' + _CIERRE + r'\s*,\s*"pregunta_hecha"\s*:\s*"(?P<p>[^"]*)"', re.S)
 # Restos de JSON que nunca deben llegar a la clienta (12-10-2026, WhatsApp real: «…¿No lo consideras? 💛","pregunta_hecha":"fecha"}»).
 RE_RESTO_JSON = re.compile(r'^\s*\{?\s*"respuesta"\s*:\s*' + _CIERRE + r'|' + _CIERRE + r'?\s*,?\s*"pregunta_hecha"\s*:\s*"[^"]*"\s*\}?\s*$'
-                           r'|^\s*\{\s*$|^\s*\}\s*$', re.M)
+                           r'|^\s*\{\s*$|^\s*\}\s*$|\s*[{}]\s*$', re.M)
 
 
 def leer_salida(texto: str) -> dict:
@@ -144,4 +144,4 @@ def leer_salida(texto: str) -> dict:
             pass
     if m := RE_SALIDA.search(t):
         return {"respuesta": m.group("r").replace('\\"', '"').replace("\\n", "\n").strip(), "pregunta_hecha": m.group("p").strip()}
-    return {"respuesta": RE_RESTO_JSON.sub("", t).strip().rstrip("`\u201d\u2019 "), "pregunta_hecha": ""}
+    return {"respuesta": RE_RESTO_JSON.sub("", t).strip().rstrip("`{}\u201d\u2019 "), "pregunta_hecha": ""}
