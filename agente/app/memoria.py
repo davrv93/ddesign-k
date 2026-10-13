@@ -36,7 +36,7 @@ except Exception:  # noqa: BLE001
     LIMA = _dt.timezone(_dt.timedelta(hours=-5), "America/Lima")
 
 CAMPOS = ("ocasion", "horario", "fecha", "fecha_iso", "prenda", "talla", "estatura", "color", "presupuesto", "envio",
-          "ciudad", "le_gusto", "cita", "nombre", "estilo")
+          "ciudad", "le_gusto", "cita", "nombre", "estilo", "para_quien")
 TEMPERATURAS = ("frio", "tibio", "caliente")
 
 
@@ -140,6 +140,7 @@ ESPERA = {
     "ocasion": "la ocasión", "horario": "si el evento es de día o de noche", "talla": "su talla",
     "estatura": "su estatura", "color": "el color que busca", "fecha": "para cuándo lo necesita",
     "estilo": "si quiere llamar la atención o verse elegante y discreta",
+    "para_quien": "para quién es la prenda",
     "que_le_gusto": "qué le gustó del modelo", "separar": "si quiere separarlo",
     "probar": "si quiere pasar a probárselo al showroom (con cita) o que se lo separes",
     "cita": "el día y la hora de su cita para probárselo",
@@ -279,7 +280,7 @@ RE_FECHA = re.compile(
     # «el sábado 17», «este viernes», «el próximo domingo 18 de octubre»
     rf"|(?:(?:este|el|el proximo|proximo|el otro|este otro)\s+)?(?:{_DIAS})\s+\d{{1,2}}\b(?:\s*de\s+(?:{_MESES})\b)?"
     rf"|(?:este|el|el proximo|el otro|este otro)\s+(?:{_DIAS})"
-    rf"|(?:en|dentro de)\s+(?:{_NUMS})\s+(?:semanas?|dias|meses|mes|anos?)"
+    rf"|(?:en|dentro(?: de| e)?|para dentro(?: de| e)?)\s+(?:{_NUMS})\s+(?:semanas?|dias|meses|mes|anos?)"
     r"|(?:la\s+)?(?:proxima|siguiente|otra)\s+semana|(?:la\s+)?semana que viene|(?:el\s+)?(?:proximo|siguiente)\s+mes"
     r"|(?:el\s+)?mes que viene|fin de mes|a fin de (?:mes|ano)|fin de ano"
     r"|(?:el\s+)?(?:proximo|siguiente|otro)\s+ano|(?:el\s+)?ano que viene"
@@ -490,7 +491,7 @@ def extraer(texto: str, pendiente: str = "") -> dict:
     if v := _talla(t, pendiente):
         out["talla"] = v
     if (m := RE_FECHA.search(t)) and (d := RE_FECHA_DIA.search(t) or RE_DIA_Y_NUMERO.search(t)) \
-            and re.match(r"(en|dentro de) ", m.group(1)):
+            and re.match(r"(en|dentro|para dentro)\b", m.group(1)):
         out["fecha"] = d.group(1)          # «en 2 semanas, el 26»: manda el día dicho
     elif m := RE_FECHA.search(t) or RE_FECHA_DIA.search(t):
         out["fecha"] = m.group(1)
@@ -545,9 +546,14 @@ def extraer(texto: str, pendiente: str = "") -> dict:
         out["presupuesto"] = m.group(1)
     if v := _estilo(t, pendiente):
         out["estilo"] = v
+    if m := RE_PARA_QUIEN.search(t):      # compra para otra persona: se recuerda aunque el historial se acorte (13-10-2026)
+        out["para_quien"] = m.group(1)
     return out
 
 
+# «es para mi novia», «para mi hermana», «era para mi mamá»: la prenda es para otra persona (tercera persona en el guion).
+RE_PARA_QUIEN = re.compile(r"\b(?:para|es para|era para|se lo (?:quiero )?regal\w+ a)\s+(?:mi|una?)\s+(novia|esposa|enamorada|mama|madre|hija|hermana|"
+                           r"amiga|prima|tia|abuela|suegra|pareja|jefa|sobrina|cunada|nuera|ahijada)\b")
 # Cómo quiere sentirse (paso 4 de noche): lo vota en la encuesta o lo dice. «elegante» suelto solo cuenta si se le preguntó.
 RE_ESTILO_LLAMAR = re.compile(r"\bllamar (un poco (mas )?)?la atencion\b|\bllamativ\w*|\bresaltar\b|\bque (se )?destaque\b|\bvibrante")
 RE_ESTILO_DISCRETA = re.compile(r"\bdiscret\w*|\bsobri\w*|\belegante y discreta\b")
@@ -631,7 +637,7 @@ def fecha_iso(texto: str, hoy: _dt.date) -> str | None:
         if (m.group(1) or "").endswith("otro"):
             delta += 7
         return (hoy + _dt.timedelta(days=delta)).isoformat()
-    if m := re.search(rf"\b(?:en|dentro de)\s+({_NUMS})\s+(semanas?|dias|meses|mes|anos?)\b", t):
+    if m := re.search(rf"\b(?:en|dentro(?: de| e)?|para dentro(?: de| e)?)\s+({_NUMS})\s+(semanas?|dias|meses|mes|anos?)\b", t):
         n, u = _num(m.group(1)), m.group(2)
         dias = n * (7 if u.startswith("semana") else 30 if u.startswith("mes") else 365 if u.startswith("ano") else 1)
         return (hoy + _dt.timedelta(days=dias)).isoformat()

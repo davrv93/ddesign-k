@@ -147,6 +147,11 @@ def prueba_encuestas():
     caso("JSON con salto de línea literal se lee",
          prompt.leer_salida('{"respuesta": "Hola\nque tal", "pregunta_hecha": "fecha"}'), {"respuesta": "Hola\nque tal", "pregunta_hecha": "fecha"})
     caso("resto de JSON se limpia", prompt.leer_salida('¿No lo consideras? 💛","pregunta_hecha":"fecha"}')["respuesta"], "¿No lo consideras? 💛")
+    caso("JSON cerrado con comilla invertida se limpia (13-10)", prompt.leer_salida('Wooow, muy pronto. ¿No lo consideras?`, "pregunta_hecha":""')["respuesta"],
+         "Wooow, muy pronto. ¿No lo consideras?")
+    from .agente import _pregunta_sabida
+    caso("pregunta la estatura que ya sabe: se rechaza", bool(_pregunta_sabida("¿Cuánto mides? Así te digo el largo.", {"sabemos": {"estatura": "1.78"}})), True)
+    caso("pregunta la fecha sin saberla: pasa", _pregunta_sabida("¿Para cuándo lo necesitas?", {"sabemos": {}}), [])
     caso("no contestó ninguna: no se insiste aquí", _con_la_que_falta("¿Me cuentas más?", {"sabemos": {}}, hist),
          "¿Me cuentas más?")
 

@@ -114,7 +114,7 @@ def responder(f: dict, datos: dict, mensaje: str, historial, cliente: str = "") 
     if not m or RE_EXTRA.search(m) or len(m.split()) > MAX_PALABRAS:
         return None
     hist_cli = " ".join(_clientes(historial)) + " " + m
-    if RE_OTRA_PERSONA.search(hist_cli):        # compra para otra persona: el LLM lo adapta a tercera persona
+    if RE_OTRA_PERSONA.search(hist_cli) or (f.get("sabemos") or {}).get("para_quien"):   # para otra persona: lo adapta el LLM
         return None
     sab = f.setdefault("sabemos", {})
     datos = {k: v for k, v in (datos or {}).items() if v}

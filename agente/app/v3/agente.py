@@ -26,6 +26,8 @@ RE_CATALOGO = re.compile(r"\b(cat[aá]logo|p[aá]gina( web)?|web|link|enlace)\b"
 # Ofrecer modelos sin que los pida (regla de la tienda, 12-10-2026): «¿te muestro un modelo?», «¿quieres ver opciones?».
 RE_OFRECE = re.compile(r"(te (muestre|muestro|enseñe|enseño|mande|mando|paso|comparta|comparto)|quieres ver|gustar[ií]a ver)"
                        r"[^.?!]{0,40}\b(modelo|modelos|opci[oó]n|opciones|vestidos?|prendas?|fotos?)\b", re.I)
+RE_OBJECION_ENVIO = re.compile(r"\b(car[oa]|car[ií]simo|muy caro|tan caro|rebaja|descuento|m[aá]s barato|gratis|"
+                               r"no (me )?llega|se pierde|seguro que llega|confiable)\b", re.I)
 RE_NO = re.compile(r"^\s*(no+|nop|nel|no,? gracias|mejor no|as[ií] no m[aá]s|todav[ií]a no|a[uú]n no)\b[^?]*$", re.I)
 RE_SI = re.compile(r"^\s*(s[ií]+|claro|ok+|okey|dale|bueno|ya|perfecto|de acuerdo|tienes raz[oó]n|si tienes raz[oó]n|"
                    r"s[ií],? tienes raz[oó]n|me parece( bien)?|exacto|correcto|as[ií] es)\b[^?]*$", re.I)
@@ -120,7 +122,10 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     clienta = " ".join(memoria._plano(x.get("texto", "") if isinstance(x, dict) else getattr(x, "texto", ""))
                        for x in hist if (x.get("rol", "") if isinstance(x, dict) else getattr(x, "rol", "")) == "cliente")
     hecho = _precalculo(rec, {**(lectura.get("datos") or {}),
-                              "otra_persona": bool(plantillas.RE_OTRA_PERSONA.search(f"{clienta} {memoria._plano(mensaje)}")),
+                              "otra_persona": bool(plantillas.RE_OTRA_PERSONA.search(f"{clienta} {memoria._plano(mensaje)}")
+                                                   or (f.get("sabemos") or {}).get("para_quien")),
+                              "para_quien": (f.get("sabemos") or {}).get("para_quien") or "",
+                              "ultimo_bot": ultimo_bot, "mensaje": memoria._plano(mensaje),
                               "estilo_ya": (f.get("sabemos") or {}).get("estilo") or "",
                               "producto": getattr(req, "producto", "") or f.get("producto")
                                           or ((f.get("mostrados") or [""])[-1])})
@@ -183,6 +188,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     _recortar_fotos(rec, mensaje)
     _foto_de_la_nombrada(rec, out["respuesta"])
     motivos = validador.validar(out["respuesta"], rec.hechos, out["pregunta_hecha"], _respondidas(f))
+    motivos += _pregunta_sabida(out["respuesta"], f)
     motivos += _no_avanza(out["respuesta"], "" if rec.sigue else mensaje, pago_ok, rec)
     motivos += _repite(out["respuesta"], getattr(req, "historial", []) or [])
     motivos += _ofrece(out["respuesta"], rec)
@@ -310,7 +316,19 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
         partes.append("HECHO: dio su estatura. Dile casi textual: «Excelente, sí está diseñado para tu estatura. Si en "
                       "caso te queda un poquito larguito, lo puedes ajustar con tu modista de confianza. ¡Es súper "
                       "sencillo!» y luego pregunta lo que falte del paso 3.")
-    if datos.get("otra_persona") and any("casi textual" in x for x in partes):
+    # Objeción al envío («¿tan caro?», «¿no hay rebaja?», «¿y si se pierde?») cuando se habla del envío: la respuesta del
+    # guion (mejores servicios de entrega, precio fijo) y de vuelta a la pregunta pendiente (13-10-2026, pedido del usuario).
+    if RE_OBJECION_ENVIO.search(datos.get("mensaje", "")) and re.search(r"envio|olva|shalom|lima o provincia|agencia",
+                                                                        f"{datos.get('ultimo_bot', '')} {datos.get('mensaje', '')}"):
+        partes.append("OBJECIÓN AL ENVÍO. Dile casi textual: «Te entiendo 😊 Trabajamos con los mejores servicios de entrega "
+                      "(Olva Courier y Shalom): tu pedido llega seguro y sin ningún problema, te lo garantizamos. El costo del "
+                      "envío es el de la empresa de entrega y es fijo: S/ 20 a provincia, S/ 15 a Lima.» y vuelve a la pregunta "
+                      "que quedó pendiente (¿Olva o Shalom?, ¿Lima o provincia?). NO pidas otros datos (talla, estatura, fecha) y NO "
+                      "menciones ni ofrezcas prendas.")
+    if datos.get("para_quien") and any("casi textual" in x for x in partes):
+        partes.append(f"OJO: la prenda es para su {datos['para_quien']}: habla de ella en tercera persona («su talla», "
+                      "«¿cuánto mide ella?»), nunca «tu».")
+    elif datos.get("otra_persona") and any("casi textual" in x for x in partes):
         # 12-10-2026: «sí está diseñado para TU estatura» a quien compraba para su hermana.
         partes.append("OJO: compra para OTRA persona: di esas frases en tercera persona («su estatura», «su talla», "
                       "«cómo quiere sentirse ella»), nunca «tu».")
@@ -402,6 +420,19 @@ PREGUNTAS_GUION = (("ocasion", "Cuéntame, ¿qué evento se te aproxima?"), ("ta
                    ("horario", "¿El evento es de día o de noche?"), ("estatura", "¿Cuánto mides de estatura?"),
                    ("fecha", "¡Una consulta importante!, ¿para cuándo lo necesitas?"),
                    ("envio", "¿El envío sería para Lima o provincia?"))
+
+
+def _pregunta_sabida(texto: str, f: dict) -> list[str]:
+    """El texto pregunta un dato que la ficha ya tiene («¿Cuánto mides?» con la estatura guardada), aunque el modelo no
+    lo haya marcado en pregunta_hecha (13-10-2026, WhatsApp real: «pero ya te dije cuál era»)."""
+    sab = f.get("sabemos") or {}
+    preguntas = " ".join(re.findall(r"¿[^?]*\?", memoria._plano(texto or "")))
+    out = []
+    for k, rx in RE_PREGUNTA_DE.items():
+        sabido = sab.get(k) or (k == "fecha" and sab.get("fecha_iso"))
+        if sabido and rx.search(preguntas):
+            out.append(f"pregunta por {k} y ya lo sabes ({sabido}): no lo vuelvas a preguntar, úsalo")
+    return out
 
 
 def _respondidas(f: dict) -> list[str]:
