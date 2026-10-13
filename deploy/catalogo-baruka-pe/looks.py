@@ -46,8 +46,10 @@ def main():
             if r.get("nivel") in ("exacto", "parecido") and r.get("codigo") and r["codigo"] != r["esperado"] and r["esperado"] in vigentes:
                 juntar(r["archivo"], [r["codigo"]])
     out = {a: sorted(s) for a, s in sorted(looks.items()) if len(s) >= 2}
+    out["_excluidas"] = sorted({a for a, _ in EXCLUIR})     # fotos que el usuario revisó y NO son look
     with open(SEED, "w", encoding="utf-8") as fh:
         json.dump(out, fh, ensure_ascii=False, indent=1)
+    out.pop("_excluidas")
     pares = {tuple(v) for v in out.values()}
     print(f"{len(out)} fotos de look, {len(pares)} pares de prendas → {SEED}")
     for a, v in out.items():

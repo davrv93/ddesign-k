@@ -15,7 +15,9 @@ def cargar() -> dict:
     if _LOOKS is None:
         try:
             with open(RUTA, encoding="utf-8") as fh:
-                _LOOKS = {k: [str(c).upper() for c in v] for k, v in json.load(fh).items()}
+                _LOOKS = {k: [str(c).upper() for c in v] for k, v in json.load(fh).items() if not k.startswith("_")}
+                with open(RUTA, encoding="utf-8") as fh2:
+                    _LOOKS["_excluidas"] = [str(x) for x in json.load(fh2).get("_excluidas", [])]
         except (OSError, ValueError):
             _LOOKS = {}
     return _LOOKS
@@ -23,4 +25,10 @@ def cargar() -> dict:
 
 def prendas_en(archivo: str) -> list[str]:
     """Los códigos que se ven en esa foto del índice ([] si no es un look)."""
-    return list(cargar().get(os.path.basename(archivo or ""), []))
+    a = os.path.basename(archivo or "")
+    return [] if a.startswith("_") else list(cargar().get(a, []))
+
+
+def excluida(archivo: str) -> bool:
+    """Foto que el usuario revisó y decidió que NO es un look (looks.py EXCLUIR)."""
+    return os.path.basename(archivo or "") in cargar().get("_excluidas", [])
