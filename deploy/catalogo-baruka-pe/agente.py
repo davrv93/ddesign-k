@@ -25,6 +25,7 @@ TIENDA = os.path.join(AGENTE, "imagenes", "tienda")
 RETIRADOS = os.path.join(AGENTE, "imagenes", "retirados")
 CACHE = os.environ.get("CACHE_DIR") or os.path.join(os.environ.get("TMPDIR", "/tmp"), "catalogo-baruka-pe-cache", "fotos")
 UA = "BarukaCatalogoBot/1.0"
+MAX_COLORES = 8
 
 
 def bajar(url: str, destino: str):
@@ -72,6 +73,14 @@ def main():
             else:
                 nombre = f"{base}_w{k}.jpg"
             destino = os.path.join(TIENDA, nombre)
+            if not os.path.exists(destino):
+                bajar(url, destino)
+                n += 1
+        # Una foto por color (vNN_c1.jpg…), sin repetir las de arriba y con tope: solo alimentan el índice de imagen.
+        ya = {u.split("?")[0] for u in p["fotos"]}
+        extra = [u for u in (p.get("fotos_color") or {}).values() if u.split("?")[0] not in ya][:MAX_COLORES]
+        for k, url in enumerate(extra, 1):
+            destino = os.path.join(TIENDA, f"{base}_c{k}.jpg")
             if not os.path.exists(destino):
                 bajar(url, destino)
                 n += 1

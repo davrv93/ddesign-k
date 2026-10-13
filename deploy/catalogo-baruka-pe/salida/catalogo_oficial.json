@@ -63,6 +63,19 @@
    ],
    "url": "https://baruka.pe/products/vestido-merlina",
    "handle": "vestido-merlina",
+   "fotos_color": {
+    "Azul noche": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Eleganciaenazulmarinoconrosasrojas.png?v=1791670236",
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Retratoeleganteconvestidoborgonayrosasrojas.png?v=1791670236",
+    "Barney": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Retratoeleganteconvestidosatinadomorado.png?v=1791670236",
+    "Acero": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Retratodemodaenazulaceroyrosas.png?v=1791670236",
+    "Verde Olivo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Retratoeleganteenverdesalviaconrosas.png?v=1791670237",
+    "Palo rosa": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Eleganciaenrosajuntoarosasrojas.png?v=1791670236",
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Retratoeleganteconvestidorojoyrosas_1.png?v=1791670236",
+    "Terracota": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Elegancia_en_rojo_y_dorado.png?v=1791673584",
+    "Celeste": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Retrato_elegante_con_vestido_azul_pastel_1.png?v=1791674755",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Elegancia_en_blanco_y_rosas_rojas_56be1e1c-f5f1-4193-9080-7d8a83ded43a.png?v=1791673580",
+    "Color personalizado": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Color_personalizado_para_tu_evento.png?v=1791673930"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V45",
@@ -265,6 +278,17 @@
    ],
    "url": "https://baruka.pe/products/vestido-blear",
    "handle": "vestido-blear",
+   "fotos_color": {
+    "Barney": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/EleganciaFucsiaenlaEntrada.png?v=1791580650",
+    "Acero": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Eleganciaazulenlaentrada.png?v=1791580649",
+    "Verde Olivo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Eleganciaolivaenpatiodemarmol.png?v=1791580649",
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Eleganciaburdeosjuntoalaentrada.png?v=1791580649",
+    "Dorado": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Eleganciadoradaenlaentrada.png?v=1791580649",
+    "Azul noche": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Imagen_de_ChatGPT_28_sept_2026_06_35_12_p.m..png?v=1791581629",
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Eleganciarojaenarquitecturamoderna_1.png?v=1791580650",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Retratoelegantejuntoalaentrada.png?v=1791580650",
+    "Color personalizado": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestido_rojo_y_colores_personalizados.png?v=1791664198"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V46",
@@ -469,6 +493,15 @@
    ],
    "url": "https://baruka.pe/products/vestido-zoraida",
    "handle": "vestido-zoraida",
+   "fotos_color": {
+    "Azul Petrolio": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage7sept2026_06_02_55p.m..png?v=1791499883",
+    "Azul noche": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage7sept2026_06_15_39p.m..png?v=1791499883",
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage7sept2026_06_33_05p.m..png?v=1791499884",
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage7sept2026_07_02_52p.m..png?v=1791499883",
+    "Marrón": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage9sept2026_04_00_19p.m..png?v=1791499883",
+    "Champagne": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage9sept2026_04_06_19p.m..png?v=1791499884",
+    "Verde Olivo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage10sept2026_10_16_41a.m..png?v=1791499883"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V47",
@@ -686,6 +719,16 @@
    ],
    "url": "https://baruka.pe/products/vestido-saira",
    "handle": "vestido-saira",
+   "fotos_color": {
+    "Champagne": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage16jun2026_03_55_49p.m..png?v=1791427978",
+    "Terracota": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage16jun2026_03_59_27p.m..png?v=1791427979",
+    "Verde Olivo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Elegancia_oliva_en_villa_mediterranea.png?v=1791428339",
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage16jun2026_06_22_42p.m..png?v=1791427978",
+    "Azul noche": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage17jun2026_11_22_54a.m..png?v=1791427979",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage16jun2026_06_14_53p.m..png?v=1791427979",
+    "Azulino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage17jun2026_10_23_16a.m..png?v=1791427978",
+    "Color personalizado": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestido_elegante_en_colores_personalizados.png?v=1791429850"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V48",
@@ -887,6 +930,18 @@
    ],
    "url": "https://baruka.pe/products/vestido-ilaria",
    "handle": "vestido-ilaria",
+   "fotos_color": {
+    "Verde Cobalto": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_15_jun_2026_04_36_04_p.m..png?v=1791405131",
+    "Azul noche": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_12_jun_2026_05_36_08_p.m..png?v=1791405130",
+    "Verde Olivo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_15_jun_2026_04_40_29_p.m..png?v=1791405130",
+    "Terracota": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_15_jun_2026_04_44_43_p.m..png?v=1791405131",
+    "Marrón": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_16_jun_2026_01_00_01_p.m..png?v=1791405131",
+    "Champagne": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_16_jun_2026_02_50_35_p.m..png?v=1791405131",
+    "Plateado": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_12_jun_2026_04_49_58_p.m..png?v=1791405131",
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_16_jun_2026_12_50_20_p.m..png?v=1791405130",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_16_jun_2026_12_59_50_p.m..png?v=1791405130",
+    "Color personalizado": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestido_Esmeralda_a_Tu_Medida_1.png?v=1791415087"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V49",
@@ -1106,6 +1161,18 @@
    ],
    "url": "https://baruka.pe/products/vestido-alma",
    "handle": "vestido-alma",
+   "fotos_color": {
+    "Celeste": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Maniquiconelegantevestidoazulcielo.png?v=1791391130",
+    "Terracota": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Maniquiconelegantevestidoterracota.png?v=1791391129",
+    "Verde Olivo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestidodenocheverdeolivaenestudioluminoso.png?v=1791391130",
+    "Azul noche": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Eleganciaazulmarinoenelatelier.png?v=1791391129",
+    "Azul Cobalto": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Elegantevestidodegalacolorteal.png?v=1791391129",
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Maniquiconvestidoburgundyenestudioelegante_1.png?v=1791391129",
+    "NUDE.": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestidodegalachampagneenatelier.png?v=1791391129",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestidonupcialetereoenshowroomelegante_1.png?v=1791391129",
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestidorojoenshowroomluminoso.png?v=1791391129",
+    "Color personalizado": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestido_blanco_y_colores_personalizados.png?v=1791394759"
+   },
    "nuevo": false,
    "ficha": {
     "codigo": "V42",
@@ -1330,6 +1397,16 @@
    ],
    "url": "https://baruka.pe/products/vestido-salome",
    "handle": "vestido-salome",
+   "fotos_color": {
+    "Azul noche": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_20_jul_2026_10_32_54_a.m..png?v=1791374677",
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_21_jul_2026_06_38_19_p.m..png?v=1791374677",
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_20_jul_2026_12_50_15_p.m..png?v=1791374677",
+    "Verde Olivo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Retrato_elegante_en_vestido_verde_oliva_claro_1.png?v=1791376567",
+    "Terracota": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Elegancia_terracota_al_atardecer_5e1111ea-d206-42da-97e0-82188788ea26.png?v=1791378585",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_28_mar_2026_01_14_07_p.m..png?v=1791375869",
+    "Acero": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_28_mar_2026_12_33_13_p.m..png?v=1791375869",
+    "Color personalizado": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Vestido_azul_y_colores_personalizados.png?v=1791377241"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V50",
@@ -1538,6 +1615,17 @@
    ],
    "url": "https://baruka.pe/products/vestido-celestia",
    "handle": "vestido-celestia",
+   "fotos_color": {
+    "Barney": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage1abr2026_06_54_16p.m..png?v=1791339030",
+    "Champagne": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage2abr2026_03_34_58p.m..png?v=1791339030",
+    "Verde Olivo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage2abr2026_03_40_30p.m..png?v=1791339030",
+    "Azulino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage2abr2026_11_59_52a.m..png?v=1791339030",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage2abr2026_04_19_55p.m..png?v=1791339031",
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage2abr2026_05_50_31p.m..png?v=1791339030",
+    "Azul noche": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage2abr2026_11_13_05a.m..png?v=1791339030",
+    "Acero": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPTImage15abr2026_06_41_42p.m..png?v=1791339030",
+    "Color personalizado": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Color_personalizado_para_tu_evento_1.png?v=1791343379"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V51",
@@ -1740,6 +1828,16 @@
    ],
    "url": "https://baruka.pe/products/vestido-nuria",
    "handle": "vestido-nuria",
+   "fotos_color": {
+    "Turqueza": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_05_38_02_p.m..jpg?v=1769482045",
+    "VERDE JADE": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/photo1698695219-3.jpg?v=1769482045",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_02_59_44_p.m..png?v=1769482045",
+    "Celeste bebe": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_03_07_45_p.m..jpg?v=1769482045",
+    "Fucsia": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Mujer_en_boutique_con_vestido_fucsia.png?v=1769482045",
+    "Azulino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_02_27_35_p.m..jpg?v=1769482045",
+    "Marrón": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/photo_5021783394819878506_y_2_8f60aa66-be8a-4330-94a0-3b9d0368f067.jpg?v=1769482045",
+    "Verde Olivo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/photo1711117646-768x1024-1-1.jpg?v=1769482045"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V52",
@@ -1923,6 +2021,15 @@
    ],
    "url": "https://baruka.pe/products/vestido-bruna",
    "handle": "vestido-bruna",
+   "fotos_color": {
+    "Terracota": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/photo_4949735966969539915_y_1_1.jpg?v=1766882715",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_08_18_15_p.m..jpg?v=1769481022",
+    "Azulino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_28_ene_2026_05_04_35_p.m..jpg?v=1770482066",
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_28_ene_2026_05_06_56_p.m..png?v=1770482067",
+    "Fucsia": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_28_ene_2026_05_12_50_p.m..jpg?v=1770482066",
+    "Azul noche": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_28_ene_2026_05_25_44_p.m..png?v=1770482067",
+    "Celeste": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_28_ene_2026_06_15_26_p.m..jpg?v=1770482066"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V53",
@@ -2068,6 +2175,13 @@
    ],
    "url": "https://baruka.pe/products/vestido-santana",
    "handle": "vestido-santana",
+   "fotos_color": {
+    "Azulino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_05_04_30_p.m..png?v=1769479092",
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_05_24_37_p.m..jpg?v=1769479092",
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_06_04_07_p.m..png?v=1769479092",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_06_47_14_p.m..jpg?v=1769479092",
+    "Celeste bebe": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_07_48_29_p.m..jpg?v=1769479092"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V54",
@@ -2242,6 +2356,13 @@
    ],
    "url": "https://baruka.pe/products/vestido-paloma",
    "handle": "vestido-paloma",
+   "fotos_color": {
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/WhatsAppImage2025-06-22at9.34.46AM_1.jpg?v=1763477747",
+    "Azul noche": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/WhatsAppImage2025-06-22at9.35.00AM_1.jpg?v=1763477747",
+    "Verde Cobalto": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/WhatsAppImage2025-06-22at9.42.23AM.jpg?v=1763477747",
+    "Fucsia": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/WhatsAppImage2025-06-22at9.42.33AM.jpg?v=1763477747",
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/64.png?v=1765587894"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V55",
@@ -2417,6 +2538,9 @@
    ],
    "url": "https://baruka.pe/products/donna",
    "handle": "donna",
+   "fotos_color": {
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/donna1.jpg?v=1746305310"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V56",
@@ -2590,6 +2714,7 @@
    ],
    "url": "https://baruka.pe/products/rose-1",
    "handle": "rose-1",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V57",
@@ -2762,6 +2887,7 @@
    ],
    "url": "https://baruka.pe/products/amira",
    "handle": "amira",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V58",
@@ -2954,6 +3080,7 @@
    ],
    "url": "https://baruka.pe/products/kero",
    "handle": "kero",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V59",
@@ -3058,6 +3185,7 @@
    ],
    "url": "https://baruka.pe/products/bernadette",
    "handle": "bernadette",
+   "fotos_color": {},
    "nuevo": false,
    "ficha": {
     "codigo": "V39",
@@ -3199,6 +3327,7 @@
    ],
    "url": "https://baruka.pe/products/franchesca",
    "handle": "franchesca",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V60",
@@ -3299,6 +3428,7 @@
    ],
    "url": "https://baruka.pe/products/rochelle",
    "handle": "rochelle",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V61",
@@ -3398,6 +3528,7 @@
    ],
    "url": "https://baruka.pe/products/hobeika",
    "handle": "hobeika",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V62",
@@ -3499,6 +3630,7 @@
    ],
    "url": "https://baruka.pe/products/emet",
    "handle": "emet",
+   "fotos_color": {},
    "nuevo": false,
    "ficha": {
     "codigo": "V36",
@@ -3599,6 +3731,7 @@
    ],
    "url": "https://baruka.pe/products/celestine",
    "handle": "celestine",
+   "fotos_color": {},
    "nuevo": false,
    "ficha": {
     "codigo": "V33",
@@ -3699,6 +3832,7 @@
    ],
    "url": "https://baruka.pe/products/narciso",
    "handle": "narciso",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V63",
@@ -3800,6 +3934,7 @@
    ],
    "url": "https://baruka.pe/products/lila",
    "handle": "lila",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V64",
@@ -3902,6 +4037,7 @@
    ],
    "url": "https://baruka.pe/products/ankara",
    "handle": "ankara",
+   "fotos_color": {},
    "nuevo": false,
    "ficha": {
     "codigo": "V27",
@@ -4005,6 +4141,7 @@
    ],
    "url": "https://baruka.pe/products/henrrieta",
    "handle": "henrrieta",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V65",
@@ -4106,6 +4243,7 @@
    ],
    "url": "https://baruka.pe/products/evangeline",
    "handle": "evangeline",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V66",
@@ -4207,6 +4345,7 @@
    ],
    "url": "https://baruka.pe/products/anastacia",
    "handle": "anastacia",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V67",
@@ -4307,6 +4446,7 @@
    ],
    "url": "https://baruka.pe/products/jewell",
    "handle": "jewell",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V68",
@@ -4408,6 +4548,7 @@
    ],
    "url": "https://baruka.pe/products/hob",
    "handle": "hob",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V69",
@@ -4509,6 +4650,7 @@
    ],
    "url": "https://baruka.pe/products/blum",
    "handle": "blum",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V70",
@@ -4610,6 +4752,7 @@
    ],
    "url": "https://baruka.pe/products/isis",
    "handle": "isis",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V71",
@@ -4713,6 +4856,7 @@
    ],
    "url": "https://baruka.pe/products/nieve",
    "handle": "nieve",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V72",
@@ -4817,6 +4961,7 @@
    ],
    "url": "https://baruka.pe/products/faye",
    "handle": "faye",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V73",
@@ -4920,6 +5065,7 @@
    ],
    "url": "https://baruka.pe/products/camila-1",
    "handle": "camila-1",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V74",
@@ -5001,6 +5147,9 @@
    ],
    "url": "https://baruka.pe/products/piume",
    "handle": "piume",
+   "fotos_color": {
+    "Animal": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/barulkalookbook_may23_6647_1.jpg?v=1745168192"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V75",
@@ -5098,6 +5247,7 @@
    ],
    "url": "https://baruka.pe/products/yukio",
    "handle": "yukio",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V76",
@@ -5202,6 +5352,7 @@
    ],
    "url": "https://baruka.pe/products/olwen",
    "handle": "olwen",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V77",
@@ -5308,6 +5459,7 @@
    ],
    "url": "https://baruka.pe/products/margarita",
    "handle": "margarita",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V78",
@@ -5413,6 +5565,7 @@
    ],
    "url": "https://baruka.pe/products/bianca",
    "handle": "bianca",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V79",
@@ -5515,6 +5668,7 @@
    ],
    "url": "https://baruka.pe/products/eva",
    "handle": "eva",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V80",
@@ -5616,6 +5770,7 @@
    ],
    "url": "https://baruka.pe/products/charlotte",
    "handle": "charlotte",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V81",
@@ -5722,6 +5877,11 @@
    ],
    "url": "https://baruka.pe/products/adana",
    "handle": "adana",
+   "fotos_color": {
+    "Gris": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_16.jpg?v=1745280260",
+    "Beige": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/21845be6-a28c-4656-819b-d0bedc9a5041.jpg?v=1765593184",
+    "Italia": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/21845be6-a28c-4656-819b-d0bedc9a5041.jpg?v=1765593184"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V82",
@@ -5899,6 +6059,11 @@
    ],
    "url": "https://baruka.pe/products/elowen",
    "handle": "elowen",
+   "fotos_color": {
+    "Black": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_22.jpg?v=1745282748",
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/22_1_56e28bbf-634e-4791-82f3-ca7a51c59eb6.png?v=1745282748",
+    "Beige": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/BEIGE1_9e25a11f-373d-4345-a140-dafc8454499c.png?v=1745282748"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V83",
@@ -6016,6 +6181,7 @@
    ],
    "url": "https://baruka.pe/products/sereia",
    "handle": "sereia",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V84",
@@ -6130,6 +6296,7 @@
    ],
    "url": "https://baruka.pe/products/annette",
    "handle": "annette",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V85",
@@ -6304,6 +6471,7 @@
    ],
    "url": "https://baruka.pe/products/codman",
    "handle": "codman",
+   "fotos_color": {},
    "nuevo": false,
    "ficha": {
     "codigo": "V22",
@@ -6470,6 +6638,7 @@
    ],
    "url": "https://baruka.pe/products/cristal",
    "handle": "cristal",
+   "fotos_color": {},
    "nuevo": false,
    "ficha": {
     "codigo": "V26",
@@ -6652,6 +6821,7 @@
    ],
    "url": "https://baruka.pe/products/de-dee",
    "handle": "de-dee",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V86",
@@ -6777,6 +6947,7 @@
    ],
    "url": "https://baruka.pe/products/gipsy",
    "handle": "gipsy",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V87",
@@ -6902,6 +7073,7 @@
    ],
    "url": "https://baruka.pe/products/holly-1",
    "handle": "holly-1",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V88",
@@ -7028,6 +7200,7 @@
    ],
    "url": "https://baruka.pe/products/lexy",
    "handle": "lexy",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V89",
@@ -7155,6 +7328,7 @@
    ],
    "url": "https://baruka.pe/products/maddy",
    "handle": "maddy",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V90",
@@ -7279,6 +7453,7 @@
    ],
    "url": "https://baruka.pe/products/nala",
    "handle": "nala",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V91",
@@ -7400,6 +7575,9 @@
    ],
    "url": "https://baruka.pe/products/skady",
    "handle": "skady",
+   "fotos_color": {
+    "Gris": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Diseno_sin_titulo_19.png?v=1744925161"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V92",
@@ -7521,6 +7699,9 @@
    ],
    "url": "https://baruka.pe/products/sadie",
    "handle": "sadie",
+   "fotos_color": {
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/pantalon_sadie3.jpg?v=1744924469"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V93",
@@ -7693,6 +7874,7 @@
    ],
    "url": "https://baruka.pe/products/soyala",
    "handle": "soyala",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V94",
@@ -7864,6 +8046,7 @@
    ],
    "url": "https://baruka.pe/products/tulipan",
    "handle": "tulipan",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V95",
@@ -8043,6 +8226,7 @@
    ],
    "url": "https://baruka.pe/products/zury",
    "handle": "zury",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V96",
@@ -8216,6 +8400,7 @@
    ],
    "url": "https://baruka.pe/products/miranda",
    "handle": "miranda",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V97",
@@ -8380,6 +8565,16 @@
    ],
    "url": "https://baruka.pe/products/petra",
    "handle": "petra",
+   "fotos_color": {
+    "Verde Cobalto": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_13.jpg?v=1763239991",
+    "Azulino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_10.jpg?v=1763239991",
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/6634adf1fff7c335beaf6bc20c1158cd.webp?v=1763239991",
+    "Fucsia": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/55555_1_1_2_800x_-_copia.jpg?v=1769462986",
+    "Azul Noche": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/img_9586-f8da4ff6d0f069a48a17156143341110-640-0_2_800x_0a4e4999-22d0-4fc0-99db-9f3b0bf84b4c.jpg?v=1769462986",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_08_20_49_p.m..jpg?v=1769479252",
+    "Celeste bebe": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_08_59_35_p.m..png?v=1769479252",
+    "Verde Olivo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/73306871d9bc6b26f25c707e8259afb7.webp?v=1769479252"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V98",
@@ -8556,6 +8751,10 @@
    ],
    "url": "https://baruka.pe/products/persefone",
    "handle": "persefone",
+   "fotos_color": {
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/persefone2.jpg?v=1765841618",
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/persefone.jpg?v=1765841618"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V99",
@@ -8716,6 +8915,9 @@
    ],
    "url": "https://baruka.pe/products/daleska",
    "handle": "daleska",
+   "fotos_color": {
+    "Fucsia": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/daleska.jpg?v=1744505817"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V100",
@@ -8893,6 +9095,10 @@
    ],
    "url": "https://baruka.pe/products/athena",
    "handle": "athena",
+   "fotos_color": {
+    "Vino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_14.jpg?v=1745279936",
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_15.jpg?v=1745279936"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V101",
@@ -9076,6 +9282,10 @@
    ],
    "url": "https://baruka.pe/products/maura",
    "handle": "maura",
+   "fotos_color": {
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/barulka_lookbook_may23_7488_1.jpg?v=1744504857",
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/maura.jpg?v=1765599110"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V102",
@@ -9267,6 +9477,10 @@
    ],
    "url": "https://baruka.pe/products/sophia",
    "handle": "sophia",
+   "fotos_color": {
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_8.jpg?v=1745278466",
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/DSC_3213.jpg?v=1745278466"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V103",
@@ -9446,6 +9660,9 @@
    ],
    "url": "https://baruka.pe/products/aurora",
    "handle": "aurora",
+   "fotos_color": {
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/AURORA_1.jpg?v=1744500258"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V104",
@@ -9591,6 +9808,9 @@
    ],
    "url": "https://baruka.pe/products/milan",
    "handle": "milan",
+   "fotos_color": {
+    "Azulino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/MILANAZULINO.jpg?v=1744499441"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V105",
@@ -9766,6 +9986,10 @@
    ],
    "url": "https://baruka.pe/products/zoraida",
    "handle": "zoraida",
+   "fotos_color": {
+    "Clara": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/zoraidablanco.jpg?v=1744498727",
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/VESTIDOZORAIDA_1.jpg?v=1744498728"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V106",
@@ -9934,6 +10158,7 @@
    ],
    "url": "https://baruka.pe/products/merida",
    "handle": "merida",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V107",
@@ -10079,6 +10304,9 @@
    ],
    "url": "https://baruka.pe/products/addison",
    "handle": "addison",
+   "fotos_color": {
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_1_360df336-3434-4719-8865-523cbe35f519.jpg?v=1745270245"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V108",
@@ -10253,6 +10481,9 @@
    ],
    "url": "https://baruka.pe/products/selma",
    "handle": "selma",
+   "fotos_color": {
+    "NUDE.": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/SELMAPALOROSA_1.jpg?v=1744494907"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V109",
@@ -10385,6 +10616,10 @@
    ],
    "url": "https://baruka.pe/products/holly",
    "handle": "holly",
+   "fotos_color": {
+    "Black": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/vestido_holly_vino1.jpg?v=1744494150",
+    "Beige": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/vestido_holly_palorosa1.jpg?v=1744494150"
+   },
    "nuevo": false,
    "ficha": {
     "codigo": "V41",
@@ -10563,6 +10798,9 @@
    ],
    "url": "https://baruka.pe/products/vestido-moolena",
    "handle": "vestido-moolena",
+   "fotos_color": {
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/moolena2.png?v=1744493311"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V110",
@@ -10740,6 +10978,9 @@
    ],
    "url": "https://baruka.pe/products/samara",
    "handle": "samara",
+   "fotos_color": {
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/samara1080x1080.jpg?v=1744492308"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V111",
@@ -10909,6 +11150,7 @@
    ],
    "url": "https://baruka.pe/products/luz",
    "handle": "luz",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V112",
@@ -11013,6 +11255,10 @@
    ],
    "url": "https://baruka.pe/products/roberta",
    "handle": "roberta",
+   "fotos_color": {
+    "MOSTAZA": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_17.jpg?v=1745280534",
+    "Azulino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/91a3120c-fa9e-4571-ab0e-8cb8437cfdac.jpg?v=1745280534"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V113",
@@ -11207,6 +11453,13 @@
    ],
    "url": "https://baruka.pe/products/miara",
    "handle": "miara",
+   "fotos_color": {
+    "Beige": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_24.jpg?v=1745284082",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ChatGPT_Image_26_ene_2026_07_59_19_p.m..png?v=1769481422",
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/MIARA_3.jpg?v=1769481422",
+    "Dalia": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/MIARA_1.jpg?v=1769481422",
+    "Verde": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/MIARA.jpg?v=1769481422"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V114",
@@ -11357,6 +11610,7 @@
    ],
    "url": "https://baruka.pe/products/ethel",
    "handle": "ethel",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V115",
@@ -11452,6 +11706,10 @@
    ],
    "url": "https://baruka.pe/products/faris",
    "handle": "faris",
+   "fotos_color": {
+    "MAIZ": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/faris4_b662ea1f-a27a-4896-8d52-fac939b7dec0.png?v=1744238553",
+    "Fucsia": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/WhatsApp_Image_2023-07-24_at_4.10.24_PM.jpg?v=1766008093"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V116",
@@ -11635,6 +11893,7 @@
    ],
    "url": "https://baruka.pe/products/silvine",
    "handle": "silvine",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V117",
@@ -11734,6 +11993,9 @@
    ],
    "url": "https://baruka.pe/products/almudena",
    "handle": "almudena",
+   "fotos_color": {
+    "Amarillo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/almudena_amarillo1_1.jpg?v=1744211341"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V118",
@@ -11916,6 +12178,10 @@
    ],
    "url": "https://baruka.pe/products/dakota",
    "handle": "dakota",
+   "fotos_color": {
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/conjunto_dakota_rojo1_1.jpg?v=1744233069",
+    "Celeste": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/conjunto_dakota_celeste1.jpg?v=1744233069"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V119",
@@ -12092,6 +12358,12 @@
    ],
    "url": "https://baruka.pe/products/riviera",
    "handle": "riviera",
+   "fotos_color": {
+    "Celeste": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_25.jpg?v=1745284328",
+    "Lila": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/RIVIERA.jpg?v=1745284328",
+    "Celeste bebe": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/enterizo_riviera_celeste12.png?v=1745284328",
+    "VERDE AGUA": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/RIVIERA_1.jpg?v=1745284328"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V120",
@@ -12267,6 +12539,10 @@
    ],
    "url": "https://baruka.pe/products/elvi",
    "handle": "elvi",
+   "fotos_color": {
+    "Rosa": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_19.jpg?v=1745281926",
+    "Blanco": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/elvi4.jpg?v=1745281926"
+   },
    "nuevo": false,
    "ficha": {
     "codigo": "V30",
@@ -12458,6 +12734,10 @@
    ],
    "url": "https://baruka.pe/products/murad",
    "handle": "murad",
+   "fotos_color": {
+    "Beige": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_20.jpg?v=1745282198",
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/MURAD.jpg?v=1745282198"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V121",
@@ -12632,6 +12912,10 @@
    ],
    "url": "https://baruka.pe/products/camila",
    "handle": "camila",
+   "fotos_color": {
+    "Beige": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/ENTERIZOCAMILA.jpg?v=1744152147",
+    "Azulino": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/camilaAZULINO.png?v=1744152146"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V122",
@@ -12815,6 +13099,10 @@
    ],
    "url": "https://baruka.pe/products/gretta",
    "handle": "gretta",
+   "fotos_color": {
+    "Rosa": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Texto_del_parrafo_21.jpg?v=1745282494",
+    "Verde Botella": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/greta.jpg?v=1745282494"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V123",
@@ -12993,6 +13281,7 @@
    ],
    "url": "https://baruka.pe/products/tokio",
    "handle": "tokio",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V124",
@@ -13097,6 +13386,7 @@
    ],
    "url": "https://baruka.pe/products/rosalin",
    "handle": "rosalin",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V125",
@@ -13206,6 +13496,10 @@
    ],
    "url": "https://baruka.pe/products/kalet",
    "handle": "kalet",
+   "fotos_color": {
+    "Rosa": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/KALETPALOROSA.jpg?v=1744145012",
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/Disenosintitulo_12.png?v=1744145012"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V126",
@@ -13385,6 +13679,9 @@
    ],
    "url": "https://baruka.pe/products/ambar",
    "handle": "ambar",
+   "fotos_color": {
+    "Negro": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/1.png?v=1744136102"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V127",
@@ -13510,6 +13807,10 @@
    ],
    "url": "https://baruka.pe/products/arlet",
    "handle": "arlet",
+   "fotos_color": {
+    "Rosa": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/arlet1.jpg?v=1744133940",
+    "Fucsia": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/arlet1.jpg?v=1744133940"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V128",
@@ -13696,6 +13997,10 @@
    ],
    "url": "https://baruka.pe/products/sol",
    "handle": "sol",
+   "fotos_color": {
+    "Green": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/12_06e1fa9f-f671-4da1-b300-86c0b073822f.png?v=1744129089",
+    "Rojo": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/10.png?v=1744129089"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V129",
@@ -13883,6 +14188,7 @@
    ],
    "url": "https://baruka.pe/products/verona",
    "handle": "verona",
+   "fotos_color": {},
    "nuevo": true,
    "ficha": {
     "codigo": "V130",
@@ -13996,6 +14302,10 @@
    ],
    "url": "https://baruka.pe/products/amapola",
    "handle": "amapola",
+   "fotos_color": {
+    "Celeste": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/amapola_celeste.jpg?v=1744122074",
+    "Green": "https://cdn.shopify.com/s/files/1/0820/6591/6194/files/amapola_verde_1_1.png?v=1744122487"
+   },
    "nuevo": true,
    "ficha": {
     "codigo": "V131",

@@ -2645,7 +2645,7 @@ def conversar_foto(req: FotoIn) -> dict:
     nivel = E.img.nivel(sim)
     # Visión antes que parecido (app/vision.py): una captura del catálogo trae el código o el nombre escrito y el
     # parecido visual no la reconocía (12-10-2026, «me interesa este modelo» con la captura del V28).
-    vis = vision.identificar(crudo, fichas, req.mensaje)
+    vis = vision.identificar(crudo, fichas, req.mensaje, candidatos=[c for c, _ in top[:vision.CANDIDATOS_MAX]])
     if vis and vis["codigo"] in por_codigo and vis["confianza"] >= vision.CONFIANZA_MIN:
         codigo, sim, nivel = vis["codigo"], max(sim, 0.99), "exacto"
         top = [(codigo, sim)] + [(c, s_) for c, s_ in top if c != codigo]
