@@ -1,0 +1,9030 @@
+[
+{
+"archivo": "v01.jpg",
+"esperado": "V01",
+"codigo": "V46",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.353,
+"vis": "",
+"conf": 0.98,
+"color": "verde",
+"fotos": [],
+"top": [
+"V46",
+"V108",
+"V41",
+"V107",
+"V45"
+],
+"ms": 10977
+},
+{
+"archivo": "v02.jpg",
+"esperado": "V02",
+"codigo": "V46",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.433,
+"vis": "",
+"conf": 0.98,
+"color": "verde esmeralda",
+"fotos": [],
+"top": [
+"V46",
+"V55",
+"V45",
+"V113",
+"V98"
+],
+"ms": 10421
+},
+{
+"archivo": "v03.jpg",
+"esperado": "V03",
+"codigo": "V46",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.393,
+"vis": "",
+"conf": 0.98,
+"color": "blanco con estampado floral",
+"fotos": [],
+"top": [
+"V46",
+"V102",
+"V45",
+"V55",
+"V50"
+],
+"ms": 8591
+},
+{
+"archivo": "v04.jpg",
+"esperado": "V04",
+"codigo": "V113",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.283,
+"vis": "",
+"conf": 0.98,
+"color": "beige",
+"fotos": [],
+"top": [
+"V113",
+"V111",
+"V106",
+"V82",
+"V84"
+],
+"ms": 10436
+},
+{
+"archivo": "v05.jpg",
+"esperado": "V05",
+"codigo": "V50",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.431,
+"vis": "",
+"conf": 0.96,
+"color": "burdeos",
+"fotos": [],
+"top": [
+"V50",
+"V52",
+"V51",
+"V53",
+"V41"
+],
+"ms": 13345
+},
+{
+"archivo": "v06.jpg",
+"esperado": "V06",
+"codigo": "V45",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.302,
+"vis": "V45",
+"conf": 0.61,
+"color": "blanco con estampado negro",
+"fotos": [],
+"top": [
+"V45",
+"V118",
+"V95",
+"V98",
+"V106"
+],
+"ms": 13362
+},
+{
+"archivo": "v07.jpg",
+"esperado": "V07",
+"codigo": "V53",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.394,
+"vis": "",
+"conf": 0.98,
+"color": "celeste",
+"fotos": [],
+"top": [
+"V53",
+"V52",
+"V98",
+"V119",
+"V49"
+],
+"ms": 9820
+},
+{
+"archivo": "v08.jpg",
+"esperado": "V08",
+"codigo": "V41",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.461,
+"vis": "",
+"conf": 0.91,
+"color": "borgoña",
+"fotos": [],
+"top": [
+"V41",
+"V101",
+"V46",
+"V99",
+"V103"
+],
+"ms": 13062
+},
+{
+"archivo": "v09.jpg",
+"esperado": "V09",
+"codigo": "V46",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.508,
+"vis": "",
+"conf": 0.98,
+"color": "verde esmeralda",
+"fotos": [],
+"top": [
+"V46",
+"V52",
+"V49",
+"V55",
+"V48"
+],
+"ms": 9920
+},
+{
+"archivo": "v10.jpg",
+"esperado": "V10",
+"codigo": "V52",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.339,
+"vis": "",
+"conf": 0.91,
+"color": "rosa y amarillo",
+"fotos": [],
+"top": [
+"V52",
+"V41",
+"V98",
+"V55",
+"V113"
+],
+"ms": 14376
+},
+{
+"archivo": "v100.jpg",
+"esperado": "V100",
+"codigo": "V100",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V100",
+"conf": 0.99,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v100.jpg"
+],
+"top": [
+"V100",
+"V105",
+"V104",
+"V109",
+"V108"
+],
+"ms": 5373
+},
+{
+"archivo": "v101.jpg",
+"esperado": "V101",
+"codigo": "V101",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V101",
+"conf": 0.99,
+"color": "burdeos",
+"fotos": [
+"/media/tienda/v101.jpg"
+],
+"top": [
+"V101",
+"V99",
+"V41",
+"V103",
+"V105"
+],
+"ms": 7248
+},
+{
+"archivo": "v101_2.jpg",
+"esperado": "V101",
+"codigo": "V101",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V101",
+"conf": 0.91,
+"color": "negro",
+"fotos": [
+"/media/tienda/v101_2.jpg"
+],
+"top": [
+"V101",
+"V99",
+"V104",
+"V41",
+"V82"
+],
+"ms": 5897
+},
+{
+"archivo": "v101_3.jpg",
+"esperado": "V101",
+"codigo": "V101",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V101",
+"conf": 0.96,
+"color": "negro",
+"fotos": [
+"/media/tienda/v101_3.jpg"
+],
+"top": [
+"V101",
+"V99",
+"V104",
+"V102",
+"V41"
+],
+"ms": 4341
+},
+{
+"archivo": "v101_4.jpg",
+"esperado": "V101",
+"codigo": "V101",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.722,
+"vis": "",
+"conf": 0.88,
+"color": "negro",
+"fotos": [],
+"top": [
+"V101",
+"V99",
+"V102",
+"V104",
+"V103"
+],
+"ms": 11934
+},
+{
+"archivo": "v102.jpg",
+"esperado": "V102",
+"codigo": "V102",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V102",
+"conf": 0.99,
+"color": "negro",
+"fotos": [
+"/media/tienda/v102.jpg"
+],
+"top": [
+"V102",
+"V104",
+"V106",
+"V101",
+"V103"
+],
+"ms": 3591
+},
+{
+"archivo": "v102_2.jpg",
+"esperado": "V102",
+"codigo": "V102",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V102",
+"conf": 0.98,
+"color": "negro",
+"fotos": [
+"/media/tienda/v102_2.jpg"
+],
+"top": [
+"V102",
+"V104",
+"V106",
+"V97",
+"V101"
+],
+"ms": 4318
+},
+{
+"archivo": "v102_3.jpg",
+"esperado": "V102",
+"codigo": "V102",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V102",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v102_3.jpg"
+],
+"top": [
+"V102",
+"V103",
+"V108",
+"V104",
+"V110"
+],
+"ms": 9637
+},
+{
+"archivo": "v102_4.jpg",
+"esperado": "V102",
+"codigo": "V102",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V102",
+"conf": 0.96,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v102_4.jpg"
+],
+"top": [
+"V102",
+"V103",
+"V108",
+"V104",
+"V129"
+],
+"ms": 6357
+},
+{
+"archivo": "v103.jpg",
+"esperado": "V103",
+"codigo": "V103",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V103",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v103.jpg"
+],
+"top": [
+"V103",
+"V108",
+"V102",
+"V105",
+"V99"
+],
+"ms": 4014
+},
+{
+"archivo": "v103_2.jpg",
+"esperado": "V103",
+"codigo": "V103",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V103",
+"conf": 0.97,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v103_2.jpg"
+],
+"top": [
+"V103",
+"V108",
+"V41",
+"V104",
+"V129"
+],
+"ms": 5728
+},
+{
+"archivo": "v103_3.jpg",
+"esperado": "V103",
+"codigo": "V103",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V103",
+"conf": 0.97,
+"color": "negro",
+"fotos": [
+"/media/tienda/v103_3.jpg"
+],
+"top": [
+"V103",
+"V99",
+"V41",
+"V101",
+"V113"
+],
+"ms": 3877
+},
+{
+"archivo": "v104.jpg",
+"esperado": "V104",
+"codigo": "V104",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V104",
+"conf": 0.99,
+"color": "negro",
+"fotos": [
+"/media/tienda/v104.jpg"
+],
+"top": [
+"V104",
+"V106",
+"V101",
+"V109",
+"V100"
+],
+"ms": 4803
+},
+{
+"archivo": "v104_2.jpg",
+"esperado": "V104",
+"codigo": "V104",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.672,
+"vis": "",
+"conf": 0.88,
+"color": "negro",
+"fotos": [],
+"top": [
+"V104",
+"V103",
+"V106",
+"V108",
+"V105"
+],
+"ms": 10423
+},
+{
+"archivo": "v105.jpg",
+"esperado": "V105",
+"codigo": "V105",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V105",
+"conf": 0.99,
+"color": "azul",
+"fotos": [
+"/media/tienda/v105.jpg"
+],
+"top": [
+"V105",
+"V106",
+"V113",
+"V109",
+"V100"
+],
+"ms": 3715
+},
+{
+"archivo": "v105_2.jpg",
+"esperado": "V105",
+"codigo": "V105",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V105",
+"conf": 0.99,
+"color": "azul",
+"fotos": [
+"/media/tienda/v105_2.jpg"
+],
+"top": [
+"V105",
+"V106",
+"V104",
+"V100",
+"V99"
+],
+"ms": 5867
+},
+{
+"archivo": "v105_3.jpg",
+"esperado": "V105",
+"codigo": "V105",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V105",
+"conf": 0.91,
+"color": "azul",
+"fotos": [
+"/media/tienda/v105_3.jpg"
+],
+"top": [
+"V105",
+"V104",
+"V108",
+"V106",
+"V109"
+],
+"ms": 5220
+},
+{
+"archivo": "v106.jpg",
+"esperado": "V106",
+"codigo": "V106",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V106",
+"conf": 0.99,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v106.jpg"
+],
+"top": [
+"V106",
+"V104",
+"V105",
+"V111",
+"V109"
+],
+"ms": 6572
+},
+{
+"archivo": "v106_2.jpg",
+"esperado": "V106",
+"codigo": "V106",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.679,
+"vis": "",
+"conf": 0.93,
+"color": "blanco",
+"fotos": [],
+"top": [
+"V106",
+"V104",
+"V111",
+"V109",
+"V105"
+],
+"ms": 13010
+},
+{
+"archivo": "v106_3.jpg",
+"esperado": "V106",
+"codigo": "V106",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V106",
+"conf": 0.99,
+"color": "negro",
+"fotos": [
+"/media/tienda/v106_3.jpg"
+],
+"top": [
+"V106",
+"V104",
+"V105",
+"V109",
+"V99"
+],
+"ms": 3465
+},
+{
+"archivo": "v106_4.jpg",
+"esperado": "V106",
+"codigo": "V104",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.63,
+"vis": "V104",
+"conf": 0.82,
+"color": "negro",
+"fotos": [],
+"top": [
+"V104",
+"V106",
+"V103",
+"V109",
+"V100"
+],
+"ms": 18254
+},
+{
+"archivo": "v107.jpg",
+"esperado": "V107",
+"codigo": "V107",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V107",
+"conf": 0.99,
+"color": "lila",
+"fotos": [
+"/media/tienda/v107.jpg"
+],
+"top": [
+"V107",
+"V103",
+"V115",
+"V106",
+"V105"
+],
+"ms": 5327
+},
+{
+"archivo": "v107_2.jpg",
+"esperado": "V107",
+"codigo": "V107",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.814,
+"vis": "V107",
+"conf": 0.76,
+"color": "lila",
+"fotos": [],
+"top": [
+"V107",
+"V103",
+"V109",
+"V115",
+"V102"
+],
+"ms": 17353
+},
+{
+"archivo": "v108.jpg",
+"esperado": "V108",
+"codigo": "V108",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V108",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v108.jpg"
+],
+"top": [
+"V108",
+"V103",
+"V41",
+"V99",
+"V125"
+],
+"ms": 4696
+},
+{
+"archivo": "v108_2.jpg",
+"esperado": "V108",
+"codigo": "V108",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.823,
+"vis": "",
+"conf": 0.92,
+"color": "rojo",
+"fotos": [],
+"top": [
+"V108",
+"V103",
+"V104",
+"V129",
+"V102"
+],
+"ms": 10422
+},
+{
+"archivo": "v109.jpg",
+"esperado": "V109",
+"codigo": "V109",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V109",
+"conf": 0.99,
+"color": "rosa claro",
+"fotos": [
+"/media/tienda/v109.jpg"
+],
+"top": [
+"V109",
+"V104",
+"V100",
+"V106",
+"V105"
+],
+"ms": 4082
+},
+{
+"archivo": "v109_2.jpg",
+"esperado": "V109",
+"codigo": "V109",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.756,
+"vis": "V109",
+"conf": 0.78,
+"color": "rosa palo",
+"fotos": [],
+"top": [
+"V109",
+"V100",
+"V104",
+"V41",
+"V106"
+],
+"ms": 20055
+},
+{
+"archivo": "v109_3.jpg",
+"esperado": "V109",
+"codigo": "V109",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V109",
+"conf": 0.98,
+"color": "rosado claro",
+"fotos": [
+"/media/tienda/v109_3.jpg"
+],
+"top": [
+"V109",
+"V104",
+"V100",
+"V105",
+"V106"
+],
+"ms": 4805
+},
+{
+"archivo": "v11.jpg",
+"esperado": "V11",
+"codigo": "V52",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.464,
+"vis": "",
+"conf": 0.96,
+"color": "marrón",
+"fotos": [],
+"top": [
+"V52",
+"V98",
+"V49",
+"V50",
+"V53"
+],
+"ms": 10198
+},
+{
+"archivo": "v110.jpg",
+"esperado": "V110",
+"codigo": "V110",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V110",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v110.jpg"
+],
+"top": [
+"V110",
+"V52",
+"V54",
+"V129",
+"V46"
+],
+"ms": 4389
+},
+{
+"archivo": "v110_2.jpg",
+"esperado": "V110",
+"codigo": "V110",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.571,
+"vis": "V110",
+"conf": 0.79,
+"color": "rojo",
+"fotos": [],
+"top": [
+"V110",
+"V103",
+"V108",
+"V102",
+"V93"
+],
+"ms": 20706
+},
+{
+"archivo": "v111.jpg",
+"esperado": "V111",
+"codigo": "V111",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V111",
+"conf": 0.99,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v111.jpg"
+],
+"top": [
+"V111",
+"V106",
+"V41",
+"V113",
+"V109"
+],
+"ms": 4567
+},
+{
+"archivo": "v111_2.jpg",
+"esperado": "V111",
+"codigo": "V111",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V111",
+"conf": 0.99,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v111_2.jpg"
+],
+"top": [
+"V111",
+"V106",
+"V109",
+"V103",
+"V41"
+],
+"ms": 5496
+},
+{
+"archivo": "v111_3.jpg",
+"esperado": "V111",
+"codigo": "V111",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V111",
+"conf": 0.98,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v111_3.jpg"
+],
+"top": [
+"V111",
+"V117",
+"V41",
+"V123",
+"V122"
+],
+"ms": 5701
+},
+{
+"archivo": "v112.jpg",
+"esperado": "V112",
+"codigo": "V112",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V112",
+"conf": 0.99,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v112.jpg"
+],
+"top": [
+"V112",
+"V57",
+"V119",
+"V53",
+"V65"
+],
+"ms": 4310
+},
+{
+"archivo": "v112_2.jpg",
+"esperado": "V112",
+"codigo": "V112",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V112",
+"conf": 0.99,
+"color": "blanco con tono lila",
+"fotos": [
+"/media/tienda/v112_2.jpg"
+],
+"top": [
+"V112",
+"V114",
+"V57",
+"V65",
+"V27"
+],
+"ms": 4779
+},
+{
+"archivo": "v113.jpg",
+"esperado": "V113",
+"codigo": "V113",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V113",
+"conf": 0.99,
+"color": "amarillo",
+"fotos": [
+"/media/tienda/v113.jpg"
+],
+"top": [
+"V113",
+"V41",
+"V103",
+"V111",
+"V106"
+],
+"ms": 5158
+},
+{
+"archivo": "v113_2.jpg",
+"esperado": "V113",
+"codigo": "V113",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V113",
+"conf": 0.99,
+"color": "amarillo mostaza",
+"fotos": [
+"/media/tienda/v113_2.jpg"
+],
+"top": [
+"V113",
+"V41",
+"V103",
+"V108",
+"V111"
+],
+"ms": 4729
+},
+{
+"archivo": "v113_3.jpg",
+"esperado": "V113",
+"codigo": "V113",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V113",
+"conf": 0.99,
+"color": "azul",
+"fotos": [
+"/media/tienda/v113_3.jpg"
+],
+"top": [
+"V113",
+"V105",
+"V41",
+"V124",
+"V111"
+],
+"ms": 4955
+},
+{
+"archivo": "v114.jpg",
+"esperado": "V114",
+"codigo": "V114",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V114",
+"conf": 0.99,
+"color": "crema",
+"fotos": [
+"/media/tienda/v114.jpg"
+],
+"top": [
+"V114",
+"V84",
+"V93",
+"V26",
+"V96"
+],
+"ms": 4897
+},
+{
+"archivo": "v114_2.jpg",
+"esperado": "V114",
+"codigo": "V114",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V114",
+"conf": 0.87,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v114_2.jpg"
+],
+"top": [
+"V114",
+"V84",
+"V57",
+"V54",
+"V53"
+],
+"ms": 4717
+},
+{
+"archivo": "v114_3.jpg",
+"esperado": "V114",
+"codigo": "V114",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V114",
+"conf": 0.96,
+"color": "negro",
+"fotos": [
+"/media/tienda/v114_3.jpg"
+],
+"top": [
+"V114",
+"V84",
+"V126",
+"V124",
+"V119"
+],
+"ms": 4736
+},
+{
+"archivo": "v114_4.jpg",
+"esperado": "V114",
+"codigo": "V114",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V114",
+"conf": 0.97,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v114_4.jpg"
+],
+"top": [
+"V114",
+"V84",
+"V98",
+"V52",
+"V54"
+],
+"ms": 4897
+},
+{
+"archivo": "v114_5.jpg",
+"esperado": "V114",
+"codigo": "V114",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V114",
+"conf": 0.85,
+"color": "verde",
+"fotos": [
+"/media/tienda/v114_5.jpg"
+],
+"top": [
+"V114",
+"V84",
+"V131",
+"V96",
+"V67"
+],
+"ms": 18591
+},
+{
+"archivo": "v115.jpg",
+"esperado": "V115",
+"codigo": "V115",
+"nivel": "exacto",
+"caso": "agotado",
+"sim": 0.99,
+"vis": "V115",
+"conf": 0.99,
+"color": "celeste turquesa",
+"fotos": [
+"/media/products/v130-tmt6t4.jpg",
+"/media/products/v125-tmt6t4.jpg",
+"/media/products/v131-tmt6t4.jpg"
+],
+"top": [
+"V115",
+"V130",
+"V125",
+"V131",
+"V30"
+],
+"ms": 5058
+},
+{
+"archivo": "v115_2.jpg",
+"esperado": "V115",
+"codigo": "V115",
+"nivel": "exacto",
+"caso": "agotado",
+"sim": 0.99,
+"vis": "V115",
+"conf": 0.99,
+"color": "turquesa",
+"fotos": [
+"/media/products/v125-tmt6t4.jpg",
+"/media/products/v119-tmt6t4.jpg",
+"/media/products/v30-tmt6t4.jpg"
+],
+"top": [
+"V115",
+"V125",
+"V119",
+"V30",
+"V130"
+],
+"ms": 5954
+},
+{
+"archivo": "v116.jpg",
+"esperado": "V116",
+"codigo": "V116",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V116",
+"conf": 0.99,
+"color": "fucsia y amarillo claro",
+"fotos": [
+"/media/tienda/v116.jpg"
+],
+"top": [
+"V116",
+"V30",
+"V128",
+"V118",
+"V130"
+],
+"ms": 5875
+},
+{
+"archivo": "v116_2.jpg",
+"esperado": "V116",
+"codigo": "V116",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V116",
+"conf": 0.86,
+"color": "amarillo claro",
+"fotos": [
+"/media/tienda/v116_2.jpg"
+],
+"top": [
+"V116",
+"V30",
+"V113",
+"V118",
+"V107"
+],
+"ms": 8086
+},
+{
+"archivo": "v116_3.jpg",
+"esperado": "V116",
+"codigo": "V116",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V116",
+"conf": 0.98,
+"color": "amarillo claro",
+"fotos": [
+"/media/tienda/v116_3.jpg"
+],
+"top": [
+"V116",
+"V118",
+"V30",
+"V119",
+"V130"
+],
+"ms": 4425
+},
+{
+"archivo": "v116_4.jpg",
+"esperado": "V116",
+"codigo": "V116",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V116",
+"conf": 0.99,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v116_4.jpg"
+],
+"top": [
+"V116",
+"V128",
+"V30",
+"V127",
+"V119"
+],
+"ms": 4963
+},
+{
+"archivo": "v117.jpg",
+"esperado": "V117",
+"codigo": "V117",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V117",
+"conf": 0.99,
+"color": "beige",
+"fotos": [
+"/media/tienda/v117.jpg"
+],
+"top": [
+"V117",
+"V123",
+"V111",
+"V66",
+"V72"
+],
+"ms": 3887
+},
+{
+"archivo": "v118.jpg",
+"esperado": "V118",
+"codigo": "V118",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V118",
+"conf": 0.99,
+"color": "amarillo",
+"fotos": [
+"/media/tienda/v118.jpg"
+],
+"top": [
+"V118",
+"V95",
+"V116",
+"V128",
+"V26"
+],
+"ms": 7022
+},
+{
+"archivo": "v118_2.jpg",
+"esperado": "V118",
+"codigo": "V118",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V118",
+"conf": 0.99,
+"color": "amarillo",
+"fotos": [
+"/media/tienda/v118_2.jpg"
+],
+"top": [
+"V118",
+"V95",
+"V116",
+"V128",
+"V113"
+],
+"ms": 3937
+},
+{
+"archivo": "v119.jpg",
+"esperado": "V119",
+"codigo": "V119",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V119",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v119.jpg"
+],
+"top": [
+"V119",
+"V69",
+"V30",
+"V129",
+"V78"
+],
+"ms": 4394
+},
+{
+"archivo": "v119_2.jpg",
+"esperado": "V119",
+"codigo": "V119",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V119",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v119_2.jpg"
+],
+"top": [
+"V119",
+"V129",
+"V120",
+"V128",
+"V83"
+],
+"ms": 5481
+},
+{
+"archivo": "v119_3.jpg",
+"esperado": "V119",
+"codigo": "V119",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V119",
+"conf": 0.98,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v119_3.jpg"
+],
+"top": [
+"V119",
+"V129",
+"V93",
+"V78",
+"V69"
+],
+"ms": 5761
+},
+{
+"archivo": "v119_4.jpg",
+"esperado": "V119",
+"codigo": "V119",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.724,
+"vis": "",
+"conf": 0.91,
+"color": "azul claro",
+"fotos": [],
+"top": [
+"V119",
+"V131",
+"V120",
+"V102",
+"V66"
+],
+"ms": 12993
+},
+{
+"archivo": "v119_5.jpg",
+"esperado": "V119",
+"codigo": "V119",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V119",
+"conf": 0.94,
+"color": "azul celeste",
+"fotos": [
+"/media/tienda/v119_5.jpg"
+],
+"top": [
+"V119",
+"V131",
+"V120",
+"V125",
+"V30"
+],
+"ms": 5863
+},
+{
+"archivo": "v119_6.jpg",
+"esperado": "V119",
+"codigo": "V131",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V131",
+"conf": 0.94,
+"color": "celeste",
+"fotos": [
+"/media/tienda/v131_2.jpg"
+],
+"top": [
+"V131",
+"V119",
+"V120",
+"V53",
+"V54"
+],
+"ms": 5656
+},
+{
+"archivo": "v119_7.jpg",
+"esperado": "V119",
+"codigo": "V119",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.83,
+"vis": "V119",
+"conf": 0.63,
+"color": "celeste",
+"fotos": [],
+"top": [
+"V119",
+"V53",
+"V84",
+"V120",
+"V66"
+],
+"ms": 18219
+},
+{
+"archivo": "v12.jpg",
+"esperado": "V12",
+"codigo": "V49",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.466,
+"vis": "",
+"conf": 0.84,
+"color": "azul marino",
+"fotos": [],
+"top": [
+"V49",
+"V50",
+"V46",
+"V48",
+"V51"
+],
+"ms": 12722
+},
+{
+"archivo": "v120.jpg",
+"esperado": "V120",
+"codigo": "V120",
+"nivel": "exacto",
+"caso": "agotado",
+"sim": 0.99,
+"vis": "V120",
+"conf": 0.99,
+"color": "celeste",
+"fotos": [
+"/media/products/v119-tmt6t4.jpg",
+"/media/products/v131-tmt6t4.jpg",
+"/media/products/v125-tmt6t4.jpg"
+],
+"top": [
+"V120",
+"V119",
+"V131",
+"V125",
+"V126"
+],
+"ms": 4813
+},
+{
+"archivo": "v120_2.jpg",
+"esperado": "V120",
+"codigo": "V120",
+"nivel": "exacto",
+"caso": "agotado",
+"sim": 0.99,
+"vis": "V120",
+"conf": 0.98,
+"color": "lila",
+"fotos": [
+"/media/products/v53-tmt6t3.jpg",
+"/media/products/v119-tmt6t4.jpg",
+"/media/products/v131-tmt6t4.jpg"
+],
+"top": [
+"V120",
+"V53",
+"V119",
+"V131",
+"V47"
+],
+"ms": 4346
+},
+{
+"archivo": "v120_3.jpg",
+"esperado": "V120",
+"codigo": "V120",
+"nivel": "exacto",
+"caso": "agotado",
+"sim": 0.99,
+"vis": "V120",
+"conf": 0.99,
+"color": "azul",
+"fotos": [
+"/media/products/v131-tmt6t4.jpg",
+"/media/products/v126-tmt6t4.jpg",
+"/media/products/v119-tmt6t4.jpg"
+],
+"top": [
+"V120",
+"V131",
+"V126",
+"V119",
+"V125"
+],
+"ms": 4927
+},
+{
+"archivo": "v120_4.jpg",
+"esperado": "V120",
+"codigo": "V120",
+"nivel": "exacto",
+"caso": "agotado",
+"sim": 0.99,
+"vis": "V120",
+"conf": 0.93,
+"color": "turquesa",
+"fotos": [
+"/media/products/v84-tmt6t4.jpg",
+"/media/products/v119-tmt6t4.jpg",
+"/media/products/v114-tmt6t4.jpg"
+],
+"top": [
+"V120",
+"V84",
+"V119",
+"V114",
+"V53"
+],
+"ms": 5574
+},
+{
+"archivo": "v121.jpg",
+"esperado": "V121",
+"codigo": "V121",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V121",
+"conf": 0.99,
+"color": "marfil",
+"fotos": [
+"/media/tienda/v121.jpg"
+],
+"top": [
+"V121",
+"V123",
+"V57",
+"V51",
+"V84"
+],
+"ms": 4476
+},
+{
+"archivo": "v121_2.jpg",
+"esperado": "V121",
+"codigo": "V121",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.625,
+"vis": "",
+"conf": 0.96,
+"color": "rojo",
+"fotos": [],
+"top": [
+"V121",
+"V110",
+"V93",
+"V54",
+"V103"
+],
+"ms": 10354
+},
+{
+"archivo": "v121_3.jpg",
+"esperado": "V121",
+"codigo": "V121",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.709,
+"vis": "",
+"conf": 0.94,
+"color": "rojo",
+"fotos": [],
+"top": [
+"V121",
+"V50",
+"V110",
+"V116",
+"V54"
+],
+"ms": 9856
+},
+{
+"archivo": "v122.jpg",
+"esperado": "V122",
+"codigo": "V122",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V122",
+"conf": 0.99,
+"color": "beige claro",
+"fotos": [
+"/media/tienda/v122.jpg"
+],
+"top": [
+"V122",
+"V111",
+"V125",
+"V123",
+"V72"
+],
+"ms": 4009
+},
+{
+"archivo": "v122_2.jpg",
+"esperado": "V122",
+"codigo": "V122",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V122",
+"conf": 0.98,
+"color": "crema",
+"fotos": [
+"/media/tienda/v122_2.jpg"
+],
+"top": [
+"V122",
+"V72",
+"V87",
+"V77",
+"V90"
+],
+"ms": 3525
+},
+{
+"archivo": "v122_3.jpg",
+"esperado": "V122",
+"codigo": "V122",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V122",
+"conf": 0.9,
+"color": "crema",
+"fotos": [
+"/media/tienda/v122_3.jpg"
+],
+"top": [
+"V122",
+"V72",
+"V77",
+"V87",
+"V125"
+],
+"ms": 5154
+},
+{
+"archivo": "v122_4.jpg",
+"esperado": "V122",
+"codigo": "V129",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V129",
+"conf": 0.9,
+"color": "azul",
+"fotos": [
+"/media/tienda/v129_4.jpg"
+],
+"top": [
+"V129",
+"V122",
+"V125",
+"V131",
+"V74"
+],
+"ms": 13972
+},
+{
+"archivo": "v122_5.jpg",
+"esperado": "V122",
+"codigo": "V129",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.69,
+"vis": "V129",
+"conf": 0.62,
+"color": "azul",
+"fotos": [],
+"top": [
+"V129",
+"V122",
+"V125",
+"V76",
+"V91"
+],
+"ms": 20755
+},
+{
+"archivo": "v123.jpg",
+"esperado": "V123",
+"codigo": "V123",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V123",
+"conf": 0.99,
+"color": "rosa palo",
+"fotos": [
+"/media/tienda/v123.jpg"
+],
+"top": [
+"V123",
+"V114",
+"V126",
+"V130",
+"V122"
+],
+"ms": 3890
+},
+{
+"archivo": "v123_2.jpg",
+"esperado": "V123",
+"codigo": "V123",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V123",
+"conf": 0.99,
+"color": "rosa palo",
+"fotos": [
+"/media/tienda/v123_2.jpg"
+],
+"top": [
+"V123",
+"V117",
+"V39",
+"V122",
+"V111"
+],
+"ms": 5410
+},
+{
+"archivo": "v123_3.jpg",
+"esperado": "V123",
+"codigo": "V123",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V123",
+"conf": 0.88,
+"color": "verde oliva oscuro",
+"fotos": [
+"/media/tienda/v123_3.jpg"
+],
+"top": [
+"V123",
+"V125",
+"V114",
+"V76",
+"V96"
+],
+"ms": 9546
+},
+{
+"archivo": "v123_4.jpg",
+"esperado": "V123",
+"codigo": "V123",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V123",
+"conf": 0.94,
+"color": "marrón oscuro",
+"fotos": [
+"/media/tienda/v123_4.jpg"
+],
+"top": [
+"V123",
+"V104",
+"V76",
+"V121",
+"V122"
+],
+"ms": 4296
+},
+{
+"archivo": "v124.jpg",
+"esperado": "V124",
+"codigo": "V124",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V124",
+"conf": 0.99,
+"color": "azul",
+"fotos": [
+"/media/tienda/v124.jpg"
+],
+"top": [
+"V124",
+"V119",
+"V52",
+"V84",
+"V114"
+],
+"ms": 6110
+},
+{
+"archivo": "v124_2.jpg",
+"esperado": "V124",
+"codigo": "V124",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V124",
+"conf": 0.97,
+"color": "azul",
+"fotos": [
+"/media/tienda/v124_2.jpg"
+],
+"top": [
+"V124",
+"V125",
+"V122",
+"V126",
+"V120"
+],
+"ms": 9550
+},
+{
+"archivo": "v124_3.jpg",
+"esperado": "V124",
+"codigo": "V124",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V124",
+"conf": 0.97,
+"color": "azul",
+"fotos": [
+"/media/tienda/v124_3.jpg"
+],
+"top": [
+"V124",
+"V52",
+"V41",
+"V98",
+"V113"
+],
+"ms": 10207
+},
+{
+"archivo": "v125.jpg",
+"esperado": "V125",
+"codigo": "V125",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V125",
+"conf": 0.99,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v125.jpg"
+],
+"top": [
+"V125",
+"V122",
+"V129",
+"V91",
+"V77"
+],
+"ms": 4338
+},
+{
+"archivo": "v125_2.jpg",
+"esperado": "V125",
+"codigo": "V125",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V125",
+"conf": 0.98,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v125_2.jpg"
+],
+"top": [
+"V125",
+"V122",
+"V129",
+"V59",
+"V58"
+],
+"ms": 4949
+},
+{
+"archivo": "v125_3.jpg",
+"esperado": "V125",
+"codigo": "V125",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.573,
+"vis": "V125",
+"conf": 0.78,
+"color": "azul",
+"fotos": [],
+"top": [
+"V125",
+"V89",
+"V88",
+"V91",
+"V122"
+],
+"ms": 41813
+},
+{
+"archivo": "v125_4.jpg",
+"esperado": "V125",
+"codigo": "V125",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V125",
+"conf": 0.97,
+"color": "azul celeste",
+"fotos": [
+"/media/tienda/v125_4.jpg"
+],
+"top": [
+"V125",
+"V122",
+"V131",
+"V129",
+"V119"
+],
+"ms": 3848
+},
+{
+"archivo": "v125_5.jpg",
+"esperado": "V125",
+"codigo": "V125",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V125",
+"conf": 0.93,
+"color": "azul",
+"fotos": [
+"/media/tienda/v125_5.jpg"
+],
+"top": [
+"V125",
+"V122",
+"V129",
+"V108",
+"V76"
+],
+"ms": 7451
+},
+{
+"archivo": "v125_6.jpg",
+"esperado": "V125",
+"codigo": "V125",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.769,
+"vis": "V125",
+"conf": 0.65,
+"color": "azul",
+"fotos": [],
+"top": [
+"V125",
+"V122",
+"V129",
+"V76",
+"V131"
+],
+"ms": 16867
+},
+{
+"archivo": "v125_7.jpg",
+"esperado": "V125",
+"codigo": "V125",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V125",
+"conf": 0.9,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v125_7.jpg"
+],
+"top": [
+"V125",
+"V117",
+"V122",
+"V33",
+"V108"
+],
+"ms": 5594
+},
+{
+"archivo": "v126.jpg",
+"esperado": "V126",
+"codigo": "V126",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V126",
+"conf": 0.99,
+"color": "rosa claro",
+"fotos": [
+"/media/tienda/v126.jpg"
+],
+"top": [
+"V126",
+"V128",
+"V131",
+"V30",
+"V130"
+],
+"ms": 4307
+},
+{
+"archivo": "v126_2.jpg",
+"esperado": "V126",
+"codigo": "V126",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V126",
+"conf": 0.99,
+"color": "rosa claro",
+"fotos": [
+"/media/tienda/v126_2.jpg"
+],
+"top": [
+"V126",
+"V30",
+"V131",
+"V128",
+"V120"
+],
+"ms": 3555
+},
+{
+"archivo": "v126_3.jpg",
+"esperado": "V126",
+"codigo": "V126",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V126",
+"conf": 0.99,
+"color": "rosa claro",
+"fotos": [
+"/media/tienda/v126_3.jpg"
+],
+"top": [
+"V126",
+"V128",
+"V109",
+"V107",
+"V30"
+],
+"ms": 7015
+},
+{
+"archivo": "v126_4.jpg",
+"esperado": "V126",
+"codigo": "V126",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.813,
+"vis": "V126",
+"conf": 0.68,
+"color": "negro",
+"fotos": [],
+"top": [
+"V126",
+"V83",
+"V84",
+"V114",
+"V131"
+],
+"ms": 18941
+},
+{
+"archivo": "v126_5.jpg",
+"esperado": "V126",
+"codigo": "V126",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.511,
+"vis": "V126",
+"conf": 0.43,
+"color": "negro",
+"fotos": [],
+"top": [
+"V126",
+"V91",
+"V123",
+"V76",
+"V122"
+],
+"ms": 13968
+},
+{
+"archivo": "v127.jpg",
+"esperado": "V127",
+"codigo": "V127",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V127",
+"conf": 0.99,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v127.jpg"
+],
+"top": [
+"V127",
+"V128",
+"V129",
+"V98",
+"V110"
+],
+"ms": 4833
+},
+{
+"archivo": "v127_2.jpg",
+"esperado": "V127",
+"codigo": "V127",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.577,
+"vis": "",
+"conf": 0.97,
+"color": "negro",
+"fotos": [],
+"top": [
+"V127",
+"V106",
+"V126",
+"V104",
+"V102"
+],
+"ms": 12651
+},
+{
+"archivo": "v127_3.jpg",
+"esperado": "V127",
+"codigo": "V127",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.571,
+"vis": "",
+"conf": 0.98,
+"color": "negro",
+"fotos": [],
+"top": [
+"V127",
+"V126",
+"V54",
+"V83",
+"V106"
+],
+"ms": 12164
+},
+{
+"archivo": "v128.jpg",
+"esperado": "V128",
+"codigo": "V128",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V128",
+"conf": 0.99,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v128.jpg"
+],
+"top": [
+"V128",
+"V131",
+"V130",
+"V126",
+"V125"
+],
+"ms": 4596
+},
+{
+"archivo": "v128_2.jpg",
+"esperado": "V128",
+"codigo": "V128",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V128",
+"conf": 0.94,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v128_2.jpg"
+],
+"top": [
+"V128",
+"V30",
+"V26",
+"V131",
+"V116"
+],
+"ms": 5832
+},
+{
+"archivo": "v128_3.jpg",
+"esperado": "V128",
+"codigo": "V128",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V128",
+"conf": 0.87,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v128_3.jpg"
+],
+"top": [
+"V128",
+"V131",
+"V100",
+"V126",
+"V119"
+],
+"ms": 9149
+},
+{
+"archivo": "v128_4.jpg",
+"esperado": "V128",
+"codigo": "V128",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V128",
+"conf": 0.99,
+"color": "rosa",
+"fotos": [
+"/media/tienda/v128_4.jpg"
+],
+"top": [
+"V128",
+"V130",
+"V126",
+"V131",
+"V30"
+],
+"ms": 4697
+},
+{
+"archivo": "v128_5.jpg",
+"esperado": "V128",
+"codigo": "V128",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.726,
+"vis": "",
+"conf": 0.88,
+"color": "rosa claro",
+"fotos": [],
+"top": [
+"V128",
+"V130",
+"V126",
+"V131",
+"V109"
+],
+"ms": 13698
+},
+{
+"archivo": "v129.jpg",
+"esperado": "V129",
+"codigo": "V129",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V129",
+"conf": 0.99,
+"color": "verde esmeralda",
+"fotos": [
+"/media/tienda/v129.jpg"
+],
+"top": [
+"V129",
+"V125",
+"V122",
+"V131",
+"V126"
+],
+"ms": 4213
+},
+{
+"archivo": "v129_2.jpg",
+"esperado": "V129",
+"codigo": "V129",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.671,
+"vis": "V129",
+"conf": 0.84,
+"color": "verde teal",
+"fotos": [],
+"top": [
+"V129",
+"V131",
+"V122",
+"V125",
+"V55"
+],
+"ms": 15342
+},
+{
+"archivo": "v129_3.jpg",
+"esperado": "V129",
+"codigo": "V129",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V129",
+"conf": 0.91,
+"color": "verde petróleo",
+"fotos": [
+"/media/tienda/v129_3.jpg"
+],
+"top": [
+"V129",
+"V125",
+"V122",
+"V131",
+"V90"
+],
+"ms": 6391
+},
+{
+"archivo": "v129_4.jpg",
+"esperado": "V129",
+"codigo": "V129",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V129",
+"conf": 0.88,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v129_4.jpg"
+],
+"top": [
+"V129",
+"V122",
+"V125",
+"V58",
+"V119"
+],
+"ms": 5548
+},
+{
+"archivo": "v129_5.jpg",
+"esperado": "V129",
+"codigo": "V129",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.823,
+"vis": "V129",
+"conf": 0.78,
+"color": "rojo",
+"fotos": [],
+"top": [
+"V129",
+"V108",
+"V122",
+"V125",
+"V103"
+],
+"ms": 25345
+},
+{
+"archivo": "v129_6.jpg",
+"esperado": "V129",
+"codigo": "V129",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.741,
+"vis": "V129",
+"conf": 0.83,
+"color": "rojo",
+"fotos": [],
+"top": [
+"V129",
+"V122",
+"V108",
+"V125",
+"V58"
+],
+"ms": 16923
+},
+{
+"archivo": "v13.jpg",
+"esperado": "V13",
+"codigo": "V48",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.342,
+"vis": "",
+"conf": 0.97,
+"color": "rosa empolvado",
+"fotos": [],
+"top": [
+"V48",
+"V52",
+"V49",
+"V50",
+"V98"
+],
+"ms": 9572
+},
+{
+"archivo": "v130.jpg",
+"esperado": "V130",
+"codigo": "V130",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V130",
+"conf": 0.99,
+"color": "rosa claro",
+"fotos": [
+"/media/tienda/v130.jpg"
+],
+"top": [
+"V130",
+"V128",
+"V125",
+"V30",
+"V131"
+],
+"ms": 5571
+},
+{
+"archivo": "v130_2.jpg",
+"esperado": "V130",
+"codigo": "V130",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V130",
+"conf": 0.99,
+"color": "rosa claro",
+"fotos": [
+"/media/tienda/v130_2.jpg"
+],
+"top": [
+"V130",
+"V128",
+"V115",
+"V125",
+"V30"
+],
+"ms": 4141
+},
+{
+"archivo": "v130_3.jpg",
+"esperado": "V130",
+"codigo": "V130",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V130",
+"conf": 0.94,
+"color": "rosa palo",
+"fotos": [
+"/media/tienda/v130_3.jpg"
+],
+"top": [
+"V130",
+"V128",
+"V126",
+"V120",
+"V30"
+],
+"ms": 5059
+},
+{
+"archivo": "v131.jpg",
+"esperado": "V131",
+"codigo": "V131",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V131",
+"conf": 0.99,
+"color": "azul claro",
+"fotos": [
+"/media/tienda/v131.jpg"
+],
+"top": [
+"V131",
+"V120",
+"V119",
+"V125",
+"V126"
+],
+"ms": 6317
+},
+{
+"archivo": "v131_2.jpg",
+"esperado": "V131",
+"codigo": "V131",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V131",
+"conf": 0.98,
+"color": "azul claro",
+"fotos": [
+"/media/tienda/v131_2.jpg"
+],
+"top": [
+"V131",
+"V119",
+"V66",
+"V120",
+"V128"
+],
+"ms": 6014
+},
+{
+"archivo": "v131_3.jpg",
+"esperado": "V131",
+"codigo": "V131",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.739,
+"vis": "V131",
+"conf": 0.66,
+"color": "verde",
+"fotos": [],
+"top": [
+"V131",
+"V129",
+"V128",
+"V126",
+"V84"
+],
+"ms": 19851
+},
+{
+"archivo": "v131_4.jpg",
+"esperado": "V131",
+"codigo": "V131",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V131",
+"conf": 0.88,
+"color": "verde",
+"fotos": [
+"/media/tienda/v131_3.jpg"
+],
+"top": [
+"V131",
+"V129",
+"V73",
+"V90",
+"V70"
+],
+"ms": 7668
+},
+{
+"archivo": "v131_5.jpg",
+"esperado": "V131",
+"codigo": "V131",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V131",
+"conf": 0.93,
+"color": "verde",
+"fotos": [
+"/media/tienda/v131_5.jpg"
+],
+"top": [
+"V131",
+"V128",
+"V84",
+"V129",
+"V126"
+],
+"ms": 5107
+},
+{
+"archivo": "v131_6.jpg",
+"esperado": "V131",
+"codigo": "V131",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V131",
+"conf": 0.86,
+"color": "verde",
+"fotos": [
+"/media/tienda/v131_6.jpg"
+],
+"top": [
+"V131",
+"V128",
+"V129",
+"V120",
+"V127"
+],
+"ms": 3417
+},
+{
+"archivo": "v14.jpg",
+"esperado": "V14",
+"codigo": "V103",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.379,
+"vis": "",
+"conf": 0.93,
+"color": "marrón",
+"fotos": [],
+"top": [
+"V103",
+"V52",
+"V109",
+"V41",
+"V104"
+],
+"ms": 13620
+},
+{
+"archivo": "v15.jpg",
+"esperado": "V15",
+"codigo": "V46",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.406,
+"vis": "",
+"conf": 0.96,
+"color": "morado",
+"fotos": [],
+"top": [
+"V46",
+"V114",
+"V100",
+"V102",
+"V101"
+],
+"ms": 10273
+},
+{
+"archivo": "v16.jpg",
+"esperado": "V16",
+"codigo": "V124",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.337,
+"vis": "",
+"conf": 0.97,
+"color": "azul",
+"fotos": [],
+"top": [
+"V124",
+"V115",
+"V119",
+"V113",
+"V108"
+],
+"ms": 9532
+},
+{
+"archivo": "v17.jpg",
+"esperado": "V17",
+"codigo": "V98",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V98",
+"conf": 0.9,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v98_5.jpg"
+],
+"top": [
+"V98",
+"V49",
+"V55",
+"V52",
+"V114"
+],
+"ms": 6223
+},
+{
+"archivo": "v18.jpg",
+"esperado": "V18",
+"codigo": "V48",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.454,
+"vis": "",
+"conf": 0.83,
+"color": "malva",
+"fotos": [],
+"top": [
+"V48",
+"V49",
+"V50",
+"V46",
+"V51"
+],
+"ms": 15363
+},
+{
+"archivo": "v19.jpg",
+"esperado": "V19",
+"codigo": "V52",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.417,
+"vis": "",
+"conf": 0.96,
+"color": "verde petróleo",
+"fotos": [],
+"top": [
+"V52",
+"V98",
+"V50",
+"V55",
+"V45"
+],
+"ms": 10418
+},
+{
+"archivo": "v20.jpg",
+"esperado": "V20",
+"codigo": "V46",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.44,
+"vis": "",
+"conf": 0.98,
+"color": "borgoña",
+"fotos": [],
+"top": [
+"V46",
+"V129",
+"V41",
+"V55",
+"V53"
+],
+"ms": 8663
+},
+{
+"archivo": "v22.jpg",
+"esperado": "V22",
+"codigo": "V22",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V22",
+"conf": 0.94,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v22.jpg"
+],
+"top": [
+"V22",
+"V33",
+"V64",
+"V26",
+"V74"
+],
+"ms": 6837
+},
+{
+"archivo": "v22_2.jpg",
+"esperado": "V22",
+"codigo": "V22",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V22",
+"conf": 0.89,
+"color": "azul marino y rosa pálido",
+"fotos": [
+"/media/tienda/v22_2.jpg"
+],
+"top": [
+"V22",
+"V33",
+"V64",
+"V91",
+"V26"
+],
+"ms": 9345
+},
+{
+"archivo": "v22_3.jpg",
+"esperado": "V22",
+"codigo": "V33",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V33",
+"conf": 0.91,
+"color": "azul",
+"fotos": [
+"/media/tienda/v33_2.jpg"
+],
+"top": [
+"V33",
+"V22",
+"V64",
+"V65",
+"V63"
+],
+"ms": 20312
+},
+{
+"archivo": "v22_w1.jpg",
+"esperado": "V22",
+"codigo": "V33",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V33",
+"conf": 0.98,
+"color": "azul",
+"fotos": [
+"/media/tienda/v33_w1.jpg"
+],
+"top": [
+"V33",
+"V22",
+"V64",
+"V76",
+"V65"
+],
+"ms": 21900
+},
+{
+"archivo": "v22_w2.jpg",
+"esperado": "V22",
+"codigo": "V22",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V22",
+"conf": 0.97,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v22_w2.jpg"
+],
+"top": [
+"V22",
+"V33",
+"V64",
+"V26",
+"V65"
+],
+"ms": 30869
+},
+{
+"archivo": "v26.jpg",
+"esperado": "V26",
+"codigo": "V26",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V26",
+"conf": 0.99,
+"color": "beige",
+"fotos": [
+"/media/tienda/v26.jpg"
+],
+"top": [
+"V26",
+"V60",
+"V66",
+"V65",
+"V63"
+],
+"ms": 5230
+},
+{
+"archivo": "v26_2.jpg",
+"esperado": "V26",
+"codigo": "V26",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V26",
+"conf": 0.98,
+"color": "beige y rosa claro",
+"fotos": [
+"/media/tienda/v26.jpg"
+],
+"top": [
+"V26",
+"V60",
+"V66",
+"V87",
+"V77"
+],
+"ms": 9214
+},
+{
+"archivo": "v26_3.jpg",
+"esperado": "V26",
+"codigo": "V66",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V66",
+"conf": 0.98,
+"color": "azul claro y beige",
+"fotos": [
+"/media/tienda/v66.jpg"
+],
+"top": [
+"V66",
+"V26",
+"V60",
+"V53",
+"V52"
+],
+"ms": 7808
+},
+{
+"archivo": "v26_w1.jpg",
+"esperado": "V26",
+"codigo": "V66",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V66",
+"conf": 0.98,
+"color": "beige",
+"fotos": [
+"/media/tienda/v66.jpg"
+],
+"top": [
+"V66",
+"V26",
+"V60",
+"V53",
+"V36"
+],
+"ms": 5161
+},
+{
+"archivo": "v26_w2.jpg",
+"esperado": "V26",
+"codigo": "V60",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V60",
+"conf": 0.96,
+"color": "rosa claro",
+"fotos": [
+"/media/tienda/v60.jpg"
+],
+"top": [
+"V60",
+"V26",
+"V66",
+"V87",
+"V77"
+],
+"ms": 23401
+},
+{
+"archivo": "v27.jpg",
+"esperado": "V27",
+"codigo": "V27",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V27",
+"conf": 0.99,
+"color": "negro",
+"fotos": [
+"/media/tienda/v27_w4.jpg"
+],
+"top": [
+"V27",
+"V26",
+"V66",
+"V68",
+"V61"
+],
+"ms": 5979
+},
+{
+"archivo": "v27_2.jpg",
+"esperado": "V27",
+"codigo": "V27",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V27",
+"conf": 0.91,
+"color": "negro",
+"fotos": [
+"/media/tienda/v27_2.jpg"
+],
+"top": [
+"V27",
+"V39",
+"V64",
+"V33",
+"V26"
+],
+"ms": 7016
+},
+{
+"archivo": "v27_3.jpg",
+"esperado": "V27",
+"codigo": "V27",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V27",
+"conf": 0.93,
+"color": "negro",
+"fotos": [
+"/media/tienda/v27_3.jpg"
+],
+"top": [
+"V27",
+"V39",
+"V117",
+"V64",
+"V93"
+],
+"ms": 5423
+},
+{
+"archivo": "v27_w1.jpg",
+"esperado": "V27",
+"codigo": "V27",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.684,
+"vis": "",
+"conf": 0.87,
+"color": "blanco",
+"fotos": [],
+"top": [
+"V27",
+"V64",
+"V93",
+"V61",
+"V39"
+],
+"ms": 17832
+},
+{
+"archivo": "v27_w2.jpg",
+"esperado": "V27",
+"codigo": "V27",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V27",
+"conf": 0.91,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v27_w2.jpg"
+],
+"top": [
+"V27",
+"V64",
+"V79",
+"V72",
+"V89"
+],
+"ms": 4834
+},
+{
+"archivo": "v27_w3.jpg",
+"esperado": "V27",
+"codigo": "V27",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V27",
+"conf": 0.99,
+"color": "negro",
+"fotos": [
+"/media/tienda/v27_w3.jpg"
+],
+"top": [
+"V27",
+"V26",
+"V117",
+"V111",
+"V68"
+],
+"ms": 3283
+},
+{
+"archivo": "v27_w4.jpg",
+"esperado": "V27",
+"codigo": "V27",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V27",
+"conf": 0.99,
+"color": "negro",
+"fotos": [
+"/media/tienda/v27_w4.jpg"
+],
+"top": [
+"V27",
+"V123",
+"V66",
+"V26",
+"V117"
+],
+"ms": 6208
+},
+{
+"archivo": "v30.jpg",
+"esperado": "V30",
+"codigo": "V30",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V30",
+"conf": 0.99,
+"color": "rosa claro",
+"fotos": [
+"/media/tienda/v30_w2.jpg"
+],
+"top": [
+"V30",
+"V126",
+"V128",
+"V109",
+"V53"
+],
+"ms": 5809
+},
+{
+"archivo": "v30_2.jpg",
+"esperado": "V30",
+"codigo": "V30",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V30",
+"conf": 0.97,
+"color": "rosado claro",
+"fotos": [
+"/media/tienda/v30_2.jpg"
+],
+"top": [
+"V30",
+"V119",
+"V128",
+"V116",
+"V130"
+],
+"ms": 4842
+},
+{
+"archivo": "v30_3.jpg",
+"esperado": "V30",
+"codigo": "V30",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V30",
+"conf": 0.97,
+"color": "rosa",
+"fotos": [
+"/media/tienda/v30_3.jpg"
+],
+"top": [
+"V30",
+"V126",
+"V26",
+"V128",
+"V130"
+],
+"ms": 7266
+},
+{
+"archivo": "v30_w1.jpg",
+"esperado": "V30",
+"codigo": "V30",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V30",
+"conf": 0.99,
+"color": "rosa",
+"fotos": [
+"/media/tienda/v30_3.jpg"
+],
+"top": [
+"V30",
+"V126",
+"V116",
+"V26",
+"V120"
+],
+"ms": 9357
+},
+{
+"archivo": "v30_w2.jpg",
+"esperado": "V30",
+"codigo": "V30",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V30",
+"conf": 0.99,
+"color": "rosa claro",
+"fotos": [
+"/media/tienda/v30.jpg"
+],
+"top": [
+"V30",
+"V126",
+"V130",
+"V128",
+"V119"
+],
+"ms": 4960
+},
+{
+"archivo": "v30_w3.jpg",
+"esperado": "V30",
+"codigo": "V30",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V30",
+"conf": 0.88,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v30_w3.jpg"
+],
+"top": [
+"V30",
+"V119",
+"V120",
+"V130",
+"V131"
+],
+"ms": 8465
+},
+{
+"archivo": "v30_w4.jpg",
+"esperado": "V30",
+"codigo": "V30",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V30",
+"conf": 0.87,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v30_w4.jpg"
+],
+"top": [
+"V30",
+"V119",
+"V89",
+"V88",
+"V79"
+],
+"ms": 6324
+},
+{
+"archivo": "v33.jpg",
+"esperado": "V33",
+"codigo": "V33",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V33",
+"conf": 0.99,
+"color": "azul",
+"fotos": [
+"/media/tienda/v33.jpg"
+],
+"top": [
+"V33",
+"V64",
+"V63",
+"V39",
+"V22"
+],
+"ms": 3992
+},
+{
+"archivo": "v33_2.jpg",
+"esperado": "V33",
+"codigo": "V33",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V33",
+"conf": 0.99,
+"color": "azul",
+"fotos": [
+"/media/tienda/v33_3.jpg"
+],
+"top": [
+"V33",
+"V22",
+"V64",
+"V63",
+"V39"
+],
+"ms": 6657
+},
+{
+"archivo": "v33_3.jpg",
+"esperado": "V33",
+"codigo": "V33",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V33",
+"conf": 0.99,
+"color": "azul",
+"fotos": [
+"/media/tienda/v33_3.jpg"
+],
+"top": [
+"V33",
+"V22",
+"V64",
+"V65",
+"V66"
+],
+"ms": 6709
+},
+{
+"archivo": "v33_w1.jpg",
+"esperado": "V33",
+"codigo": "V33",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V33",
+"conf": 0.96,
+"color": "azul",
+"fotos": [
+"/media/tienda/v33_w1.jpg"
+],
+"top": [
+"V33",
+"V22",
+"V64",
+"V76",
+"V91"
+],
+"ms": 6052
+},
+{
+"archivo": "v36.jpg",
+"esperado": "V36",
+"codigo": "V36",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V36",
+"conf": 0.99,
+"color": "rojo con rayas blancas",
+"fotos": [
+"/media/tienda/v36.jpg"
+],
+"top": [
+"V36",
+"V62",
+"V85",
+"V63",
+"V26"
+],
+"ms": 4349
+},
+{
+"archivo": "v36_2.jpg",
+"esperado": "V36",
+"codigo": "V36",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V36",
+"conf": 0.98,
+"color": "rojo con rayas blancas",
+"fotos": [
+"/media/tienda/v36_2.jpg"
+],
+"top": [
+"V36",
+"V85",
+"V62",
+"V60",
+"V26"
+],
+"ms": 5017
+},
+{
+"archivo": "v36_3.jpg",
+"esperado": "V36",
+"codigo": "V36",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V36",
+"conf": 0.98,
+"color": "rojo con rayas blancas",
+"fotos": [
+"/media/tienda/v36_3.jpg"
+],
+"top": [
+"V36",
+"V62",
+"V85",
+"V66",
+"V63"
+],
+"ms": 7161
+},
+{
+"archivo": "v36_w1.jpg",
+"esperado": "V36",
+"codigo": "V36",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V36",
+"conf": 0.99,
+"color": "rojo y blanco",
+"fotos": [
+"/media/tienda/v36_2.jpg"
+],
+"top": [
+"V36",
+"V62",
+"V85",
+"V26",
+"V60"
+],
+"ms": 3844
+},
+{
+"archivo": "v36_w2.jpg",
+"esperado": "V36",
+"codigo": "V36",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V36",
+"conf": 0.99,
+"color": "rojo y blanco",
+"fotos": [
+"/media/tienda/v36_w2.jpg"
+],
+"top": [
+"V36",
+"V85",
+"V62",
+"V69",
+"V66"
+],
+"ms": 3980
+},
+{
+"archivo": "v39.jpg",
+"esperado": "V39",
+"codigo": "V39",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V39",
+"conf": 0.99,
+"color": "verde petróleo",
+"fotos": [
+"/media/tienda/v39.jpg"
+],
+"top": [
+"V39",
+"V64",
+"V63",
+"V33",
+"V26"
+],
+"ms": 4917
+},
+{
+"archivo": "v39_2.jpg",
+"esperado": "V39",
+"codigo": "V39",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V39",
+"conf": 0.99,
+"color": "verde petróleo",
+"fotos": [
+"/media/tienda/v39_2.jpg"
+],
+"top": [
+"V39",
+"V63",
+"V33",
+"V93",
+"V96"
+],
+"ms": 10277
+},
+{
+"archivo": "v39_3.jpg",
+"esperado": "V39",
+"codigo": "V39",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V39",
+"conf": 0.97,
+"color": "verde petróleo",
+"fotos": [
+"/media/tienda/v39_3.jpg"
+],
+"top": [
+"V39",
+"V63",
+"V26",
+"V64",
+"V67"
+],
+"ms": 9680
+},
+{
+"archivo": "v39_w1.jpg",
+"esperado": "V39",
+"codigo": "V39",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V39",
+"conf": 0.99,
+"color": "verde petróleo",
+"fotos": [
+"/media/tienda/v39_w1.jpg"
+],
+"top": [
+"V39",
+"V63",
+"V91",
+"V22",
+"V33"
+],
+"ms": 4442
+},
+{
+"archivo": "v39_w2.jpg",
+"esperado": "V39",
+"codigo": "V39",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V39",
+"conf": 0.99,
+"color": "verde petróleo",
+"fotos": [
+"/media/tienda/v39_3.jpg"
+],
+"top": [
+"V39",
+"V63",
+"V96",
+"V67",
+"V33"
+],
+"ms": 5484
+},
+{
+"archivo": "v41.jpg",
+"esperado": "V41",
+"codigo": "V41",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V41",
+"conf": 0.99,
+"color": "durazno claro",
+"fotos": [
+"/media/tienda/v41.jpg"
+],
+"top": [
+"V41",
+"V113",
+"V111",
+"V109",
+"V105"
+],
+"ms": 5213
+},
+{
+"archivo": "v41_2.jpg",
+"esperado": "V41",
+"codigo": "V41",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V41",
+"conf": 0.94,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v41_2.jpg"
+],
+"top": [
+"V41",
+"V103",
+"V108",
+"V99",
+"V113"
+],
+"ms": 5844
+},
+{
+"archivo": "v41_3.jpg",
+"esperado": "V41",
+"codigo": "V41",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V41",
+"conf": 0.98,
+"color": "durazno claro",
+"fotos": [
+"/media/tienda/v41_3.jpg"
+],
+"top": [
+"V41",
+"V111",
+"V109",
+"V123",
+"V103"
+],
+"ms": 6117
+},
+{
+"archivo": "v41_4.jpg",
+"esperado": "V41",
+"codigo": "V41",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.78,
+"vis": "V41",
+"conf": 0.66,
+"color": "borgoña",
+"fotos": [],
+"top": [
+"V41",
+"V103",
+"V108",
+"V111",
+"V113"
+],
+"ms": 19691
+},
+{
+"archivo": "v41_w1.jpg",
+"esperado": "V41",
+"codigo": "V41",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V41",
+"conf": 0.98,
+"color": "rojo vino",
+"fotos": [
+"/media/tienda/v41_2.jpg"
+],
+"top": [
+"V41",
+"V103",
+"V113",
+"V99",
+"V108"
+],
+"ms": 5440
+},
+{
+"archivo": "v41_w2.jpg",
+"esperado": "V41",
+"codigo": "V41",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.671,
+"vis": "V41",
+"conf": 0.65,
+"color": "rojo vino",
+"fotos": [],
+"top": [
+"V41",
+"V103",
+"V111",
+"V108",
+"V113"
+],
+"ms": 18285
+},
+{
+"archivo": "v41_w3.jpg",
+"esperado": "V41",
+"codigo": "V41",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V41",
+"conf": 0.99,
+"color": "durazno claro",
+"fotos": [
+"/media/tienda/v41_w3.jpg"
+],
+"top": [
+"V41",
+"V111",
+"V113",
+"V109",
+"V55"
+],
+"ms": 4969
+},
+{
+"archivo": "v42.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.99,
+"color": "azul petróleo",
+"fotos": [
+"/media/tienda/v42.jpg"
+],
+"top": [
+"V42",
+"V55",
+"V46",
+"V53",
+"V51"
+],
+"ms": 4216
+},
+{
+"archivo": "v42_w1.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.97,
+"color": "celeste claro",
+"fotos": [
+"/media/tienda/v42_w1.jpg"
+],
+"top": [
+"V42",
+"V45",
+"V46",
+"V48",
+"V54"
+],
+"ms": 4596
+},
+{
+"archivo": "v42_w10.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.99,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v42_w10.jpg"
+],
+"top": [
+"V42",
+"V48",
+"V50",
+"V46",
+"V54"
+],
+"ms": 4779
+},
+{
+"archivo": "v42_w11.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.98,
+"color": "celeste",
+"fotos": [
+"/media/tienda/v42_w11.jpg"
+],
+"top": [
+"V42",
+"V51",
+"V48",
+"V46",
+"V45"
+],
+"ms": 4619
+},
+{
+"archivo": "v42_w12.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.87,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v42_w12.jpg"
+],
+"top": [
+"V42",
+"V50",
+"V46",
+"V45",
+"V48"
+],
+"ms": 4958
+},
+{
+"archivo": "v42_w2.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.98,
+"color": "terracota",
+"fotos": [
+"/media/tienda/v42_w2.jpg"
+],
+"top": [
+"V42",
+"V52",
+"V48",
+"V50",
+"V51"
+],
+"ms": 5844
+},
+{
+"archivo": "v42_w3.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.99,
+"color": "verde oliva",
+"fotos": [
+"/media/tienda/v42_w3.jpg"
+],
+"top": [
+"V42",
+"V51",
+"V50",
+"V48",
+"V52"
+],
+"ms": 5165
+},
+{
+"archivo": "v42_w4.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.99,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v42_w4.jpg"
+],
+"top": [
+"V42",
+"V53",
+"V48",
+"V55",
+"V50"
+],
+"ms": 3049
+},
+{
+"archivo": "v42_w5.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.99,
+"color": "azul petróleo",
+"fotos": [
+"/media/tienda/v42_w5.jpg"
+],
+"top": [
+"V42",
+"V51",
+"V53",
+"V46",
+"V50"
+],
+"ms": 5034
+},
+{
+"archivo": "v42_w6.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.99,
+"color": "rojo vino",
+"fotos": [
+"/media/tienda/v42_w9.jpg"
+],
+"top": [
+"V42",
+"V50",
+"V45",
+"V51",
+"V46"
+],
+"ms": 5085
+},
+{
+"archivo": "v42_w7.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.93,
+"color": "rosa pálido",
+"fotos": [
+"/media/tienda/v42_w7.jpg"
+],
+"top": [
+"V42",
+"V50",
+"V51",
+"V48",
+"V53"
+],
+"ms": 7155
+},
+{
+"archivo": "v42_w8.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.97,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v42_w8.jpg"
+],
+"top": [
+"V42",
+"V48",
+"V54",
+"V51",
+"V53"
+],
+"ms": 18340
+},
+{
+"archivo": "v42_w9.jpg",
+"esperado": "V42",
+"codigo": "V42",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V42",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v42_w9.jpg"
+],
+"top": [
+"V42",
+"V50",
+"V45",
+"V51",
+"V46"
+],
+"ms": 5418
+},
+{
+"archivo": "v45.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.99,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v45.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V48",
+"V98",
+"V50"
+],
+"ms": 5055
+},
+{
+"archivo": "v45_10.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.96,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v45_10.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V50",
+"V98",
+"V54"
+],
+"ms": 5147
+},
+{
+"archivo": "v45_11.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.96,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v45_11.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V50",
+"V49",
+"V48"
+],
+"ms": 5308
+},
+{
+"archivo": "v45_12.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.94,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v45_12.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V50",
+"V42",
+"V51"
+],
+"ms": 4612
+},
+{
+"archivo": "v45_13.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.96,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v45_13.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V48",
+"V50",
+"V49"
+],
+"ms": 6080
+},
+{
+"archivo": "v45_2.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.96,
+"color": "borgoña",
+"fotos": [
+"/media/tienda/v45_2.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V48",
+"V50",
+"V49"
+],
+"ms": 3197
+},
+{
+"archivo": "v45_3.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.98,
+"color": "morado",
+"fotos": [
+"/media/tienda/v45_3.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V98",
+"V114",
+"V51"
+],
+"ms": 4354
+},
+{
+"archivo": "v45_4.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.97,
+"color": "azul acero",
+"fotos": [
+"/media/tienda/v45_4.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V50",
+"V119",
+"V47"
+],
+"ms": 5113
+},
+{
+"archivo": "v45_5.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.94,
+"color": "verde salvia",
+"fotos": [
+"/media/tienda/v45_5.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V52",
+"V50",
+"V98"
+],
+"ms": 6405
+},
+{
+"archivo": "v45_6.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.98,
+"color": "rosa",
+"fotos": [
+"/media/tienda/v45_6.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V98",
+"V52",
+"V50"
+],
+"ms": 7011
+},
+{
+"archivo": "v45_7.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.96,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v45_7.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V50",
+"V98",
+"V110"
+],
+"ms": 5430
+},
+{
+"archivo": "v45_8.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.95,
+"color": "rojo ladrillo",
+"fotos": [
+"/media/tienda/v45_7.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V110",
+"V51",
+"V50"
+],
+"ms": 5904
+},
+{
+"archivo": "v45_9.jpg",
+"esperado": "V45",
+"codigo": "V45",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V45",
+"conf": 0.98,
+"color": "celeste",
+"fotos": [
+"/media/tienda/v45_9.jpg"
+],
+"top": [
+"V45",
+"V46",
+"V98",
+"V50",
+"V119"
+],
+"ms": 4548
+},
+{
+"archivo": "v46.jpg",
+"esperado": "V46",
+"codigo": "V46",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V46",
+"conf": 0.99,
+"color": "morado fucsia",
+"fotos": [
+"/media/tienda/v46.jpg"
+],
+"top": [
+"V46",
+"V45",
+"V98",
+"V50",
+"V124"
+],
+"ms": 7842
+},
+{
+"archivo": "v46_10.jpg",
+"esperado": "V46",
+"codigo": "V46",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.836,
+"vis": "V46",
+"conf": 0.82,
+"color": "rojo",
+"fotos": [],
+"top": [
+"V46",
+"V45",
+"V48",
+"V42",
+"V50"
+],
+"ms": 15965
+},
+{
+"archivo": "v46_11.jpg",
+"esperado": "V46",
+"codigo": "V46",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.794,
+"vis": "V46",
+"conf": 0.84,
+"color": "rojo",
+"fotos": [],
+"top": [
+"V46",
+"V45",
+"V50",
+"V51",
+"V48"
+],
+"ms": 14844
+},
+{
+"archivo": "v46_2.jpg",
+"esperado": "V46",
+"codigo": "V46",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V46",
+"conf": 0.91,
+"color": "azul claro",
+"fotos": [
+"/media/tienda/v46_2.jpg"
+],
+"top": [
+"V46",
+"V50",
+"V45",
+"V47",
+"V54"
+],
+"ms": 5756
+},
+{
+"archivo": "v46_3.jpg",
+"esperado": "V46",
+"codigo": "V46",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.603,
+"vis": "V46",
+"conf": 0.72,
+"color": "verde oliva",
+"fotos": [],
+"top": [
+"V46",
+"V50",
+"V51",
+"V45",
+"V48"
+],
+"ms": 19661
+},
+{
+"archivo": "v46_4.jpg",
+"esperado": "V46",
+"codigo": "V46",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V46",
+"conf": 0.98,
+"color": "burdeos",
+"fotos": [
+"/media/tienda/v46_4.jpg"
+],
+"top": [
+"V46",
+"V50",
+"V48",
+"V45",
+"V49"
+],
+"ms": 4338
+},
+{
+"archivo": "v46_5.jpg",
+"esperado": "V46",
+"codigo": "V46",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V46",
+"conf": 0.94,
+"color": "champán dorado",
+"fotos": [
+"/media/tienda/v46_5.jpg"
+],
+"top": [
+"V46",
+"V48",
+"V50",
+"V51",
+"V49"
+],
+"ms": 4585
+},
+{
+"archivo": "v46_6.jpg",
+"esperado": "V46",
+"codigo": "V46",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V46",
+"conf": 0.94,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v46_6.jpg"
+],
+"top": [
+"V46",
+"V50",
+"V45",
+"V48",
+"V49"
+],
+"ms": 5263
+},
+{
+"archivo": "v46_7.jpg",
+"esperado": "V46",
+"codigo": "V46",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V46",
+"conf": 0.97,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v46_7.jpg"
+],
+"top": [
+"V46",
+"V50",
+"V45",
+"V102",
+"V48"
+],
+"ms": 4106
+},
+{
+"archivo": "v46_8.jpg",
+"esperado": "V46",
+"codigo": "V46",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V46",
+"conf": 0.97,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v46_8.jpg"
+],
+"top": [
+"V46",
+"V50",
+"V49",
+"V54",
+"V48"
+],
+"ms": 4381
+},
+{
+"archivo": "v46_9.jpg",
+"esperado": "V46",
+"codigo": "V46",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V46",
+"conf": 0.86,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v46_9.jpg"
+],
+"top": [
+"V46",
+"V45",
+"V48",
+"V47",
+"V50"
+],
+"ms": 15566
+},
+{
+"archivo": "v47.jpg",
+"esperado": "V47",
+"codigo": "V47",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V47",
+"conf": 0.99,
+"color": "azul turquesa",
+"fotos": [
+"/media/tienda/v47.jpg"
+],
+"top": [
+"V47",
+"V49",
+"V50",
+"V46",
+"V48"
+],
+"ms": 4230
+},
+{
+"archivo": "v47_10.jpg",
+"esperado": "V47",
+"codigo": "V47",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V47",
+"conf": 0.98,
+"color": "azul turquesa",
+"fotos": [
+"/media/tienda/v47_10.jpg"
+],
+"top": [
+"V47",
+"V49",
+"V46",
+"V102",
+"V53"
+],
+"ms": 9477
+},
+{
+"archivo": "v47_11.jpg",
+"esperado": "V47",
+"codigo": "V47",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V47",
+"conf": 0.99,
+"color": "turquesa",
+"fotos": [
+"/media/tienda/v47_11.jpg"
+],
+"top": [
+"V47",
+"V50",
+"V51",
+"V45",
+"V48"
+],
+"ms": 3992
+},
+{
+"archivo": "v47_2.jpg",
+"esperado": "V47",
+"codigo": "V47",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V47",
+"conf": 0.99,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v47_2.jpg"
+],
+"top": [
+"V47",
+"V50",
+"V46",
+"V49",
+"V48"
+],
+"ms": 4419
+},
+{
+"archivo": "v47_3.jpg",
+"esperado": "V47",
+"codigo": "V47",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V47",
+"conf": 0.87,
+"color": "borgoña",
+"fotos": [
+"/media/tienda/v47_3.jpg"
+],
+"top": [
+"V47",
+"V49",
+"V46",
+"V50",
+"V48"
+],
+"ms": 6696
+},
+{
+"archivo": "v47_4.jpg",
+"esperado": "V47",
+"codigo": "V47",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V47",
+"conf": 0.98,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v47_4.jpg"
+],
+"top": [
+"V47",
+"V50",
+"V49",
+"V46",
+"V102"
+],
+"ms": 6132
+},
+{
+"archivo": "v47_5.jpg",
+"esperado": "V47",
+"codigo": "V47",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V47",
+"conf": 0.99,
+"color": "marrón",
+"fotos": [
+"/media/tienda/v47_5.jpg"
+],
+"top": [
+"V47",
+"V49",
+"V46",
+"V48",
+"V50"
+],
+"ms": 4389
+},
+{
+"archivo": "v47_6.jpg",
+"esperado": "V47",
+"codigo": "V47",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V47",
+"conf": 0.99,
+"color": "champán",
+"fotos": [
+"/media/tienda/v47_6.jpg"
+],
+"top": [
+"V47",
+"V49",
+"V46",
+"V48",
+"V50"
+],
+"ms": 4635
+},
+{
+"archivo": "v47_7.jpg",
+"esperado": "V47",
+"codigo": "V47",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V47",
+"conf": 0.98,
+"color": "verde menta",
+"fotos": [
+"/media/tienda/v47_7.jpg"
+],
+"top": [
+"V47",
+"V49",
+"V48",
+"V46",
+"V50"
+],
+"ms": 4883
+},
+{
+"archivo": "v47_8.jpg",
+"esperado": "V47",
+"codigo": "V47",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.709,
+"vis": "",
+"conf": 0.82,
+"color": "verde menta",
+"fotos": [],
+"top": [
+"V47",
+"V49",
+"V46",
+"V48",
+"V82"
+],
+"ms": 14580
+},
+{
+"archivo": "v48.jpg",
+"esperado": "V48",
+"codigo": "V48",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V48",
+"conf": 0.99,
+"color": "champán",
+"fotos": [
+"/media/tienda/v48.jpg"
+],
+"top": [
+"V48",
+"V49",
+"V46",
+"V51",
+"V50"
+],
+"ms": 6335
+},
+{
+"archivo": "v48_10.jpg",
+"esperado": "V48",
+"codigo": "V48",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V48",
+"conf": 0.98,
+"color": "lila",
+"fotos": [
+"/media/tienda/v48_10.jpg"
+],
+"top": [
+"V48",
+"V51",
+"V46",
+"V50",
+"V45"
+],
+"ms": 5511
+},
+{
+"archivo": "v48_2.jpg",
+"esperado": "V48",
+"codigo": "V48",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V48",
+"conf": 0.98,
+"color": "terracota",
+"fotos": [
+"/media/tienda/v48_2.jpg"
+],
+"top": [
+"V48",
+"V50",
+"V49",
+"V52",
+"V46"
+],
+"ms": 5349
+},
+{
+"archivo": "v48_3.jpg",
+"esperado": "V48",
+"codigo": "V48",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V48",
+"conf": 0.99,
+"color": "verde salvia",
+"fotos": [
+"/media/tienda/v48_3.jpg"
+],
+"top": [
+"V48",
+"V50",
+"V46",
+"V49",
+"V51"
+],
+"ms": 5250
+},
+{
+"archivo": "v48_4.jpg",
+"esperado": "V48",
+"codigo": "V48",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V48",
+"conf": 0.99,
+"color": "burdeos",
+"fotos": [
+"/media/tienda/v48_4.jpg"
+],
+"top": [
+"V48",
+"V49",
+"V46",
+"V50",
+"V51"
+],
+"ms": 5263
+},
+{
+"archivo": "v48_5.jpg",
+"esperado": "V48",
+"codigo": "V48",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.759,
+"vis": "V48",
+"conf": 0.82,
+"color": "azul marino",
+"fotos": [],
+"top": [
+"V48",
+"V50",
+"V49",
+"V46",
+"V51"
+],
+"ms": 13603
+},
+{
+"archivo": "v48_6.jpg",
+"esperado": "V48",
+"codigo": "V48",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V48",
+"conf": 0.99,
+"color": "champán",
+"fotos": [
+"/media/tienda/v48_6.jpg"
+],
+"top": [
+"V48",
+"V46",
+"V49",
+"V51",
+"V50"
+],
+"ms": 5003
+},
+{
+"archivo": "v48_7.jpg",
+"esperado": "V48",
+"codigo": "V48",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V48",
+"conf": 0.98,
+"color": "azul royal",
+"fotos": [
+"/media/tienda/v48_7.jpg"
+],
+"top": [
+"V48",
+"V50",
+"V46",
+"V49",
+"V51"
+],
+"ms": 4330
+},
+{
+"archivo": "v48_8.jpg",
+"esperado": "V48",
+"codigo": "V48",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.711,
+"vis": "",
+"conf": 0.93,
+"color": "verde oliva",
+"fotos": [],
+"top": [
+"V48",
+"V50",
+"V46",
+"V51",
+"V47"
+],
+"ms": 10791
+},
+{
+"archivo": "v48_9.jpg",
+"esperado": "V48",
+"codigo": "V48",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V48",
+"conf": 0.96,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v48_9.jpg"
+],
+"top": [
+"V48",
+"V49",
+"V46",
+"V50",
+"V45"
+],
+"ms": 6361
+},
+{
+"archivo": "v49.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V49",
+"conf": 0.99,
+"color": "verde petróleo",
+"fotos": [
+"/media/tienda/v49.jpg"
+],
+"top": [
+"V49",
+"V52",
+"V50",
+"V98",
+"V48"
+],
+"ms": 5162
+},
+{
+"archivo": "v49_10.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V49",
+"conf": 0.93,
+"color": "turquesa",
+"fotos": [
+"/media/tienda/v49_10.jpg"
+],
+"top": [
+"V49",
+"V51",
+"V48",
+"V47",
+"V50"
+],
+"ms": 5328
+},
+{
+"archivo": "v49_11.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V49",
+"conf": 1.0,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v49_11.jpg"
+],
+"top": [
+"V49",
+"V47",
+"V48",
+"V51",
+"V50"
+],
+"ms": 4937
+},
+{
+"archivo": "v49_12.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.727,
+"vis": "V49",
+"conf": 0.66,
+"color": "negro",
+"fotos": [],
+"top": [
+"V49",
+"V48",
+"V50",
+"V46",
+"V45"
+],
+"ms": 25820
+},
+{
+"archivo": "v49_2.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V49",
+"conf": 0.95,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v49_2.jpg"
+],
+"top": [
+"V49",
+"V50",
+"V48",
+"V53",
+"V98"
+],
+"ms": 8105
+},
+{
+"archivo": "v49_3.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V49",
+"conf": 0.96,
+"color": "verde salvia",
+"fotos": [
+"/media/tienda/v49_3.jpg"
+],
+"top": [
+"V49",
+"V48",
+"V52",
+"V50",
+"V98"
+],
+"ms": 5219
+},
+{
+"archivo": "v49_4.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V49",
+"conf": 0.99,
+"color": "terracota",
+"fotos": [
+"/media/tienda/v49_4.jpg"
+],
+"top": [
+"V49",
+"V50",
+"V48",
+"V52",
+"V47"
+],
+"ms": 4500
+},
+{
+"archivo": "v49_5.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V49",
+"conf": 0.98,
+"color": "bronce",
+"fotos": [
+"/media/tienda/v49_5.jpg"
+],
+"top": [
+"V49",
+"V48",
+"V52",
+"V50",
+"V47"
+],
+"ms": 4344
+},
+{
+"archivo": "v49_6.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V49",
+"conf": 0.97,
+"color": "champán",
+"fotos": [
+"/media/tienda/v49_6.jpg"
+],
+"top": [
+"V49",
+"V48",
+"V46",
+"V50",
+"V47"
+],
+"ms": 6255
+},
+{
+"archivo": "v49_7.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V49",
+"conf": 0.94,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v49_7.jpg"
+],
+"top": [
+"V49",
+"V46",
+"V48",
+"V50",
+"V98"
+],
+"ms": 4728
+},
+{
+"archivo": "v49_8.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V49",
+"conf": 0.96,
+"color": "borgoña",
+"fotos": [
+"/media/tienda/v49_8.jpg"
+],
+"top": [
+"V49",
+"V48",
+"V50",
+"V52",
+"V98"
+],
+"ms": 3530
+},
+{
+"archivo": "v49_9.jpg",
+"esperado": "V49",
+"codigo": "V49",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V49",
+"conf": 0.98,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v49_9.jpg"
+],
+"top": [
+"V49",
+"V46",
+"V52",
+"V54",
+"V48"
+],
+"ms": 4261
+},
+{
+"archivo": "v50.jpg",
+"esperado": "V50",
+"codigo": "V50",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V50",
+"conf": 0.99,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v50.jpg"
+],
+"top": [
+"V50",
+"V46",
+"V49",
+"V48",
+"V53"
+],
+"ms": 4379
+},
+{
+"archivo": "v50_10.jpg",
+"esperado": "V50",
+"codigo": "V51",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.751,
+"vis": "V51",
+"conf": 0.62,
+"color": "burdeos",
+"fotos": [],
+"top": [
+"V51",
+"V50",
+"V48",
+"V49",
+"V42"
+],
+"ms": 23883
+},
+{
+"archivo": "v50_11.jpg",
+"esperado": "V50",
+"codigo": "V50",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V50",
+"conf": 0.87,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v50_11.jpg"
+],
+"top": [
+"V50",
+"V46",
+"V51",
+"V45",
+"V47"
+],
+"ms": 20042
+},
+{
+"archivo": "v50_2.jpg",
+"esperado": "V50",
+"codigo": "V50",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V50",
+"conf": 0.94,
+"color": "burdeos",
+"fotos": [
+"/media/tienda/v50_2.jpg"
+],
+"top": [
+"V50",
+"V48",
+"V53",
+"V46",
+"V49"
+],
+"ms": 7691
+},
+{
+"archivo": "v50_3.jpg",
+"esperado": "V50",
+"codigo": "V50",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V50",
+"conf": 0.94,
+"color": "azul rey",
+"fotos": [
+"/media/tienda/v50_3.jpg"
+],
+"top": [
+"V50",
+"V53",
+"V52",
+"V46",
+"V98"
+],
+"ms": 4741
+},
+{
+"archivo": "v50_4.jpg",
+"esperado": "V50",
+"codigo": "V50",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V50",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v50_4.jpg"
+],
+"top": [
+"V50",
+"V54",
+"V46",
+"V49",
+"V53"
+],
+"ms": 4456
+},
+{
+"archivo": "v50_5.jpg",
+"esperado": "V50",
+"codigo": "V50",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V50",
+"conf": 0.98,
+"color": "verde oliva",
+"fotos": [
+"/media/tienda/v50_5.jpg"
+],
+"top": [
+"V50",
+"V51",
+"V46",
+"V52",
+"V55"
+],
+"ms": 12065
+},
+{
+"archivo": "v50_6.jpg",
+"esperado": "V50",
+"codigo": "V50",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V50",
+"conf": 0.97,
+"color": "terracota",
+"fotos": [
+"/media/tienda/v50_6.jpg"
+],
+"top": [
+"V50",
+"V48",
+"V49",
+"V46",
+"V52"
+],
+"ms": 4329
+},
+{
+"archivo": "v50_7.jpg",
+"esperado": "V50",
+"codigo": "V50",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V50",
+"conf": 0.93,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v50_7.jpg"
+],
+"top": [
+"V50",
+"V46",
+"V53",
+"V49",
+"V98"
+],
+"ms": 15888
+},
+{
+"archivo": "v50_8.jpg",
+"esperado": "V50",
+"codigo": "V50",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V50",
+"conf": 0.94,
+"color": "azul",
+"fotos": [
+"/media/tienda/v50_8.jpg"
+],
+"top": [
+"V50",
+"V46",
+"V124",
+"V52",
+"V49"
+],
+"ms": 3838
+},
+{
+"archivo": "v50_9.jpg",
+"esperado": "V50",
+"codigo": "V50",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V50",
+"conf": 0.91,
+"color": "azul eléctrico",
+"fotos": [
+"/media/tienda/v50_9.jpg"
+],
+"top": [
+"V50",
+"V47",
+"V46",
+"V48",
+"V51"
+],
+"ms": 4754
+},
+{
+"archivo": "v51.jpg",
+"esperado": "V51",
+"codigo": "V51",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V51",
+"conf": 0.99,
+"color": "morado",
+"fotos": [
+"/media/tienda/v51.jpg"
+],
+"top": [
+"V51",
+"V46",
+"V53",
+"V50",
+"V48"
+],
+"ms": 4050
+},
+{
+"archivo": "v51_10.jpg",
+"esperado": "V51",
+"codigo": "V51",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V51",
+"conf": 0.99,
+"color": "azul",
+"fotos": [
+"/media/tienda/v51_10.jpg"
+],
+"top": [
+"V51",
+"V50",
+"V47",
+"V46",
+"V48"
+],
+"ms": 5346
+},
+{
+"archivo": "v51_11.jpg",
+"esperado": "V51",
+"codigo": "V51",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V51",
+"conf": 0.99,
+"color": "morado",
+"fotos": [
+"/media/tienda/v51_11.jpg"
+],
+"top": [
+"V51",
+"V46",
+"V50",
+"V53",
+"V98"
+],
+"ms": 7626
+},
+{
+"archivo": "v51_2.jpg",
+"esperado": "V51",
+"codigo": "V51",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.565,
+"vis": "V51",
+"conf": 0.76,
+"color": "champán",
+"fotos": [],
+"top": [
+"V51",
+"V50",
+"V52",
+"V46",
+"V48"
+],
+"ms": 16192
+},
+{
+"archivo": "v51_3.jpg",
+"esperado": "V51",
+"codigo": "V51",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V51",
+"conf": 0.98,
+"color": "verde oliva",
+"fotos": [
+"/media/tienda/v51_3.jpg"
+],
+"top": [
+"V51",
+"V50",
+"V52",
+"V48",
+"V46"
+],
+"ms": 5906
+},
+{
+"archivo": "v51_4.jpg",
+"esperado": "V51",
+"codigo": "V51",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V51",
+"conf": 0.87,
+"color": "azul rey",
+"fotos": [
+"/media/tienda/v51_4.jpg"
+],
+"top": [
+"V51",
+"V50",
+"V52",
+"V48",
+"V53"
+],
+"ms": 17246
+},
+{
+"archivo": "v51_5.jpg",
+"esperado": "V51",
+"codigo": "V51",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V51",
+"conf": 0.91,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v51_5.jpg"
+],
+"top": [
+"V51",
+"V50",
+"V49",
+"V46",
+"V54"
+],
+"ms": 5407
+},
+{
+"archivo": "v51_6.jpg",
+"esperado": "V51",
+"codigo": "V51",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V51",
+"conf": 0.91,
+"color": "burdeos",
+"fotos": [
+"/media/tienda/v51_6.jpg"
+],
+"top": [
+"V51",
+"V50",
+"V53",
+"V46",
+"V48"
+],
+"ms": 7143
+},
+{
+"archivo": "v51_7.jpg",
+"esperado": "V51",
+"codigo": "V51",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V51",
+"conf": 0.99,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v51_7.jpg"
+],
+"top": [
+"V51",
+"V50",
+"V48",
+"V46",
+"V53"
+],
+"ms": 5993
+},
+{
+"archivo": "v51_8.jpg",
+"esperado": "V51",
+"codigo": "V51",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V51",
+"conf": 0.97,
+"color": "azul grisáceo",
+"fotos": [
+"/media/tienda/v51_8.jpg"
+],
+"top": [
+"V51",
+"V50",
+"V46",
+"V48",
+"V49"
+],
+"ms": 4623
+},
+{
+"archivo": "v51_9.jpg",
+"esperado": "V51",
+"codigo": "V51",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.797,
+"vis": "V51",
+"conf": 0.78,
+"color": "verde",
+"fotos": [],
+"top": [
+"V51",
+"V50",
+"V48",
+"V47",
+"V46"
+],
+"ms": 24826
+},
+{
+"archivo": "v52.jpg",
+"esperado": "V52",
+"codigo": "V52",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V52",
+"conf": 0.99,
+"color": "turquesa",
+"fotos": [
+"/media/tienda/v52.jpg"
+],
+"top": [
+"V52",
+"V53",
+"V49",
+"V47",
+"V98"
+],
+"ms": 5868
+},
+{
+"archivo": "v52_2.jpg",
+"esperado": "V52",
+"codigo": "V52",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V52",
+"conf": 0.99,
+"color": "verde esmeralda",
+"fotos": [
+"/media/tienda/v52_2.jpg"
+],
+"top": [
+"V52",
+"V114",
+"V53",
+"V84",
+"V55"
+],
+"ms": 5913
+},
+{
+"archivo": "v52_3.jpg",
+"esperado": "V52",
+"codigo": "V52",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V52",
+"conf": 0.94,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v52_3.jpg"
+],
+"top": [
+"V52",
+"V49",
+"V54",
+"V51",
+"V50"
+],
+"ms": 6314
+},
+{
+"archivo": "v52_4.jpg",
+"esperado": "V52",
+"codigo": "V52",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V52",
+"conf": 0.91,
+"color": "celeste",
+"fotos": [
+"/media/tienda/v52_4.jpg"
+],
+"top": [
+"V52",
+"V53",
+"V49",
+"V54",
+"V98"
+],
+"ms": 4955
+},
+{
+"archivo": "v52_5.jpg",
+"esperado": "V52",
+"codigo": "V52",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V52",
+"conf": 0.86,
+"color": "negro",
+"fotos": [
+"/media/tienda/v52_5.jpg"
+],
+"top": [
+"V52",
+"V54",
+"V98",
+"V55",
+"V114"
+],
+"ms": 6115
+},
+{
+"archivo": "v52_6.jpg",
+"esperado": "V52",
+"codigo": "V52",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V52",
+"conf": 0.97,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v52_6.jpg"
+],
+"top": [
+"V52",
+"V53",
+"V98",
+"V114",
+"V54"
+],
+"ms": 3318
+},
+{
+"archivo": "v52_7.jpg",
+"esperado": "V52",
+"codigo": "V52",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V52",
+"conf": 0.97,
+"color": "azul rey",
+"fotos": [
+"/media/tienda/v52_7.jpg"
+],
+"top": [
+"V52",
+"V53",
+"V54",
+"V98",
+"V50"
+],
+"ms": 4947
+},
+{
+"archivo": "v52_8.jpg",
+"esperado": "V52",
+"codigo": "V52",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V52",
+"conf": 0.87,
+"color": "terracota",
+"fotos": [
+"/media/tienda/v52_8.jpg"
+],
+"top": [
+"V52",
+"V53",
+"V84",
+"V50",
+"V98"
+],
+"ms": 4816
+},
+{
+"archivo": "v52_9.jpg",
+"esperado": "V52",
+"codigo": "V52",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V52",
+"conf": 0.91,
+"color": "verde oliva",
+"fotos": [
+"/media/tienda/v52_9.jpg"
+],
+"top": [
+"V52",
+"V53",
+"V114",
+"V51",
+"V50"
+],
+"ms": 6317
+},
+{
+"archivo": "v53.jpg",
+"esperado": "V53",
+"codigo": "V53",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V53",
+"conf": 0.99,
+"color": "naranja",
+"fotos": [
+"/media/tienda/v53.jpg"
+],
+"top": [
+"V53",
+"V52",
+"V114",
+"V93",
+"V84"
+],
+"ms": 4628
+},
+{
+"archivo": "v53_2.jpg",
+"esperado": "V53",
+"codigo": "V53",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V53",
+"conf": 0.98,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v53_2.jpg"
+],
+"top": [
+"V53",
+"V54",
+"V55",
+"V98",
+"V52"
+],
+"ms": 18754
+},
+{
+"archivo": "v53_3.jpg",
+"esperado": "V53",
+"codigo": "V53",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V53",
+"conf": 0.91,
+"color": "azul",
+"fotos": [
+"/media/tienda/v53_3.jpg"
+],
+"top": [
+"V53",
+"V52",
+"V50",
+"V54",
+"V51"
+],
+"ms": 7277
+},
+{
+"archivo": "v53_4.jpg",
+"esperado": "V53",
+"codigo": "V53",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V53",
+"conf": 0.94,
+"color": "burdeos",
+"fotos": [
+"/media/tienda/v53_4.jpg"
+],
+"top": [
+"V53",
+"V50",
+"V55",
+"V52",
+"V46"
+],
+"ms": 5877
+},
+{
+"archivo": "v53_5.jpg",
+"esperado": "V53",
+"codigo": "V53",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V53",
+"conf": 0.94,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v53_5.jpg"
+],
+"top": [
+"V53",
+"V55",
+"V98",
+"V52",
+"V50"
+],
+"ms": 6018
+},
+{
+"archivo": "v53_6.jpg",
+"esperado": "V53",
+"codigo": "V55",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V55",
+"conf": 0.87,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v55_2.jpg"
+],
+"top": [
+"V55",
+"V53",
+"V50",
+"V49",
+"V98"
+],
+"ms": 17465
+},
+{
+"archivo": "v53_7.jpg",
+"esperado": "V53",
+"codigo": "V53",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V53",
+"conf": 0.97,
+"color": "celeste",
+"fotos": [
+"/media/tienda/v53_7.jpg"
+],
+"top": [
+"V53",
+"V119",
+"V52",
+"V98",
+"V55"
+],
+"ms": 5623
+},
+{
+"archivo": "v54.jpg",
+"esperado": "V54",
+"codigo": "V54",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V54",
+"conf": 0.99,
+"color": "azul rey",
+"fotos": [
+"/media/tienda/v54.jpg"
+],
+"top": [
+"V54",
+"V52",
+"V53",
+"V50",
+"V98"
+],
+"ms": 4960
+},
+{
+"archivo": "v54_2.jpg",
+"esperado": "V54",
+"codigo": "V54",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V54",
+"conf": 0.98,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v54_2.jpg"
+],
+"top": [
+"V54",
+"V50",
+"V46",
+"V53",
+"V110"
+],
+"ms": 4157
+},
+{
+"archivo": "v54_3.jpg",
+"esperado": "V54",
+"codigo": "V54",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V54",
+"conf": 0.99,
+"color": "negro",
+"fotos": [
+"/media/tienda/v54_3.jpg"
+],
+"top": [
+"V54",
+"V52",
+"V98",
+"V127",
+"V55"
+],
+"ms": 18635
+},
+{
+"archivo": "v54_4.jpg",
+"esperado": "V54",
+"codigo": "V54",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V54",
+"conf": 0.97,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v54_4.jpg"
+],
+"top": [
+"V54",
+"V53",
+"V114",
+"V84",
+"V50"
+],
+"ms": 5390
+},
+{
+"archivo": "v54_5.jpg",
+"esperado": "V54",
+"codigo": "V54",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V54",
+"conf": 0.94,
+"color": "celeste",
+"fotos": [
+"/media/tienda/v54_5.jpg"
+],
+"top": [
+"V54",
+"V53",
+"V52",
+"V119",
+"V114"
+],
+"ms": 5647
+},
+{
+"archivo": "v55.jpg",
+"esperado": "V55",
+"codigo": "V55",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V55",
+"conf": 0.99,
+"color": "negro",
+"fotos": [
+"/media/tienda/v55.jpg"
+],
+"top": [
+"V55",
+"V98",
+"V53",
+"V126",
+"V106"
+],
+"ms": 4508
+},
+{
+"archivo": "v55_2.jpg",
+"esperado": "V55",
+"codigo": "V55",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V55",
+"conf": 0.98,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v55_2.jpg"
+],
+"top": [
+"V55",
+"V98",
+"V53",
+"V50",
+"V84"
+],
+"ms": 9326
+},
+{
+"archivo": "v55_3.jpg",
+"esperado": "V55",
+"codigo": "V55",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V55",
+"conf": 0.91,
+"color": "verde esmeralda",
+"fotos": [
+"/media/tienda/v55_3.jpg"
+],
+"top": [
+"V55",
+"V98",
+"V52",
+"V53",
+"V117"
+],
+"ms": 5295
+},
+{
+"archivo": "v55_4.jpg",
+"esperado": "V55",
+"codigo": "V55",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V55",
+"conf": 0.99,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v55_4.jpg"
+],
+"top": [
+"V55",
+"V98",
+"V41",
+"V100",
+"V53"
+],
+"ms": 22285
+},
+{
+"archivo": "v55_5.jpg",
+"esperado": "V55",
+"codigo": "V55",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V55",
+"conf": 0.91,
+"color": "burdeos",
+"fotos": [
+"/media/tienda/v55_5.jpg"
+],
+"top": [
+"V55",
+"V129",
+"V53",
+"V98",
+"V50"
+],
+"ms": 4658
+},
+{
+"archivo": "v56.jpg",
+"esperado": "V56",
+"codigo": "V56",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V56",
+"conf": 0.99,
+"color": "rojo oscuro",
+"fotos": [
+"/media/tienda/v56.jpg"
+],
+"top": [
+"V56",
+"V103",
+"V102",
+"V99",
+"V41"
+],
+"ms": 3878
+},
+{
+"archivo": "v57.jpg",
+"esperado": "V57",
+"codigo": "V57",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V57",
+"conf": 0.93,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v57.jpg"
+],
+"top": [
+"V57",
+"V65",
+"V96",
+"V93",
+"V112"
+],
+"ms": 8582
+},
+{
+"archivo": "v57_2.jpg",
+"esperado": "V57",
+"codigo": "V57",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V57",
+"conf": 0.91,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v57_2.jpg"
+],
+"top": [
+"V57",
+"V65",
+"V112",
+"V67",
+"V96"
+],
+"ms": 5768
+},
+{
+"archivo": "v57_3.jpg",
+"esperado": "V57",
+"codigo": "V57",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V57",
+"conf": 0.98,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v57_3.jpg"
+],
+"top": [
+"V57",
+"V65",
+"V96",
+"V67",
+"V93"
+],
+"ms": 7365
+},
+{
+"archivo": "v58.jpg",
+"esperado": "V58",
+"codigo": "V58",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V58",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v58.jpg"
+],
+"top": [
+"V58",
+"V129",
+"V78",
+"V86",
+"V69"
+],
+"ms": 3785
+},
+{
+"archivo": "v58_2.jpg",
+"esperado": "V58",
+"codigo": "V58",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V58",
+"conf": 0.96,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v58_2.jpg"
+],
+"top": [
+"V58",
+"V129",
+"V78",
+"V86",
+"V122"
+],
+"ms": 6935
+},
+{
+"archivo": "v58_3.jpg",
+"esperado": "V58",
+"codigo": "V58",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V58",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v58_3.jpg"
+],
+"top": [
+"V58",
+"V129",
+"V78",
+"V86",
+"V125"
+],
+"ms": 5240
+},
+{
+"archivo": "v59.jpg",
+"esperado": "V59",
+"codigo": "V59",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V59",
+"conf": 0.99,
+"color": "gris y negro",
+"fotos": [
+"/media/tienda/v59.jpg"
+],
+"top": [
+"V59",
+"V90",
+"V73",
+"V76",
+"V91"
+],
+"ms": 3516
+},
+{
+"archivo": "v59_2.jpg",
+"esperado": "V59",
+"codigo": "V59",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V59",
+"conf": 0.91,
+"color": "negro y blanco",
+"fotos": [
+"/media/tienda/v59_2.jpg"
+],
+"top": [
+"V59",
+"V91",
+"V90",
+"V92",
+"V76"
+],
+"ms": 6263
+},
+{
+"archivo": "v59_3.jpg",
+"esperado": "V59",
+"codigo": "V59",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V59",
+"conf": 0.93,
+"color": "gris y terracota",
+"fotos": [
+"/media/tienda/v59_3.jpg"
+],
+"top": [
+"V59",
+"V76",
+"V91",
+"V77",
+"V90"
+],
+"ms": 4208
+},
+{
+"archivo": "v60.jpg",
+"esperado": "V60",
+"codigo": "V60",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V60",
+"conf": 0.98,
+"color": "beige",
+"fotos": [
+"/media/tienda/v60.jpg"
+],
+"top": [
+"V60",
+"V26",
+"V66",
+"V65",
+"V77"
+],
+"ms": 9064
+},
+{
+"archivo": "v61.jpg",
+"esperado": "V61",
+"codigo": "V61",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V61",
+"conf": 0.99,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v61.jpg"
+],
+"top": [
+"V61",
+"V27",
+"V67",
+"V93",
+"V64"
+],
+"ms": 5589
+},
+{
+"archivo": "v62.jpg",
+"esperado": "V62",
+"codigo": "V62",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V62",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v62.jpg"
+],
+"top": [
+"V62",
+"V85",
+"V36",
+"V26",
+"V60"
+],
+"ms": 4665
+},
+{
+"archivo": "v62_2.jpg",
+"esperado": "V62",
+"codigo": "V62",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V62",
+"conf": 0.98,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v62_2.jpg"
+],
+"top": [
+"V62",
+"V63",
+"V36",
+"V85",
+"V39"
+],
+"ms": 6181
+},
+{
+"archivo": "v63.jpg",
+"esperado": "V63",
+"codigo": "V63",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V63",
+"conf": 0.99,
+"color": "azul y blanco",
+"fotos": [
+"/media/tienda/v63.jpg"
+],
+"top": [
+"V63",
+"V39",
+"V26",
+"V22",
+"V93"
+],
+"ms": 4554
+},
+{
+"archivo": "v63_2.jpg",
+"esperado": "V63",
+"codigo": "V63",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V63",
+"conf": 0.96,
+"color": "azul y blanco",
+"fotos": [
+"/media/tienda/v63_2.jpg"
+],
+"top": [
+"V63",
+"V39",
+"V66",
+"V62",
+"V36"
+],
+"ms": 3752
+},
+{
+"archivo": "v64.jpg",
+"esperado": "V64",
+"codigo": "V64",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V64",
+"conf": 0.98,
+"color": "champán claro",
+"fotos": [
+"/media/tienda/v64.jpg"
+],
+"top": [
+"V64",
+"V33",
+"V27",
+"V22",
+"V65"
+],
+"ms": 4932
+},
+{
+"archivo": "v64_2.jpg",
+"esperado": "V64",
+"codigo": "V22",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V22",
+"conf": 0.98,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v22.jpg"
+],
+"top": [
+"V22",
+"V64",
+"V89",
+"V33",
+"V74"
+],
+"ms": 6657
+},
+{
+"archivo": "v65.jpg",
+"esperado": "V65",
+"codigo": "V65",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V65",
+"conf": 0.97,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v65.jpg"
+],
+"top": [
+"V65",
+"V57",
+"V93",
+"V67",
+"V96"
+],
+"ms": 8371
+},
+{
+"archivo": "v65_2.jpg",
+"esperado": "V65",
+"codigo": "V65",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V65",
+"conf": 0.91,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v65_2.jpg"
+],
+"top": [
+"V65",
+"V57",
+"V27",
+"V33",
+"V112"
+],
+"ms": 6826
+},
+{
+"archivo": "v66.jpg",
+"esperado": "V66",
+"codigo": "V66",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V66",
+"conf": 0.99,
+"color": "azul celeste",
+"fotos": [
+"/media/tienda/v66.jpg"
+],
+"top": [
+"V66",
+"V26",
+"V60",
+"V36",
+"V39"
+],
+"ms": 4805
+},
+{
+"archivo": "v66_2.jpg",
+"esperado": "V66",
+"codigo": "V66",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V66",
+"conf": 0.98,
+"color": "azul claro",
+"fotos": [
+"/media/tienda/v66_2.jpg"
+],
+"top": [
+"V66",
+"V26",
+"V60",
+"V33",
+"V64"
+],
+"ms": 6082
+},
+{
+"archivo": "v67.jpg",
+"esperado": "V67",
+"codigo": "V67",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V67",
+"conf": 0.97,
+"color": "verde",
+"fotos": [
+"/media/tienda/v67.jpg"
+],
+"top": [
+"V67",
+"V96",
+"V93",
+"V65",
+"V114"
+],
+"ms": 8053
+},
+{
+"archivo": "v67_2.jpg",
+"esperado": "V67",
+"codigo": "V67",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V67",
+"conf": 0.94,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v67_2.jpg"
+],
+"top": [
+"V67",
+"V96",
+"V65",
+"V27",
+"V93"
+],
+"ms": 24726
+},
+{
+"archivo": "v68.jpg",
+"esperado": "V68",
+"codigo": "V68",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V68",
+"conf": 0.99,
+"color": "gris y blanco",
+"fotos": [
+"/media/tienda/v68.jpg"
+],
+"top": [
+"V68",
+"V113",
+"V27",
+"V41",
+"V111"
+],
+"ms": 6107
+},
+{
+"archivo": "v68_2.jpg",
+"esperado": "V68",
+"codigo": "V68",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V68",
+"conf": 0.96,
+"color": "gris",
+"fotos": [
+"/media/tienda/v68_2.jpg"
+],
+"top": [
+"V68",
+"V27",
+"V92",
+"V93",
+"V77"
+],
+"ms": 7121
+},
+{
+"archivo": "v69.jpg",
+"esperado": "V69",
+"codigo": "V69",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V69",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v69.jpg"
+],
+"top": [
+"V69",
+"V91",
+"V89",
+"V87",
+"V77"
+],
+"ms": 4046
+},
+{
+"archivo": "v69_2.jpg",
+"esperado": "V69",
+"codigo": "V69",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.715,
+"vis": "V69",
+"conf": 0.74,
+"color": "rojo",
+"fotos": [],
+"top": [
+"V69",
+"V91",
+"V87",
+"V77",
+"V72"
+],
+"ms": 29908
+},
+{
+"archivo": "v69_3.jpg",
+"esperado": "V69",
+"codigo": "V69",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V69",
+"conf": 0.98,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v69_3.jpg"
+],
+"top": [
+"V69",
+"V89",
+"V91",
+"V119",
+"V87"
+],
+"ms": 4750
+},
+{
+"archivo": "v70.jpg",
+"esperado": "V70",
+"codigo": "V70",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V70",
+"conf": 0.98,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v70.jpg"
+],
+"top": [
+"V70",
+"V73",
+"V90",
+"V75",
+"V77"
+],
+"ms": 4775
+},
+{
+"archivo": "v70_2.jpg",
+"esperado": "V70",
+"codigo": "V70",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.639,
+"vis": "V70",
+"conf": 0.76,
+"color": "verde oscuro",
+"fotos": [],
+"top": [
+"V70",
+"V90",
+"V73",
+"V76",
+"V77"
+],
+"ms": 21518
+},
+{
+"archivo": "v71.jpg",
+"esperado": "V71",
+"codigo": "V71",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V71",
+"conf": 0.99,
+"color": "terracota",
+"fotos": [
+"/media/tienda/v71.jpg"
+],
+"top": [
+"V71",
+"V86",
+"V76",
+"V77",
+"V78"
+],
+"ms": 4189
+},
+{
+"archivo": "v71_2.jpg",
+"esperado": "V71",
+"codigo": "V71",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V71",
+"conf": 0.87,
+"color": "terracota",
+"fotos": [
+"/media/tienda/v71_2.jpg"
+],
+"top": [
+"V71",
+"V86",
+"V76",
+"V72",
+"V77"
+],
+"ms": 4291
+},
+{
+"archivo": "v72.jpg",
+"esperado": "V72",
+"codigo": "V72",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V72",
+"conf": 0.98,
+"color": "beige",
+"fotos": [
+"/media/tienda/v72.jpg"
+],
+"top": [
+"V72",
+"V77",
+"V87",
+"V76",
+"V92"
+],
+"ms": 8688
+},
+{
+"archivo": "v72_2.jpg",
+"esperado": "V72",
+"codigo": "V72",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.705,
+"vis": "V72",
+"conf": 0.82,
+"color": "blanco",
+"fotos": [],
+"top": [
+"V72",
+"V87",
+"V77",
+"V122",
+"V76"
+],
+"ms": 21135
+},
+{
+"archivo": "v72_3.jpg",
+"esperado": "V72",
+"codigo": "V94",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V94",
+"conf": 0.97,
+"color": "negro",
+"fotos": [
+"/media/tienda/v94.jpg"
+],
+"top": [
+"V94",
+"V72",
+"V91",
+"V80",
+"V90"
+],
+"ms": 4796
+},
+{
+"archivo": "v72_4.jpg",
+"esperado": "V72",
+"codigo": "V94",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V94",
+"conf": 0.96,
+"color": "azul claro y negro",
+"fotos": [
+"/media/tienda/v94_2.jpg"
+],
+"top": [
+"V94",
+"V72",
+"V91",
+"V76",
+"V80"
+],
+"ms": 6944
+},
+{
+"archivo": "v73.jpg",
+"esperado": "V73",
+"codigo": "V90",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V90",
+"conf": 0.99,
+"color": "verde oscuro",
+"fotos": [
+"/media/tienda/v90.jpg"
+],
+"top": [
+"V90",
+"V73",
+"V70",
+"V75",
+"V88"
+],
+"ms": 24940
+},
+{
+"archivo": "v73_2.jpg",
+"esperado": "V73",
+"codigo": "V90",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.703,
+"vis": "V90",
+"conf": 0.84,
+"color": "verde oscuro",
+"fotos": [],
+"top": [
+"V90",
+"V73",
+"V91",
+"V72",
+"V94"
+],
+"ms": 27107
+},
+{
+"archivo": "v74.jpg",
+"esperado": "V74",
+"codigo": "V74",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V74",
+"conf": 0.98,
+"color": "azul marino y azul violeta",
+"fotos": [
+"/media/tienda/v74.jpg"
+],
+"top": [
+"V74",
+"V75",
+"V76",
+"V77",
+"V79"
+],
+"ms": 5314
+},
+{
+"archivo": "v74_2.jpg",
+"esperado": "V74",
+"codigo": "V74",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V74",
+"conf": 0.91,
+"color": "azul violeta",
+"fotos": [
+"/media/tienda/v74_2.jpg"
+],
+"top": [
+"V74",
+"V75",
+"V79",
+"V88",
+"V77"
+],
+"ms": 5181
+},
+{
+"archivo": "v74_3.jpg",
+"esperado": "V74",
+"codigo": "V74",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.7,
+"vis": "V74",
+"conf": 0.53,
+"color": "terracota",
+"fotos": [],
+"top": [
+"V74",
+"V87",
+"V77",
+"V75",
+"V90"
+],
+"ms": 19694
+},
+{
+"archivo": "v74_4.jpg",
+"esperado": "V74",
+"codigo": "V74",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.668,
+"vis": "V74",
+"conf": 0.56,
+"color": "verde oliva",
+"fotos": [],
+"top": [
+"V74",
+"V77",
+"V91",
+"V87",
+"V76"
+],
+"ms": 15686
+},
+{
+"archivo": "v75.jpg",
+"esperado": "V75",
+"codigo": "V75",
+"nivel": "exacto",
+"caso": "agotado",
+"sim": 0.99,
+"vis": "V75",
+"conf": 0.99,
+"color": "estampado blanco y negro, con pantalón v",
+"fotos": [
+"/media/products/v89-tmt6t4.jpg",
+"/media/products/v73-tmt6t4.jpg",
+"/media/products/v90-tmt6t4.jpg"
+],
+"top": [
+"V75",
+"V89",
+"V73",
+"V90",
+"V70"
+],
+"ms": 5910
+},
+{
+"archivo": "v75_2.jpg",
+"esperado": "V75",
+"codigo": "V75",
+"nivel": "exacto",
+"caso": "agotado",
+"sim": 0.99,
+"vis": "V75",
+"conf": 0.91,
+"color": "estampado blanco y negro",
+"fotos": [
+"/media/products/v73-tmt6t4.jpg",
+"/media/products/v90-tmt6t4.jpg",
+"/media/products/v70-tmt6t4.jpg"
+],
+"top": [
+"V75",
+"V73",
+"V90",
+"V70",
+"V89"
+],
+"ms": 7832
+},
+{
+"archivo": "v75_3.jpg",
+"esperado": "V75",
+"codigo": "V74",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.73,
+"vis": "V74",
+"conf": 0.76,
+"color": "lila y negro",
+"fotos": [],
+"top": [
+"V74",
+"V75",
+"V79",
+"V88",
+"V91"
+],
+"ms": 33821
+},
+{
+"archivo": "v75_4.jpg",
+"esperado": "V75",
+"codigo": "V74",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.581,
+"vis": "V74",
+"conf": 0.68,
+"color": "morado",
+"fotos": [],
+"top": [
+"V74",
+"V75",
+"V91",
+"V79",
+"V88"
+],
+"ms": 25957
+},
+{
+"archivo": "v76.jpg",
+"esperado": "V76",
+"codigo": "V76",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V76",
+"conf": 0.99,
+"color": "azul",
+"fotos": [
+"/media/tienda/v76.jpg"
+],
+"top": [
+"V76",
+"V86",
+"V71",
+"V77",
+"V72"
+],
+"ms": 23052
+},
+{
+"archivo": "v76_2.jpg",
+"esperado": "V76",
+"codigo": "V76",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V76",
+"conf": 0.94,
+"color": "azul y blanco",
+"fotos": [
+"/media/tienda/v76_2.jpg"
+],
+"top": [
+"V76",
+"V86",
+"V72",
+"V77",
+"V87"
+],
+"ms": 24367
+},
+{
+"archivo": "v76_3.jpg",
+"esperado": "V76",
+"codigo": "V76",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.703,
+"vis": "V76",
+"conf": 0.65,
+"color": "azul",
+"fotos": [],
+"top": [
+"V76",
+"V72",
+"V94",
+"V77",
+"V91"
+],
+"ms": 24460
+},
+{
+"archivo": "v76_4.jpg",
+"esperado": "V76",
+"codigo": "V76",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V76",
+"conf": 0.98,
+"color": "azul",
+"fotos": [
+"/media/tienda/v76_4.jpg"
+],
+"top": [
+"V76",
+"V91",
+"V77",
+"V87",
+"V92"
+],
+"ms": 6972
+},
+{
+"archivo": "v77.jpg",
+"esperado": "V77",
+"codigo": "V77",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V77",
+"conf": 0.99,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v77.jpg"
+],
+"top": [
+"V77",
+"V92",
+"V76",
+"V72",
+"V91"
+],
+"ms": 32722
+},
+{
+"archivo": "v77_2.jpg",
+"esperado": "V77",
+"codigo": "V92",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V92",
+"conf": 0.88,
+"color": "azul marino oscuro",
+"fotos": [
+"/media/tienda/v92_2.jpg"
+],
+"top": [
+"V92",
+"V77",
+"V76",
+"V72",
+"V70"
+],
+"ms": 24416
+},
+{
+"archivo": "v77_3.jpg",
+"esperado": "V77",
+"codigo": "V87",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V87",
+"conf": 0.99,
+"color": "lila y beige",
+"fotos": [
+"/media/tienda/v87.jpg"
+],
+"top": [
+"V87",
+"V77",
+"V91",
+"V72",
+"V76"
+],
+"ms": 4532
+},
+{
+"archivo": "v77_4.jpg",
+"esperado": "V77",
+"codigo": "V87",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V87",
+"conf": 0.88,
+"color": "lila y beige",
+"fotos": [
+"/media/tienda/v87_2.jpg"
+],
+"top": [
+"V87",
+"V77",
+"V72",
+"V91",
+"V94"
+],
+"ms": 7232
+},
+{
+"archivo": "v78.jpg",
+"esperado": "V78",
+"codigo": "V78",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V78",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v78.jpg"
+],
+"top": [
+"V78",
+"V86",
+"V89",
+"V70",
+"V74"
+],
+"ms": 5129
+},
+{
+"archivo": "v78_2.jpg",
+"esperado": "V78",
+"codigo": "V78",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.653,
+"vis": "V78",
+"conf": 0.83,
+"color": "rojo",
+"fotos": [],
+"top": [
+"V78",
+"V86",
+"V74",
+"V70",
+"V88"
+],
+"ms": 19283
+},
+{
+"archivo": "v78_3.jpg",
+"esperado": "V78",
+"codigo": "V78",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V78",
+"conf": 0.99,
+"color": "rojo y beige",
+"fotos": [
+"/media/tienda/v78_3.jpg"
+],
+"top": [
+"V78",
+"V91",
+"V86",
+"V77",
+"V79"
+],
+"ms": 5971
+},
+{
+"archivo": "v79.jpg",
+"esperado": "V79",
+"codigo": "V79",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V79",
+"conf": 0.99,
+"color": "gris perla",
+"fotos": [
+"/media/tienda/v79.jpg"
+],
+"top": [
+"V79",
+"V88",
+"V90",
+"V73",
+"V70"
+],
+"ms": 23591
+},
+{
+"archivo": "v79_2.jpg",
+"esperado": "V79",
+"codigo": "V88",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V88",
+"conf": 0.88,
+"color": "azul turquesa",
+"fotos": [
+"/media/tienda/v88_2.jpg"
+],
+"top": [
+"V88",
+"V79",
+"V77",
+"V75",
+"V92"
+],
+"ms": 23587
+},
+{
+"archivo": "v79_3.jpg",
+"esperado": "V79",
+"codigo": "V79",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V79",
+"conf": 0.98,
+"color": "blusa plateada; pantalón azul turquesa",
+"fotos": [
+"/media/tienda/v79_3.jpg"
+],
+"top": [
+"V79",
+"V27",
+"V64",
+"V93",
+"V77"
+],
+"ms": 7740
+},
+{
+"archivo": "v80.jpg",
+"esperado": "V80",
+"codigo": "V80",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V80",
+"conf": 0.99,
+"color": "turquesa",
+"fotos": [
+"/media/tienda/v80.jpg"
+],
+"top": [
+"V80",
+"V72",
+"V94",
+"V91",
+"V73"
+],
+"ms": 3987
+},
+{
+"archivo": "v80_2.jpg",
+"esperado": "V80",
+"codigo": "V80",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V80",
+"conf": 0.86,
+"color": "turquesa y marrón oscuro",
+"fotos": [
+"/media/tienda/v80_2.jpg"
+],
+"top": [
+"V80",
+"V91",
+"V94",
+"V72",
+"V76"
+],
+"ms": 22294
+},
+{
+"archivo": "v81.jpg",
+"esperado": "V81",
+"codigo": "V81",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V81",
+"conf": 0.99,
+"color": "rosa",
+"fotos": [
+"/media/tienda/v81.jpg"
+],
+"top": [
+"V81",
+"V90",
+"V73",
+"V79",
+"V88"
+],
+"ms": 5174
+},
+{
+"archivo": "v81_2.jpg",
+"esperado": "V81",
+"codigo": "V72",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.552,
+"vis": "V72",
+"conf": 0.66,
+"color": "terracota",
+"fotos": [],
+"top": [
+"V72",
+"V81",
+"V94",
+"V74",
+"V77"
+],
+"ms": 23812
+},
+{
+"archivo": "v82.jpg",
+"esperado": "V82",
+"codigo": "V82",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V82",
+"conf": 0.99,
+"color": "gris",
+"fotos": [
+"/media/tienda/v82.jpg"
+],
+"top": [
+"V82",
+"V103",
+"V41",
+"V46",
+"V97"
+],
+"ms": 4461
+},
+{
+"archivo": "v82_2.jpg",
+"esperado": "V82",
+"codigo": "V82",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V82",
+"conf": 0.99,
+"color": "gris",
+"fotos": [
+"/media/tienda/v82_2.jpg"
+],
+"top": [
+"V82",
+"V111",
+"V101",
+"V41",
+"V108"
+],
+"ms": 3620
+},
+{
+"archivo": "v82_3.jpg",
+"esperado": "V82",
+"codigo": "V82",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V82",
+"conf": 0.94,
+"color": "gris",
+"fotos": [
+"/media/tienda/v82_3.jpg"
+],
+"top": [
+"V82",
+"V41",
+"V113",
+"V111",
+"V102"
+],
+"ms": 5928
+},
+{
+"archivo": "v82_4.jpg",
+"esperado": "V82",
+"codigo": "V82",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V82",
+"conf": 0.86,
+"color": "turquesa",
+"fotos": [
+"/media/tienda/v82_4.jpg"
+],
+"top": [
+"V82",
+"V99",
+"V101",
+"V102",
+"V124"
+],
+"ms": 13722
+},
+{
+"archivo": "v83.jpg",
+"esperado": "V83",
+"codigo": "V83",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V83",
+"conf": 0.99,
+"color": "negro",
+"fotos": [
+"/media/tienda/v83.jpg"
+],
+"top": [
+"V83",
+"V54",
+"V127",
+"V126",
+"V55"
+],
+"ms": 4054
+},
+{
+"archivo": "v83_2.jpg",
+"esperado": "V83",
+"codigo": "V83",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V83",
+"conf": 0.88,
+"color": "negro",
+"fotos": [
+"/media/tienda/v83_2.jpg"
+],
+"top": [
+"V83",
+"V127",
+"V102",
+"V131",
+"V54"
+],
+"ms": 5271
+},
+{
+"archivo": "v83_3.jpg",
+"esperado": "V83",
+"codigo": "V83",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V83",
+"conf": 1.0,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v83_3.jpg"
+],
+"top": [
+"V83",
+"V128",
+"V131",
+"V126",
+"V129"
+],
+"ms": 4326
+},
+{
+"archivo": "v83_4.jpg",
+"esperado": "V83",
+"codigo": "V83",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V83",
+"conf": 1.0,
+"color": "beige",
+"fotos": [
+"/media/tienda/v83_4.jpg"
+],
+"top": [
+"V83",
+"V55",
+"V84",
+"V46",
+"V98"
+],
+"ms": 4434
+},
+{
+"archivo": "v84.jpg",
+"esperado": "V84",
+"codigo": "V84",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V84",
+"conf": 0.99,
+"color": "beige claro",
+"fotos": [
+"/media/tienda/v84.jpg"
+],
+"top": [
+"V84",
+"V114",
+"V54",
+"V26",
+"V52"
+],
+"ms": 4908
+},
+{
+"archivo": "v84_2.jpg",
+"esperado": "V84",
+"codigo": "V84",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V84",
+"conf": 0.98,
+"color": "verde",
+"fotos": [
+"/media/tienda/v84_2.jpg"
+],
+"top": [
+"V84",
+"V114",
+"V120",
+"V131",
+"V52"
+],
+"ms": 4589
+},
+{
+"archivo": "v84_3.jpg",
+"esperado": "V84",
+"codigo": "V84",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V84",
+"conf": 0.96,
+"color": "negro",
+"fotos": [
+"/media/tienda/v84_3.jpg"
+],
+"top": [
+"V84",
+"V114",
+"V124",
+"V126",
+"V119"
+],
+"ms": 4917
+},
+{
+"archivo": "v85.jpg",
+"esperado": "V85",
+"codigo": "V85",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V85",
+"conf": 0.98,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v85.jpg"
+],
+"top": [
+"V85",
+"V62",
+"V36",
+"V60",
+"V26"
+],
+"ms": 6268
+},
+{
+"archivo": "v85_2.jpg",
+"esperado": "V85",
+"codigo": "V62",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V62",
+"conf": 0.94,
+"color": "rojo con lunares blancos",
+"fotos": [
+"/media/tienda/v62.jpg"
+],
+"top": [
+"V62",
+"V85",
+"V36",
+"V93",
+"V60"
+],
+"ms": 7768
+},
+{
+"archivo": "v86.jpg",
+"esperado": "V86",
+"codigo": "V86",
+"nivel": "ninguno",
+"caso": "ninguno",
+"sim": 0.563,
+"vis": "V86",
+"conf": 0.58,
+"color": "azul y blanco",
+"fotos": [],
+"top": [
+"V86",
+"V76",
+"V71",
+"V77",
+"V87"
+],
+"ms": 15743
+},
+{
+"archivo": "v86_2.jpg",
+"esperado": "V86",
+"codigo": "V76",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V76",
+"conf": 0.88,
+"color": "azul",
+"fotos": [
+"/media/tienda/v76_2.jpg"
+],
+"top": [
+"V76",
+"V86",
+"V77",
+"V87",
+"V72"
+],
+"ms": 9223
+},
+{
+"archivo": "v86_3.jpg",
+"esperado": "V86",
+"codigo": "V78",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V78",
+"conf": 0.94,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v78_2.jpg"
+],
+"top": [
+"V78",
+"V86",
+"V22",
+"V71",
+"V58"
+],
+"ms": 5026
+},
+{
+"archivo": "v86_4.jpg",
+"esperado": "V86",
+"codigo": "V78",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V78",
+"conf": 0.99,
+"color": "rojo burdeos",
+"fotos": [
+"/media/tienda/v78_3.jpg"
+],
+"top": [
+"V78",
+"V86",
+"V74",
+"V91",
+"V75"
+],
+"ms": 4999
+},
+{
+"archivo": "v87.jpg",
+"esperado": "V87",
+"codigo": "V87",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V87",
+"conf": 0.99,
+"color": "lila y beige",
+"fotos": [
+"/media/tienda/v87.jpg"
+],
+"top": [
+"V87",
+"V77",
+"V91",
+"V72",
+"V60"
+],
+"ms": 5419
+},
+{
+"archivo": "v87_2.jpg",
+"esperado": "V87",
+"codigo": "V87",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V87",
+"conf": 0.86,
+"color": "beige",
+"fotos": [
+"/media/tienda/v87_2.jpg"
+],
+"top": [
+"V87",
+"V77",
+"V72",
+"V91",
+"V94"
+],
+"ms": 19679
+},
+{
+"archivo": "v88.jpg",
+"esperado": "V88",
+"codigo": "V79",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V79",
+"conf": 0.99,
+"color": "plateado claro",
+"fotos": [
+"/media/tienda/v79.jpg"
+],
+"top": [
+"V79",
+"V88",
+"V92",
+"V77",
+"V70"
+],
+"ms": 31877
+},
+{
+"archivo": "v88_2.jpg",
+"esperado": "V88",
+"codigo": "V88",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V88",
+"conf": 0.94,
+"color": "azul petróleo",
+"fotos": [
+"/media/tienda/v88_2.jpg"
+],
+"top": [
+"V88",
+"V79",
+"V75",
+"V70",
+"V77"
+],
+"ms": 24232
+},
+{
+"archivo": "v88_3.jpg",
+"esperado": "V88",
+"codigo": "V88",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V88",
+"conf": 0.88,
+"color": "azul petróleo",
+"fotos": [
+"/media/tienda/v88_3.jpg"
+],
+"top": [
+"V88",
+"V76",
+"V89",
+"V79",
+"V77"
+],
+"ms": 5135
+},
+{
+"archivo": "v89.jpg",
+"esperado": "V89",
+"codigo": "V89",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V89",
+"conf": 0.99,
+"color": "negro",
+"fotos": [
+"/media/tienda/v89.jpg"
+],
+"top": [
+"V89",
+"V72",
+"V94",
+"V91",
+"V75"
+],
+"ms": 4375
+},
+{
+"archivo": "v89_2.jpg",
+"esperado": "V89",
+"codigo": "V89",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V89",
+"conf": 0.97,
+"color": "estampado blanco y negro con pantalón ne",
+"fotos": [
+"/media/tienda/v89_2.jpg"
+],
+"top": [
+"V89",
+"V87",
+"V77",
+"V91",
+"V72"
+],
+"ms": 4960
+},
+{
+"archivo": "v89_3.jpg",
+"esperado": "V89",
+"codigo": "V89",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V89",
+"conf": 0.91,
+"color": "azul y negro",
+"fotos": [
+"/media/tienda/v89_3.jpg"
+],
+"top": [
+"V89",
+"V75",
+"V76",
+"V88",
+"V74"
+],
+"ms": 5343
+},
+{
+"archivo": "v90.jpg",
+"esperado": "V90",
+"codigo": "V73",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V73",
+"conf": 0.98,
+"color": "verde salvia claro",
+"fotos": [
+"/media/tienda/v73.jpg"
+],
+"top": [
+"V73",
+"V90",
+"V70",
+"V75",
+"V91"
+],
+"ms": 19762
+},
+{
+"archivo": "v90_2.jpg",
+"esperado": "V90",
+"codigo": "V90",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V90",
+"conf": 0.91,
+"color": "verde oscuro",
+"fotos": [
+"/media/tienda/v90_2.jpg"
+],
+"top": [
+"V90",
+"V73",
+"V70",
+"V94",
+"V72"
+],
+"ms": 28105
+},
+{
+"archivo": "v91.jpg",
+"esperado": "V91",
+"codigo": "V91",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V91",
+"conf": 0.99,
+"color": "morado y negro",
+"fotos": [
+"/media/tienda/v91.jpg"
+],
+"top": [
+"V91",
+"V76",
+"V77",
+"V87",
+"V72"
+],
+"ms": 5784
+},
+{
+"archivo": "v91_2.jpg",
+"esperado": "V91",
+"codigo": "V91",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V91",
+"conf": 0.92,
+"color": "negro",
+"fotos": [
+"/media/tienda/v91_2.jpg"
+],
+"top": [
+"V91",
+"V76",
+"V87",
+"V77",
+"V69"
+],
+"ms": 7221
+},
+{
+"archivo": "v92.jpg",
+"esperado": "V92",
+"codigo": "V77",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V77",
+"conf": 0.86,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v77.jpg"
+],
+"top": [
+"V77",
+"V92",
+"V76",
+"V72",
+"V91"
+],
+"ms": 8732
+},
+{
+"archivo": "v92_2.jpg",
+"esperado": "V92",
+"codigo": "V92",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V92",
+"conf": 0.86,
+"color": "gris oscuro",
+"fotos": [
+"/media/tienda/v92_2.jpg"
+],
+"top": [
+"V92",
+"V77",
+"V87",
+"V76",
+"V72"
+],
+"ms": 6595
+},
+{
+"archivo": "v93.jpg",
+"esperado": "V93",
+"codigo": "V93",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V93",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v93.jpg"
+],
+"top": [
+"V93",
+"V96",
+"V67",
+"V65",
+"V22"
+],
+"ms": 5177
+},
+{
+"archivo": "v93_2.jpg",
+"esperado": "V93",
+"codigo": "V93",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V93",
+"conf": 0.98,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v93_2.jpg"
+],
+"top": [
+"V93",
+"V65",
+"V67",
+"V96",
+"V26"
+],
+"ms": 21440
+},
+{
+"archivo": "v94.jpg",
+"esperado": "V94",
+"codigo": "V94",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V94",
+"conf": 0.98,
+"color": "negro",
+"fotos": [
+"/media/tienda/v94.jpg"
+],
+"top": [
+"V94",
+"V72",
+"V91",
+"V80",
+"V77"
+],
+"ms": 5178
+},
+{
+"archivo": "v94_2.jpg",
+"esperado": "V94",
+"codigo": "V94",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V94",
+"conf": 0.94,
+"color": "celeste y negro",
+"fotos": [
+"/media/tienda/v94_2.jpg"
+],
+"top": [
+"V94",
+"V72",
+"V80",
+"V76",
+"V91"
+],
+"ms": 6274
+},
+{
+"archivo": "v94_3.jpg",
+"esperado": "V94",
+"codigo": "V94",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.588,
+"vis": "V94",
+"conf": 0.7,
+"color": "terracota",
+"fotos": [],
+"top": [
+"V94",
+"V74",
+"V89",
+"V88",
+"V81"
+],
+"ms": 19484
+},
+{
+"archivo": "v94_4.jpg",
+"esperado": "V94",
+"codigo": "V94",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V94",
+"conf": 0.88,
+"color": "marrón terracota",
+"fotos": [
+"/media/tienda/v94_4.jpg"
+],
+"top": [
+"V94",
+"V74",
+"V78",
+"V26",
+"V77"
+],
+"ms": 4447
+},
+{
+"archivo": "v95.jpg",
+"esperado": "V95",
+"codigo": "V95",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V95",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v95.jpg"
+],
+"top": [
+"V95",
+"V118",
+"V119",
+"V129",
+"V78"
+],
+"ms": 3945
+},
+{
+"archivo": "v95_2.jpg",
+"esperado": "V95",
+"codigo": "V95",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V95",
+"conf": 0.98,
+"color": "rojo y blanco",
+"fotos": [
+"/media/tienda/v95_2.jpg"
+],
+"top": [
+"V95",
+"V62",
+"V119",
+"V85",
+"V118"
+],
+"ms": 5317
+},
+{
+"archivo": "v95_3.jpg",
+"esperado": "V95",
+"codigo": "V95",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V95",
+"conf": 0.91,
+"color": "turquesa",
+"fotos": [
+"/media/tienda/v95_3.jpg"
+],
+"top": [
+"V95",
+"V118",
+"V131",
+"V119",
+"V114"
+],
+"ms": 5059
+},
+{
+"archivo": "v96.jpg",
+"esperado": "V96",
+"codigo": "V96",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V96",
+"conf": 0.98,
+"color": "verde esmeralda",
+"fotos": [
+"/media/tienda/v96.jpg"
+],
+"top": [
+"V96",
+"V67",
+"V93",
+"V70",
+"V84"
+],
+"ms": 8226
+},
+{
+"archivo": "v96_2.jpg",
+"esperado": "V96",
+"codigo": "V96",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V96",
+"conf": 0.99,
+"color": "verde",
+"fotos": [
+"/media/tienda/v96_2.jpg"
+],
+"top": [
+"V96",
+"V67",
+"V93",
+"V114",
+"V65"
+],
+"ms": 23346
+},
+{
+"archivo": "v96_3.jpg",
+"esperado": "V96",
+"codigo": "V96",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V96",
+"conf": 0.96,
+"color": "verde",
+"fotos": [
+"/media/tienda/v96_2.jpg"
+],
+"top": [
+"V96",
+"V67",
+"V93",
+"V114",
+"V84"
+],
+"ms": 25531
+},
+{
+"archivo": "v97.jpg",
+"esperado": "V97",
+"codigo": "V97",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V97",
+"conf": 0.99,
+"color": "negro",
+"fotos": [
+"/media/tienda/v97.jpg"
+],
+"top": [
+"V97",
+"V56",
+"V102",
+"V103",
+"V101"
+],
+"ms": 4511
+},
+{
+"archivo": "v97_2.jpg",
+"esperado": "V97",
+"codigo": "V97",
+"nivel": "parecido",
+"caso": "parecido",
+"sim": 0.702,
+"vis": "V97",
+"conf": 0.84,
+"color": "negro",
+"fotos": [],
+"top": [
+"V97",
+"V103",
+"V101",
+"V104",
+"V102"
+],
+"ms": 17552
+},
+{
+"archivo": "v98.jpg",
+"esperado": "V98",
+"codigo": "V98",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V98",
+"conf": 0.99,
+"color": "turquesa",
+"fotos": [
+"/media/tienda/v98.jpg"
+],
+"top": [
+"V98",
+"V55",
+"V50",
+"V49",
+"V53"
+],
+"ms": 5529
+},
+{
+"archivo": "v98_2.jpg",
+"esperado": "V98",
+"codigo": "V98",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V98",
+"conf": 0.97,
+"color": "azul",
+"fotos": [
+"/media/tienda/v98_2.jpg"
+],
+"top": [
+"V98",
+"V55",
+"V50",
+"V52",
+"V53"
+],
+"ms": 4632
+},
+{
+"archivo": "v98_3.jpg",
+"esperado": "V98",
+"codigo": "V98",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V98",
+"conf": 0.98,
+"color": "negro",
+"fotos": [
+"/media/tienda/v98_3.jpg"
+],
+"top": [
+"V98",
+"V55",
+"V52",
+"V50",
+"V53"
+],
+"ms": 4708
+},
+{
+"archivo": "v98_4.jpg",
+"esperado": "V98",
+"codigo": "V98",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V98",
+"conf": 0.91,
+"color": "fucsia",
+"fotos": [
+"/media/tienda/v98_4.jpg"
+],
+"top": [
+"V98",
+"V55",
+"V53",
+"V114",
+"V52"
+],
+"ms": 5699
+},
+{
+"archivo": "v98_5.jpg",
+"esperado": "V98",
+"codigo": "V98",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V98",
+"conf": 0.96,
+"color": "azul marino",
+"fotos": [
+"/media/tienda/v98_5.jpg"
+],
+"top": [
+"V98",
+"V50",
+"V49",
+"V53",
+"V55"
+],
+"ms": 5356
+},
+{
+"archivo": "v98_6.jpg",
+"esperado": "V98",
+"codigo": "V98",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V98",
+"conf": 0.91,
+"color": "blanco",
+"fotos": [
+"/media/tienda/v98_6.jpg"
+],
+"top": [
+"V98",
+"V53",
+"V49",
+"V50",
+"V54"
+],
+"ms": 8539
+},
+{
+"archivo": "v98_7.jpg",
+"esperado": "V98",
+"codigo": "V98",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V98",
+"conf": 0.97,
+"color": "azul claro",
+"fotos": [
+"/media/tienda/v98_7.jpg"
+],
+"top": [
+"V98",
+"V50",
+"V53",
+"V55",
+"V124"
+],
+"ms": 5174
+},
+{
+"archivo": "v98_8.jpg",
+"esperado": "V98",
+"codigo": "V98",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V98",
+"conf": 0.99,
+"color": "verde salvia",
+"fotos": [
+"/media/tienda/v98_8.jpg"
+],
+"top": [
+"V98",
+"V50",
+"V46",
+"V53",
+"V52"
+],
+"ms": 3709
+},
+{
+"archivo": "v98_9.jpg",
+"esperado": "V98",
+"codigo": "V98",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V98",
+"conf": 0.98,
+"color": "turquesa",
+"fotos": [
+"/media/tienda/v98_9.jpg"
+],
+"top": [
+"V98",
+"V55",
+"V49",
+"V50",
+"V52"
+],
+"ms": 4580
+},
+{
+"archivo": "v99.jpg",
+"esperado": "V99",
+"codigo": "V99",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V99",
+"conf": 0.99,
+"color": "rojo",
+"fotos": [
+"/media/tienda/v99.jpg"
+],
+"top": [
+"V99",
+"V108",
+"V103",
+"V41",
+"V101"
+],
+"ms": 5307
+},
+{
+"archivo": "v99_2.jpg",
+"esperado": "V99",
+"codigo": "V99",
+"nivel": "exacto",
+"caso": "online",
+"sim": 0.99,
+"vis": "V99",
+"conf": 0.97,
+"color": "negro",
+"fotos": [
+"/media/tienda/v99_2.jpg"
+],
+"top": [
+"V99",
+"V101",
+"V104",
+"V105",
+"V106"
+],
+"ms": 6365
+}
+]
