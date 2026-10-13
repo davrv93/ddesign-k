@@ -74,6 +74,14 @@ def _data_url(crudo: bytes) -> str:
     return "data:image/jpeg;base64," + base64.b64encode(_jpeg(crudo)).decode()
 
 
+def _foto_archivo(archivo: str) -> bytes | None:
+    try:
+        with open(os.path.join(TIENDA, archivo), "rb") as fh:
+            return fh.read()
+    except OSError:
+        return None
+
+
 def _foto_de(codigo: str) -> bytes | None:
     ruta = os.path.join(TIENDA, f"{codigo.lower()}.jpg")
     try:
@@ -83,7 +91,7 @@ def _foto_de(codigo: str) -> bytes | None:
         return None
 
 
-def identificar(crudo: bytes, fichas, mensaje: str = "", candidatos=(), estricto: bool = False) -> dict | None:
+def identificar(crudo: bytes, fichas, mensaje: str = "", candidatos=(), estricto: bool = False, vistas: dict | None = None) -> dict | None:
     """{"codigo": "V50", "confianza": 0.94, "como": "texto|prenda", "motivo": "..."} o None.
 
     `candidatos`: los códigos más parecidos según el parecido visual (embeddings). El modelo ve la foto de la clienta
@@ -96,16 +104,27 @@ def identificar(crudo: bytes, fichas, mensaje: str = "", candidatos=(), estricto
                  {"type": "image_url", "image_url": {"url": _data_url(crudo)}}]
     vistos = []
     for c in [str(x).upper() for x in candidatos if str(x).upper() in codigos][:CANDIDATOS_MAX]:
-        foto = _foto_de(c)
-        if foto:
-            contenido += [{"type": "text", "text": f"CANDIDATO {c}:"}, {"type": "image_url", "image_url": {"url": _data_url(foto)}}]
+        # Dos vistas por candidato (13-10-2026): la principal y la foto de ese modelo más parecida a la de la clienta
+        # (`vistas`, por similitud de imágenes): una espalda o un lateral se compara con una espalda o un lateral.
+        archivos = [f"{c.lower()}.jpg"]
+        if vistas and vistas.get(c) and vistas[c] not in archivos:
+            archivos.append(vistas[c])
+        fotos = [(a, _foto_archivo(a)) for a in archivos]
+        fotos = [(a, b) for a, b in fotos if b]
+        if not fotos and (foto := _foto_de(c)):
+            fotos = [(f"{c.lower()}.jpg", foto)]
+        for k, (a, b) in enumerate(fotos, 1):
+            contenido += [{"type": "text", "text": f"CANDIDATO {c}" + (f" (vista {k})" if len(fotos) > 1 else "") + ":"},
+                          {"type": "image_url", "image_url": {"url": _data_url(b)}}]
+        if fotos:
             vistos.append(c)
     contenido.append({"type": "text", "text": (
         "Eres el catálogo de Baruka Design (ropa de mujer). La imagen de la clienta puede ser una CAPTURA de la web o del "
         "catálogo (con el código tipo V28 o el nombre escritos) o una FOTO de la prenda.\n"
         "- Si ves escrito un código o un nombre de esta lista, ese manda:\n" + _lista(fichas) + "\n"
         + (f"- Si es una foto, compárala con los CANDIDATOS ({', '.join(vistos)}): cada uno es un modelo que existe en "
-           "VARIOS colores, así que decide por la FORMA (escote, mangas, corte, largo, abertura, tela), no por el color. "
+           "VARIOS colores (y puede venir con dos vistas: frente y otra, p. ej. espalda o lateral), así que decide por la "
+           "FORMA (escote, mangas, corte, largo, abertura, tela), no por el color ni por el ángulo. "
            "Elige uno solo si es el mismo modelo; si dudas o no es ninguno, código vacío.\n"
            + ("OJO: estos candidatos se parecen POCO según el parecido visual (segunda ronda). Elige uno SOLO si "
               "coinciden TODOS los rasgos: escote, mangas u hombros, largo, abertura y caída de la tela. Ante cualquier "

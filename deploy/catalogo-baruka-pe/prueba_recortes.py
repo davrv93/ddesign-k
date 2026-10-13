@@ -17,7 +17,7 @@ def uno(f):
             "vis": v.get("codigo"), "conf": v.get("confianza"), "color": v.get("color"), "fotos": fotos, "top": [t["codigo"] for t in fo.get("top") or []][:5],
             "ms": int((time.time() - t0) * 1000)}
 res = []
-with cf.ThreadPoolExecutor(3) as ex:
+with cf.ThreadPoolExecutor(int(os.environ.get("HILOS", "10"))) as ex:
     for i, r in enumerate(ex.map(uno, fs), 1):
         res.append(r)
         if i % 50 == 0:

@@ -2654,14 +2654,16 @@ def conversar_foto(req: FotoIn) -> dict:
     # Visión antes que parecido (app/vision.py): una captura del catálogo trae el código o el nombre escrito y el
     # parecido visual no la reconocía (12-10-2026, «me interesa este modelo» con la captura del V28).
     cands = [c for c, _ in top]
-    vis = vision.identificar(crudo, fichas, req.mensaje, candidatos=cands[:vision.CANDIDATOS_MAX])
+    # Segunda vista por candidato: la foto de cada modelo más parecida a la suya (espalda con espalda, lateral con lateral).
+    vistas = {c: E.img.mejor_foto(vec, c)[0] for c in cands}
+    vis = vision.identificar(crudo, fichas, req.mensaje, candidatos=cands[:vision.CANDIDATOS_MAX], vistas=vistas)
     # Segunda ronda con los siguientes candidatos si la primera no convenció (12-10-2026: en 21 de 100 fallos el modelo
     # correcto no llegaba a los primeros candidatos que veía la visión).
     convence = lambda v: bool(v and v["codigo"] and v["confianza"] >= vision.CONFIANZA_MIN)
     if vis is not None and not convence(vis) and len(cands) > vision.CANDIDATOS_MAX:
         # Estricta: son candidatos menos parecidos y la visión tendía a afirmar uno (13-10-2026: un vestido degradado que
         # no vendemos salió «Blear 0,98» en esta ronda). Solo vale con todos los rasgos iguales y ≥ 0,95.
-        vis2 = vision.identificar(crudo, fichas, req.mensaje, candidatos=cands[vision.CANDIDATOS_MAX:], estricto=True)
+        vis2 = vision.identificar(crudo, fichas, req.mensaje, candidatos=cands[vision.CANDIDATOS_MAX:], estricto=True, vistas=vistas)
         if vis2 and vis2["codigo"] and vis2["confianza"] >= vision.CONFIANZA_RONDA2 \
                 and vis2["confianza"] > (vis["confianza"] if vis["codigo"] else 0):
             vis = vis2
@@ -2674,7 +2676,7 @@ def conversar_foto(req: FotoIn) -> dict:
     # Franja de duda: una segunda mirada solo con ese candidato. La misma foto daba 0,77 unas veces y 0,9+ otras
     # (13-10-2026); confirmada con ≥ 0,9 es exacta, si no se pregunta «¿es este?».
     if vis and vis["codigo"] in por_codigo and vision.CONFIANZA_DUDA <= vis["confianza"] < vision.CONFIANZA_MIN:
-        vis3 = vision.identificar(crudo, fichas, req.mensaje, candidatos=[vis["codigo"]])
+        vis3 = vision.identificar(crudo, fichas, req.mensaje, candidatos=[vis["codigo"]], vistas=vistas)
         if vis3 and vis3["codigo"] == vis["codigo"] and vis3["confianza"] >= vision.CONFIANZA_CONFIRMA:
             vis = dict(vis3, motivo="confirmado: " + vis3["motivo"])
     if vis and vis["codigo"] in por_codigo and vis["confianza"] >= vision.CONFIANZA_MIN:
