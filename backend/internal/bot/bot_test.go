@@ -295,20 +295,18 @@ func TestEnvioLentoNoBloqueaAlBot(t *testing.T) {
 	}
 	conv, _ := st.ConversationByCustomer(ctx, 1)
 	msgs, _ := st.ListMessages(ctx, conv.ID, 100)
-	// hola → menú (texto + encuesta del menú, 12-10-2026) → «1» → catálogo: todo encolado y en orden.
-	if len(msgs) != 5 || msgs[1].Status != "pending" || !strings.HasPrefix(msgs[2].Body, "📊") ||
-		!strings.Contains(msgs[4].Body, "Catálogo") {
-		t.Fatalf("se esperaban 2 entrantes y 3 respuestas pendientes en orden (menú, su encuesta, catálogo): %+v", msgs)
+	// hola → menú → «1» → catálogo: todo encolado y en orden (sin encuestas desde el 13-10-2026).
+	if len(msgs) != 4 || msgs[1].Status != "pending" || !strings.Contains(msgs[3].Body, "Catálogo") {
+		t.Fatalf("se esperaban 2 entrantes y 2 respuestas pendientes en orden (menú, catálogo): %+v", msgs)
 	}
 	if !b.Drain(10 * time.Second) {
 		t.Fatal("la cola no se vació")
 	}
 	msgs, _ = st.ListMessages(ctx, conv.ID, 100)
-	if msgs[1].Status != "sent" || msgs[1].WAID == "" || msgs[2].Status != "sent" || msgs[4].Status != "sent" {
-		t.Fatalf("las respuestas debían quedar enviadas: %+v %+v %+v", msgs[1], msgs[2], msgs[4])
+	if msgs[1].Status != "sent" || msgs[1].WAID == "" || msgs[3].Status != "sent" {
+		t.Fatalf("las respuestas debían quedar enviadas: %+v %+v", msgs[1], msgs[3])
 	}
-	if !strings.Contains(fe.sent[0]["text"].(string), "Hola Ana") || fe.sent[1]["_path"] != "/send/poll" ||
-		!strings.Contains(fe.sent[2]["text"].(string), "Catálogo") {
+	if !strings.Contains(fe.sent[0]["text"].(string), "Hola Ana") || !strings.Contains(fe.sent[1]["text"].(string), "Catálogo") {
 		t.Fatal("las respuestas debían salir en orden")
 	}
 }

@@ -20,7 +20,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"unicode"
 
 	"github.com/davrv93/ddesign-k/backend/internal/agente"
 	"github.com/davrv93/ddesign-k/backend/internal/ai"
@@ -408,8 +407,6 @@ func (b *Bot) sendMenu(ctx context.Context, conv *store.Conversation) {
 		"3️⃣ Estado de mi pedido\n"+
 		"4️⃣ Hablar con una asesora\n\n"+
 		"Responde con el *número* de la opción.")
-	b.replyPoll(ctx, conv, "¿En qué te ayudamos hoy?", []string{"1️⃣ Ver catálogo y precios", "2️⃣ Consultar un modelo",
-		"3️⃣ Estado de mi pedido", "4️⃣ Hablar con una asesora"})
 }
 
 func (b *Bot) sendCatalog(ctx context.Context, conv *store.Conversation) {
@@ -801,7 +798,6 @@ func (b *Bot) sendSummary(ctx context.Context, conv *store.Conversation, cc *con
 	b.setState(ctx, conv, stConfirm, *cc)
 	b.reply(ctx, conv, fmt.Sprintf("🧾 *Resumen de tu pedido #%d*\n\n• %s %s\n• Talla: *%s*\n• Cantidad: *%d*\n• Total: *%s*\n\nTe la apartamos por *%d minutos* ⏳\n¿Confirmas tu pedido? Responde *SI* para confirmar o *NO* para cancelar.\n(Para cambiar la cantidad, escribe el número.)",
 		cc.OrderID, p.Code, p.Name, v.Size, cc.Qty, b.money(p.Price*float64(cc.Qty)), int(reserveTTL.Minutes())))
-	b.replyPoll(ctx, conv, "¿Confirmas tu pedido?", []string{"Sí, confirmo", "Cancelar"})
 }
 
 func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *convContext, text, raw string) {
@@ -1291,20 +1287,7 @@ func (b *Bot) sendAgentText(ctx context.Context, conv *store.Conversation, r *ag
 	if n := len(partes); len(r.Sugerencias) > 0 && n > 1 && strings.Contains(partes[n-1], "?") {
 		cierre, partes = partes[n-1], partes[:n-1]
 	}
-	// Con encuesta, la pregunta va SOLO en la encuesta: si también quedaba en el texto, la clienta la leía dos veces
-	// seguidas (12-10-2026, «¿Cómo quieres que se sienta ese día…?» + la encuesta con la misma pregunta).
-	ops := opcionesEncuesta(r)
-	pregunta := ""
-	if len(ops) >= 2 {
-		pregunta = ultimaPregunta(r.Respuesta)
-		if cierre != "" {
-			cierre = sinPregunta(cierre, pregunta)
-		} else if n := len(partes); n > 0 {
-			if partes[n-1] = sinPregunta(partes[n-1], pregunta); partes[n-1] == "" {
-				partes = partes[:n-1]
-			}
-		}
-	}
+	// Sin encuestas (13-10-2026, pedido del usuario): la pregunta va en el texto y la clienta contesta escribiendo.
 	for _, parte := range partes {
 		b.reply(ctx, conv, parte)
 	}
@@ -1314,38 +1297,6 @@ func (b *Bot) sendAgentText(ctx context.Context, conv *store.Conversation, r *ag
 	if cierre != "" {
 		b.reply(ctx, conv, cierre)
 	}
-	if len(ops) >= 2 {
-		b.replyPoll(ctx, conv, pregunta, ops)
-	}
-}
-
-// opcionesEncuesta: las respuestas rápidas del agente que caben en una encuesta de WhatsApp (2 a 12, ≤100 caracteres).
-func opcionesEncuesta(r *agente.Reply) []string {
-	if n := len(r.RespuestasRapidas); n < 2 || n > 12 {
-		return nil
-	}
-	var ops []string
-	for _, o := range r.RespuestasRapidas {
-		if l := strings.TrimSpace(o.Label); l != "" && len([]rune(l)) <= 100 {
-			ops = append(ops, l)
-		}
-	}
-	return ops
-}
-
-// sinPregunta quita del texto la pregunta que ya titula la encuesta, si es lo último que dice (solo puede seguirle un
-// emoji o espacios). Si no está al final, el texto queda igual: mejor repetirla que cortar una frase a la mitad.
-func sinPregunta(texto, pregunta string) string {
-	i := strings.LastIndex(texto, pregunta)
-	if pregunta == "" || i < 0 {
-		return texto
-	}
-	for _, c := range texto[i+len(pregunta):] {
-		if unicode.IsLetter(c) || unicode.IsDigit(c) {
-			return texto
-		}
-	}
-	return strings.TrimSpace(texto[:i])
 }
 
 // ultimaPregunta: la última pregunta del texto, para titular la encuesta («¿El envío sería para Lima o provincia?»).

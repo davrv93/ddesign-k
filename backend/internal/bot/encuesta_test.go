@@ -1,10 +1,6 @@
 package bot
 
-import (
-	"testing"
-
-	"github.com/davrv93/ddesign-k/backend/internal/agente"
-)
+import "testing"
 
 // Voto de encuesta (evolution-go: data.pollVote) → texto, como si la clienta lo hubiera escrito.
 func TestVotoDeEncuestaComoTexto(t *testing.T) {
@@ -45,24 +41,5 @@ func TestUltimaPregunta(t *testing.T) {
 	}
 	if q := ultimaPregunta("Sin pregunta."); q != "Elige una opción 👇" {
 		t.Fatalf("sin pregunta: %q", q)
-	}
-}
-
-// Con encuesta, la pregunta no se repite en el texto (12-10-2026: salía en el texto y otra vez como título de la encuesta).
-func TestSinPreguntaDuplicada(t *testing.T) {
-	q := "¿Prefiere llamar la atención o verse elegante y discreta?"
-	if s := sinPregunta("Perfecto 😊 Tengo colores vibrantes y sobrios. "+q+" 😊", q); s != "Perfecto 😊 Tengo colores vibrantes y sobrios." {
-		t.Fatalf("debía quitar la pregunta final: %q", s)
-	}
-	if s := sinPregunta(q, q); s != "" {
-		t.Fatalf("solo la pregunta: debía quedar vacío: %q", s)
-	}
-	// No está al final: no se corta la frase.
-	if s := sinPregunta(q+" Te espero.", q); s != q+" Te espero." {
-		t.Fatalf("pregunta en medio: %q", s)
-	}
-	r := &agente.Reply{RespuestasRapidas: []agente.RespuestaRapida{{Label: "Lima"}, {Label: " "}, {Label: "Provincia"}}}
-	if ops := opcionesEncuesta(r); len(ops) != 2 {
-		t.Fatalf("opciones: %v", ops)
 	}
 }
