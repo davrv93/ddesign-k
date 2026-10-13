@@ -129,6 +129,11 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
                               "estilo_ya": (f.get("sabemos") or {}).get("estilo") or "",
                               "producto": getattr(req, "producto", "") or f.get("producto")
                                           or ((f.get("mostrados") or [""])[-1])})
+    # La prenda en foco (la de su foto o la última mostrada) queda respaldada aunque no haya pedido: el validador rechazaba
+    # «el Vestido Salome V50…» por «código no respaldado» cuando el modelo no llamaba a ninguna herramienta (13-10-2026).
+    foco = (f.get("producto") or "").strip().upper()
+    if foco and rec._ficha(foco):
+        rec.ejecutar("stock", {"codigo": foco})
     pedido = _pedido_en_curso(rec, req, f)
     if pedido:
         hecho = (hecho + "\n" + pedido).strip()
@@ -320,6 +325,7 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
     # guion (mejores servicios de entrega, precio fijo) y de vuelta a la pregunta pendiente (13-10-2026, pedido del usuario).
     if RE_OBJECION_ENVIO.search(datos.get("mensaje", "")) and re.search(r"envio|olva|shalom|lima o provincia|agencia",
                                                                         f"{datos.get('ultimo_bot', '')} {datos.get('mensaje', '')}"):
+        rec.bloquear_fotos = True
         partes.append("OBJECIÓN AL ENVÍO. Dile casi textual: «Te entiendo 😊 Trabajamos con los mejores servicios de entrega "
                       "(Olva Courier y Shalom): tu pedido llega seguro y sin ningún problema, te lo garantizamos. El costo del "
                       "envío es el de la empresa de entrega y es fijo: S/ 20 a provincia, S/ 15 a Lima.» y vuelve a la pregunta "

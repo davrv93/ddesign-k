@@ -102,6 +102,7 @@ class Recolector:
         self.oferta_ok = False               # /foto sin reconocer: la respuesta DEBE preguntar si quiere ver otros modelos
         self.sigue = False                   # «No, gracias» a esa oferta no es despedida: la charla sigue por el guion
         self.varias_ok = False               # dijo que sí quiere ver otros modelos: salen hasta MAX_FOTOS, no una
+        self.bloquear_fotos = False          # objeción al envío: se contesta y se vuelve a la pregunta pendiente, sin fotos
         self.mensaje = (mensaje or "").lower()
         self.mostrados = {str(c).upper() for c in mostrados or ()}
         self.fichas = list(fichas)
@@ -233,6 +234,8 @@ class Recolector:
         if self.sin_color:
             return {"error": f"No tenemos nada color {self.sin_color}: dilo y pregúntale si quiere ver otro color; no "
                              "mandes otra prenda como si fuera de ese color."}
+        if self.bloquear_fotos:
+            return {"error": "No mandes fotos en este turno: contesta la objeción y vuelve a la pregunta pendiente."}
         if self.retirado and not RE_OTRAS.search(self.mensaje):
             return {"error": f"El {self.retirado} ya no se vende: díselo y pregúntale si quiere ver otras opciones; no "
                              "mandes otra prenda en su lugar."}

@@ -1156,8 +1156,9 @@ def lo_que_sabemos(mem: dict) -> str:
     nombres = {"ocasion": "ocasión", "horario": "día/noche", "fecha": "para cuándo", "fecha_iso": "fecha del evento",
                "prenda": "prenda que busca", "talla": "talla", "estatura": "estatura", "color": "color",
                "presupuesto": "presupuesto", "envio": "envío", "ciudad": "ciudad", "le_gusto": "lo que le gustó",
-               "cita": "cita para probárselo", "nombre": "se llama"}
-    partes = [f"{nombres[k]}: {v}" for k, v in sab.items()]
+               "cita": "cita para probárselo", "nombre": "se llama", "estilo": "cómo quiere sentirse",
+               "para_quien": "la prenda es para su"}
+    partes = [f"{nombres.get(k, k)}: {v}" for k, v in sab.items()]   # .get: un campo nuevo no tumba V1 (13-10-2026)
     if mem.get("talla_perfil") and not sab.get("talla"):
         partes.append(f"talla de su pedido anterior: {mem['talla_perfil']} (hoy no la ha dicho: se le pregunta, no se asume)")
     if mem.get("objeciones"):
