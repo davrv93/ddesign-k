@@ -124,6 +124,9 @@ type PhotoRequest struct {
 	Anuncio      string          `json:"anuncio,omitempty"`
 	Memoria      json.RawMessage `json:"memoria,omitempty"`
 	Perfil       *Perfil         `json:"perfil,omitempty"`
+	// Igual que en Request: con v3 activo el texto lo redacta V3 (guion de Rosmary); si no, V1.
+	Version string `json:"version,omitempty"`
+	Modo    string `json:"modo,omitempty"`
 }
 
 // PhotoResult dice qué tan seguro está el agente de haber encontrado la prenda.

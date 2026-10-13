@@ -1371,7 +1371,8 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 	req := agente.PhotoRequest{ImagenB64: base64.StdEncoding.EncodeToString(img.Data), Mensaje: msg.Body,
 		Estado: conv.State, Negocio: b.cfg.BusinessName, Cliente: b.customerName(conv),
 		Historial: b.agentHistory(ctx, conv, msg.Body), Etapa: cc.Etapa, DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
-		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc)}
+		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc),
+		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo}
 	r, err := b.Agent.Photo(actx, req)
 	if err != nil || r.Foto == nil {
 		log.Printf("bot: agente foto: %v", err)
