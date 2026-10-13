@@ -13,7 +13,7 @@ import unicodedata
 
 RUTA = os.path.join(os.environ.get("SEED_DIR", os.path.join(os.path.dirname(__file__), "..", "seed")), "fotos_color.json")
 # Mismo color, otro nombre (cómo lo dice la gente, cómo lo dice la web, cómo lo dice la IA).
-SINONIMOS = {"oliva": "olivo", "marino": "noche", "navy": "noche", "borgona": "vino", "guinda": "vino", "burdeos": "vino",
+SINONIMOS = {"oliva": "olivo", "salvia": "olivo", "sage": "olivo", "militar": "olivo", "marino": "noche", "navy": "noche", "borgona": "vino", "guinda": "vino", "burdeos": "vino",
              "granate": "vino", "black": "negro", "negra": "negro", "blanca": "blanco", "roja": "rojo", "rosada": "rosa",
              "rosado": "rosa", "dorada": "dorado", "plateada": "plateado", "green": "verde", "beige": "beige", "nude": "beige",
              "camel": "beige", "crema": "beige", "fucsia": "fucsia", "magenta": "fucsia", "celeste": "celeste",
@@ -59,4 +59,20 @@ def foto_del_color(codigo: str, color: str) -> tuple[str, str]:
         # «verde esmeralda» no es «verde olivo»: con dos palabras deben coincidir las dos.
         if clave[0] >= min(2, len(pedido)) and clave[:2] > mejor[:2]:
             mejor = clave
-    return (mejor[2], mejor[3]) if mejor[0] else ("", "")
+    if mejor[0]:
+        return mejor[2], mejor[3]
+    # Sin coincidencia completa («verde salvia» y la web dice «Verde Olivo», 13-10-2026): vale el tono base si el modelo
+    # tiene UNA sola familia de ese tono (un solo verde). Con dos verdes no se adivina: va la foto principal.
+    if len(pedido) >= 2:
+        base = pedido[:1]
+        familias = {}
+        for archivo, d in _cargar().items():
+            if d.get("codigo", "").upper() != (codigo or "").upper():
+                continue
+            for color in (d.get("color_web"), d.get("color_ia")):
+                if color and _puntos(base, color):
+                    familias.setdefault(" ".join(_tokens(color)), (archivo, d.get("color_web") or color))
+                    break
+        if len(familias) == 1:
+            return next(iter(familias.values()))
+    return "", ""
