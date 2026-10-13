@@ -76,3 +76,9 @@ def foto_del_color(codigo: str, color: str) -> tuple[str, str]:
         if len(familias) == 1:
             return next(iter(familias.values()))
     return "", ""
+
+
+def color_de(archivo: str) -> str:
+    """El color de una foto del índice como lo llama la web (o, si la web no lo dice, como lo vio la IA)."""
+    d = _cargar().get(archivo) or {}
+    return d.get("color_web") or d.get("color_ia") or ""

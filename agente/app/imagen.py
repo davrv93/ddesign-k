@@ -100,7 +100,10 @@ def indexar():
         "umbral_exacto": round(t_alto, 4), "umbral_parecido": round(t_bajo, 4),
         "recall_exacto": round(float(np.mean((cod[S.argmax(1)] == cod) & (correcta >= t_alto))), 4),
     }
-    guardar("imagenes.pkl", {"codigos": codigos, "X": X, "metricas": metricas})
+    # `archivos`: nombre de cada foto, en el mismo orden que X: para mandar la foto del modelo MÁS PARECIDA a la de la
+    # clienta (mismo color y ángulo) en vez de elegirla por el nombre del color (13-10-2026, pedido del usuario).
+    guardar("imagenes.pkl", {"codigos": codigos, "X": X, "metricas": metricas,
+                             "archivos": [os.path.basename(p) for _, p in fotos]})
     print(metricas)
 
 
@@ -108,11 +111,28 @@ class Buscador:
     def __init__(self):
         d = cargar("imagenes.pkl")
         self.codigos, self.X, self.metricas = d["codigos"], d["X"], d["metricas"]
+        # Índices viejos no traen `archivos`: se reconstruyen del mismo listado ordenado que usó indexar().
+        self.archivos = d.get("archivos") or [os.path.basename(p) for _, p in fotos_catalogo()]
         self.emb = ImageEmbedder()
         self.emb([abrir(open(fotos_catalogo()[0][1], "rb").read())])  # primera inferencia, en el arranque
 
+    def vector(self, datos: bytes) -> np.ndarray:
+        return self.emb([abrir(datos)])[0]
+
     def buscar(self, datos: bytes, k: int = 6) -> list[tuple[str, float]]:
-        v = self.emb([abrir(datos)])[0]
+        return self.buscar_v(self.vector(datos), k)
+
+    def mejor_foto(self, v: np.ndarray, codigo: str) -> tuple[str, float]:
+        """La foto del índice de `codigo` más parecida al vector de la clienta: (archivo, similitud) o ("", 0)."""
+        cod = (codigo or "").upper()
+        idx = [i for i, c in enumerate(self.codigos) if c == cod and i < len(self.archivos)]
+        if not idx:
+            return "", 0.0
+        s = self.X[idx] @ v
+        j = int(np.argmax(s))
+        return self.archivos[idx[j]], float(s[j])
+
+    def buscar_v(self, v: np.ndarray, k: int = 6) -> list[tuple[str, float]]:
         s = self.X @ v
         out, vistos = [], set()
         for i in np.argsort(-s):  # una entrada por prenda: la vista más parecida

@@ -2640,7 +2640,8 @@ def conversar_foto(req: FotoIn) -> dict:
     if not crudo or len(crudo) > 12 * 1024 * 1024:
         raise HTTPException(400, "imagen vacía o mayor de 12 MB")
     try:
-        top = E.img.buscar(crudo, k=2 * vision.CANDIDATOS_MAX)
+        vec = E.img.vector(crudo)
+        top = E.img.buscar_v(vec, k=2 * vision.CANDIDATOS_MAX)
     except Exception as e:
         raise HTTPException(400, f"no se pudo leer la imagen: {e}")
     with E.lock:
@@ -2708,10 +2709,14 @@ def conversar_foto(req: FotoIn) -> dict:
     else:
         caso, sugeridas, ofrecer = "ninguno", [], parecidas[:3]
 
-    # La foto del color que mostró ella (app/fotos_color.py): reconocida la prenda, se manda en ESE color y se le dice.
+    # Reconocida la prenda, se manda la foto de ESE modelo más parecida a la suya (comparación de imágenes: mismo color
+    # y ángulo) y el color se nombra como lo llama la web para esa foto. Antes se elegía por el nombre del color que
+    # decía la visión («verde salvia» ≠ «Verde Olivo») y salía la foto principal (13-10-2026, pedido del usuario).
     foto_color, color_web = "", ""
-    if vis and vis.get("codigo") == f.codigo and vis.get("color"):
-        foto_color, color_web = fotos_color.foto_del_color(f.codigo, vis["color"])
+    if nivel == "exacto":
+        archivo, _s = E.img.mejor_foto(vec, f.codigo)
+        if archivo:
+            foto_color, color_web = archivo, fotos_color.color_de(archivo)
 
     # Memoria: la foto responde a «¿cuál es?»; lo ya sabido no se vuelve a preguntar.
     mem = _memoria_de(req)
@@ -2747,7 +2752,7 @@ PRENDA MÁS PARECIDA: {datos_f}
 PARECIDAS DISPONIBLES:
 {par}
 
-{f"COLOR: en su foto la prenda es {vis['color']}; el {f.codigo} SÍ viene en {color_web} y le mandas la foto en ese color. Díselo (nombra el modelo y el color)." if foto_color else ""}
+{f"COLOR: el {f.codigo} SÍ viene en {color_web} (la foto que le mandas es de ese color). Díselo (nombra el modelo y el color)." if color_web else ""}
 QUÉ HACER: {GUIA_FOTO[caso]}
 {bloque_memoria(mem, sig, req.perfil, req.mensaje)}
 El bot enviará después de tu texto las fotos de: {", ".join(x.codigo for x in sugeridas) or "ninguna"}. No las listes una por una.
@@ -2819,7 +2824,7 @@ def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, suge
     """El texto de la respuesta a una foto, redactado por V3 (guion de Rosmary: nombre, precio, color, siguiente paso).
     /foto ya decidió el modelo, el caso y las fotos que van: V3 solo redacta. None si V3 no pudo (sigue V1)."""
     # El color como lo llama la web si se encontró su foto («Verde Olivo»); si no, como lo vio la visión.
-    color = f" en {color_web or vis['color']}" if vis and (color_web or vis.get("color")) else ""
+    color = f" en {color_web}" if color_web else ""
     otras = ", ".join(f"{x.codigo} {x.nombre}" for x in sugeridas if x is not f)
     hecho = HECHO_FOTO[caso].format(
         cod=f.codigo, nom=f.nombre, color=color, stock=stk.resumen(st.get(f.codigo, {})), otras=otras or "ninguno",
