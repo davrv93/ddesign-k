@@ -52,7 +52,8 @@ def _jpeg(crudo: bytes) -> bytes:
         return crudo
 
 
-CANDIDATOS_MAX = 5
+CANDIDATOS_MAX = 8       # por ronda; /foto hace una segunda ronda con los siguientes si la primera no convence
+CONFIANZA_DUDA = 0.6     # entre DUDA y MIN se pregunta «¿es este?» con una sola foto, sin afirmar
 TIENDA = os.path.join(os.environ.get("AGENTE_IMG_DIR", os.path.join(os.path.dirname(__file__), "..", "imagenes")), "tienda")
 
 

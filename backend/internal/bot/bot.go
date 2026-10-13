@@ -1329,6 +1329,12 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 		Estado: conv.State, Negocio: b.cfg.BusinessName, Cliente: b.customerName(conv),
 		Historial: b.agentHistory(ctx, conv, msg.Body), Etapa: cc.Etapa, DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
 		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc)}
+	// Misma política de versión que el texto: con V3 activo, la respuesta a la foto la redacta V3.
+	pol := PoliticaAgente(ctx, b.store)
+	req.Version, _ = pol.Resolver(conv.AgentVersion, b.customerPhone(conv), conv.ID)
+	if req.Version == "v2" || req.Version == "v3" {
+		req.Modo = pol.ModoDe(req.Version)
+	}
 	r, err := b.Agent.Photo(actx, req)
 	if err != nil || r.Foto == nil {
 		log.Printf("bot: agente foto: %v", err)

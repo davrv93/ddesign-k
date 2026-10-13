@@ -19,3 +19,5 @@ agente/finetune/datos/
 agente/finetune/.venv/
 agente/finetune/hf/
 agente/finetune/modelos/
+# Fotos reales de clientas (banco de prueba de /foto, app/prueba_fotos_clientas.py): personas; solo en la Mac y en el servidor.
+agente/data/fotos_clientas/

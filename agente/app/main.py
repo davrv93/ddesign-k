@@ -263,6 +263,7 @@ class ChatIn(BaseModel):
     respuesta_llm: str = ""
     # Versión del agente para este turno: "v1" | "v2". Vacío = AGENT_VERSION del entorno (v1 si no está).
     version: str = ""
+    foto_hecho: str = ""   # /foto → V3: lo que ya se sabe de la foto (modelo, color, stock, fotos ya enviadas)
     # Modo de la V2 para este turno: "sombra" (V2 solo observa) | "activo" (V2 puede hablar). Vacío = V2_MODO del entorno.
     modo: str = ""
     # Respuesta rápida pulsada: {"intent": "provide_size", "size": "M"} (app/v2/temas.py). Solo la lee V2; V1 la ignora. El texto de la
@@ -2602,6 +2603,8 @@ class FotoIn(BaseModel):
     perfil: dict | None = None
     canal: str = ""          # «web» = chat de prueba: su turno se avisa al CRM (app/crm.py)
     conversacion: str = ""   # sesión del chat web
+    version: str = ""        # v3 + modo activo: el texto lo redacta V3 (guion de Rosmary); si no, V1
+    modo: str = ""
 
 
 PLANTILLA_FOTO = {
@@ -2633,7 +2636,7 @@ def conversar_foto(req: FotoIn) -> dict:
     if not crudo or len(crudo) > 12 * 1024 * 1024:
         raise HTTPException(400, "imagen vacía o mayor de 12 MB")
     try:
-        top = E.img.buscar(crudo, k=10)
+        top = E.img.buscar(crudo, k=2 * vision.CANDIDATOS_MAX)
     except Exception as e:
         raise HTTPException(400, f"no se pudo leer la imagen: {e}")
     with E.lock:
@@ -2645,10 +2648,26 @@ def conversar_foto(req: FotoIn) -> dict:
     nivel = E.img.nivel(sim)
     # Visión antes que parecido (app/vision.py): una captura del catálogo trae el código o el nombre escrito y el
     # parecido visual no la reconocía (12-10-2026, «me interesa este modelo» con la captura del V28).
-    vis = vision.identificar(crudo, fichas, req.mensaje, candidatos=[c for c, _ in top[:vision.CANDIDATOS_MAX]])
+    cands = [c for c, _ in top]
+    vis = vision.identificar(crudo, fichas, req.mensaje, candidatos=cands[:vision.CANDIDATOS_MAX])
+    # Segunda ronda con los siguientes candidatos si la primera no convenció (12-10-2026: en 21 de 100 fallos el modelo
+    # correcto no llegaba a los primeros candidatos que veía la visión).
+    convence = lambda v: bool(v and v["codigo"] and v["confianza"] >= vision.CONFIANZA_MIN)
+    if vis is not None and not convence(vis) and len(cands) > vision.CANDIDATOS_MAX:
+        vis2 = vision.identificar(crudo, fichas, req.mensaje, candidatos=cands[vision.CANDIDATOS_MAX:])
+        if vis2 and vis2["codigo"] and vis2["confianza"] > (vis["confianza"] if vis["codigo"] else 0):
+            vis = vis2
     if vis and vis["codigo"] in por_codigo and vis["confianza"] >= vision.CONFIANZA_MIN:
         codigo, sim, nivel = vis["codigo"], max(sim, 0.99), "exacto"
         top = [(codigo, sim)] + [(c, s_) for c, s_ in top if c != codigo]
+    elif vis and vis["codigo"] in por_codigo and vis["confianza"] >= vision.CONFIANZA_DUDA:
+        # Duda media: se le pregunta «¿es este?» con UNA foto; no se afirma que lo tenemos.
+        codigo, nivel = vis["codigo"], "parecido"
+        top = [(codigo, sim)] + [(c, s_) for c, s_ in top if c != codigo]
+    elif vis is not None:
+        # La visión vio los candidatos y no es ninguno: no se afirma «sí lo tenemos» por el parecido visual (antes, con
+        # similitud alta, se mandaba otro modelo como si fuera el de su foto). Se dice que no y se enseñan parecidos.
+        nivel = "ninguno"
     f = fichas[por_codigo[codigo]]
     otras = [fichas[por_codigo[c]] for c, _ in top[1:]]
     st = E.stock.consultar([c for c, _ in top])
@@ -2665,9 +2684,9 @@ def conversar_foto(req: FotoIn) -> dict:
     elif nivel == "exacto":
         caso, sugeridas = "agotado", parecidas[:3]
     elif nivel == "parecido":
-        caso, sugeridas = "parecido", [f] + [x for x in parecidas if x is not f][:2]
+        caso, sugeridas = "parecido", [f]            # una sola foto: «¿es este?»
     else:
-        caso, sugeridas = "ninguno", parecidas[:3]
+        caso, sugeridas = "ninguno", parecidas[:2]
 
     # La foto del color que mostró ella (app/fotos_color.py): reconocida la prenda, se manda en ESE color y se le dice.
     foto_color, color_web = "", ""
@@ -2683,7 +2702,12 @@ def conversar_foto(req: FotoIn) -> dict:
     memoria.temperatura(mem, memoria.ahora_lima().date())
     sig = memoria.siguiente(mem, "prospeccion", hay_prenda=True) if caso == "online" else ""
     respuesta, modelo = "", ""
-    if req.usar_llm:
+    if req.usar_llm and v2cfg.version_pedida(req.version, v2cfg.version_por_defecto()) == "v3" and _v3_modo(req) == "activo":
+        v3r = _foto_con_v3(req, mem, f, caso, vis, color_web, sugeridas, st)
+        if v3r:
+            respuesta, modelo, mem = v3r["respuesta"], v3r.get("modelo_llm") or "v3", v3r["memoria"]
+            respuestas_rapidas = v3r.get("respuestas_rapidas") or []
+    if req.usar_llm and not respuesta:
         datos_f = f"{f.texto()} | AHORA: {stk.resumen(st.get(f.codigo, {}))}"
         par = "\n".join(f"- {x.texto()} | AHORA: {stk.resumen(st.get(x.codigo, {}))}" for x in sugeridas if x is not f) or "(ninguna)"
         hist = _hist_llm(req.historial[-8:])
@@ -2725,6 +2749,7 @@ Máximo 3 frases."""
     memoria.registrar_respuesta(mem, respuesta)
     memoria.anotar_turno(mem, etapa_nueva, f.codigo if caso in ("online", "sucursal") else "", [x.codigo for x in sugeridas])
     animo_r = animo.evaluar(req.mensaje or "", mem)   # ánimo y urgencia para la Capa de Juicio del bot Go
+    respuestas_rapidas = locals().get("respuestas_rapidas") or []
 
     return {
         "intencion": "foto", "confianza": round(sim, 3), "accion": accion, "codigo": codigo_oferta,
@@ -2734,6 +2759,8 @@ Máximo 3 frases."""
                  "top": [{"codigo": c, "sim": round(x, 3)} for c, x in top[:5]]},
         "sugerencias": [dict(x, imagen=f"/media/tienda/{foto_color}") if foto_color and x.get("codigo") == f.codigo else x
                         for x in _sugerencias_json(sugeridas)],
+        "respuestas_rapidas": respuestas_rapidas,
+        "version": "v3" if modelo and modelo != "plantilla" and locals().get("v3r") else "v1",
         # Mandar la foto de una prenda que sí hay es mostrar interés: de prospección pasa a seguimiento.
         "etapa": etapa_nueva,
         "memoria": mem, "sentimiento": animo_r["sentimiento"], "urgencia": animo_r["urgencia"],
@@ -2742,6 +2769,45 @@ Máximo 3 frases."""
         "costo_usd": gasto.total(),
         "ms": int((time.time() - t0) * 1000),
     }
+
+
+HECHO_FOTO = {
+    "online": "LA CLIENTA ENVIÓ UNA FOTO y ES el {cod} {nom}{color}; hay stock ({stock}). Ya se le envió la foto de ese modelo{en_color} "
+              "(NO llames a enviar_fotos). Dile con alegría que sí lo tienen, nómbralo por su nombre y precio, y sigue el guion con la "
+              "siguiente pregunta que falte.",
+    "sucursal": "LA CLIENTA ENVIÓ UNA FOTO y ES el {cod} {nom}{color}, pero solo hay en sucursal ({stock}). Ya se le envió su foto "
+                "(NO llames a enviar_fotos). Díselo y ofrece separarlo con una asesora.",
+    "agotado": "LA CLIENTA ENVIÓ UNA FOTO y ES el {cod} {nom}{color}, pero está agotado. Dilo con empatía; ya se le enviaron fotos de "
+               "parecidos: {otras} (NO llames a enviar_fotos). Sigue el guion.",
+    "parecido": "LA CLIENTA ENVIÓ UNA FOTO; NO es seguro que sea el {cod} {nom}. Ya se le envió la foto de ese modelo (NO llames a "
+                "enviar_fotos): pregúntale si es ese, sin afirmar que lo tienen ni dar por hecho el modelo.",
+    "ninguno": "LA CLIENTA ENVIÓ UNA FOTO de un modelo que NO vendemos (no es ninguno del catálogo). Dilo claro y sin rodeos, sin "
+               "inventar un modelo{otras_txt}. Luego sigue el guion (pregunta la ocasión si no la sabes).",
+}
+
+
+def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, sugeridas, st) -> dict | None:
+    """El texto de la respuesta a una foto, redactado por V3 (guion de Rosmary: nombre, precio, color, siguiente paso).
+    /foto ya decidió el modelo, el caso y las fotos que van: V3 solo redacta. None si V3 no pudo (sigue V1)."""
+    color = f" en {vis['color']}" if vis and vis.get("color") else ""
+    otras = ", ".join(f"{x.codigo} {x.nombre}" for x in sugeridas if x is not f)
+    hecho = HECHO_FOTO[caso].format(
+        cod=f.codigo, nom=f.nombre, color=color, stock=stk.resumen(st.get(f.codigo, {})), otras=otras or "ninguno",
+        en_color=f" en {color_web} (sí viene en ese color: díselo)" if color_web else "",
+        otras_txt=f"; ya se le enviaron fotos de parecidos que sí hay: {otras} (NO llames a enviar_fotos)" if otras else "")
+    mem = dict(mem)
+    mem["mostrados"] = list(dict.fromkeys((mem.get("mostrados") or []) + [x.codigo for x in sugeridas]))
+    creq = ChatIn(mensaje=req.mensaje or "(envió una foto)", historial=req.historial, cliente=req.cliente, estado=req.estado,
+                  negocio=req.negocio, etapa=req.etapa, conversacion=req.conversacion, memoria=mem, perfil=req.perfil,
+                  desde_anuncio=req.desde_anuncio, anuncio=req.anuncio, version="v3", modo="activo", foto_hecho=hecho)
+    try:
+        res = _v3_conversar(creq, permitir_reserva=False)
+    except Exception as e:
+        log.warning("V3 no redactó la foto, sigue V1: %s", e)
+        return None
+    if not (res.get("respuesta") or "").strip():
+        return None
+    return res
 
 
 @app.post("/foto")

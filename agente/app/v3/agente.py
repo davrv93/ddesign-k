@@ -93,7 +93,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     # 2b. Pasos del guion por plantilla (app/v3/plantillas.py): el dato esperado y nada más, sin pago en curso.
     en_pago = (bool((f.get("pedido") or {}).get("confirmado")) or getattr(req, "etapa", "") == "venta_confirmada"
                or getattr(req, "estado", "") == "esperando_pago")
-    if not en_pago:
+    foto_hecho = getattr(req, "foto_hecho", "") or ""   # /foto: lo que ya se sabe de la foto que mandó
+    if not en_pago and not foto_hecho:
         txt = ""
         if RE_SALUDO_SOLO.match(mensaje) and not _bots(hist):
             txt = plantillas.saludo(getattr(req, "cliente", ""), hist)
@@ -123,6 +124,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     pedido = _pedido_en_curso(rec, req, f)
     if pedido:
         hecho = (hecho + "\n" + pedido).strip()
+    if foto_hecho:
+        hecho = (hecho + "\n" + foto_hecho).strip()
     paso = "" if (lectura.get("datos") or {}).get("horario") else _paso_guion(f, getattr(req, "historial", []) or [], pago_ok)
     if re.search(r"\bsepar", memoria._plano(mensaje)) and not (f.get("producto") or f.get("mostrados")
                                                                or (f.get("pedido") or {}).get("codigo")) \
