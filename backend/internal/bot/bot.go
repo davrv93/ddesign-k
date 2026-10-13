@@ -1186,6 +1186,11 @@ func (b *Bot) agentHistory(ctx context.Context, conv *store.Conversation, curren
 	if n := len(out); n > 0 && out[n-1].Rol == "cliente" && out[n-1].Texto == current {
 		out = out[:n-1]
 	}
+	if out == nil {
+		// Sin turnos (sesión recién reiniciada) Go serializaba `null` y el agente lo rechazaba con 422: el bot caía al
+		// respaldo y mandaba el menú (13-10-2026). Un historial vacío es `[]`.
+		out = []agente.Turn{}
+	}
 	return out
 }
 

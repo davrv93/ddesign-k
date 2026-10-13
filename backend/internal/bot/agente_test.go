@@ -284,6 +284,9 @@ func TestReiniciarEmpiezaDeCero(t *testing.T) {
 	if last.Mensaje != "hola" || len(last.Historial) != 0 {
 		t.Fatalf("tras «reiniciar» el agente debía recibir «hola» sin historial: %q %d turnos", last.Mensaje, len(last.Historial))
 	}
+	if last.Historial == nil { // llegó como `null`: el agente lo rechaza con 422
+		t.Fatal("el historial vacío debe viajar como [] y no como null")
+	}
 	conv, _ := st.ConversationByCustomer(context.Background(), 1)
 	var cc convContext
 	_ = json.Unmarshal([]byte(conv.Context), &cc)
