@@ -2709,11 +2709,13 @@ def conversar_foto(req: FotoIn) -> dict:
             look = [c for c in looks.prendas_en(archivo_f) if c in por_codigo]
             # Simétrico: la visión puede reconocer la OTRA prenda del look (la blusa en la foto del pantalón). Si la foto
             # de otro candidato es la misma imagen (similitud ≥ umbral exacto) y ese look incluye la reconocida, es look.
-            for c, _s in top[:6]:
+            for c, _s in top[:12]:
                 if look or c == f.codigo:
                     continue
                 a, s = E.img.mejor_foto(vec, c)
-                if s >= E.img.metricas["umbral_exacto"] and not looks.excluida(a) and f.codigo in looks.prendas_en(a):
+                # El propio look es evidencia fuerte: basta el umbral del parecido (un recorte deformado de la misma foto
+                # queda por debajo del umbral exacto).
+                if s >= E.img.metricas["umbral_parecido"] and not looks.excluida(a) and f.codigo in looks.prendas_en(a):
                     look = [x for x in looks.prendas_en(a) if x in por_codigo]
     look = [f.codigo] + [c for c in look if c != f.codigo] if len(look) >= 2 and f.codigo in look else []
 
