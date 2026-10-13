@@ -258,7 +258,10 @@ class Recolector:
             self.hechos["fotos"].add(f.codigo.upper())
             if f.precio is not None:
                 self.hechos["precios"].add(round(float(f.precio), 2))
-        self.fotos = out
+        # Se SUMAN a las ya marcadas (sin repetir): cuando el código mandó los candidatos de «¿quieres ver otros modelos?»
+        # y el modelo llamaba igual a enviar_fotos con uno solo, pisaba la lista y salía una foto de tres (13-10-2026).
+        vistos = {x["codigo"].upper() for x in self.fotos}
+        self.fotos += [x for x in out if x["codigo"].upper() not in vistos]
         return {"enviadas": [x["codigo"] for x in out]}
 
     def _t_crear_reserva(self, args: dict) -> dict:
