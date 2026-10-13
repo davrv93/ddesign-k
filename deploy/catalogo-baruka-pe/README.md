@@ -64,3 +64,27 @@ Mismo formato que `agente/seed/fichas_producto.json`, más `medidas`, `medidas_o
   `baruka_pe`; si parecen decir cosas distintas, a `discrepancias` para revisar.
 - Medidas solo de tablas válidas; si no, siguen en `pendiente_tienda` con el enlace a la imagen.
 - `ficha_producto.py` todavía no lee `medidas` (`_dato("medidas")` devuelve vacío): usarlas en el bot es otro cambio.
+
+## Fotos: todas, mapeadas y probadas una por una (paso 7, `mapa_fotos.py`)
+
+`agente.py` baja las **371 fotos de la web** (todas, no una muestra) a `agente/imagenes/tienda/`. `mapa_fotos.py` corre dentro
+de la imagen del agente y deja `salida/mapa_fotos.json`, una fila por foto: modelo, origen (web/diners/ejemplo), URL, color
+según la web, **huella de bits** (dHash de 64 bits), **análisis con IA** (si muestra la prenda o es una tabla/banner, tipo,
+color, vista) y el resultado de la **prueba una por una** con el modelo de imagen del agente:
+
+- *captura*: la foto deformada como captura de celular contra todo el índice → ¿su modelo sale primero?
+- *otra foto*: sin verse a sí misma ni a sus duplicadas → ¿la más parecida es de su modelo? Si no, se prueba la visión con los
+  5 candidatos, como en producción.
+- *duplicada real*: misma huella (≤ 6 bits) y coseno ≥ 0,95. Entre modelos distintos son **looks**: la misma foto publicada
+  en la blusa y en el pantalón que lleva puestos (`look_con`).
+
+Medido el 12-10-2026 (397 fotos de modelos vigentes): captura 376/397 (94,7 %); otra foto 290/390 solo con el parecido visual,
+331/390 (85 %) con parecido + visión, 337 contando la otra prenda del mismo look; 26 fotos de look; 1 foto que no muestra la
+prenda (tabla del V47), que `agente.py` saca del índice a `imagenes/excluidas/`.
+
+```bash
+docker run --rm --env-file <env del agente> -v $PWD/agente/app:/app/app:ro -v $PWD/agente/seed:/app/seed:ro \
+  -v <carpeta con tienda/, catalogo_oficial.json y mapa_fotos.py>:/tmp/mapa --entrypoint python kddesign/agente:local \
+  /tmp/mapa/mapa_fotos.py /tmp/mapa        # ~US$ 0,1 de IA la primera vez (queda en ia_cache.json)
+```
+Correrlo en un contenedor aparte: dentro del que sirve al agente, el segundo modelo de imagen lo deja sin memoria.

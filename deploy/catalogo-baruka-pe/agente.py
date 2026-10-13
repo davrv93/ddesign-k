@@ -25,7 +25,6 @@ TIENDA = os.path.join(AGENTE, "imagenes", "tienda")
 RETIRADOS = os.path.join(AGENTE, "imagenes", "retirados")
 CACHE = os.environ.get("CACHE_DIR") or os.path.join(os.environ.get("TMPDIR", "/tmp"), "catalogo-baruka-pe-cache", "fotos")
 UA = "BarukaCatalogoBot/1.0"
-MAX_COLORES = 8
 
 
 def bajar(url: str, destino: str):
@@ -34,8 +33,18 @@ def bajar(url: str, destino: str):
     if not os.path.exists(crudo):
         sep = "&" if "?" in url else "?"
         req = urllib.request.Request(url + sep + "width=800", headers={"User-Agent": UA})
-        with urllib.request.urlopen(req, timeout=60) as r, open(crudo, "wb") as f:
-            f.write(r.read())
+        for intento in range(4):          # la CDN a veces se corta a mitad: reintento, y nunca queda un archivo a medias
+            try:
+                with urllib.request.urlopen(req, timeout=90) as r:
+                    datos = r.read()
+                with open(crudo + ".part", "wb") as f:
+                    f.write(datos)
+                os.replace(crudo + ".part", crudo)
+                break
+            except (OSError, TimeoutError):
+                if intento == 3:
+                    raise
+                time.sleep(3 * (intento + 1))
         time.sleep(0.5)
     subprocess.run(["sips", "-s", "format", "jpeg", "-s", "formatOptions", "80", "-Z", "800", crudo, "--out", destino],
                    check=True, capture_output=True)
@@ -64,6 +73,10 @@ def main():
         for p in glob.glob(os.path.join(TIENDA, f"{cod.lower()}.jpg")) + glob.glob(os.path.join(TIENDA, f"{cod.lower()}_*.jpg")):
             shutil.move(p, os.path.join(RETIRADOS, os.path.basename(p)))
 
+    # TODAS las fotos de la web (pedido del usuario, 12-10-2026). Nuevos: vNN.jpg, vNN_2.jpg…; los 9 que ya tenían fotos de
+    # Diners las conservan y suman vNN_w1.jpg… Las vNN_cK.jpg (una por color) sobran: ya están entre estas.
+    for viejo in glob.glob(os.path.join(TIENDA, "*_c[0-9]*.jpg")):
+        os.remove(viejo)
     n = 0
     for p in of["productos"]:
         base = p["code"].lower()
@@ -76,14 +89,16 @@ def main():
             if not os.path.exists(destino):
                 bajar(url, destino)
                 n += 1
-        # Una foto por color (vNN_c1.jpg…), sin repetir las de arriba y con tope: solo alimentan el índice de imagen.
-        ya = {u.split("?")[0] for u in p["fotos"]}
-        extra = [u for u in (p.get("fotos_color") or {}).values() if u.split("?")[0] not in ya][:MAX_COLORES]
-        for k, url in enumerate(extra, 1):
-            destino = os.path.join(TIENDA, f"{base}_c{k}.jpg")
-            if not os.path.exists(destino):
-                bajar(url, destino)
-                n += 1
+    # Fuera del índice lo que no muestra la prenda (tablas, banners), según el análisis con IA de mapa_fotos.py.
+    mapa = os.path.join(AQUI, "salida", "mapa_fotos.json")
+    if os.path.exists(mapa):
+        excluidas = os.path.join(AGENTE, "imagenes", "excluidas")
+        os.makedirs(excluidas, exist_ok=True)
+        for f in json.load(open(mapa, encoding="utf-8")):
+            ruta = os.path.join(TIENDA, f["archivo"])
+            if (f.get("ia") or {}).get("es_prenda") is False and os.path.exists(ruta):
+                shutil.move(ruta, os.path.join(excluidas, f["archivo"]))
+                print("excluida (no muestra la prenda):", f["archivo"], f["ia"].get("que_muestra"))
     print(f"fotos nuevas: {n}; retiradas movidas a imagenes/retirados/")
 
 

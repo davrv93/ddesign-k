@@ -106,10 +106,11 @@ def main():
             "description": descripcion(p, colores, preorden),
             "sizes": tallas, "bajo_pedido": preorden,
             "variants": [{"size": t, "stock": STOCK_INICIAL} for t in tallas],
-            "fotos": p["fotos"][:MAX_FOTOS], "url": p["url"], "handle": p["handle"],
+            "fotos": p["fotos"], "url": p["url"], "handle": p["handle"],   # TODAS (371 en la web, 12-10-2026)
             # Una foto por color (la web las trae): el reconocimiento por foto debe ver el modelo en cada color. 12-10-2026:
             # el Salome verde olivo de una clienta no se reconoció porque solo se indexaban sus 3 primeras fotos (azules).
             "fotos_color": {c: urls[0] for c, urls in (p.get("fotos_por_color") or {}).items() if urls},
+            "color_de_foto": {u.split("?")[0]: c for c, urls in (p.get("fotos_por_color") or {}).items() for u in urls},
             "nuevo": p["handle"] not in codigo_de, "ficha": ficha,
         })
 
