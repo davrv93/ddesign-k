@@ -104,7 +104,8 @@ def identificar(crudo: bytes, fichas, mensaje: str = "", candidatos=()) -> dict 
            "- Si es una foto sin texto, devuelve código vacío.\n")
         + "No inventes códigos. Responde SOLO JSON: "
           '{"codigo": "Vxx o vacío", "confianza": 0..1, "como": "texto|prenda", "color": "color principal de la prenda '
-          'en la imagen de la clienta", "motivo": "breve"}')})
+          'en la imagen de la clienta", "codigo_escrito": "el código (Vxx) o el nombre que aparezca ESCRITO en la imagen, '
+          'esté o no en la lista; vacío si no hay texto", "motivo": "breve"}')})
     # gpt-6-luna razona antes de contestar: con 200 tokens los gastaba razonando y devolvía vacío (finish_reason=length),
     # así que la visión nunca decidía y mandaba el parecido visual (12-10-2026). Mismo ajuste que V3: tope alto, esfuerzo bajo.
     cuerpo = {"model": MODELO, "temperature": 0, "max_tokens": MAX_TOKENS, **_v3.EXTRA,
@@ -130,6 +131,6 @@ def identificar(crudo: bytes, fichas, mensaje: str = "", candidatos=()) -> dict 
     except (TypeError, ValueError):
         conf = 0.0
     res = {"codigo": cod, "confianza": conf, "como": str(js.get("como") or ""), "color": str(js.get("color") or "")[:40],
-           "motivo": str(js.get("motivo") or "")[:200]}
+           "escrito": str(js.get("codigo_escrito") or "").strip()[:60], "motivo": str(js.get("motivo") or "")[:200]}
     log.info("visión: %s", res)
     return res

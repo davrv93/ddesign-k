@@ -2657,6 +2657,12 @@ def conversar_foto(req: FotoIn) -> dict:
         vis2 = vision.identificar(crudo, fichas, req.mensaje, candidatos=cands[vision.CANDIDATOS_MAX:])
         if vis2 and vis2["codigo"] and vis2["confianza"] > (vis["confianza"] if vis["codigo"] else 0):
             vis = vis2
+    # Captura con un código escrito que NO está en el catálogo (retirado o de ejemplo: «V04 Vestido Arena», «V28 Azra»):
+    # no se vende, aunque la prenda se parezca a otra (13-10-2026: la visión daba el V103 con 0,99 por la forma).
+    escrito = re.search(r"\bV\d{1,3}\b", (vis or {}).get("escrito", "").upper()) if vis else None
+    if escrito and escrito.group(0) not in por_codigo:
+        log.info("foto: trae escrito %s, que no está en el catálogo → ninguno", escrito.group(0))
+        vis = dict(vis, codigo="", motivo=f"código escrito {escrito.group(0)} no vigente")
     if vis and vis["codigo"] in por_codigo and vis["confianza"] >= vision.CONFIANZA_MIN:
         codigo, sim, nivel = vis["codigo"], max(sim, 0.99), "exacto"
         top = [(codigo, sim)] + [(c, s_) for c, s_ in top if c != codigo]
@@ -2669,7 +2675,9 @@ def conversar_foto(req: FotoIn) -> dict:
         # similitud alta, se mandaba otro modelo como si fuera el de su foto). Se dice que no y se enseñan parecidos.
         nivel = "ninguno"
     f = fichas[por_codigo[codigo]]
-    otras = [fichas[por_codigo[c]] for c, _ in top[1:]]
+    # «Parecidas» solo si se parecen (umbral del parecido visual): a un vestido que no vendemos se le mandaban dos fotos
+    # cualquiera como «opciones parecidas» (13-10-2026). Sin parecidas, el guion sigue con la ocasión.
+    otras = [fichas[por_codigo[c]] for c, s_ in top[1:] if nivel != "ninguno" or s_ >= E.img.metricas["umbral_parecido"]]
     st = E.stock.consultar([c for c, _ in top])
     d = lambda x: disponible(x, st.get(x.codigo, {}))
     # parecidas que se pueden conseguir: primero lo que se pide ya por el bot, luego lo de sucursal
