@@ -99,6 +99,9 @@ class Recolector:
         self.sin_cual = False                # «¿tienen este vestido?» sin decir cuál: no se adivina
         self.sin_color = ""                  # pidió un color que no hay: no se manda otra prenda en su lugar
         self.retirado = ""                   # nombró un modelo que ya no se vende (no está en baruka.pe)
+        self.oferta_ok = False               # /foto sin reconocer: la respuesta DEBE preguntar si quiere ver otros modelos
+        self.sigue = False                   # «No, gracias» a esa oferta no es despedida: la charla sigue por el guion
+        self.varias_ok = False               # dijo que sí quiere ver otros modelos: salen hasta MAX_FOTOS, no una
         self.mensaje = (mensaje or "").lower()
         self.mostrados = {str(c).upper() for c in mostrados or ()}
         self.fichas = list(fichas)

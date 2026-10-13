@@ -47,6 +47,8 @@ def ahora_lima() -> _dt.datetime:
 def nueva() -> dict:
     return {"etapa": "prospeccion", "producto": "", "mostrados": [], "pendiente": "",
             "sabemos": {k: None for k in CAMPOS}, "objeciones": [], "llego_por": "", "preguntado": [],
+            # Candidatos de una foto que no se reconoció: se ofrecen solo si ella dice que quiere ver otros modelos.
+            "foto_parecidas": [],
             # Temperatura de la clienta (reglas, no LLM) y las señales que la explican, en orden.
             "temperatura": "frio", "temperatura_motivo": SIN_DATOS, "senales": [],
             # Cita para probarse que se está armando: día y hora sueltos hasta que los dos valen.
@@ -76,7 +78,7 @@ def normalizar(m: dict | None) -> dict:
         base["talla_perfil"] = m["talla_perfil"].upper()
     if isinstance(m.get("temperatura"), str) and m["temperatura"] in TEMPERATURAS:
         base["temperatura"] = m["temperatura"]
-    for k in ("mostrados", "objeciones", "preguntado", "senales"):
+    for k in ("mostrados", "objeciones", "preguntado", "senales", "foto_parecidas"):
         if isinstance(m.get(k), list):
             base[k] = [x for x in m[k] if isinstance(x, str) and x][-30:]
     sab = m.get("sabemos") if isinstance(m.get("sabemos"), dict) else {}
@@ -215,7 +217,7 @@ DETECTOR = [
                         r"te acomoda (a las|a la|desde|el|ese|venir)|(agendar|agendamos|coordinar|coordinamos|separar|separamos) "
                         r"(tu |la |una )?cita")),
     ("probar", re.compile(r"probartel[oa]|probarl[oa]|probarte\b|pasar a probar|venir a probar|ir a probar")),
-    ("otras_opciones", re.compile(r"otras opciones")),
+    ("otras_opciones", re.compile(r"otras opciones|otros modelos|modelos parecidos|otras prendas")),
     ("lima_o_provincia", re.compile(r"\blima\b.*\bprovincia\b|\bprovincia\b.*\blima\b")),
     ("voucher", re.compile(r"comprobante|voucher|captura del (pago|yape)")),
     ("pago", re.compile(r"datos (para el|de|del) pago|como (prefieres )?pagar|medio de pago")),

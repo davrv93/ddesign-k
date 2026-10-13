@@ -26,6 +26,7 @@ RE_CATALOGO = re.compile(r"\b(cat[aá]logo|p[aá]gina( web)?|web|link|enlace)\b"
 # Ofrecer modelos sin que los pida (regla de la tienda, 12-10-2026): «¿te muestro un modelo?», «¿quieres ver opciones?».
 RE_OFRECE = re.compile(r"(te (muestre|muestro|enseñe|enseño|mande|mando|paso|comparta|comparto)|quieres ver|gustar[ií]a ver)"
                        r"[^.?!]{0,40}\b(modelo|modelos|opci[oó]n|opciones|vestidos?|prendas?|fotos?)\b", re.I)
+RE_NO = re.compile(r"^\s*(no+|nop|nel|no,? gracias|mejor no|as[ií] no m[aá]s|todav[ií]a no|a[uú]n no)\b[^?]*$", re.I)
 RE_SI = re.compile(r"^\s*(s[ií]+|claro|ok+|okey|dale|bueno|ya|perfecto|de acuerdo|tienes raz[oó]n|si tienes raz[oó]n|"
                    r"s[ií],? tienes raz[oó]n|me parece( bien)?|exacto|correcto|as[ií] es)\b[^?]*$", re.I)
 RE_ESTE_SIN_CUAL = re.compile(r"\b(este|esta|ese|esa|aquel|aquella)\s+(vestido|modelo|conjunto|blusa|prenda|"
@@ -61,6 +62,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     # La encuesta de WhatsApp queda en el historial como «📊 pregunta · Opción A / Opción B» (bot Go, replyPoll). Repite
     # la pregunta del mensaje anterior y sus opciones parecen dichas: el 12-10-2026 el modelo leyó «Elegante y discreta»
     # como la elección de la clienta («¡elegante y discreta será ideal!») sin que la eligiera. Se descarta.
+    # Antes de leer el mensaje: memoria.leer consume la pendiente «otras_opciones» con el sí/no y la borra.
+    oferta_foto = f.get("pendiente") == "otras_opciones"   # se le preguntó si quiere ver otros modelos
     hist = [_sin_opciones(t) for t in (getattr(req, "historial", []) or [])]
     try:
         req.historial = hist
@@ -94,7 +97,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     en_pago = (bool((f.get("pedido") or {}).get("confirmado")) or getattr(req, "etapa", "") == "venta_confirmada"
                or getattr(req, "estado", "") == "esperando_pago")
     foto_hecho = getattr(req, "foto_hecho", "") or ""   # /foto: lo que ya se sabe de la foto que mandó
-    if not en_pago and not foto_hecho:
+    if not en_pago and not foto_hecho and not oferta_foto:
         txt = ""
         if RE_SALUDO_SOLO.match(mensaje) and not _bots(hist):
             txt = plantillas.saludo(getattr(req, "cliente", ""), hist)
@@ -124,8 +127,31 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     pedido = _pedido_en_curso(rec, req, f)
     if pedido:
         hecho = (hecho + "\n" + pedido).strip()
+    # Tras una foto que no se reconoció se le preguntó si quiere ver otros modelos: las fotos salen SOLO con su «sí».
+    if oferta_foto:
+        codigos = [c for c in (f.get("foto_parecidas") or []) if rec._ficha(c)][:3]
+        if RE_SI.match(mensaje):
+            rec.contesta_cual = True
+            if codigos:                               # los más parecidos a su foto
+                rec.varias_ok = True
+                rec.ejecutar("enviar_fotos", {"codigos": codigos})
+                hecho = (hecho + "\nPIDIÓ VER OTROS MODELOS: ya se le enviaron las fotos de " + ", ".join(codigos)
+                         + " (NO llames a enviar_fotos). Preséntalos por nombre y precio y pregúntale cuál le gusta más.").strip()
+            else:                                     # sin candidatos: que elija el modelo con lo que ella contó
+                hecho = (hecho + "\nPIDIÓ VER OTROS MODELOS: muestra UNA prenda que cuadre con lo que contó (enviar_fotos), "
+                         "nómbrala con su precio y pregúntale qué le gustó.").strip()
+            f["foto_parecidas"], f["pendiente"] = [], ""
+        elif RE_NO.match(mensaje):
+            # Sin LLM: tendía a despedirse («aquí estaré si necesitas ayuda»). Sigue el guion con la pregunta que falte.
+            f["foto_parecidas"], f["pendiente"] = [], ""
+            txt = _con_siguiente("¡De acuerdo! 😊", f, hist)
+            if "?" not in txt:
+                txt = "¡De acuerdo! 😊 Cuéntame, ¿para qué ocasión estás buscando?"
+            log.info("V3 plantilla: %s", txt[:80])
+            return _respuesta(f, txt, "responder", [], None, _traza("", [], ["plantilla:no_otros"], 0, _ms(t0)), req)
     if foto_hecho:
         hecho = (hecho + "\n" + foto_hecho).strip()
+        rec.oferta_ok = bool(getattr(req, "foto_oferta", False))
         if getattr(req, "foto_codigo", ""):      # respalda código, precio y tallas: el validador los exigía de una herramienta
             rec.ejecutar("stock", {"codigo": req.foto_codigo})
     paso = "" if (lectura.get("datos") or {}).get("horario") else _paso_guion(f, getattr(req, "historial", []) or [], pago_ok)
@@ -157,10 +183,10 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     _recortar_fotos(rec, mensaje)
     _foto_de_la_nombrada(rec, out["respuesta"])
     motivos = validador.validar(out["respuesta"], rec.hechos, out["pregunta_hecha"], _respondidas(f))
-    motivos += _no_avanza(out["respuesta"], mensaje, pago_ok, rec)
+    motivos += _no_avanza(out["respuesta"], "" if rec.sigue else mensaje, pago_ok, rec)
     motivos += _repite(out["respuesta"], getattr(req, "historial", []) or [])
     motivos += _ofrece(out["respuesta"], rec)
-    motivos += _despedida(out["respuesta"], mensaje)
+    motivos += _despedida(out["respuesta"], "" if rec.sigue else mensaje)
     motivos_1, salida2 = bool(motivos), None
     if motivos:
         log.info("V3 rechazo 1: %s | %s", "; ".join(motivos), out["respuesta"][:160])
@@ -172,10 +198,10 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
         salida2 = cliente_llm.responder(msgs2, rec.esquema(), rec.ejecutar, max_vueltas=vueltas_max)
         out = prompt.leer_salida(salida2["contenido"])
         motivos = validador.validar(out["respuesta"], rec.hechos, out["pregunta_hecha"], _respondidas(f))
-        motivos += _no_avanza(out["respuesta"], mensaje, pago_ok, rec)
+        motivos += _no_avanza(out["respuesta"], "" if rec.sigue else mensaje, pago_ok, rec)
         motivos += _repite(out["respuesta"], getattr(req, "historial", []) or [])
         motivos += _ofrece(out["respuesta"], rec)
-        motivos += _despedida(out["respuesta"], mensaje)
+        motivos += _despedida(out["respuesta"], "" if rec.sigue else mensaje)
         if motivos and all(m.startswith(("pregunta ya respondida", "más de una pregunta", "repite una frase",
                                          "no avanza", "ofrece modelos", "se despidió")) for m in motivos):
             if any(m.startswith("se despidió") for m in motivos):
@@ -208,7 +234,7 @@ def _recortar_fotos(rec: Recolector, mensaje: str) -> None:
     el modelo pidió (eso lo necesita `enviar_fotos` tal cual para que un test con 2 códigos no pierda el 2°);
     el recorte de cuántas fotos salen es cosa de esta capa, que sí conoce el mensaje de la clienta."""
     from .herramientas import RE_PIDE_VARIAS, MAX_FOTOS
-    tope = MAX_FOTOS if RE_PIDE_VARIAS.search((mensaje or "").lower()) else 1
+    tope = MAX_FOTOS if rec.varias_ok or RE_PIDE_VARIAS.search((mensaje or "").lower()) else 1
     if len(rec.fotos) > tope:
         rec.fotos = rec.fotos[:tope]
 
@@ -491,7 +517,7 @@ def _variante(opciones, historial) -> str:
 
 
 def _ofrece(texto: str, rec: Recolector) -> list[str]:
-    if rec.fotos or rec._pide_modelos() or not RE_OFRECE.search(texto or ""):
+    if rec.oferta_ok or rec.fotos or rec._pide_modelos() or not RE_OFRECE.search(texto or ""):
         return []
     return ["ofrece modelos sin que ella los pida: no los ofrezcas, sigue con el paso del guion"]
 
@@ -572,6 +598,7 @@ OPCIONES = (
     (re.compile(r"no lo consideras"), ("Sí, tienes razón", "Lo voy a pensar")),
     (re.compile(r"llamar un poco mas la atencion|llamar la atencion"), ("Llamar la atención", "Elegante y discreta")),
     (re.compile(r"te parece bien"), ("Sí, me parece bien", "Tengo una duda")),
+    (re.compile(r"otros modelos|otras opciones|modelos parecidos|otras prendas"), ("Sí, muéstrame", "No, gracias")),
     (re.compile(r"de dia o de noche"), ("De día", "De noche")),
     (re.compile(r"(en )?que talla (te encuentras|usas)|tu talla"), ("S", "M", "L")),
 )

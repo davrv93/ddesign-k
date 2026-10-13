@@ -265,6 +265,7 @@ class ChatIn(BaseModel):
     version: str = ""
     foto_hecho: str = ""   # /foto → V3: lo que ya se sabe de la foto (modelo, color, stock, fotos ya enviadas)
     foto_codigo: str = ""  # /foto → V3: el modelo reconocido, para respaldar su código, precio y tallas sin herramientas
+    foto_oferta: bool = False  # /foto → V3: no se reconoció; la respuesta debe preguntar si quiere ver otros modelos
     # Modo de la V2 para este turno: "sombra" (V2 solo observa) | "activo" (V2 puede hablar). Vacío = V2_MODO del entorno.
     modo: str = ""
     # Respuesta rápida pulsada: {"intent": "provide_size", "size": "M"} (app/v2/temas.py). Solo la lee V2; V1 la ignora. El texto de la
@@ -2612,16 +2613,18 @@ PLANTILLA_FOTO = {
     "online": "¡Sí lo tenemos! 😍 Es el *{codigo}* {nombre}.\n\nCuéntame, ¿para qué ocasión lo estás buscando?",
     "sucursal": "¡Lo encontré! Es el *{codigo}* {nombre}. En la tienda virtual no lo tengo, pero sí en sucursal 👇",
     "agotado": "Es el *{codigo}* {nombre}, pero se nos agotó en todas las tiendas 😔\n\nMira estos parecidos que sí tenemos 👇",
-    "parecido": "Creo que es el *{codigo}* {nombre} 🤔 ¿Es este?\n\nSi no, te dejo otros parecidos 👇",
-    "ninguno": "Ese modelo no lo tenemos 😔\n\nPero mira estos que se le parecen y sí hay 👇",
+    # Sin adivinar (13-10-2026, pedido del usuario): no se afirma ni se sugiere un modelo; se pregunta si quiere ver otros
+    # y las fotos salen solo con su «sí» (pendiente otras_opciones + memoria.foto_parecidas).
+    "parecido": "No estoy segura de tener ese modelo 🤔 ¿Quieres que te muestre otros modelos?",
+    "ninguno": "Ese modelo no lo tenemos 😔 ¿Quieres que te muestre otros modelos?",
 }
 
 GUIA_FOTO = {
     "online": "Es exactamente esa prenda y hay stock: dile con alegría que sí la tienen y haz la SIGUIENTE PREGUNTA (si es «ninguna», no preguntes nada). No pidas talla ni hables de pedido todavía.",
     "sucursal": "Es esa prenda pero sólo hay en sucursal: dile en qué sucursal, dirección y tallas, y ofrece separarla con una asesora (*4*).",
     "agotado": "Es esa prenda pero no hay en ningún lado: dilo con empatía y presenta las PARECIDAS como alternativa.",
-    "parecido": "No es seguro que sea esa: pregúntale si es la de la foto que le enviarás y ofrece las PARECIDAS por si no.",
-    "ninguno": "No la vendemos: dilo con claridad y sin rodeos y ofrece las PARECIDAS, que sí están disponibles.",
+    "parecido": "No es seguro que la tengamos: dilo, NO afirmes ni nombres ningún modelo, y termina con «¿Quieres que te muestre otros modelos?» (no se envían fotos ahora).",
+    "ninguno": "No la vendemos: dilo con claridad y sin rodeos, NO nombres ni describas otras prendas, y termina con «¿Quieres que te muestre otros modelos?» (no se envían fotos ahora).",
 }
 
 
@@ -2685,26 +2688,25 @@ def conversar_foto(req: FotoIn) -> dict:
         # similitud alta, se mandaba otro modelo como si fuera el de su foto). Se dice que no y se enseñan parecidos.
         nivel = "ninguno"
     f = fichas[por_codigo[codigo]]
-    # «Parecidas» solo si se parecen (umbral del parecido visual): a un vestido que no vendemos se le mandaban dos fotos
-    # cualquiera como «opciones parecidas» (13-10-2026). Sin parecidas, el guion sigue con la ocasión.
-    otras = [fichas[por_codigo[c]] for c, s_ in top[1:] if nivel != "ninguno" or s_ >= E.img.metricas["umbral_parecido"]]
+    # Las más parecidas son los «otros modelos» que se le muestran SOLO si dice que quiere verlos (13-10-2026).
+    otras = [fichas[por_codigo[c]] for c, _ in top[1:]]
     st = E.stock.consultar([c for c, _ in top])
     d = lambda x: disponible(x, st.get(x.codigo, {}))
     # parecidas que se pueden conseguir: primero lo que se pide ya por el bot, luego lo de sucursal
     parecidas = sorted([x for x in otras if d(x)], key=lambda x: d(x) != "online")
     estado_f = d(f)
 
-    accion, codigo_oferta = "responder", ""
+    accion, codigo_oferta, ofrecer = "responder", "", []
     if nivel == "exacto" and estado_f == "online":
         caso, sugeridas = "online", [f]   # la reconoció y hay stock: se conversa; no se arranca el pedido
     elif nivel == "exacto" and estado_f == "sucursal":
         caso, sugeridas = "sucursal", [f] + [x for x in parecidas if d(x) == "online"][:2]
     elif nivel == "exacto":
         caso, sugeridas = "agotado", parecidas[:3]
-    elif nivel == "parecido":
-        caso, sugeridas = "parecido", [f]            # una sola foto: «¿es este?»
+    elif nivel == "parecido":                         # sin adivinar: sin foto; el candidato se ofrece solo si quiere ver otros
+        caso, sugeridas, ofrecer = "parecido", [], [f] + [x for x in parecidas if x is not f][:2]
     else:
-        caso, sugeridas = "ninguno", parecidas[:2]
+        caso, sugeridas, ofrecer = "ninguno", [], parecidas[:3]
 
     # La foto del color que mostró ella (app/fotos_color.py): reconocida la prenda, se manda en ESE color y se le dice.
     foto_color, color_web = "", ""
@@ -2715,6 +2717,9 @@ def conversar_foto(req: FotoIn) -> dict:
     mem = _memoria_de(req)
     if mem["pendiente"] in ESPERANDO_CUAL + ("foto",):
         mem["pendiente"] = ""
+    if caso in ("parecido", "ninguno"):
+        mem["foto_parecidas"] = [x.codigo for x in ofrecer]
+        mem["pendiente"] = "otras_opciones" if ofrecer else ""
     etapa_nueva = "seguimiento" if (caso == "online" and etapas.ORDEN.get(req.etapa, 0) < etapas.ORDEN["seguimiento"]) else (req.etapa or "prospeccion")
     # «es esa y hay»: toca conocerla (ocasión, día/noche…), aunque la etapa ya sea seguimiento.
     memoria.temperatura(mem, memoria.ahora_lima().date())
@@ -2725,6 +2730,8 @@ def conversar_foto(req: FotoIn) -> dict:
         if v3r:
             respuesta, modelo, mem = v3r["respuesta"], v3r.get("modelo_llm") or "v3", v3r["memoria"]
             respuestas_rapidas = v3r.get("respuestas_rapidas") or []
+            if caso in ("parecido", "ninguno") and ofrecer:   # V3 no debe borrar la oferta pendiente
+                mem["foto_parecidas"], mem["pendiente"] = [x.codigo for x in ofrecer], "otras_opciones"
     if req.usar_llm and not respuesta:
         datos_f = f"{f.texto()} | AHORA: {stk.resumen(st.get(f.codigo, {}))}"
         par = "\n".join(f"- {x.texto()} | AHORA: {stk.resumen(st.get(x.codigo, {}))}" for x in sugeridas if x is not f) or "(ninguna)"
@@ -2768,6 +2775,8 @@ Máximo 3 frases."""
     memoria.anotar_turno(mem, etapa_nueva, f.codigo if caso in ("online", "sucursal") else "", [x.codigo for x in sugeridas])
     animo_r = animo.evaluar(req.mensaje or "", mem)   # ánimo y urgencia para la Capa de Juicio del bot Go
     respuestas_rapidas = locals().get("respuestas_rapidas") or []
+    if caso in ("parecido", "ninguno") and ofrecer and not respuestas_rapidas:
+        respuestas_rapidas = [{"label": "Sí, muéstrame"}, {"label": "No, gracias"}]
 
     return {
         "intencion": "foto", "confianza": round(sim, 3), "accion": accion, "codigo": codigo_oferta,
@@ -2797,10 +2806,12 @@ HECHO_FOTO = {
                 "(NO llames a enviar_fotos). Díselo y ofrece separarlo con una asesora.",
     "agotado": "LA CLIENTA ENVIÓ UNA FOTO y ES el {cod} {nom}{color}, pero está agotado. Dilo con empatía; ya se le enviaron fotos de "
                "parecidos: {otras} (NO llames a enviar_fotos). Sigue el guion.",
-    "parecido": "LA CLIENTA ENVIÓ UNA FOTO; NO es seguro que sea el {cod} {nom}. Ya se le envió la foto de ese modelo (NO llames a "
-                "enviar_fotos): pregúntale si es ese, sin afirmar que lo tienen ni dar por hecho el modelo.",
-    "ninguno": "LA CLIENTA ENVIÓ UNA FOTO de un modelo que NO vendemos (no es ninguno del catálogo). Dilo claro y sin rodeos, sin "
-               "inventar un modelo{otras_txt}. Luego sigue el guion (pregunta la ocasión si no la sabes).",
+    "parecido": "LA CLIENTA ENVIÓ UNA FOTO y NO es seguro que tengamos ese modelo. NO afirmes, nombres ni describas ningún modelo "
+                "ni llames a enviar_fotos. Dile que no estás segura de tenerlo y termina con la pregunta textual «¿Quieres que te "
+                "muestre otros modelos?» (una sola pregunta).",
+    "ninguno": "LA CLIENTA ENVIÓ UNA FOTO de un modelo que NO vendemos. Dilo claro y sin rodeos; NO nombres ni describas otras "
+               "prendas ni llames a enviar_fotos. Termina con la pregunta textual «¿Quieres que te muestre otros modelos?» "
+               "(una sola pregunta).",
 }
 
 
@@ -2819,7 +2830,8 @@ def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, suge
     creq = ChatIn(mensaje=req.mensaje or "(envió una foto)", historial=req.historial, cliente=req.cliente, estado=req.estado,
                   negocio=req.negocio, etapa=req.etapa, conversacion=req.conversacion, memoria=mem, perfil=req.perfil,
                   desde_anuncio=req.desde_anuncio, anuncio=req.anuncio, version="v3", modo="activo", foto_hecho=hecho,
-                  foto_codigo=f.codigo if caso in ("online", "sucursal", "agotado", "parecido") else "")
+                  foto_codigo=f.codigo if caso in ("online", "sucursal", "agotado", "parecido") else "",
+                  foto_oferta=caso in ("parecido", "ninguno"))
     try:
         res = _v3_conversar(creq, permitir_reserva=False)
     except Exception as e:
