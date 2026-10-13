@@ -2702,7 +2702,8 @@ def conversar_foto(req: FotoIn) -> dict:
     estado_f = d(f)
 
     # Look: en la foto van DOS prendas (seed/looks.json): se nombran las dos, no se elige una (13-10-2026).
-    look = [c for c in looks.prendas_en(foto_color) if c in por_codigo] if foto_color else []
+    archivo_f = E.img.mejor_foto(vec, f.codigo)[0] if nivel == "exacto" else ""
+    look = [c for c in looks.prendas_en(archivo_f) if c in por_codigo] if archivo_f else []
     if nivel == "exacto" and not look and top:
         look = [c for c in looks.prendas_en(E.img.mejor_foto(vec, top[0][0])[0]) if c in por_codigo]
     look = [f.codigo] + [c for c in look if c != f.codigo] if nivel == "exacto" and len(look) >= 2 and f.codigo in look else []
