@@ -29,7 +29,7 @@ import base64
 import json
 from contextvars import ContextVar
 
-from . import comprension, datos, etapas, ficha_producto, fotos_color, jev, memoria, respuestas, venta
+from . import comprension, datos, etapas, ficha_producto, fotos_color, jev, looks, memoria, respuestas, venta
 from . import animo, crm, estructurado, gasto, rerank
 from .solicitud import (RE_CATALOGO, RE_MAS_BARATO, RE_MAS_OPCIONES, RE_OTRAS, RE_PIDE_COLOR_VERBO, _color_txt, _de_color, _raiz_color,
                         color_dicho, color_pedido, color_que_pide, interpretar)
@@ -2617,6 +2617,7 @@ PLANTILLA_FOTO = {
     # y las fotos salen solo con su «sí» (pendiente otras_opciones + memoria.foto_parecidas).
     "parecido": "No estoy segura de tener ese modelo 🤔 ¿Quieres que te muestre otros modelos?",
     "ninguno": "Ese modelo no lo tenemos 😔 ¿Quieres que te muestre otros modelos?",
+    "look": "¡Sí lo tenemos! 😍 En esa foto van {nombre}. ¿Te interesa el conjunto o una de las dos?",
 }
 
 GUIA_FOTO = {
@@ -2625,6 +2626,7 @@ GUIA_FOTO = {
     "agotado": "Es esa prenda pero no hay en ningún lado: dilo con empatía y presenta las PARECIDAS como alternativa.",
     "parecido": "No es seguro que la tengamos: dilo, NO afirmes ni nombres ningún modelo, y termina con «¿Quieres que te muestre otros modelos?» (no se envían fotos ahora).",
     "ninguno": "No la vendemos: dilo con claridad y sin rodeos, NO nombres ni describas otras prendas, y termina con «¿Quieres que te muestre otros modelos?» (no se envían fotos ahora).",
+    "look": "En la foto van DOS prendas nuestras (las PARECIDAS son esas dos): nómbralas con su precio, di que sí las tienen y pregunta si le interesa el conjunto o una de las dos. No pidas talla todavía.",
 }
 
 
@@ -2699,8 +2701,16 @@ def conversar_foto(req: FotoIn) -> dict:
     parecidas = sorted([x for x in otras if d(x)], key=lambda x: d(x) != "online")
     estado_f = d(f)
 
+    # Look: en la foto van DOS prendas (seed/looks.json): se nombran las dos, no se elige una (13-10-2026).
+    look = [c for c in looks.prendas_en(foto_color) if c in por_codigo] if foto_color else []
+    if nivel == "exacto" and not look and top:
+        look = [c for c in looks.prendas_en(E.img.mejor_foto(vec, top[0][0])[0]) if c in por_codigo]
+    look = [f.codigo] + [c for c in look if c != f.codigo] if nivel == "exacto" and len(look) >= 2 and f.codigo in look else []
+
     accion, codigo_oferta, ofrecer = "responder", "", []
-    if nivel == "exacto" and estado_f == "online":
+    if look:
+        caso, sugeridas = "look", [fichas[por_codigo[c]] for c in look[:2]]
+    elif nivel == "exacto" and estado_f == "online":
         caso, sugeridas = "online", [f]   # la reconoció y hay stock: se conversa; no se arranca el pedido
     elif nivel == "exacto" and estado_f == "sucursal":
         caso, sugeridas = "sucursal", [f] + [x for x in parecidas if d(x) == "online"][:2]
@@ -2724,13 +2734,15 @@ def conversar_foto(req: FotoIn) -> dict:
     mem = _memoria_de(req)
     if mem["pendiente"] in ESPERANDO_CUAL + ("foto",):
         mem["pendiente"] = ""
+    if caso == "look":          # las dos prendas quedan mostradas; en foco, la que la web publica con esa foto
+        mem["foto_look"] = look[:2]
     if caso in ("parecido", "ninguno"):
         mem["foto_parecidas"] = [x.codigo for x in ofrecer]
         mem["pendiente"] = "otras_opciones" if ofrecer else ""
-    etapa_nueva = "seguimiento" if (caso == "online" and etapas.ORDEN.get(req.etapa, 0) < etapas.ORDEN["seguimiento"]) else (req.etapa or "prospeccion")
+    etapa_nueva = "seguimiento" if (caso in ("online", "look") and etapas.ORDEN.get(req.etapa, 0) < etapas.ORDEN["seguimiento"]) else (req.etapa or "prospeccion")
     # «es esa y hay»: toca conocerla (ocasión, día/noche…), aunque la etapa ya sea seguimiento.
     memoria.temperatura(mem, memoria.ahora_lima().date())
-    sig = memoria.siguiente(mem, "prospeccion", hay_prenda=True) if caso == "online" else ""
+    sig = memoria.siguiente(mem, "prospeccion", hay_prenda=True) if caso in ("online", "look") else ""
     respuesta, modelo = "", ""
     if req.usar_llm and v2cfg.version_pedida(req.version, v2cfg.version_por_defecto()) == "v3" and _v3_modo(req) == "activo":
         v3r = _foto_con_v3(req, mem, f, caso, vis, color_web, sugeridas, st)
@@ -2775,11 +2787,12 @@ Máximo 3 frases."""
             except Exception as e:
                 log.warning("sin LLM para la foto, uso plantilla: %s", e)
     if not respuesta:
-        respuesta, modelo = PLANTILLA_FOTO[caso].format(codigo=f.codigo, nombre=f.nombre), "plantilla"
+        nombre_look = " y ".join(f"{x.nombre} (S/ {x.precio:.0f})" if x.precio is not None else x.nombre for x in sugeridas) if caso == "look" else f.nombre
+        respuesta, modelo = PLANTILLA_FOTO[caso].format(codigo=f.codigo, nombre=nombre_look), "plantilla"
     elif modelo:
         respuesta = memoria.quitar_repetidas(respuesta, mem, permitida=sig)
     memoria.registrar_respuesta(mem, respuesta)
-    memoria.anotar_turno(mem, etapa_nueva, f.codigo if caso in ("online", "sucursal") else "", [x.codigo for x in sugeridas])
+    memoria.anotar_turno(mem, etapa_nueva, f.codigo if caso in ("online", "sucursal", "look") else "", [x.codigo for x in sugeridas])
     animo_r = animo.evaluar(req.mensaje or "", mem)   # ánimo y urgencia para la Capa de Juicio del bot Go
     respuestas_rapidas = locals().get("respuestas_rapidas") or []
     if caso in ("parecido", "ninguno") and ofrecer and not respuestas_rapidas:
@@ -2791,8 +2804,7 @@ Máximo 3 frases."""
         "foto": {"nivel": nivel, "caso": caso, "codigo": f.codigo, "similitud": round(sim, 3), "vision": vis,
                  "umbrales": {"exacto": E.img.metricas["umbral_exacto"], "parecido": E.img.metricas["umbral_parecido"]},
                  "top": [{"codigo": c, "sim": round(x, 3)} for c, x in top[:5]]},
-        "sugerencias": [dict(x, imagen=f"/media/tienda/{foto_color}") if foto_color and x.get("codigo") == f.codigo else x
-                        for x in _sugerencias_json(sugeridas)],
+        "sugerencias": [dict(x, imagen=_imagen_look(x, f, foto_color, vec, look)) for x in _sugerencias_json(sugeridas)],
         "respuestas_rapidas": respuestas_rapidas,
         "version": "v3" if modelo and modelo != "plantilla" and locals().get("v3r") else "v1",
         # Mandar la foto de una prenda que sí hay es mostrar interés: de prospección pasa a seguimiento.
@@ -2803,6 +2815,18 @@ Máximo 3 frases."""
         "costo_usd": gasto.total(),
         "ms": int((time.time() - t0) * 1000),
     }
+
+
+def _imagen_look(x: dict, f, foto_color: str, vec, look: list) -> str:
+    """La foto que se manda por prenda: la del color/vista más parecida para la reconocida; para la otra prenda del look,
+    su foto más parecida a la de la clienta (suele ser la misma foto publicada bajo ese producto)."""
+    if foto_color and x.get("codigo") == f.codigo:
+        return f"/media/tienda/{foto_color}"
+    if look and x.get("codigo") in look:
+        archivo, _s = E.img.mejor_foto(vec, x["codigo"])
+        if archivo:
+            return f"/media/tienda/{archivo}"
+    return x.get("imagen", "")
 
 
 HECHO_FOTO = {
@@ -2819,6 +2843,9 @@ HECHO_FOTO = {
     "ninguno": "LA CLIENTA ENVIÓ UNA FOTO de un modelo que NO vendemos. Dilo claro y sin rodeos; NO nombres ni describas otras "
                "prendas ni llames a enviar_fotos. Termina con la pregunta textual «¿Quieres que te muestre otros modelos?» "
                "(una sola pregunta).",
+    "look": "LA CLIENTA ENVIÓ UNA FOTO en la que van DOS prendas nuestras: {otras}. Ya se le enviaron las fotos de las dos "
+            "(NO llames a enviar_fotos). Dile con alegría que sí las tienen, nómbralas con su precio y termina con la pregunta "
+            "«¿Te interesa el conjunto o una de las dos?» (una sola pregunta; no pidas talla todavía).",
 }
 
 
@@ -2828,6 +2855,8 @@ def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, suge
     # El color como lo llama la web si se encontró su foto («Verde Olivo»); si no, como lo vio la visión.
     color = f" en {color_web}" if color_web else ""
     otras = ", ".join(f"{x.codigo} {x.nombre}" for x in sugeridas if x is not f)
+    if caso == "look":
+        otras = " y ".join(f"{x.codigo} {x.nombre} (S/ {x.precio:.0f})" if x.precio is not None else f"{x.codigo} {x.nombre}" for x in sugeridas)
     hecho = HECHO_FOTO[caso].format(
         cod=f.codigo, nom=f.nombre, color=color, stock=stk.resumen(st.get(f.codigo, {})), otras=otras or "ninguno",
         en_color=f" en {color_web} (sí viene en ese color: díselo)" if color_web else "",
@@ -2837,7 +2866,7 @@ def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, suge
     creq = ChatIn(mensaje=req.mensaje or "(envió una foto)", historial=req.historial, cliente=req.cliente, estado=req.estado,
                   negocio=req.negocio, etapa=req.etapa, conversacion=req.conversacion, memoria=mem, perfil=req.perfil,
                   desde_anuncio=req.desde_anuncio, anuncio=req.anuncio, version="v3", modo="activo", foto_hecho=hecho,
-                  foto_codigo=f.codigo if caso in ("online", "sucursal", "agotado", "parecido") else "",
+                  foto_codigo=f.codigo if caso in ("online", "sucursal", "agotado", "parecido", "look") else "",
                   foto_oferta=caso in ("parecido", "ninguno"))
     try:
         res = _v3_conversar(creq, permitir_reserva=False)

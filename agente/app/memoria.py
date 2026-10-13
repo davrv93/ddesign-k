@@ -49,6 +49,8 @@ def nueva() -> dict:
             "sabemos": {k: None for k in CAMPOS}, "objeciones": [], "llego_por": "", "preguntado": [],
             # Candidatos de una foto que no se reconoció: se ofrecen solo si ella dice que quiere ver otros modelos.
             "foto_parecidas": [],
+            # Las dos prendas de una foto de look que se le mostraron (seed/looks.json).
+            "foto_look": [],
             # Temperatura de la clienta (reglas, no LLM) y las señales que la explican, en orden.
             "temperatura": "frio", "temperatura_motivo": SIN_DATOS, "senales": [],
             # Cita para probarse que se está armando: día y hora sueltos hasta que los dos valen.
@@ -78,7 +80,7 @@ def normalizar(m: dict | None) -> dict:
         base["talla_perfil"] = m["talla_perfil"].upper()
     if isinstance(m.get("temperatura"), str) and m["temperatura"] in TEMPERATURAS:
         base["temperatura"] = m["temperatura"]
-    for k in ("mostrados", "objeciones", "preguntado", "senales", "foto_parecidas"):
+    for k in ("mostrados", "objeciones", "preguntado", "senales", "foto_parecidas", "foto_look"):
         if isinstance(m.get(k), list):
             base[k] = [x for x in m[k] if isinstance(x, str) and x][-30:]
     sab = m.get("sabemos") if isinstance(m.get("sabemos"), dict) else {}
