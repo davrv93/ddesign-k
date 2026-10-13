@@ -54,6 +54,7 @@ def _jpeg(crudo: bytes) -> bytes:
 
 CANDIDATOS_MAX = 8       # por ronda; /foto hace una segunda ronda con los siguientes si la primera no convence
 CONFIANZA_RONDA2 = 0.95  # segunda ronda (candidatos menos parecidos): solo con esta confianza
+CONFIANZA_CONFIRMA = 0.8  # segunda mirada con un solo candidato en la franja de duda: dos lecturas que coinciden en el código (las negativas dan «ninguno» 0,99)
 CONFIANZA_DUDA = 0.6     # entre DUDA y MIN se pregunta «¿es este?» con una sola foto, sin afirmar
 TIENDA = os.path.join(os.environ.get("AGENTE_IMG_DIR", os.path.join(os.path.dirname(__file__), "..", "imagenes")), "tienda")
 

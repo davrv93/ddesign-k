@@ -2666,6 +2666,12 @@ def conversar_foto(req: FotoIn) -> dict:
     if escrito and escrito.group(0) not in por_codigo:
         log.info("foto: trae escrito %s, que no está en el catálogo → ninguno", escrito.group(0))
         vis = dict(vis, codigo="", motivo=f"código escrito {escrito.group(0)} no vigente")
+    # Franja de duda: una segunda mirada solo con ese candidato. La misma foto daba 0,77 unas veces y 0,9+ otras
+    # (13-10-2026); confirmada con ≥ 0,9 es exacta, si no se pregunta «¿es este?».
+    if vis and vis["codigo"] in por_codigo and vision.CONFIANZA_DUDA <= vis["confianza"] < vision.CONFIANZA_MIN:
+        vis3 = vision.identificar(crudo, fichas, req.mensaje, candidatos=[vis["codigo"]])
+        if vis3 and vis3["codigo"] == vis["codigo"] and vis3["confianza"] >= vision.CONFIANZA_CONFIRMA:
+            vis = dict(vis3, motivo="confirmado: " + vis3["motivo"])
     if vis and vis["codigo"] in por_codigo and vis["confianza"] >= vision.CONFIANZA_MIN:
         codigo, sim, nivel = vis["codigo"], max(sim, 0.99), "exacto"
         top = [(codigo, sim)] + [(c, s_) for c, s_ in top if c != codigo]
