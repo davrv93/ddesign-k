@@ -89,6 +89,18 @@ ESQUEMA = [
 ]
 
 
+def _cat(c: str) -> str:
+    """Categoría comparable: sin tildes, mayúsculas ni plural («Pantalones» = «pantalón»)."""
+    t = memoria._plano(c or "").strip()
+    return re.sub(r"(es|s)$", "", t) if len(t) > 4 else t
+
+
+def _nombre_en(f, palabras) -> bool:
+    """Alguna palabra buscada es parte del nombre propio de la prenda («zury» en «Pantalón Zury»)."""
+    propio = [w for w in memoria._plano(f.nombre).split() if w not in GENERICAS]
+    return any(p in propio for p in (memoria._plano(x) for x in palabras))
+
+
 class Recolector:
     """Corre las herramientas de un turno y acumula lo que el modelo ya puede afirmar.
 
@@ -186,16 +198,21 @@ class Recolector:
         consulta = (args.get("consulta") or "").lower()
         cat = (args.get("categoria") or "").lower().strip()
         palabras = [p for p in consulta.replace(",", " ").split() if len(p) >= 3]
-        out = []
+        out, sin_cat = [], []
         for f in self.fichas:
-            if cat and f.categoria.lower() != cat:
-                continue
             texto = f"{f.codigo} {f.nombre} {f.categoria} {f.color} {f.detalle}".lower()
             if palabras and not any(p in texto for p in palabras):
                 continue
+            sin_cat.append(f)
+            if cat and _cat(f.categoria) != _cat(cat):
+                continue
             out.append(f)
+        # La categoría que puso el modelo no calza («pantalones», «pantalon» frente a «pantalón») pero el nombre sí: vale
+        # el nombre. 14-10-2026: «¿cuánto cuesta el Zury?» → «no encuentro el modelo Zury» con la foto del Zury enviada.
+        if not out and palabras and any(_nombre_en(f, palabras) for f in sin_cat):
+            out = [f for f in sin_cat if _nombre_en(f, palabras)]
         if not out:  # sin coincidencia por texto, devuelve la categoría entera (si la pidió)
-            out = [f for f in self.fichas if cat and f.categoria.lower() == cat]
+            out = [f for f in self.fichas if cat and _cat(f.categoria) == _cat(cat)]
         if palabras:  # lo que mejor calza con lo pedido primero (nunca el primero del catálogo porque sí)
             # Se ordena ANTES de recortar: con 96 modelos (baruka.pe, 12-10-2026) «vestido Holly» calzaba con todos los
             # vestidos y el corte dejaba fuera al Holly. El nombre pesa más que el color o la descripción.

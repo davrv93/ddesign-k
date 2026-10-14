@@ -77,6 +77,17 @@ def prueba_reglas():
     ok(sin == "¿Cuánto mides de estatura?", "si ya respondió, otra regla se encarga (no se toca aquí)")
 
 
+def prueba_busqueda(fichas):
+    from .v3.herramientas import Recolector, _cat
+    ok(_cat("Pantalones") == _cat("pantalón") == _cat("pantalon"), "categoría sin tilde ni plural")
+    for f in fichas:
+        if f.codigo == "V96":
+            f.categoria = "pantalón"          # como viene del catálogo vivo
+    for cat in ("pantalón", "pantalon", "pantalones", "Pantalón", "vestido"):
+        r = Recolector(fichas, _stock, mensaje="cuánto cuesta el zury").ejecutar("buscar_catalogo", {"consulta": "Zury talla M", "categoria": cat})
+        ok([p["codigo"] for p in r["prendas"]][:1] == ["V96"], f"buscar «Zury» con categoría {cat!r}: {[p['codigo'] for p in r['prendas']][:3]}")
+
+
 def prueba_conversacion(fichas):
     envio = [C("hola"), B("¡Hola! ¿Qué evento se te aproxima?"), C("tengo una boda"),
              B("¡Qué lindo! ¿En qué talla te encuentras?"), C("talla M, mido 1.60, es de noche"),
@@ -122,6 +133,7 @@ def main() -> int:
     cliente_llm.responder, cliente_llm.configurado = _llm_fijo, (lambda: True)
     try:
         prueba_reglas()
+        prueba_busqueda(fichas_web())
         prueba_conversacion(fichas_web())
     finally:
         cliente_llm.responder, cliente_llm.configurado = antes
