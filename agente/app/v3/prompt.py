@@ -130,12 +130,13 @@ RE_RESTO_JSON = re.compile(r'^\s*\{?\s*"respuesta"\s*:\s*' + _CIERRE + r'|' + _C
 
 # La marca puede venir DENTRO del texto de la respuesta: «¿Qué es lo que más te gustó? (pregunta_hecha: que_le_gusto)»
 # (14-10-2026, prueba de 300 conversaciones). Se borra en cualquier forma: entre paréntesis, corchetes o suelta.
+# También con las comillas escapadas: «…¿cuánto mides?\\",\\"pregunta_hecha\\":\\"talla\\"» (14-10-2026).
 RE_MARCA = re.compile(r'\s*[(\[{]?\s*["\']?pregunta_hecha["\']?\s*[:=]\s*["\']?[\w\s-]{0,40}?["\']?\s*[)\]}]|'
-                      r'\s*["\']?pregunta_hecha["\']?\s*[:=]\s*["\']?[\w-]*["\']?\s*$', re.I)
+                      r'[\s\\"\',]*pregunta_hecha[\\"\'\s]*[:=][\\"\'\s]*[\w-]*[\\"\'\s}]*$', re.I)
 
 
 def _sin_marcas(t: str) -> str:
-    return RE_MARCA.sub("", t or "").strip()
+    return RE_MARCA.sub("", t or "").replace('\\"', '"').strip()
 
 
 def leer_salida(texto: str) -> dict:

@@ -31,6 +31,11 @@ def normalizar(m: dict | None) -> dict:
     f = memoria.normalizar(m)
     f["pedido"] = _pedido(m.get("pedido") if isinstance(m, dict) else None)
     f["herramientas"] = _nombres(m.get("herramientas") if isinstance(m, dict) else None)
+    # Cuántas veces preguntó el bot cada dato en esta conversación (agente._veces_preguntado). Viaja en la ficha porque el
+    # bot Go solo manda los últimos 11 mensajes: la primera pregunta se salía de la ventana y se hacía una tercera vez.
+    v = m.get("veces") if isinstance(m, dict) else None
+    f["veces"] = {k: n for k, n in v.items() if isinstance(k, str) and len(k) <= 20 and isinstance(n, int) and 0 <= n < 100} \
+        if isinstance(v, dict) else {}
     return f
 
 

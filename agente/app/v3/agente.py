@@ -608,28 +608,40 @@ def _con_siguiente(texto: str, f: dict, historial=()) -> str:
     if "?" in texto:
         return texto
     sab = f.get("sabemos") or {}
-    veces = _veces_preguntado(historial)
+    veces = _veces_preguntado(historial, f)
     q = next((q for k, q in PREGUNTAS_GUION if not (sab.get(k) or (k == "fecha" and sab.get("fecha_iso")))
               and veces.get(k, 0) < 2), "")   # se omite si ya se hizo dos veces en la conversación
     return f"{texto} {q}".strip() if q else texto
 
 
-def _veces_preguntado(historial) -> dict:
-    """Cuántos mensajes del bot preguntaron cada dato (talla, horario, estatura, fecha, estilo, ocasión, confirmar)."""
-    reglas = {**RE_PREGUNTA_DE, **RE_PREGUNTA_EXTRA}
+def _preguntas_de(texto: str) -> set[str]:
+    """Qué datos pregunta un mensaje del bot (talla, horario, estatura, fecha, estilo, ocasión, confirmar)."""
+    qs = " ".join(re.findall(r"¿[^?]*\?|[^.!¿?]*\?", memoria._plano(texto or "")))
+    return {k for k, rx in {**RE_PREGUNTA_DE, **RE_PREGUNTA_EXTRA}.items() if qs and rx.search(qs)}
+
+
+def _veces_preguntado(historial, f: dict | None = None) -> dict:
+    """Cuántos mensajes del bot preguntaron cada dato: lo que dice el historial o, si es más, lo que lleva la ficha (el
+    historial que manda el bot Go solo trae los últimos 11 mensajes)."""
     cuenta: dict[str, int] = {}
     for b in _bots(historial):
-        qs = " ".join(re.findall(r"¿[^?]*\?|[^.!¿?]*\?", memoria._plano(b)))
-        for k, rx in reglas.items():
-            if qs and rx.search(qs):
-                cuenta[k] = cuenta.get(k, 0) + 1
+        for k in _preguntas_de(b):
+            cuenta[k] = cuenta.get(k, 0) + 1
+    for k, n in ((f or {}).get("veces") or {}).items():
+        cuenta[k] = max(cuenta.get(k, 0), n)
     return cuenta
+
+
+def _anotar_veces(f: dict, texto: str, historial) -> None:
+    """Suma a la ficha las preguntas del mensaje que se va a enviar (partiendo de lo que ya muestra el historial)."""
+    base = _veces_preguntado(historial, f)
+    f["veces"] = {**base, **{k: base.get(k, 0) + 1 for k in _preguntas_de(texto)}}
 
 
 def _sin_insistir(texto: str, f: dict, historial) -> str:
     """Quita del texto las preguntas por un dato que ya se preguntó dos veces y sigue sin respuesta."""
     sab = f.get("sabemos") or {}
-    veces = _veces_preguntado(historial)
+    veces = _veces_preguntado(historial, f)
     agotadas = [k for k, n in veces.items() if n >= 2 and not (sab.get(k) or (k == "fecha" and sab.get("fecha_iso")))]
     if not agotadas or "?" not in (texto or ""):
         return texto
@@ -727,7 +739,7 @@ def _paso_guion(f: dict, historial, pago_ok: bool) -> str:
             return ("PASO DEL GUION: 9, final. Los datos de pago YA se dieron: no los repitas salvo que ella los pida; "
                     "pide el voucher para programar el envío o contesta lo que pregunte.")
         return "PASO DEL GUION: 8-9 (total con el envío elegido si falta, luego datos de pago y pedir el voucher)."
-    veces = _veces_preguntado(historial)
+    veces = _veces_preguntado(historial, f)
     # Una pregunta hecha dos veces y no contestada no se hace una tercera (14-10-2026: «¿qué evento se te aproxima?»,
     # la talla o la estatura salían tres y cuatro veces cuando la clienta hablaba de otra cosa).
     if not sab.get("ocasion") and veces.get("ocasion", 0) < 2:
@@ -879,7 +891,8 @@ def _con_la_que_falta(texto: str, f: dict, historial) -> str:
         return texto
     sab = f.get("sabemos") or {}
     tiene = lambda k: bool(sab.get(k) or (k == "fecha" and sab.get("fecha_iso")))
-    faltan = [k for k in hechas if not tiene(k)]
+    veces = _veces_preguntado(historial, f)
+    faltan = [k for k in hechas if not tiene(k) and veces.get(k, 0) < 2]   # ni una tercera vez (14-10-2026)
     if not faltan or len(faltan) == len(hechas) or (texto or "").count("?") >= 2:
         return texto
     plano = " ".join(re.findall(r"¿[^?]*\?", memoria._plano(texto)))
@@ -947,6 +960,7 @@ def _respuesta(f: dict, texto: str, accion: str, fotos, reserva, traza: dict, re
     texto = RE_SENTIR_PARTIDA.sub(lambda m: f"{m.group(1)}: {m.group(2).lower()}", texto or "")
     if accion == "responder" and not ((f.get("pedido") or {}).get("confirmado")):
         texto = _con_la_que_falta(texto, f, getattr(req, "historial", []) or [])
+    _anotar_veces(f, texto, getattr(req, "historial", []) or [])
     sugerencias = [{"codigo": x["codigo"], "fuente": _fuente(x["codigo"]), "imagen": x["imagen"], "pie": x["pie"],
                     "titulo": x.get("titulo", ""), "tallas": x.get("tallas", [])}
                    for x in (fotos or [])]

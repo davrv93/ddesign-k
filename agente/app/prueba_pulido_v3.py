@@ -65,6 +65,16 @@ def prueba_reglas():
                             ('{"respuesta": "Te mando la foto [pregunta_hecha=que_le_gusto] 😊", "pregunta_hecha": ""}', "Te mando la foto 😊")):
         r = prompt.leer_salida(crudo)["respuesta"]
         ok(r == esperado, f"marca interna fuera: {r!r}")
+    r = prompt.leer_salida('Te recomiendo el Bruna ✨ ¿Qué te gustó?\\",\\"pregunta_hecha\\":\\"que_le_gusto"')["respuesta"]
+    ok(r == "Te recomiendo el Bruna ✨ ¿Qué te gustó?", f"marca con comillas escapadas fuera: {r!r}")
+    # El bot Go manda solo 11 mensajes: lo que ya se preguntó viaja en la ficha (veces) y vale aunque no esté en la ventana.
+    f = {"sabemos": {}, "veces": {"ocasion": 2}}
+    ventana = [C("provincia, Arequipa"), B("A provincia cuesta S/ 20. ¿Cuál prefieres?")]
+    sin = agente._sin_insistir("¡Claro! 😊 Cuéntame, ¿qué evento se te aproxima?", f, ventana)
+    ok("evento" not in memoria._plano(sin), f"tercera vez fuera de la ventana: {sin!r}")
+    f2 = {"sabemos": {}, "veces": {"talla": 1}}
+    agente._anotar_veces(f2, "¿En qué talla te encuentras? ¿El evento es de día o de noche?", [])
+    ok(f2["veces"].get("talla") == 2 and f2["veces"].get("horario") == 1, f"la ficha suma lo preguntado: {f2['veces']}")
     hist = [C("hola"), B("¡Hola! ¿Qué evento se te aproxima?"), C("me gusta el Persefone"), B("Está S/ 250 😊 ¿Qué evento se te aproxima?")]
     ok(agente._veces_preguntado(hist).get("ocasion") == 2, f"cuenta de preguntas: {agente._veces_preguntado(hist)}")
     sin = agente._sin_insistir("¡Perfecto, ahí lo ves en rojo! 😊 ¿Qué evento se te aproxima?", {"sabemos": {}}, hist)
