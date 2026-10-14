@@ -1520,3 +1520,75 @@ textarea {
 .ficha > p {
   margin: 0;
 }
+
+/* Cola de derivadas (conversaciones): quién pidió hablar con una asesora y el aviso en el hilo (14-10-2026). */
+.derivadas-strip {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--warn) 12%, var(--surface));
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.derivadas-strip.active {
+  background: color-mix(in srgb, var(--warn) 24%, var(--surface));
+}
+.derivada-aviso {
+  margin: 10px 14px 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--warn) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
+  font-size: 0.92rem;
+}
+
+/* Ajustes → Colores: grupo de cada color para el guion de noche. */
+.colores-lista {
+  display: grid;
+  gap: 6px;
+}
+.color-fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.color-fila:last-child {
+  border-bottom: 0;
+}
+.color-fila .grupo {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.color-fila .grupo button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.color-fila .grupo button.active.sobrio {
+  background: #1b2a4a;
+  color: #fff;
+}
+.color-fila .grupo button.active.vibrante {
+  background: #e0218a;
+  color: #fff;
+}
+.color-fila .grupo button.active.ninguno {
+  background: var(--line);
+}
+.color-fila .grupo button:disabled {
+  cursor: default;
+}

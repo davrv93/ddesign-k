@@ -14,6 +14,18 @@ interface Thread {
   kommo_url?: string;
 }
 
+// Conversación que espera a una asesora (la clienta la pidió y el bot se pausó): GET /api/derivadas.
+interface Derivada {
+  conversation_id: number;
+  customer_id: number;
+  nombre: string;
+  phone: string;
+  asesora_id: number;
+  asesora: string;
+  desde: string;
+  ultimo_mensaje: string;
+}
+
 const STATE_LABEL: Record<string, string> = {
   esperando_foto: "Esperando foto",
   esperando_talla: "Eligiendo talla",
@@ -34,9 +46,18 @@ export default component$(() => {
   const error = useSignal("");
   const filter = useSignal("");
   const scroller = useSignal<HTMLElement>();
+  // Cola de derivadas: quién pidió hablar con una asesora y desde cuándo. El bot sigue en pausa hasta que alguien le
+  // responde o lo reactiva.
+  const derivadas = useSignal<Derivada[]>([]);
+  const soloDerivadas = useSignal(false);
 
   const loadList = $(async () => {
     convs.value = await api<Conversation[]>("/api/conversations");
+    try {
+      derivadas.value = await api<Derivada[]>("/api/derivadas");
+    } catch {
+      derivadas.value = [];
+    }
   });
 
   const loadThread = $(async () => {
@@ -71,6 +92,7 @@ export default component$(() => {
         await loadThread();
       }
       if (topic === "orders") await loadThread();
+      if (topic === "tareas") await loadList();
     }),
   );
 
@@ -98,10 +120,13 @@ export default component$(() => {
   });
 
   const q = filter.value.trim().toLowerCase();
-  const list = q
+  const enCola = new Map(derivadas.value.map((d) => [d.conversation_id, d]));
+  let list = q
     ? convs.value.filter((c) => `${c.customer.name} ${c.customer.phone} ${c.last_message}`.toLowerCase().includes(q))
     : convs.value;
+  if (soloDerivadas.value) list = list.filter((c) => enCola.has(c.id));
   const conv = thread.value?.conversation;
+  const derivada = conv ? enCola.get(conv.id) : undefined;
 
   return (
     <div class={["page page-wide inbox", current.value != null && "has-thread"]}>
@@ -110,6 +135,17 @@ export default component$(() => {
           <h1>Conversaciones</h1>
           <input class="search" type="search" placeholder="Buscar…" bind:value={filter} />
         </div>
+        {derivadas.value.length > 0 && (
+          <button
+            class={["derivadas-strip", soloDerivadas.value && "active"]}
+            onClick$={() => (soloDerivadas.value = !soloDerivadas.value)}
+            title="Clientas que pidieron hablar con una asesora; el bot está en pausa en esos chats"
+          >
+            🙋‍♀️ {derivadas.value.length === 1 ? "1 clienta espera" : `${derivadas.value.length} clientas esperan`} una asesora
+            <span class="muted small"> · {soloDerivadas.value ? "ver todas" : "ver solo estas"}</span>
+          </button>
+        )}
+        {soloDerivadas.value && list.length === 0 && <p class="muted pad">Nadie espera una asesora ahora mismo.</p>}
         {list.length === 0 && <p class="muted pad">Aún no hay conversaciones. Cuando un cliente escriba al WhatsApp vinculado aparecerá aquí.</p>}
         {list.map((c) => (
           <button key={c.id} class={["conv", current.value === c.id && "active"]} onClick$={() => open(c.id)}>
@@ -120,7 +156,8 @@ export default component$(() => {
                 <span class="muted small">{timeAgo(c.last_message_at)}</span>
               </span>
               <span class="conv-last">
-                {c.bot_paused && <span class="chip warn">Asesora</span>}
+                {enCola.has(c.id) && <span class="chip warn">🙋‍♀️ Pidió asesora</span>}
+                {c.bot_paused && !enCola.has(c.id) && <span class="chip">Atendida por asesora</span>}
                 {!c.bot_paused && STATE_LABEL[c.state] && <span class="chip">{STATE_LABEL[c.state]}</span>}
                 {waText(c.last_message)}
               </span>
@@ -176,6 +213,13 @@ export default component$(() => {
               )}
             </header>
 
+            {derivada && (
+              <div class="derivada-aviso">
+                🙋‍♀️ <b>Pidió hablar con una asesora</b> {timeAgo(derivada.desde)}
+                {derivada.asesora ? ` · asignada a ${derivada.asesora}` : " · sin asesora asignada"}. El bot está en pausa en este chat:
+                respóndele aquí abajo o pulsa «Reactivar bot» para que siga el guion.
+              </div>
+            )}
             {thread.value!.orders.filter((o) => o.status !== "cancelado").length > 0 && (
               <div class="thread-orders">
                 {thread.value!.orders

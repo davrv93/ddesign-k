@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/davrv93/ddesign-k/backend/internal/agente"
+	"github.com/davrv93/ddesign-k/backend/internal/store"
 )
 
 // fotosPedidas cuenta las fotos de la tienda que el bot le bajó al agente.
@@ -99,6 +100,31 @@ func TestAgenteAtiendeTextoLibre(t *testing.T) {
 
 	handle(b, text("kiero ablar con una persona"))
 	mustContain(t, fe.lastText(), "asesora")
+}
+
+// La derivación llega al CRM de la tienda: tarea «Atender por WhatsApp» para la clienta y la conversación en la cola de
+// derivadas; y en cada turno el agente recibe los grupos de color de la tienda (Ajustes → Colores) (14-10-2026).
+func TestDerivacionYColoresAlCRM(t *testing.T) {
+	b, st, _ := setup(t, `{}`, false)
+	var last agente.Request
+	b.Agent = fakeAgente(t, &last)
+	ctx := context.Background()
+	if err := st.SetSetting(ctx, store.SettingColores, `{"rojo": "sobrio"}`); err != nil {
+		t.Fatal(err)
+	}
+	handle(b, text("hola"))
+	if last.ColoresGrupos["rojo"] != "sobrio" || last.ColoresGrupos["azul noche"] != "sobrio" || last.ColoresGrupos["fucsia"] != "vibrante" {
+		t.Fatalf("el agente debe recibir los grupos de la tienda sobre la propuesta: %v", last.ColoresGrupos)
+	}
+	handle(b, text("kiero ablar con una persona"))
+	cola, err := st.ListDerivadas(ctx)
+	if err != nil || len(cola) != 1 || cola[0].Nombre != "Ana López" {
+		t.Fatalf("cola de derivadas: %+v %v", cola, err)
+	}
+	tareas, err := st.ListTareas(ctx, store.FiltroTareas{CustomerID: cola[0].CustomerID})
+	if err != nil || len(tareas) != 1 || tareas[0].Titulo != store.TituloDerivacion {
+		t.Fatalf("tarea de la derivación: %+v %v", tareas, err)
+	}
 }
 
 func TestAgenteOfreceProducto(t *testing.T) {

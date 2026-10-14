@@ -494,8 +494,13 @@ func (b *Bot) handoff(ctx context.Context, conv *store.Conversation) {
 	_ = b.store.SaveDecision(ctx, &store.Decision{ConversationID: conv.ID, Decision: "derivar_humano",
 		Razon: "paso a una asesora", Autor: "bot"})
 	b.hito(ctx, conv, "🙋‍♀️ Pidió hablar con una asesora (el bot se pausó en este chat)")
+	// En el CRM de la tienda: línea de tiempo de la clienta, tarea para su asesora y cola de /api/derivadas (14-10-2026).
+	if _, err := b.store.Derivar(ctx, conv, ""); err != nil {
+		log.Printf("bot: derivación en el CRM: %v", err)
+	}
 	b.reply(ctx, conv, "🙋‍♀️ ¡Listo! Una asesora te atenderá en breve por este mismo chat.\nSi prefieres seguir conmigo mientras tanto, escribe *menu*.")
 	b.Notify("conversations")
+	b.Notify("tareas")
 }
 
 // handlePhoto identifica el producto de la foto y ofrece stock.
@@ -1214,7 +1219,7 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 		Etapa: cc.Etapa, Conversacion: strconv.FormatInt(conv.ID, 10), Talla: cc.Size,
 		DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
 		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc),
-		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo}
+		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo, ColoresGrupos: b.coloresGrupos(ctx)}
 	if conv.State != stIdle && cc.ProductID > 0 {
 		if p, err := b.store.GetProduct(ctx, cc.ProductID); err == nil {
 			req.Producto = p.Code

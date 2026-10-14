@@ -55,6 +55,9 @@ type Request struct {
 	// Version (v1|v2|v3) y Modo (sombra|activo) del agente para este turno; vacíos = los del agente.
 	Version string `json:"version,omitempty"`
 	Modo    string `json:"modo,omitempty"`
+	// ColoresGrupos: qué colores son «sobrios» y cuáles «vibrantes» en esta tienda (Ajustes → Colores). Con la respuesta
+	// a «¿cómo quieres sentirte?» del guion de noche, el agente ofrece prendas en esos colores. Vacío = la propuesta del agente.
+	ColoresGrupos map[string]string `json:"colores_grupos,omitempty"`
 }
 
 // Perfil de una clienta que ya compró: el agente prellena la talla y puede mencionarlo con naturalidad.

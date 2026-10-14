@@ -95,6 +95,7 @@ func (s *Server) Routes() http.Handler {
 
 	p("GET /api/settings", s.getSettings)
 	a("PUT /api/settings", s.putSettings)
+	s.rutasExtra(p, a) // colores del guion de noche y derivaciones a asesora (extra.go)
 
 	// CRM (crm_panel.go)
 	p("GET /api/inicio", s.inicio)

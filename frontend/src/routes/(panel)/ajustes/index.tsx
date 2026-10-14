@@ -85,8 +85,99 @@ export default component$(() => {
           </label>
         </section>
       )}
+      {yo.value && <Colores yo={yo.value} />}
       {yo.value && <Equipo yo={yo.value} />}
     </div>
+  );
+});
+
+// Colores: a qué grupo va cada color de los productos para el guion de noche del bot («¿Prefieres llamar un poco más la
+// atención, o buscas verte elegante, sofisticada y más discreta?»). Con la respuesta, el bot ofrece prendas en colores
+// vibrantes o sobrios. La propuesta viene puesta; la admin la cambia aquí y el bot la usa en el siguiente mensaje.
+interface ColorTienda {
+  color: string;
+  clave: string;
+  grupo: "" | "sobrio" | "vibrante";
+  productos: number;
+  propio: boolean;
+}
+
+const GRUPOS: { valor: ColorTienda["grupo"]; label: string; clase: string }[] = [
+  { valor: "sobrio", label: "Sobrio", clase: "sobrio" },
+  { valor: "vibrante", label: "Vibrante", clase: "vibrante" },
+  { valor: "", label: "Sin grupo", clase: "ninguno" },
+];
+
+const Colores = component$<{ yo: Sesion }>(({ yo }) => {
+  const lista = useSignal<ColorTienda[]>([]);
+  const error = useSignal("");
+  const ok = useSignal("");
+  const cargado = useSignal(false);
+
+  const load = $(async () => {
+    lista.value = await api<ColorTienda[]>("/api/colores");
+    cargado.value = true;
+  });
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(() => load());
+
+  const fijar = $(async (c: ColorTienda, grupo: ColorTienda["grupo"]) => {
+    error.value = "";
+    try {
+      lista.value = await api<ColorTienda[]>("/api/colores", { method: "PUT", json: { grupos: { [c.clave]: grupo } } });
+      ok.value = `${c.color}: ${grupo === "" ? "sin grupo" : grupo}`;
+      setTimeout(() => (ok.value = ""), 2500);
+    } catch (e) {
+      error.value = (e as Error).message;
+    }
+  });
+
+  const n = (g: ColorTienda["grupo"]) => lista.value.filter((c) => c.grupo === g).length;
+
+  return (
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Colores</h2>
+        <span class="muted small">
+          {n("sobrio")} sobrios · {n("vibrante")} vibrantes · {n("")} sin grupo
+        </span>
+      </div>
+      <p class="muted small">
+        En los eventos de noche el bot pregunta «¿prefieres llamar un poco más la atención, o verte elegante y discreta?». Con la
+        respuesta ofrece prendas en colores <b>vibrantes</b> o <b>sobrios</b>, según lo que marques aquí. Son los colores que
+        aparecen en tus productos; la propuesta ya viene puesta y puedes cambiarla cuando quieras.
+      </p>
+      {error.value && <p class="form-error small">{error.value}</p>}
+      {ok.value && <p class="ok-text small">{ok.value} ✓</p>}
+      {cargado.value && lista.value.length === 0 && <p class="muted small">Tus productos aún no tienen colores.</p>}
+      <div class="colores-lista">
+        {lista.value.map((c) => (
+          <div key={c.clave} class="color-fila">
+            <div>
+              <strong>{c.color}</strong>
+              <span class="muted small">
+                {" "}
+                · {c.productos === 1 ? "1 producto" : `${c.productos} productos`}
+                {c.propio ? " · fijado por la tienda" : ""}
+              </span>
+            </div>
+            <div class="grupo" role="group" aria-label={`Grupo de ${c.color}`}>
+              {GRUPOS.map((g) => (
+                <button
+                  key={g.valor}
+                  type="button"
+                  class={[c.grupo === g.valor && "active", c.grupo === g.valor && g.clase]}
+                  disabled={!yo.admin || c.grupo === g.valor}
+                  onClick$={() => fijar(c, g.valor)}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 });
 
