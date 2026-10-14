@@ -563,7 +563,8 @@ RE_PARA_QUIEN = re.compile(r"\b(?:para|es para|era para|se lo (?:quiero )?regal\
                            r"amiga|prima|tia|abuela|suegra|pareja|jefa|sobrina|cunada|nuera|ahijada)\b")
 # Cómo quiere sentirse (paso 4 de noche): lo vota en la encuesta o lo dice. «elegante» suelto solo cuenta si se le preguntó.
 RE_ESTILO_LLAMAR = re.compile(r"\bllamar (un poco (mas )?)?la atencion\b|\bllamativ\w*|\bresaltar\b|\bque (se )?destaque\b|\bvibrante")
-RE_ESTILO_DISCRETA = re.compile(r"\bdiscret\w*|\bsobri\w*|\belegante y discreta\b")
+# «sobri\w*» atrapaba «sobrina»: «los quince de mi sobrina» guardaba estilo «elegante y discreta» (14-10-2026).
+RE_ESTILO_DISCRETA = re.compile(r"\bdiscret\w*|\bsobri[oa]s?\b|\bsobriedad\b|\belegante y discreta\b")
 
 
 def _estilo(t: str, pendiente: str) -> str | None:

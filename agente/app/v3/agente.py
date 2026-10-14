@@ -26,8 +26,21 @@ RE_CATALOGO = re.compile(r"\b(cat[aá]logo|p[aá]gina( web)?|web|link|enlace)\b"
 # Ofrecer modelos sin que los pida (regla de la tienda, 12-10-2026): «¿te muestro un modelo?», «¿quieres ver opciones?».
 RE_OFRECE = re.compile(r"(te (muestre|muestro|enseñe|enseño|mande|mando|paso|comparta|comparto)|quieres ver|gustar[ií]a ver)"
                        r"[^.?!]{0,40}\b(modelo|modelos|opci[oó]n|opciones|vestidos?|prendas?|fotos?)\b", re.I)
-RE_OBJECION_ENVIO = re.compile(r"\b(car[oa]|car[ií]simo|muy caro|tan caro|rebaja|descuento|m[aá]s barato|gratis|"
-                               r"no (me )?llega|se pierde|seguro que llega|confiable)\b", re.I)
+# «rebajar», «es seguro?», «y si se pierde?» no entraban (14-10-2026, prueba de 300 conversaciones: se mandaba la foto de
+# un vestido junto a la respuesta de la objeción).
+RE_OBJECION_ENVIO = re.compile(r"\b(car[oa]|car[ií]simo|muy caro|tan caro|rebaj\w*|descuento|m[aá]s barato|gratis|"
+                               r"no (me )?llega|se (me )?pierde|perder\w*|segur[oa]|seguro que llega|confiable|confianza|"
+                               r"garant\w*|llega bien|llegar[aá])\b", re.I)
+# Talla en número («uso talla 42», «soy 38»): la tienda trabaja S, M y L; no se da por buena (14-10-2026).
+RE_TALLA_NUMERO = re.compile(r"\b(?:talla|uso|soy|la)\s+(?:la\s+|talla\s+)?(\d{1,2})\b(?!\s*(?:cm|kg|kilos|años|anos|dias|metros|m\b))")
+# Pregunta cómo pagar o manda el pago justo tras «¿Confirmamos tu pedido?»: es un sí (14-10-2026, «ya, cómo te pago»).
+RE_PAGAR = re.compile(r"\b(como (te )?pag\w*|yape\w*|plin|datos (de|para el) pago|a que numero|numero de cuenta|cuenta|"
+                      r"transfer\w*|deposit\w*|voucher|comprobante|ya (te )?pague|te yape\w*)\b")
+RE_PIDE_CONFIRMAR = re.compile(r"\bconfirma(mos|s)?\b.{0,25}\bpedido\b|\bte lo separo\b|\blo separamos\b")
+# Preguntas que no están en RE_PREGUNTA_DE y que también cansan si se repiten.
+RE_PREGUNTA_EXTRA = {"ocasion": re.compile(r"\b(que evento|que ocasion|para que ocasion|que celebracion|evento se te aproxima|"
+                                           r"ocasion (tienes|se te aproxima))\b"),
+                     "confirmar": RE_PIDE_CONFIRMAR}
 RE_NO = re.compile(r"^\s*(no+|nop|nel|no,? gracias|mejor no|as[ií] no m[aá]s|todav[ií]a no|a[uú]n no)\b[^?]*$", re.I)
 RE_SI = re.compile(r"^\s*(s[ií]+|claro|ok+|okey|dale|bueno|ya|perfecto|de acuerdo|tienes raz[oó]n|si tienes raz[oó]n|"
                    r"s[ií],? tienes raz[oó]n|me parece( bien)?|exacto|correcto|as[ií] es)\b[^?]*$", re.I)
@@ -114,6 +127,9 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
             txt = (plantillas.toque(mensaje, hist) or plantillas.ok_sin_dato(f, mensaje, hist)
                    or plantillas.responder(f, lectura.get("datos") or {}, mensaje, hist, getattr(req, "cliente", "")) or "")
         if txt:
+            sin = _sin_insistir(txt, f, hist)
+            if sin != txt:              # la plantilla repetía una pregunta ya hecha dos veces: se cambia por otra
+                txt = _con_siguiente(sin, f, hist) if sin else _con_siguiente("¡Perfecto! 😊", f, hist)
             log.info("V3 plantilla: %s", txt[:80])
             return _respuesta(f, txt, "responder", [], None, _traza("", [], ["plantilla"], 0, _ms(t0)), req)
 
@@ -125,6 +141,9 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     rec = Recolector(fichas, consultar_stock, pie=pie, permitir_reserva=permitir_reserva, mensaje=mensaje,
                      mostrados=f.get("mostrados") or [], pago_ok=pago_ok,
                      contesta_cual=bool(RE_PREGUNTO_CUAL.search(ultimo_bot)))
+    confirma_hecho = "" if pago_ok else _confirma_pedido(rec, f, mensaje, ultimo_bot, permitir_reserva)
+    if confirma_hecho:
+        pago_ok = rec.hechos["pago_ok"] = True
     rec.color_pedido = (f.get("sabemos") or {}).get("color") or ""
     # Guion de noche: «¿llamar la atención o elegante y discreta?» → grupo de colores (vibrante | sobrio) que la tienda
     # define (jmdventas, Ajustes → Colores; si no manda nada, seed/colores_grupos.json). Ver app/colores.py (14-10-2026).
@@ -150,6 +169,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     pedido = _pedido_en_curso(rec, req, f)
     if pedido:
         hecho = (hecho + "\n" + pedido).strip()
+    if confirma_hecho:
+        hecho = (hecho + "\n" + confirma_hecho).strip()
     if colores_hecho:
         hecho = (hecho + "\n" + colores_hecho).strip()
     # Pide las fotos de los modelos que el bot acaba de nombrar («¿tienes fot?», «de todos», «los tres») sin decir cuál:
@@ -262,6 +283,13 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
         nombre = (getattr(req, "cliente", "") or "").strip().split(" ")[0]
         out["respuesta"] = (f"¡Hola{', ' + nombre if nombre else ''}! 😊 Te saluda Rosmary, desde ahora considérame tu "
                             f"asesora personal. " + re.sub(r"^\s*¡?hola[^!.]*[!.]\s*", "", out["respuesta"], flags=re.I))
+    if rec.bloquear_fotos:              # objeción al envío: ninguna foto, venga de donde venga
+        rec.fotos = []
+    if not pago_ok:
+        sin = _sin_insistir(out["respuesta"], f, hist)
+        if sin != out["respuesta"]:
+            log.info("V3 sin insistir: %s → %s", out["respuesta"][:120], sin[:120])
+            out["respuesta"], out["pregunta_hecha"] = _con_siguiente(sin or "¡Perfecto! 😊", f, hist), ""
     res = _cierra(f, rec, out, salida["usadas"], salida["vueltas"], _ms(t0), req)
     res["v3"]["uso"] = cliente_llm.sumar_uso(salida.get("uso"), (salida2 or {}).get("uso") if motivos_1 else None)
     return res
@@ -320,6 +348,21 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
             partes.append(f"HECHO: quiere verse {datos.get('estilo_ya') or rec.grupo}: ofrécele prendas en colores "
                           f"{colores.NOMBRE_GRUPO[rec.grupo]} ({', '.join(lista[:12])}). buscar_catalogo las trae primero y "
                           "la foto irá en ese color: nómbralo.")
+    num = RE_TALLA_NUMERO.search(memoria._plano(rec.mensaje))
+    if num and not datos.get("talla") and 2 <= int(num.group(1)) <= 60:
+        partes.append(f"HECHO YA VERIFICADO: dijo talla {num.group(1)} (en número). En Baruka las tallas son S, M y L, en "
+                      "medidas peruanas (XS, XL y 2XL bajo pedido en algunos modelos). NO digas que tenemos la "
+                      f"{num.group(1)} ni la des por buena: explícale nuestras tallas y ofrécele la tabla de medidas (o "
+                      "pregúntale su busto y cintura) para ubicar la suya.")
+    envio, ciudad = datos.get("envio"), datos.get("ciudad")
+    if envio and re.search(r"\b(envio|envian|envias|mandan|delivery|llega|courier|olva|shalom|agencia)\b|^\s*(a |para )?\w+\s*$",
+                           memoria._plano(rec.mensaje)):
+        lugar = f" a {ciudad}" if ciudad and ciudad.lower() not in ("lima", "provincia") else ""
+        costo = ("S/ 15 por Olva Courier, con entrega en su dirección" if envio == "lima" else
+                 "S/ 15: un courier lleva el paquete a la agencia de buses" if envio == "agencia" else
+                 "S/ 20 por Olva Courier o Shalom, hasta la agencia de su ciudad (pregúntale cuál prefiere)")
+        partes.append(f"HECHO YA VERIFICADO: dijo el envío{lugar} ({envio}). Dile en ESTE mensaje el costo: {costo}. "
+                      "Luego sigue con lo que falte del guion.")
     talla = (datos.get("talla") or "").upper()
     if talla in TALLAS_BAJO_PEDIDO:
         # baruka.pe vende XS, XL y 2XL «pre orden» en muchos modelos (12-10-2026): se confeccionan, no hay en stock.
@@ -565,11 +608,62 @@ def _con_siguiente(texto: str, f: dict, historial=()) -> str:
     if "?" in texto:
         return texto
     sab = f.get("sabemos") or {}
-    ult3 = [memoria._plano(b) for b in _bots(historial)[-3:]]
-    clave = lambda q: memoria._plano(q).strip("¡!¿? ")
+    veces = _veces_preguntado(historial)
     q = next((q for k, q in PREGUNTAS_GUION if not (sab.get(k) or (k == "fecha" and sab.get("fecha_iso")))
-              and sum(clave(q) in b for b in ult3) < 2), "")   # se omite solo si ya se hizo dos veces
+              and veces.get(k, 0) < 2), "")   # se omite si ya se hizo dos veces en la conversación
     return f"{texto} {q}".strip() if q else texto
+
+
+def _veces_preguntado(historial) -> dict:
+    """Cuántos mensajes del bot preguntaron cada dato (talla, horario, estatura, fecha, estilo, ocasión, confirmar)."""
+    reglas = {**RE_PREGUNTA_DE, **RE_PREGUNTA_EXTRA}
+    cuenta: dict[str, int] = {}
+    for b in _bots(historial):
+        qs = " ".join(re.findall(r"¿[^?]*\?|[^.!¿?]*\?", memoria._plano(b)))
+        for k, rx in reglas.items():
+            if qs and rx.search(qs):
+                cuenta[k] = cuenta.get(k, 0) + 1
+    return cuenta
+
+
+def _sin_insistir(texto: str, f: dict, historial) -> str:
+    """Quita del texto las preguntas por un dato que ya se preguntó dos veces y sigue sin respuesta."""
+    sab = f.get("sabemos") or {}
+    veces = _veces_preguntado(historial)
+    agotadas = [k for k, n in veces.items() if n >= 2 and not (sab.get(k) or (k == "fecha" and sab.get("fecha_iso")))]
+    if not agotadas or "?" not in (texto or ""):
+        return texto
+    reglas = {**RE_PREGUNTA_DE, **RE_PREGUNTA_EXTRA}
+    insiste = lambda q: any(reglas[k].search(memoria._plano(q)) for k in agotadas)
+    nuevo = re.sub(r"¿[^¿?]*\?", lambda m: "" if insiste(m.group(0)) else m.group(0), texto)
+    partes = re.split(r"(?<=[.!?…])\s+|\n+", nuevo.strip())
+    nuevo = " ".join(p for p in partes if not ("?" in p and "¿" not in p and insiste(p)))
+    nuevo = re.sub(r"\s*,(\s*,)+", ",", nuevo)
+    nuevo = re.sub(r"(\s*[,:;y]\s*)+(?=[.!]|$)", "", nuevo)
+    nuevo = re.sub(r"\b(cu[eé]ntame|dime|y)\s*[:,]?\s*$", "", nuevo.strip(), flags=re.I)
+    return re.sub(r"\s{2,}", " ", nuevo).strip(" ,;:")
+
+
+def _confirma_pedido(rec: Recolector, f: dict, mensaje: str, ultimo_bot: str, permitir: bool) -> str:
+    """«¿Confirmamos tu pedido?» → «sí», «ya, cómo te pago», «ahí va el voucher»: el pedido queda confirmado (como si el
+    modelo hubiera llamado a crear_reserva) y se pasa al pago. Antes el bot volvía a preguntar «¿Confirmamos tu pedido?»
+    tres veces (14-10-2026, prueba de 300 conversaciones)."""
+    if not permitir or not RE_PIDE_CONFIRMAR.search(memoria._plano(ultimo_bot)):
+        return ""
+    plano = memoria._plano(mensaje)
+    if memoria.niega(mensaje) or not (memoria.afirma(mensaje) or RE_PAGAR.search(plano)):
+        return ""
+    cod = ((f.get("pedido") or {}).get("codigo") or f.get("producto") or ((f.get("mostrados") or [""])[-1])).upper()
+    talla = ((f.get("pedido") or {}).get("talla") or (f.get("sabemos") or {}).get("talla") or "").upper()
+    if not cod or not talla or rec._ficha(cod) is None:
+        return ""
+    rec.ejecutar("crear_reserva", {"codigo": cod, "talla": talla})
+    if not rec.reserva:
+        return ""
+    voucher = bool(re.search(r"\b(voucher|comprobante|ya (te )?pague|te yape\w*|deposit\w*|transferi)\b", plano))
+    return (f"CONFIRMÓ EL PEDIDO ({cod} talla {talla}): ya quedó registrado. " +
+            ("Dice que ya pagó: agradécele, dile que lo validamos y pídele la foto del voucher si no la mandó." if voucher else
+             "Dale el total con el envío elegido y los datos de pago, y pídele el voucher."))
 
 
 def _sin_repetidas(texto: str, historial) -> str:
@@ -633,11 +727,12 @@ def _paso_guion(f: dict, historial, pago_ok: bool) -> str:
             return ("PASO DEL GUION: 9, final. Los datos de pago YA se dieron: no los repitas salvo que ella los pida; "
                     "pide el voucher para programar el envío o contesta lo que pregunte.")
         return "PASO DEL GUION: 8-9 (total con el envío elegido si falta, luego datos de pago y pedir el voucher)."
-    if not sab.get("ocasion"):
+    veces = _veces_preguntado(historial)
+    # Una pregunta hecha dos veces y no contestada no se hace una tercera (14-10-2026: «¿qué evento se te aproxima?»,
+    # la talla o la estatura salían tres y cuatro veces cuando la clienta hablaba de otra cosa).
+    if not sab.get("ocasion") and veces.get("ocasion", 0) < 2:
         return "PASO DEL GUION: 1 (preséntate solo si es tu primer mensaje y pregunta qué evento se le aproxima)."
-    ult3 = [memoria._plano(b) for b in _bots(historial)[-3:]]
-    recien = {k for k, pat in (("talla", "talla"), ("horario", "dia o de noche"), ("estatura", "estatura|mides"))
-              if sum(1 for b in ult3 if re.search(pat, b) and "?" in b) >= 2}   # ya se le preguntó dos veces: no insistir
+    recien = {k for k in ("talla", "horario", "estatura") if veces.get(k, 0) >= 2}   # ya se le preguntó dos veces: no insistir
     faltan = [n for k, n in (("talla", "talla"), ("horario", "si el evento es de día o de noche"),
                              ("estatura", "estatura")) if not sab.get(k) and k not in recien]
     if faltan:

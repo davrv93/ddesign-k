@@ -2633,6 +2633,9 @@ GUIA_FOTO = {
 }
 
 
+SIM_IDENTICA = float(os.environ.get("FOTO_SIM_IDENTICA", "0.985"))   # la misma foto (recomprimida o con otro tamaño)
+
+
 def conversar_foto(req: FotoIn) -> dict:
     t0 = time.time()
     gasto.iniciar()
@@ -2659,9 +2662,16 @@ def conversar_foto(req: FotoIn) -> dict:
     # Visión antes que parecido (app/vision.py): una captura del catálogo trae el código o el nombre escrito y el
     # parecido visual no la reconocía (12-10-2026, «me interesa este modelo» con la captura del V28).
     cands = [c for c, _ in top]
+    # Foto (casi) idéntica a una del catálogo vigente: es esa prenda. La visión llegó a descartar una foto con similitud
+    # 1,00 (14-10-2026, look Faye + Maddy: «ese modelo no lo vendemos»). Se salta la visión y se ahorra la llamada.
+    if sim >= SIM_IDENTICA:
+        log.info("foto: idéntica a %s (similitud %.3f) → exacto sin visión", codigo, sim)
+        nivel, vis = "exacto", None
+        cands = []
     # Segunda vista por candidato: la foto de cada modelo más parecida a la suya (espalda con espalda, lateral con lateral).
     vistas = {c: E.img.mejor_foto(vec, c)[0] for c in cands}
-    vis = vision.identificar(crudo, fichas, req.mensaje, candidatos=cands[:vision.CANDIDATOS_MAX], vistas=vistas)
+    if cands:
+        vis = vision.identificar(crudo, fichas, req.mensaje, candidatos=cands[:vision.CANDIDATOS_MAX], vistas=vistas)
     # Segunda ronda con los siguientes candidatos si la primera no convenció (12-10-2026: en 21 de 100 fallos el modelo
     # correcto no llegaba a los primeros candidatos que veía la visión).
     convence = lambda v: bool(v and v["codigo"] and v["confianza"] >= vision.CONFIANZA_MIN)

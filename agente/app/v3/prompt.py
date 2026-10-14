@@ -128,7 +128,23 @@ RE_RESTO_JSON = re.compile(r'^\s*\{?\s*"respuesta"\s*:\s*' + _CIERRE + r'|' + _C
                            r'|^\s*\{\s*$|^\s*\}\s*$|\s*[{}]\s*$', re.M)
 
 
+# La marca puede venir DENTRO del texto de la respuesta: «¿Qué es lo que más te gustó? (pregunta_hecha: que_le_gusto)»
+# (14-10-2026, prueba de 300 conversaciones). Se borra en cualquier forma: entre paréntesis, corchetes o suelta.
+RE_MARCA = re.compile(r'\s*[(\[{]?\s*["\']?pregunta_hecha["\']?\s*[:=]\s*["\']?[\w\s-]{0,40}?["\']?\s*[)\]}]|'
+                      r'\s*["\']?pregunta_hecha["\']?\s*[:=]\s*["\']?[\w-]*["\']?\s*$', re.I)
+
+
+def _sin_marcas(t: str) -> str:
+    return RE_MARCA.sub("", t or "").strip()
+
+
 def leer_salida(texto: str) -> dict:
+    out = _leer_salida(texto)
+    out["respuesta"] = _sin_marcas(out["respuesta"])
+    return out
+
+
+def _leer_salida(texto: str) -> dict:
     """El JSON del modelo, tolerante a ```json``` y a saltos de línea literales dentro del texto (json estricto los
     rechaza y se enviaba el JSON crudo). Devuelve {"respuesta", "pregunta_hecha"}; nunca deja restos de JSON."""
     t = (texto or "").strip()
