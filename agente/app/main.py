@@ -268,6 +268,9 @@ class ChatIn(BaseModel):
     foto_oferta: bool = False  # /foto → V3: no se reconoció; la respuesta debe preguntar si quiere ver otros modelos
     # Modo de la V2 para este turno: "sombra" (V2 solo observa) | "activo" (V2 puede hablar). Vacío = V2_MODO del entorno.
     modo: str = ""
+    # Grupos de color de la tienda ({"azul noche": "sobrio", "rojo": "vibrante"}; jmdventas, Ajustes → Colores). Vacío = el
+    # seed del agente (seed/colores_grupos.json). Con «cómo quiere sentirse» del guion de noche, V3 ofrece esos colores.
+    colores_grupos: dict[str, str] | None = None
     # Respuesta rápida pulsada: {"intent": "provide_size", "size": "M"} (app/v2/temas.py). Solo la lee V2; V1 la ignora. El texto de la
     # respuesta (`mensaje`) sigue siendo lo que se ve en el chat: el payload solo le ahorra a V2 interpretarlo.
     payload: dict | None = None

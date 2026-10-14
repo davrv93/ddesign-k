@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import re
 
-from .. import datos, ficha_producto, fotos_color, memoria, stock as stk, venta
+from .. import colores, datos, ficha_producto, fotos_color, memoria, stock as stk, venta
 from .validador import hechos_vacios
 
 MAX_CATALOGO = 6
@@ -105,6 +105,8 @@ class Recolector:
         self.varias_ok = False               # dijo que sí quiere ver otros modelos: salen hasta MAX_FOTOS, no una
         self.bloquear_fotos = False          # objeción al envío: se contesta y se vuelve a la pregunta pendiente, sin fotos
         self.color_pedido = ""               # pidió un color: cada foto sale en ESE color si el modelo lo tiene (13-10-2026)
+        self.grupo = ""                      # «llamar la atención» → vibrante, «elegante y discreta» → sobrio (app/colores.py)
+        self.grupos_cfg: dict | None = None  # grupos de color de la tienda (jmdventas); None = seed del agente
         self.mensaje = (mensaje or "").lower()
         self.mostrados = {str(c).upper() for c in mostrados or ()}
         self.fichas = list(fichas)
@@ -194,10 +196,20 @@ class Recolector:
             # vestidos y el corte dejaba fuera al Holly. El nombre pesa más que el color o la descripción.
             out.sort(key=lambda f: -sum(3 * (p in f.nombre.lower()) + (p in f"{f.color} {f.detalle}".lower())
                                         for p in palabras))
+        # Dijo cómo quiere sentirse (guion de noche) y no pidió un color: primero las prendas con colores de ese grupo.
+        # Orden estable: dentro del grupo sigue mandando lo que calza con lo pedido (14-10-2026).
+        grupo = self.grupo if self.grupo and not self.color_pedido and not any(c in consulta.split() for c in COLORES) else ""
+        if grupo:
+            out.sort(key=lambda f: 0 if colores.del_grupo(f, grupo, self.grupos_cfg) else 1)
         out = out[:MAX_CATALOGO]
         codigos = [f.codigo for f in out]
         estados = self._stock(codigos) if codigos else {}
         res = {"prendas": [self._anota_prenda(f, estados.get(f.codigo.upper())) for f in out]}
+        if grupo:
+            for p, f in zip(res["prendas"], out):
+                p[f"colores_{colores.NOMBRE_GRUPO[grupo]}"] = colores.del_grupo(f, grupo, self.grupos_cfg)
+            res["aviso_estilo"] = (f"Quiere verse {'llamativa' if grupo == 'vibrante' else 'elegante y discreta'}: ofrece primero "
+                                   f"las prendas con colores_{colores.NOMBRE_GRUPO[grupo]} y nombra ese color (la foto irá en él).")
         # El color que pidió y que NINGUNA prenda tiene: se dice, no se disimula con otras prendas.
         hay = " ".join(f"{f.color} {f.nombre} {f.detalle}".lower() for f in self.fichas)
         falta = [c for c in COLORES if c in consulta.split() and c not in hay]
@@ -265,6 +277,10 @@ class Recolector:
                     imagen, color_foto = f"/media/tienda/{archivo}", c_web
                 else:                            # no hay foto en ese color: va la principal y se dice (13-10-2026)
                     sin_color = self.color_pedido
+            elif self.grupo:                     # sin color pedido: la foto en un color del grupo que eligió (14-10-2026)
+                archivo, c_web = colores.foto_del_grupo(f.codigo, self.grupo, self.grupos_cfg)
+                if archivo:
+                    imagen, color_foto = f"/media/tienda/{archivo}", c_web
             out.append({"codigo": f.codigo, "nombre": f.nombre, "imagen": imagen, "pie": pie, "titulo": titulo, "tallas": tallas,
                         "color_foto": color_foto, "sin_color": sin_color})
             self.hechos["codigos"].add(f.codigo.upper())

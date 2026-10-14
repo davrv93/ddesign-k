@@ -10,7 +10,7 @@ import logging
 import re
 import time
 
-from .. import ficha_producto, memoria
+from .. import colores, ficha_producto, memoria
 from . import cliente_llm, ficha as ficha_mod, plantillas, prompt, validador
 from .herramientas import Recolector
 
@@ -119,6 +119,11 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     rec = Recolector(fichas, consultar_stock, pie=pie, permitir_reserva=permitir_reserva, mensaje=mensaje,
                      mostrados=f.get("mostrados") or [], pago_ok=pago_ok,
                      contesta_cual=bool(RE_PREGUNTO_CUAL.search(ultimo_bot)))
+    rec.color_pedido = (f.get("sabemos") or {}).get("color") or ""
+    # Guion de noche: «¿llamar la atención o elegante y discreta?» → grupo de colores (vibrante | sobrio) que la tienda
+    # define (jmdventas, Ajustes → Colores; si no manda nada, seed/colores_grupos.json). Ver app/colores.py (14-10-2026).
+    rec.grupo = colores.GRUPO_DE_ESTILO.get((f.get("sabemos") or {}).get("estilo") or "", "")
+    rec.grupos_cfg = getattr(req, "colores_grupos", None) or None
     clienta = " ".join(memoria._plano(x.get("texto", "") if isinstance(x, dict) else getattr(x, "texto", ""))
                        for x in hist if (x.get("rol", "") if isinstance(x, dict) else getattr(x, "rol", "")) == "cliente")
     hecho = _precalculo(rec, {**(lectura.get("datos") or {}),
@@ -137,7 +142,6 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     pedido = _pedido_en_curso(rec, req, f)
     if pedido:
         hecho = (hecho + "\n" + pedido).strip()
-    rec.color_pedido = (f.get("sabemos") or {}).get("color") or ""
     # Pide las fotos de los modelos que el bot acaba de nombrar («¿tienes fot?», «de todos», «los tres») sin decir cuál:
     # se mandan esos, no otro (13-10-2026: nombró Maura, Milan y Roberta y mandó el Blear).
     from .herramientas import RE_PIDE_FOTO, RE_PIDE_VARIAS
@@ -297,6 +301,13 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
     attrs = ficha_producto.pedidos(memoria._plano(rec.mensaje))
     if foco and attrs and ficha_producto.ficha(foco):
         partes.append("HECHO YA VERIFICADO: " + ficha_producto.nota(foco, attrs))
+    # Dijo cómo quiere sentirse (noche) y pide ver modelos sin nombrar color: los del grupo de colores que eligió.
+    if rec.grupo and not rec.color_pedido and rec._pide_modelos():
+        lista = colores.disponibles(rec.fichas, rec.grupo, rec.grupos_cfg)
+        if lista:
+            partes.append(f"HECHO: quiere verse {datos.get('estilo_ya') or rec.grupo}: ofrécele prendas en colores "
+                          f"{colores.NOMBRE_GRUPO[rec.grupo]} ({', '.join(lista[:12])}). buscar_catalogo las trae primero y "
+                          "la foto irá en ese color: nómbralo.")
     talla = (datos.get("talla") or "").upper()
     if talla in TALLAS_BAJO_PEDIDO:
         # baruka.pe vende XS, XL y 2XL «pre orden» en muchos modelos (12-10-2026): se confeccionan, no hay en stock.
