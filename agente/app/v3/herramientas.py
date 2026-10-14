@@ -31,6 +31,10 @@ RE_VERBO_PEDIR = re.compile(r"\b(p[aá]sa\w*|m[aá]nda\w*|env[ií]a\w*|tienes|ti
 RE_PRENDA = re.compile(r"\b(vestid\w*|conjunt\w*|blus\w*|pantal\w*|enteriz\w*|blazer\w*|fald\w*|ropa|prendas?|"
                        r"algo|outfits?|look)\b", re.I)
 MAX_FOTOS = 3          # un mensaje con 6 fotos es un catálogo, no una conversación
+# Pide ver los colores de UNA prenda («enviame los colores en foto», «muéstrame los tonos»): las fotos son del mismo
+# modelo, una por color, así que el tope es otro (14-10-2026: el Salome viene en siete colores con foto).
+RE_PIDE_COLORES = re.compile(r"\b(colores|tonos|tonalidades)\b", re.I)
+MAX_FOTOS_COLORES = 6
 GENERICAS = {"vestido", "conjunto", "blusa", "pantalon", "falda", "enterizo", "blazer"}
 # Pide alternativas («algo parecido», «otras opciones»): ahí sí se muestran otras prendas aunque nombre un retirado.
 RE_OTRAS = re.compile(r"\b(parecid\w*|similar\w*|otr[oa]s?|alternativ\w*|reemplaz\w*|en su lugar)\b", re.I)
@@ -105,6 +109,7 @@ class Recolector:
         self.varias_ok = False               # dijo que sí quiere ver otros modelos: salen hasta MAX_FOTOS, no una
         self.bloquear_fotos = False          # objeción al envío: se contesta y se vuelve a la pregunta pendiente, sin fotos
         self.color_pedido = ""               # pidió un color: cada foto sale en ESE color si el modelo lo tiene (13-10-2026)
+        self.colores_ok = False              # pidió ver los colores de una prenda: salen hasta MAX_FOTOS_COLORES (14-10-2026)
         self.grupo = ""                      # «llamar la atención» → vibrante, «elegante y discreta» → sobrio (app/colores.py)
         self.grupos_cfg: dict | None = None  # grupos de color de la tienda (jmdventas); None = seed del agente
         self.mensaje = (mensaje or "").lower()
@@ -262,14 +267,12 @@ class Recolector:
             f = self._ficha(c)
             if f is None or not f.imagen:
                 continue
-            if f.codigo.upper() in self.mostrados and not explicita:
+            # Ya mostrada: no se repite, salvo que pida otra vez la foto o que esta vaya en OTRO color que la principal (la
+            # prenda vista en azul noche y ahora pregunta por el verde olivo, 14-10-2026: salía «no pude enviar la foto»).
+            otro_color = bool(self.color_pedido) and fotos_color.foto_del_color(f.codigo, self.color_pedido)[0] \
+                not in ("", f"{f.codigo.lower()}.jpg")
+            if f.codigo.upper() in self.mostrados and not explicita and not otro_color:
                 continue
-            st = self._stock([f.codigo]).get(f.codigo.upper(), {})
-            pie = self._pie(f, st) if self._pie else f"{f.codigo} {f.nombre}"
-            online = (st.get("online") or {}) if st.get("product") else {}
-            tallas = [{"talla": t, "disponible": online[t] > 0, "precio": f.precio, "codigo": f.codigo}
-                      for t in sorted(online, key=lambda t: ORDEN_TALLAS.index(t) if t in ORDEN_TALLAS else 99)]
-            titulo = f"*{f.codigo}* {f.nombre}" + (f" — *{MONEDA} {f.precio:.2f}*" if f.precio is not None else "")
             imagen, color_foto, sin_color = f.imagen, fotos_color.color_de(f"{f.codigo.lower()}.jpg"), ""
             if self.color_pedido:                # la foto del color que pidió («azul» → Blear azul noche, no la morada)
                 archivo, c_web = fotos_color.foto_del_color(f.codigo, self.color_pedido)
@@ -281,12 +284,7 @@ class Recolector:
                 archivo, c_web = colores.foto_del_grupo(f.codigo, self.grupo, self.grupos_cfg)
                 if archivo:
                     imagen, color_foto = f"/media/tienda/{archivo}", c_web
-            out.append({"codigo": f.codigo, "nombre": f.nombre, "imagen": imagen, "pie": pie, "titulo": titulo, "tallas": tallas,
-                        "color_foto": color_foto, "sin_color": sin_color})
-            self.hechos["codigos"].add(f.codigo.upper())
-            self.hechos["fotos"].add(f.codigo.upper())
-            if f.precio is not None:
-                self.hechos["precios"].add(round(float(f.precio), 2))
+            out.append(self._foto(f, imagen, color_foto, sin_color))
         # Se SUMAN a las ya marcadas (sin repetir): cuando el código mandó los candidatos de «¿quieres ver otros modelos?»
         # y el modelo llamaba igual a enviar_fotos con uno solo, pisaba la lista y salía una foto de tres (13-10-2026).
         vistos = {x["codigo"].upper() for x in self.fotos}
@@ -296,6 +294,46 @@ class Recolector:
                       for x in out if x["sin_color"]]:
             res["aviso"] = "Nombra el color REAL de cada foto; " + "; ".join(faltan) + ". Dilo tal cual, no digas que va en el color pedido."
         return res
+
+    def _foto(self, f, imagen: str, color_foto: str, sin_color: str = "", pie_color: bool = False) -> dict:
+        """La tarjeta de una foto (imagen, pie, título, tallas) y lo que ya se puede afirmar de ella."""
+        st = self._stock([f.codigo]).get(f.codigo.upper(), {})
+        pie = self._pie(f, st) if self._pie else f"{f.codigo} {f.nombre}"
+        if pie_color and color_foto:             # varias fotos del mismo modelo: cada pie dice su color
+            primera, _, resto = pie.partition("\n")
+            pie = f"{primera} · {color_foto}" + (f"\n{resto}" if resto else "")
+        online = (st.get("online") or {}) if st.get("product") else {}
+        tallas = [{"talla": t, "disponible": online[t] > 0, "precio": f.precio, "codigo": f.codigo}
+                  for t in sorted(online, key=lambda t: ORDEN_TALLAS.index(t) if t in ORDEN_TALLAS else 99)]
+        titulo = f"*{f.codigo}* {f.nombre}" + (f" — *{MONEDA} {f.precio:.2f}*" if f.precio is not None else "")
+        self.hechos["codigos"].add(f.codigo.upper())
+        self.hechos["fotos"].add(f.codigo.upper())
+        if f.precio is not None:
+            self.hechos["precios"].add(round(float(f.precio), 2))
+        return {"codigo": f.codigo, "nombre": f.nombre, "imagen": imagen, "pie": pie, "titulo": titulo, "tallas": tallas,
+                "color_foto": color_foto, "sin_color": sin_color}
+
+    def enviar_colores(self, codigo: str, pedidos=None, saltar: str = "") -> dict:
+        """Las fotos de UNA prenda en sus colores: los `pedidos` (los que nombró) o, sin ellos, todos los que tienen foto,
+        hasta MAX_FOTOS_COLORES, sin el color `saltar` (el que ya vio) si quedan otros. No es una herramienta del LLM: la
+        llama el código cuando ella pide ver los colores de la prenda en foco (14-10-2026, Vestido Salome).
+        Devuelve {"con_foto": [colores], "sin_foto": [colores]}; las fotos se SUMAN a las ya marcadas."""
+        f = self._ficha(codigo)
+        if f is None:
+            return {"con_foto": [], "sin_foto": []}
+        web = colores.colores_de(f)
+        lista = list(pedidos) if pedidos else [c for c in web if not fotos_color.es_personalizado(c)]
+        fotos = fotos_color.fotos_de_colores(f.codigo, lista)
+        if not pedidos and saltar and len(fotos) > 1:
+            fotos = [x for x in fotos if colores.normaliza(x[1]) != colores.normaliza(saltar)] or fotos
+        fotos = fotos[:MAX_FOTOS_COLORES]
+        sin_foto = [c for c in lista if not fotos_color.foto_del_color(f.codigo, c)[0]]
+        ya = {(x["codigo"].upper(), x["imagen"]) for x in self.fotos}
+        for archivo, color in fotos:
+            imagen = f"/media/tienda/{archivo}"
+            if (f.codigo.upper(), imagen) not in ya:
+                self.fotos.append(self._foto(f, imagen, color, pie_color=True))
+        return {"con_foto": [c for _, c in fotos], "sin_foto": sin_foto}
 
     def _t_crear_reserva(self, args: dict) -> dict:
         if not self.permitir_reserva:

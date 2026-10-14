@@ -82,3 +82,43 @@ def color_de(archivo: str) -> str:
     """El color de una foto del índice como lo llama la web (o, si la web no lo dice, como lo vio la IA)."""
     d = _cargar().get(archivo) or {}
     return d.get("color_web") or d.get("color_ia") or ""
+
+
+def es_personalizado(color: str) -> bool:
+    """«Color personalizado» de baruka.pe no es un color: es que se confecciona en el que pida la clienta."""
+    return "personaliz" in " ".join(_tokens(color))
+
+
+def fotos_de_colores(codigo: str, colores_web) -> list[tuple[str, str]]:
+    """[(archivo, color)] una foto por cada color de `colores_web` (en ese orden) que tenga foto propia del modelo, sin
+    repetir archivo. «Color personalizado» no cuenta. 14-10-2026: «enviame los colores en foto» tras listar los ocho
+    colores del Salome salía solo la azul noche que ya había visto, y el bot decía que no tenía fotos de los otros."""
+    out, vistos = [], set()
+    for color in colores_web or ():
+        if not color or es_personalizado(color):
+            continue
+        archivo, c_web = foto_del_color(codigo, color)
+        if archivo and archivo not in vistos:
+            vistos.add(archivo)
+            out.append((archivo, c_web or color))
+    return out
+
+
+def colores_nombrados(texto: str, colores_web) -> list[str]:
+    """Los colores de `colores_web` que nombra el texto, en el orden de la lista: «¿cuál es el tono verde olivo?» →
+    [«Verde Olivo»]. Vale el nombre completo («verde olivo», «azul noche») o solo el tono base («verde») si el modelo
+    tiene un solo color de ese tono; «terracota» o «acero», que memoria.py no reconoce como color, también cuentan."""
+    palabras = set(_tokens(texto))
+    if not palabras:
+        return []
+    reales = [c for c in colores_web or () if c and not es_personalizado(c)]
+    completos = [c for c in reales if _tokens(c) and all(w in palabras for w in _tokens(c))]
+    base = {}
+    for c in reales:
+        t = _tokens(c)
+        if t and t[0] in palabras and c not in completos:
+            base.setdefault(t[0], []).append(c)
+    sueltos = [cs[0] for cs in base.values() if len(cs) == 1 and not any(_tokens(x)[0] == _tokens(cs[0])[0] for x in completos)]
+    elegidos = set(completos) | set(sueltos)
+    return [c for c in reales if c in elegidos]
+

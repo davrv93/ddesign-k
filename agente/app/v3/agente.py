@@ -10,7 +10,7 @@ import logging
 import re
 import time
 
-from .. import colores, ficha_producto, memoria
+from .. import colores, ficha_producto, fotos_color, memoria
 from . import cliente_llm, ficha as ficha_mod, plantillas, prompt, validador
 from .herramientas import Recolector
 
@@ -41,6 +41,12 @@ RE_DESPIDE = re.compile(r"\b(chau|chao|adi[oó]s|hasta luego|nos vemos|bye|mucha
 RE_FUERA_GIRO = re.compile(r"\b(historia|c[oó]mo (se )?calcul|capital de|pol[ií]tica|presidente|matem[aá]tica|clima|"
                            r"software|programaci[oó]n|desarroll\w* (de|un) (software|app|web|sistema)|contrat\w* (de|un) "
                            r"(software|desarroll\w*)|tarea (de|del) colegio|receta de cocina)\b", re.I)
+# Habla de OTRA prenda, no de la que está en foco: ahí un color es buscar en el catálogo, no la foto de esa prenda.
+RE_OTRA_PRENDA = re.compile(r"\b(algo|algun\w*|otr[oa]s?|parecid\w*|similar\w*|modelos|opciones|vestidos|conjuntos|"
+                            r"blusas|prendas|catalogo)\b")
+# Pregunta por un color de la prenda en foco («¿cuál es el tono verde olivo?», «¿y en rojo?», «mándamela en vino»).
+RE_SOBRE_COLOR = re.compile(r"\b(tonos?|colou?r(es)?|tonalidad|fot\w*|ver(lo|la)?|veo|muestra\w*|envia\w*|manda\w*|"
+                            r"pasa\w*|tienes|tienen|hay|como es|como se ve)\b")
 TALLAS_REALES = ("S", "M", "L")
 TALLAS_BAJO_PEDIDO = ("XS", "XL", "2XL", "XXL")   # «pre orden» en baruka.pe: se confeccionan
 
@@ -124,6 +130,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     # define (jmdventas, Ajustes → Colores; si no manda nada, seed/colores_grupos.json). Ver app/colores.py (14-10-2026).
     rec.grupo = colores.GRUPO_DE_ESTILO.get((f.get("sabemos") or {}).get("estilo") or "", "")
     rec.grupos_cfg = getattr(req, "colores_grupos", None) or None
+    # Pide ver los colores de la prenda en foco, o uno de ellos: las fotos de ESE modelo, una por color, las elige el código.
+    colores_hecho = "" if (foto_hecho or oferta_foto or pago_ok) else _fotos_de_colores(rec, f, mensaje, ultimo_bot)
     clienta = " ".join(memoria._plano(x.get("texto", "") if isinstance(x, dict) else getattr(x, "texto", ""))
                        for x in hist if (x.get("rol", "") if isinstance(x, dict) else getattr(x, "rol", "")) == "cliente")
     hecho = _precalculo(rec, {**(lectura.get("datos") or {}),
@@ -142,11 +150,13 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     pedido = _pedido_en_curso(rec, req, f)
     if pedido:
         hecho = (hecho + "\n" + pedido).strip()
+    if colores_hecho:
+        hecho = (hecho + "\n" + colores_hecho).strip()
     # Pide las fotos de los modelos que el bot acaba de nombrar («¿tienes fot?», «de todos», «los tres») sin decir cuál:
     # se mandan esos, no otro (13-10-2026: nombró Maura, Milan y Roberta y mandó el Blear).
     from .herramientas import RE_PIDE_FOTO, RE_PIDE_VARIAS
     nombrados_bot = [c for c in _nombradas(ultimo_bot, rec.fichas) if rec._ficha(c)][:3]
-    if len(nombrados_bot) >= 1 and not _nombradas(mensaje, rec.fichas) and not foto_hecho \
+    if len(nombrados_bot) >= 1 and not _nombradas(mensaje, rec.fichas) and not foto_hecho and not rec.colores_ok \
             and (RE_PIDE_FOTO.search(memoria._plano(mensaje)) or RE_PIDE_VARIAS.search(memoria._plano(mensaje))):
         rec.contesta_cual = rec.varias_ok = True
         rec.ejecutar("enviar_fotos", {"codigos": nombrados_bot})
@@ -195,7 +205,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     elif RE_CATALOGO.search(mensaje):
         paso = ("PIDIÓ EL CATÁLOGO: dale https://baruka.pe (es el único enlace) y ofrécete a ayudarla a elegir; no "
                 "mandes fotos de una prenda en lugar del catálogo. " + (paso or "")).strip()
-    elif rec._pide_modelos() and not pago_ok:
+    elif rec._pide_modelos() and not pago_ok and not rec.colores_ok:
         paso = ("ELLA PIDIÓ VER MODELOS: muéstrale UNA prenda que cuadre con lo que contó (enviar_fotos), nómbrala con "
                 "su precio y pregunta qué le gustó; el resto del guion sigue después. " + (paso or "")).strip()
     if paso:
@@ -261,8 +271,10 @@ def _recortar_fotos(rec: Recolector, mensaje: str) -> None:
     """Lo que se LE MANDA a la clienta: una foto, salvo que pida varias. La herramienta marca todo lo que
     el modelo pidió (eso lo necesita `enviar_fotos` tal cual para que un test con 2 códigos no pierda el 2°);
     el recorte de cuántas fotos salen es cosa de esta capa, que sí conoce el mensaje de la clienta."""
-    from .herramientas import RE_PIDE_VARIAS, MAX_FOTOS
+    from .herramientas import RE_PIDE_VARIAS, MAX_FOTOS, MAX_FOTOS_COLORES
     tope = MAX_FOTOS if rec.varias_ok or RE_PIDE_VARIAS.search((mensaje or "").lower()) else 1
+    if rec.colores_ok:                   # los colores de UNA prenda: van todas las que eligió el código
+        tope = max(tope, MAX_FOTOS_COLORES)
     if len(rec.fotos) > tope:
         rec.fotos = rec.fotos[:tope]
 
@@ -302,7 +314,7 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
     if foco and attrs and ficha_producto.ficha(foco):
         partes.append("HECHO YA VERIFICADO: " + ficha_producto.nota(foco, attrs))
     # Dijo cómo quiere sentirse (noche) y pide ver modelos sin nombrar color: los del grupo de colores que eligió.
-    if rec.grupo and not rec.color_pedido and rec._pide_modelos():
+    if rec.grupo and not rec.color_pedido and rec._pide_modelos() and not rec.colores_ok:
         lista = colores.disponibles(rec.fichas, rec.grupo, rec.grupos_cfg)
         if lista:
             partes.append(f"HECHO: quiere verse {datos.get('estilo_ya') or rec.grupo}: ofrécele prendas en colores "
@@ -363,7 +375,9 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
         partes.append("OJO: compra para OTRA persona: di esas frases en tercera persona («su estatura», «su talla», "
                       "«cómo quiere sentirse ella»), nunca «tu».")
     color = datos.get("color")
-    if color:
+    # Pregunta por un color de la prenda en foco: ya va su foto en ese color (_fotos_de_colores); buscar otras prendas de
+    # ese color era ofrecerle el Enterizo Miara cuando preguntaba por el verde olivo del Salome (14-10-2026).
+    if color and not rec.colores_ok:
         r = rec.ejecutar("buscar_catalogo", {"consulta": color})
         prendas = (r or {}).get("prendas") or []
         if prendas:
@@ -375,6 +389,64 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
             partes.append(f"HECHO YA VERIFICADO: no tenemos nada color {color}. Dilo tal cual, no lo disimules "
                           "con otra prenda ni preguntes la ocasión antes.")
     return "\n".join(partes)
+
+
+def _fotos_de_colores(rec: Recolector, f: dict, mensaje: str, ultimo_bot: str) -> str:
+    """Pide ver los colores de la prenda en foco («enviame los colores en foto») o uno de ellos («¿cuál es el tono verde
+    olivo que tienes?»): manda las fotos de ESA prenda en esos colores y devuelve el hecho para el modelo ("" si no aplica).
+
+    14-10-2026, WhatsApp real: tras «El Vestido Salome también lo tenemos en Verde Olivo, Vino, Blanco…», «enviame los
+    colores en foto» se leyó como «pide ver el modelo que nombraste»: salió otra vez la foto azul noche (una foto por
+    código) y el bot dijo que no tenía fotos de los otros colores, habiendo siete. Luego «¿cuál es el tono verde olivo?»
+    buscó prendas verdes en el catálogo y le ofreció otros modelos.
+    La prenda: la que nombra el mensaje; si no, la ÚNICA que nombró el bot; si no nombró ninguna, la que está en foco."""
+    from .herramientas import RE_PIDE_COLORES, RE_PIDE_FOTO
+    plano = memoria._plano(mensaje)
+    if not plano or RE_OTRA_PRENDA.search(plano):
+        return ""
+    en_msg = _nombradas(mensaje, rec.fichas)
+    en_bot = [c for c in _nombradas(ultimo_bot, rec.fichas) if rec._ficha(c)]
+    if len(en_msg) > 1:
+        return ""
+    cod = en_msg[0] if en_msg else (en_bot[0] if len(en_bot) == 1 else ("" if en_bot else (f.get("producto") or "")))
+    ficha = rec._ficha(cod) if cod else None
+    if ficha is None:
+        return ""
+    cod = ficha.codigo.upper()
+    web = colores.colores_de(ficha)
+    nombrados = fotos_color.colores_nombrados(mensaje, web)
+    if nombrados:
+        # «en negro porfa» justo después de que el bot listó los colores de esa prenda es elegir uno de la lista
+        # (14-10-2026, prueba de 300 conversaciones: Elowen, Saira, Elvi, Athena, Persefone, Santana sin foto o con otro modelo).
+        lista_bot = sum(1 for c in web if colores.normaliza(c) and colores.normaliza(c) in memoria._plano(ultimo_bot)) >= 2
+        corto = len(plano.split()) <= 4
+        if not ("?" in mensaje or RE_SOBRE_COLOR.search(plano) or lista_bot or corto):
+            return ""
+    elif not (RE_PIDE_COLORES.search(plano) and RE_PIDE_FOTO.search(plano)):
+        return ""
+    # Todos los colores: sin el de la foto principal si ya la vio (es la que mandó o la que se le mostró).
+    vista = {str(c).upper() for c in f.get("mostrados") or []} | {(f.get("producto") or "").upper()}
+    saltar = fotos_color.color_de(f"{cod.lower()}.jpg") if cod in vista else ""
+    r = rec.enviar_colores(cod, nombrados or None, saltar=saltar)
+    if not r["con_foto"]:
+        return ""
+    rec.colores_ok = True
+    con = ", ".join(r["con_foto"])
+    nombre = f"{ficha.nombre} {cod}"
+    if nombrados:
+        falta = f" No hay foto en {', '.join(r['sin_foto'])}: dilo." if r["sin_foto"] else ""
+        return (f"PREGUNTA POR EL {nombre} EN {con.upper()}: ya se le envió la foto de ESE modelo en {con} (NO llames a "
+                f"enviar_fotos, NO cambies de modelo ni ofrezcas otras prendas).{falta} Dile que ahí lo ve en ese color y "
+                "sigue con el paso del guion.")
+    resto = [c for c in web if c not in r["con_foto"] and not fotos_color.es_personalizado(c)
+             and colores.normaliza(c) != colores.normaliza(saltar)]
+    extra = f" Ya lo vio en {saltar} (la primera foto)." if saltar and saltar not in r["con_foto"] else ""
+    extra += f" También viene en {', '.join(resto)} (sin foto aquí)." if resto else ""
+    if any(fotos_color.es_personalizado(c) for c in web):
+        extra += " Y se puede pedir en color personalizado."
+    return (f"PIDE VER LOS COLORES DEL {nombre}: ya se le enviaron las fotos de ESE modelo en {con} (NO llames a "
+            f"enviar_fotos, NO cambies de modelo ni ofrezcas otras prendas).{extra} Dile que ahí van esos colores, nómbralos "
+            "tal cual y pregúntale cuál le gusta más. NUNCA digas que solo tienes foto de un color.")
 
 
 GENERICAS_NOMBRE = {"vestido", "conjunto", "blusa", "pantalon", "falda", "enterizo", "blazer"}
