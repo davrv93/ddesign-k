@@ -354,6 +354,22 @@ class Recolector:
                   for t in sorted(online, key=lambda t: ORDEN_TALLAS.index(t) if t in ORDEN_TALLAS else 99)]
         # Sin código a la vista: la clienta pide por el nombre (15-10-2026). El código sigue en `codigo` y en las tallas.
         titulo = f"*{f.nombre}*" + (f" — *{MONEDA} {f.precio:.2f}*" if f.precio is not None else "")
+        # Con una promo vigente que cubre la prenda, el pie y el título dicen el precio con promo (15-10-2026: el texto
+        # decía S/ 200 y el pie de la foto S/ 250).
+        promo = next(iter(conocimiento.promos_para(self.conoc, f)), None) if self.conoc is not None else None
+        if promo is not None and f.precio is not None:
+            pp = conocimiento.precio_promo(promo, f.precio)
+            normal = f"*{MONEDA} {f.precio:.2f}*"
+            if pp["precio_final"] is not None and pp["precio_final"] != pp["precio_normal"]:
+                nuevo = f"~{MONEDA} {f.precio:.2f}~ *{MONEDA} {pp['precio_final']:.2f}* con la promo «{promo['titulo']}»"
+            elif pp["precio_por_dos"] is not None:
+                nuevo = f"{normal} · 2 por *{MONEDA} {pp['precio_por_dos']:.2f}* («{promo['titulo']}»)"
+            elif pp["envio"] == 0.0:
+                nuevo = f"{normal} · envío gratis («{promo['titulo']}»)"
+            else:
+                nuevo = f"{normal} · promo «{promo['titulo']}»"
+            pie, titulo = pie.replace(normal, nuevo, 1), titulo.replace(normal, nuevo, 1)
+            self.respaldar_promo(promo, [f])
         self.hechos["codigos"].add(f.codigo.upper())
         self.hechos["fotos"].add(f.codigo.upper())
         if f.precio is not None:

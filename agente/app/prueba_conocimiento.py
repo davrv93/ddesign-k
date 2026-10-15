@@ -212,6 +212,20 @@ def _turno(fichas, mensaje, hist, mem=None, texto="Perfecto 😊 ¿Para qué oca
     return agente.conversar(req, fichas, _stock, pie=lambda f, st: f"*{f.codigo}* {f.nombre}", embed=embed)
 
 
+def prueba_pie_con_promo(fichas):
+    """El pie de la foto de una prenda en promo dice el precio con promo (15-10-2026)."""
+    K.limpiar_cache()
+    c = K.leer(payload(version="pie", promos=[promo(12, alcance={"tipo": "categoria", "categoria": "vestido"})]))
+    rec = Recolector(fichas, _stock, pie=lambda f, st: f"*{f.nombre}* — *S/ {f.precio:.2f}*\nTallas: S, M")
+    rec.poner_conocimiento(c)
+    salome = next(f for f in fichas if f.codigo == "V50")
+    x = rec._foto(salome, salome.imagen, "")
+    si("pie con promo", "~S/ 290.00~ *S/ 232.00*" in x["pie"] and "~S/ 290.00~ *S/ 232.00*" in x["titulo"])
+    caso("pie con promo: respaldada", 12 in rec.hechos["promos"], True)
+    rec2 = Recolector(fichas, _stock, pie=lambda f, st: f"*{f.nombre}* — *S/ {f.precio:.2f}*")
+    caso("pie sin conocimiento: igual", rec2._foto(salome, salome.imagen, "")["pie"], "*Vestido Salome* — *S/ 290.00*")
+
+
 def prueba_v3(fichas):
     K.limpiar_cache()
     base = [C("hola"), B("¡Hola! Te saluda Rosmary 😊 ¿Qué evento se te aproxima?"), C("una boda"),
@@ -340,6 +354,7 @@ def main() -> int:
         prueba_faq()
         prueba_textos()
         prueba_validador()
+        prueba_pie_con_promo(fichas)
         prueba_v3(fichas)
         prueba_v1(fichas)
     finally:
