@@ -69,6 +69,10 @@ func tokens(s string) map[string]bool {
 	out := map[string]bool{}
 	for _, w := range strings.Fields(b.String()) {
 		if len(w) >= 3 && !vacias[w] {
+			// Raíz corta: «entrega», «entregas» y «entregar» son la misma palabra para agrupar (15-10-2026).
+			if r := []rune(w); len(r) > 6 {
+				w = string(r[:6])
+			}
 			out[w] = true
 		}
 	}

@@ -310,7 +310,7 @@ func TestPropuestasDelRobot(t *testing.T) {
 				}
 			}
 			// Como contesta V3 cuando no lo sabe («no puedo confirmar…»): también cuenta como que no supo.
-			for i, q := range []string{"¿Hacen entregas el mismo día?", "¿pueden entregar el mismo día?", "¿la entrega puede ser el mismo día?"} {
+			for i, q := range []string{"¿Hacen entregas el mismo día en Lima?", "hola, ¿pueden entregar hoy mismo en Lima?", "¿la entrega en Lima puede ser el mismo día?"} {
 				_, cv, err := a.st.UpsertCustomer(ctx, "5198800000"+string(rune('1'+i))+"@s.whatsapp.net", "", "")
 				if err != nil {
 					t.Fatal(err)
