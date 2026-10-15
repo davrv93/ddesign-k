@@ -105,8 +105,8 @@ SISTEMA = _sistema(TIENDA, SPEECH)
 
 
 def sistema_para(conoc) -> str:
-    """El sistema de ESTE turno. Si JMD Ventas mandó políticas, sustituyen a seed/tienda.md; si mandó un guion, sustituye
-    a seed/speech.md (los marcadores «## Paso N» siguen valiendo para `_paso_guion`); con promos vigentes, la veda de
+    """El sistema de ESTE turno. Si JMD Ventas mandó políticas, se suman a seed/tienda.md (y mandan si se contradicen); si
+    mandó un guion, sustituye a seed/speech.md (los marcadores «## Paso N» siguen valiendo para `_paso_guion`); con promos vigentes, la veda de
     descuentos se cambia por el bloque de promos. Sin nada de eso, SISTEMA tal cual (15-10-2026)."""
     from .. import conocimiento
     if conoc is None:
@@ -116,7 +116,7 @@ def sistema_para(conoc) -> str:
     if not (tienda or guion or vig):
         return SISTEMA
     promos = "\n".join("- " + conocimiento.linea_promo(p) for p in vig)
-    return _sistema(tienda or TIENDA, guion or SPEECH, promos)
+    return _sistema(conocimiento.tienda_con(TIENDA, conoc), guion or SPEECH, promos)
 
 
 def _resumen_ficha(f: dict) -> str:

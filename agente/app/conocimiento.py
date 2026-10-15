@@ -501,6 +501,23 @@ def texto_tienda(conoc: Optional[Conocimiento]) -> str:
     return "\n\n".join((f"## {p['titulo']}\n" if p["titulo"] else "") + p["contenido"] for p in conoc.base.politicas)
 
 
+# La línea de la política de siempre en seed/tienda.md: con promos vigentes es falsa y se quita.
+RE_SIN_PROMOS = re.compile(r"^[^\n]*Promociones y descuentos:[^\n]*(?:\n|$)", re.M | re.I)
+
+
+def tienda_con(base: str, conoc: Optional[Conocimiento]) -> str:
+    """El texto de la tienda de este turno. Las políticas que cargó la tienda se SUMAN a seed/tienda.md (no lo
+    reemplazan: una política de cambios sola dejaba al bot sin showroom, envíos ni horario, 15-10-2026) y mandan si se
+    contradicen. Con promos vigentes se quita la línea «Promociones y descuentos: por ahora no hay»."""
+    t = base or ""
+    if vigentes(conoc):
+        t = RE_SIN_PROMOS.sub("", t).rstrip()
+    pol = texto_tienda(conoc)
+    if pol:
+        t = (t + "\n\n" if t else "") + "POLÍTICAS DE LA TIENDA (las cargó la tienda; si algo de arriba las contradice, mandan estas):\n" + pol
+    return t
+
+
 def texto_guion(conoc: Optional[Conocimiento]) -> str:
     """El guion de venta de la tienda (encabezados «## Paso N»); "" si no cargó uno."""
     if conoc is None or not conoc.base.guion:

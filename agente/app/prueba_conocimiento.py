@@ -172,6 +172,18 @@ def prueba_textos():
     caso("texto_tienda", K.texto_tienda(c), "## Cambios\nCambios en 7 días.")
     caso("texto_guion", K.texto_guion(c), "## Paso 1\nSaluda.")
     caso("sin conocimiento: textos vacíos", (K.texto_tienda(None), K.texto_guion(None)), ("", ""))
+    # Las políticas se SUMAN a tienda.md (una sola política no puede dejar al bot sin showroom ni envíos, 15-10-2026).
+    base = "SHOWROOM: Juan Ayllón 459.\nPromociones y descuentos: por ahora no hay, para nadie; el precio es el publicado.\nENVÍOS: Lima S/ 15."
+    t = K.tienda_con(base, c)
+    si("políticas suman: showroom sigue", "Juan Ayllón 459" in t and "ENVÍOS" in t and "Cambios en 7 días." in t)
+    si("sin promos: la línea de «no hay promociones» queda", "Promociones y descuentos" in t)
+    cp = K.leer(payload(version="t2", promos=[promo(12)]))
+    si("con promos: sale la línea de «no hay promociones»", "Promociones y descuentos" not in K.tienda_con(base, cp)
+       and "Juan Ayllón 459" in K.tienda_con(base, cp))
+    caso("sin conocimiento: tienda.md tal cual", K.tienda_con(base, None), base)
+    from .v3 import prompt as P
+    si("V3: sistema con políticas conserva tienda.md", "Juan Ayllón" in P.sistema_para(c) and "Cambios en 7 días." in P.sistema_para(c))
+    si("V3: con promos no dice que no hay promociones", "Promociones y descuentos: por ahora no hay" not in P.sistema_para(cp))
 
 
 def prueba_validador():
@@ -261,7 +273,7 @@ def prueba_v3(fichas):
                       guion={"id": 5, "titulo": "Guion", "contenido": "## Paso 1\nGUION-DE-PRUEBA-XYZ"})
     r = _turno(fichas, "¿hacen envíos?", base, mem, conoc=conoc_p)
     p0 = PROMPTS[0] if PROMPTS else ""
-    si("políticas sustituyen a tienda.md", "ENVIO-DE-PRUEBA-XYZ" in p0 and prompt.TIENDA[:60] not in p0)
+    si("políticas se suman a tienda.md", "ENVIO-DE-PRUEBA-XYZ" in p0 and prompt.TIENDA[:60] in p0)
     si("guion sustituye a speech.md", "GUION-DE-PRUEBA-XYZ" in p0 and (not prompt.SPEECH or prompt.SPEECH[:60] not in p0))
     caso("políticas y guion no son «usadas»", r.get("fuentes_usadas"), [])
     # 9. La herramienta, llamada por el modelo.

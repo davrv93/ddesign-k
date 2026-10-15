@@ -507,18 +507,17 @@ Cada foto lleva su propio pie con nombre, precio y tallas: no escribas listas de
 
 def info_tienda() -> str:
     """TIENDA para el motor deepseek: el texto editable de seed/tienda.md y las sucursales con su horario. Si JMD Ventas
-    mandó políticas de la tienda, sustituyen a tienda.md; con promos vigentes se suma el bloque de promos (15-10-2026)."""
+    mandó políticas de la tienda, se suman a tienda.md; con promos vigentes se suma el bloque de promos (15-10-2026)."""
     partes = []
     conoc = _conoc_actual.get()
-    politicas = conocimiento.texto_tienda(conoc)
-    if politicas:
-        partes.append(politicas)
-    else:
-        try:
-            with open(TIENDA_MD, encoding="utf-8") as fh:
-                partes.append(fh.read().strip())
-        except OSError:
-            pass
+    try:
+        with open(TIENDA_MD, encoding="utf-8") as fh:
+            base = fh.read().strip()
+    except OSError:
+        base = ""
+    # Las políticas de la tienda se suman a tienda.md; con promos vigentes sale la línea «no hay promociones».
+    if t := conocimiento.tienda_con(base, conoc):
+        partes.append(t)
     try:
         if not stk.USAR_SUCURSALES:
             raise OSError("sucursales desactivadas")
