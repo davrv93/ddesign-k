@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/davrv93/ddesign-k/backend/internal/agente"
+	"github.com/davrv93/ddesign-k/backend/internal/config"
 	"github.com/davrv93/ddesign-k/backend/internal/store"
 )
 
@@ -168,5 +169,24 @@ func TestLeerFichaSinMemoria(t *testing.T) {
 	f := LeerFicha(`{}`, time.Now(), func(string) string { return "" })
 	if f.Temperatura != "frio" || f.Etapa != "prospeccion" || len(f.Sabemos) != 0 || f.Producto != nil || f.Pedido != nil || f.Objeciones == nil {
 		t.Fatalf("ficha vacía: %+v", f)
+	}
+}
+
+func TestEnlaceConversacionConEmpresa(t *testing.T) {
+	b := &Bot{cfg: &config.Config{}}
+	for _, c := range []struct {
+		pub, tenant string
+		multi       bool
+		want        string
+	}{
+		{"https://x.site/jmdventas", "baruka", true, "https://x.site/jmdventas/baruka/conversaciones/?c=7"},
+		{"https://x.site/jmdventas/baruka/", "baruka", true, "https://x.site/jmdventas/baruka/conversaciones/?c=7"},
+		{"https://x.site/baruka", "", false, "https://x.site/baruka/conversaciones/?c=7"},
+		{"", "baruka", true, ""},
+	} {
+		b.cfg.PublicURL, b.cfg.WhatsAppTenant, b.cfg.MultiTenant = c.pub, c.tenant, c.multi
+		if got := b.enlaceConversacion(7); got != c.want {
+			t.Fatalf("%+v: %q", c, got)
+		}
 	}
 }

@@ -166,11 +166,17 @@ func (b *Bot) avisarSiCaliente(ctx context.Context, conv *store.Conversation, an
 	}()
 }
 
+// enlaceConversacion: el panel de la conversación. En JMD Ventas PUBLIC_URL es la raíz de todas las empresas
+// («https://…/jmdventas»): se le suma la empresa del WhatsApp, si no la trae ya.
 func (b *Bot) enlaceConversacion(id int64) string {
-	if b.cfg.PublicURL == "" {
+	base := strings.TrimRight(b.cfg.PublicURL, "/")
+	if base == "" {
 		return ""
 	}
-	return fmt.Sprintf("%s/conversaciones/?c=%d", b.cfg.PublicURL, id)
+	if t := b.cfg.WhatsAppTenant; b.cfg.MultiTenant && t != "" && !strings.HasSuffix(base, "/"+t) {
+		base += "/" + t
+	}
+	return fmt.Sprintf("%s/conversaciones/?c=%d", base, id)
 }
 
 // textoAlerta: el WhatsApp que recibe la tienda. Sin datos de pago; el teléfono de la clienta sí (es para llamarla).
