@@ -1349,3 +1349,217 @@ button.fu-card:focus-visible {
     width: 100%;
   }
 }
+
+/* ---------- clienta caliente: modal, contador y «Lo que sabemos» ---------- */
+.badge-caliente {
+  background: color-mix(in srgb, var(--danger) 14%, var(--surface));
+  color: var(--danger);
+  font-variant-numeric: tabular-nums;
+}
+.badge-caliente + .badge {
+  margin-left: 4px;
+}
+.caliente-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--line));
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+  color: var(--danger);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.caliente-pill:hover {
+  background: color-mix(in srgb, var(--danger) 15%, var(--surface));
+}
+.topbar-caliente {
+  width: auto;
+  margin-left: auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.modal-caliente {
+  border-top: 4px solid var(--danger);
+}
+.caliente-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.caliente-top h2 {
+  margin: 0;
+}
+.caliente-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.caliente-quien {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.caliente-quien .muted a {
+  color: inherit;
+}
+.modal > p.caliente-motivo {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+  font-weight: 600;
+}
+.caliente-hechos,
+.sabemos-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px 14px;
+  margin: 0 0 12px;
+}
+.caliente-hechos div,
+.sabemos-datos div {
+  min-width: 0;
+}
+.caliente-hechos dt,
+.sabemos-datos dt {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+.caliente-hechos dd,
+.sabemos-datos dd {
+  margin: 1px 0 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.caliente-acciones {
+  flex-wrap: wrap;
+}
+
+.sabemos {
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.sabemos summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  cursor: pointer;
+  list-style: none;
+}
+.sabemos summary::-webkit-details-marker {
+  display: none;
+}
+.sabemos summary::before {
+  content: "▸";
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+.sabemos[open] summary::before {
+  transform: rotate(90deg);
+}
+.sabemos summary .pill {
+  margin-right: 0;
+}
+.sabemos-cuenta {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.sabemos-motivo {
+  margin: 6px 0 0;
+}
+.sabemos-datos {
+  margin: 8px 0 2px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+.sabemos-datos .falta dd {
+  color: var(--muted);
+  font-weight: 400;
+}
+.sabemos-datos dd .chip {
+  margin-left: 6px;
+}
+.temp {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.temp.caliente {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, var(--line));
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+}
+.temp.tibia {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 35%, var(--line));
+  background: color-mix(in srgb, var(--warn) 9%, var(--surface));
+}
+.temp.fria {
+  color: #2f7fbf;
+  border-color: color-mix(in srgb, #2f7fbf 35%, var(--line));
+  background: color-mix(in srgb, #2f7fbf 9%, var(--surface));
+}
+
+/* Ajustes → Clienta caliente: teléfono que recibe el aviso. */
+.setting-tel {
+  display: flex;
+}
+.setting-tel label {
+  margin: 0;
+}
+.tel-form {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.tel-form input {
+  width: 170px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 760px) {
+  .caliente-hechos,
+  .sabemos-datos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sabemos {
+    padding: 6px 12px;
+    max-height: 45vh;
+    overflow-y: auto;
+  }
+  .caliente-acciones .btn {
+    flex: 1 1 auto;
+  }
+  .caliente-acciones .push-left {
+    margin-right: 0;
+  }
+  .setting-tel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .tel-form input {
+    flex: 1;
+    width: auto;
+  }
+}

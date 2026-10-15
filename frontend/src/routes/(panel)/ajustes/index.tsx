@@ -1,4 +1,4 @@
-import { $, component$, useSignal, useStore, useVisibleTask$ } from "@builder.io/qwik";
+import { $, component$, useSignal, useStore, useVisibleTask$, type QRL } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { titulo } from "~/lib/marca";
 import { api, equipo, miSesion, type Miembro, type Sesion } from "~/lib/api";
@@ -90,11 +90,100 @@ export default component$(() => {
           </label>
         </section>
       )}
+      {loaded.value && <ClientaCaliente s={s} soloLectura={soloLectura} save={save} />}
       {yo.value && <Colores yo={yo.value} />}
       {yo.value && <Equipo yo={yo.value} />}
     </div>
   );
 });
+
+// Clienta caliente: cuando el robot detecta una clienta con evento cercano, ganas de comprar, una cita o prisa, el
+// backend avisa por WhatsApp al número de `alerta_caliente_whatsapp` ("" = no se envía) y, si `alerta_caliente_panel`
+// no es "false", el panel abre un modal (components/alertas.tsx).
+const TELEFONO_VALIDO = /^\d{8,15}$/;
+const soloDigitos = (v: string) => v.replace(/[\s()+.-]/g, "");
+
+const ClientaCaliente = component$<{ s: Settings; soloLectura: boolean; save: QRL<(patch: Settings) => Promise<void>> }>(
+  ({ s, soloLectura, save }) => {
+    const tel = useSignal(s.alerta_caliente_whatsapp ?? "");
+    const error = useSignal("");
+    // Último valor enviado: el blur y el «Guardar» llegan juntos al pulsar el botón; se guarda una vez.
+    const enviado = useSignal(s.alerta_caliente_whatsapp ?? "");
+
+    const guardarTel = $(async () => {
+      const v = soloDigitos(tel.value);
+      if (v !== "" && !TELEFONO_VALIDO.test(v)) {
+        error.value = "Escribe solo números, con el código de país: entre 8 y 15 dígitos (por ejemplo 51987654321).";
+        return;
+      }
+      error.value = "";
+      tel.value = v;
+      if (v === enviado.value) return;
+      enviado.value = v;
+      await save({ alerta_caliente_whatsapp: v });
+    });
+
+    return (
+      <section class="panel">
+        <div class="panel-head">
+          <h2>🔥 Clienta caliente</h2>
+        </div>
+        <p class="muted small">
+          El robot avisa cuando una clienta está lista para comprar: tiene un evento en los próximos 14 días, dice que lo quiere,
+          pide una cita para probarse o tiene prisa. El aviso trae lo que el robot descubrió de ella.
+        </p>
+        <label class="setting">
+          <div class="grow">
+            <strong>Avisarme en el panel</strong>
+            <p class="muted small">Abre una ventana con sus datos en el panel de quien esté conectada, para atenderla al momento.</p>
+          </div>
+          <input
+            type="checkbox"
+            class="switch"
+            checked={s.alerta_caliente_panel !== "false"}
+            disabled={soloLectura}
+            onChange$={(_, el) => save({ alerta_caliente_panel: el.checked ? "true" : "false" })}
+          />
+        </label>
+        <div class="setting setting-tel">
+          <div class="grow">
+            <label for="alerta-tel">
+              <strong>WhatsApp que recibe el aviso</strong>
+            </label>
+            <p class="muted small" id="alerta-tel-hint">
+              Número con código de país, por ejemplo 51987654321. Vacío = no se envía.
+            </p>
+            {error.value && (
+              <p class="form-error small" role="alert">
+                {error.value}
+              </p>
+            )}
+          </div>
+          <form class="tel-form" preventdefault:submit onSubmit$={guardarTel}>
+            <input
+              id="alerta-tel"
+              type="tel"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="51987654321"
+              maxLength={20}
+              aria-describedby="alerta-tel-hint"
+              aria-invalid={error.value ? "true" : undefined}
+              value={tel.value}
+              disabled={soloLectura}
+              onInput$={(_, el) => {
+                tel.value = el.value;
+                error.value = "";
+              }}
+              onBlur$={guardarTel}
+            />
+            {!soloLectura && <button class="btn btn-sm btn-primary">Guardar</button>}
+          </form>
+        </div>
+      </section>
+    );
+  },
+);
 
 // Colores: a qué grupo va cada color de los productos para el guion de noche del bot («¿Prefieres llamar un poco más la
 // atención, o buscas verte elegante, sofisticada y más discreta?»). Con la respuesta, el bot ofrece prendas en colores

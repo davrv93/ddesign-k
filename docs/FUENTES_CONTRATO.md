@@ -128,3 +128,51 @@ guarda cada uso (conversación + fuente) y, si una es promo, la conversación qu
 | dos_por | `P` la unidad; `valor` por dos unidades |
 | envio_gratis | `P`; el envío cuesta 0 |
 | regalo, otra | `P` (beneficio en `condiciones`) |
+
+## 4. Clienta caliente (alertas y ficha, 15-10-2026)
+
+**Temperatura (la calcula el agente, en cada turno, también en V3).** `memoria.temperatura`: `caliente` si el evento es en
+14 días o menos («para la otra semana»), si dice que lo quiere, pide cita o tiene urgencia; `tibio` a 15–30 días o con
+interés (precio, talla, color, stock); `frio` a más de 30 días o con «solo estoy viendo». Manda la más alta de las dos
+(fecha y señales). El motivo va en `temperatura_motivo`.
+
+**Alerta.** Cuando la memoria que vuelve del agente PASA a `caliente` (la anterior no lo era), el bot Go
+(`bot/alertas.go`) crea una fila en `alertas`, publica el tema SSE `alertas` y, si el ajuste `alerta_caliente_whatsapp`
+tiene un número, le manda un WhatsApp en segundo plano. Una alerta por conversación y semana (`store.AlertaVentana`).
+
+| Ajuste | Valor | Defecto |
+|---|---|---|
+| `alerta_caliente_whatsapp` | número con código de país; se guardan solo los dígitos al enviar. `""` = sin WhatsApp | `""` |
+| `alerta_caliente_panel` | `"true"` / `"false"`: abrir la ventana en el panel | `"true"` |
+
+`GET /api/alertas?estado=pendiente|todas` (pendiente por defecto; la más nueva primero, hasta 200):
+
+```json
+{"id": 4, "tipo": "caliente", "conversation_id": 56, "customer_id": 56, "nombre": "Rocío Díaz", "telefono": "51911000031",
+ "motivo": "evento el 24-oct (en 9 días)",
+ "resumen": {"evento": "matrimonio", "fecha": "sábado 24 de octubre", "dias": 9, "horario": "noche", "talla": "S",
+             "color": "vino", "estilo": "", "presupuesto": "", "dudas": ["la talla"], "prenda": "V45",
+             "prenda_nombre": "Vestido Merlina"},
+ "creado_en": "2026-10-15T17:05:01Z", "atendida_por": "", "atendida_en": null, "whatsapp_enviado": true}
+```
+
+`POST /api/alertas/{id}/atendida` la marca a nombre de quien está conectada (todo el equipo puede). 404 si no es de la
+empresa.
+
+`GET /api/conversations/{id}/ficha` («Lo que sabemos», sale de la memoria guardada; sin memoria, vacía y fría):
+
+```json
+{"temperatura": "caliente", "temperatura_motivo": "evento el 24-oct (en 9 días)", "dias_al_evento": 9, "etapa": "seguimiento",
+ "sabemos": {"ocasion": "matrimonio", "fecha": "sábado 24 de octubre", "fecha_iso": "2026-10-24", "horario": "noche",
+             "talla": "S", "estatura": "1.60", "color": "vino"},
+ "objeciones": ["la talla"], "producto": {"codigo": "V45", "nombre": "Vestido Merlina"}, "pedido": null}
+```
+
+`sabemos` solo trae lo que se sabe (claves posibles: nombre, ocasion, fecha, fecha_iso, horario, talla, estatura, color,
+estilo, presupuesto, envio, ciudad, para_quien). Los temores salen de `objeciones` del agente en palabras («la talla»,
+«el precio», «la confianza (pagar antes de recibir)», «el tiempo de entrega»…).
+
+**Lo que cambia en la conversación (agente).** Caliente: urgencia amable UNA vez (la del guion: «Wooow, estamos muy
+pronto…»). Fría con fecha lejana: acompañarla sin presión. El precio de un modelo se dice una vez (`precios_dichos` en la
+memoria): al cambiar de color no se repite, salvo que lo pregunte o esté cerrando la compra. La promo y la urgencia
+tampoco se repiten. Los temores se contestan con datos de la tienda (tabla de medidas, cambios, envíos).

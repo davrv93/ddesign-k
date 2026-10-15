@@ -40,7 +40,7 @@ func enLista(x string, lista []string) bool {
 
 // TablasFuentes: las tablas de este módulo (todas con tenant_id). No van en TenantTables porque `jmd migrar-sqlite`
 // copia esa lista desde la SQLite de una sola tienda, que no las tiene.
-var TablasFuentes = []string{"fuentes", "fuentes_versiones", "embudos", "pedido_embudo", "uso_fuentes"}
+var TablasFuentes = []string{"fuentes", "fuentes_versiones", "embudos", "pedido_embudo", "uso_fuentes", "alertas"}
 
 type Fuente struct {
 	ID             int64           `json:"id"`
@@ -243,15 +243,17 @@ var schemaFuentesMySQL = []string{
 // migrarFuentes crea las tablas de este módulo (idempotente). La llaman migrateSQLite y migrateMySQL al final.
 func (s *Store) migrarFuentes() error {
 	if !s.mysql() {
-		_, err := s.DB.Exec(schemaFuentesSQLite)
-		return err
+		if _, err := s.DB.Exec(schemaFuentesSQLite); err != nil {
+			return err
+		}
+		return s.migrarAlertas()
 	}
 	for _, q := range schemaFuentesMySQL {
 		if _, err := s.DB.Exec(q + ` ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`); err != nil {
 			return fmt.Errorf("%.60s…: %w", q, err)
 		}
 	}
-	return nil
+	return s.migrarAlertas() // alertas de clienta caliente (alertas.go)
 }
 
 // ---------------------------------------------------------------------------

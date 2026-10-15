@@ -1,7 +1,18 @@
 import { $, component$, sync$, useOnWindow, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { titulo } from "~/lib/marca";
-import { api, fuentesDeConversacion, miSesion, type Conversation, type FuenteUsada, type Message, type Order } from "~/lib/api";
+import {
+  api,
+  fichaConversacion,
+  fuentesDeConversacion,
+  miSesion,
+  type Conversation,
+  type FichaConversacion,
+  type FuenteUsada,
+  type Message,
+  type Order,
+} from "~/lib/api";
+import { LoQueSabemos } from "~/components/sabemos";
 import { Confirmar } from "~/components/confirmar";
 import { customerName, money, phoneLabel, STATUS, timeAgo, timeLabel, waText } from "~/lib/format";
 import { u } from "~/lib/base";
@@ -52,6 +63,8 @@ export default component$(() => {
   const soloDerivadas = useSignal(false);
   // Fuentes con las que respondió el robot en esta conversación (promos, preguntas frecuentes…).
   const usadas = useSignal<FuenteUsada[]>([]);
+  // Lo que el robot sabe de la clienta (temperatura y los ocho datos que la tienda quiere descubrir).
+  const ficha = useSignal<FichaConversacion | null>(null);
 
   const loadList = $(async () => {
     convs.value = await api<Conversation[]>("/api/conversations");
@@ -76,6 +89,13 @@ export default component$(() => {
           .filter((f) => !vistas.has(f.fuente_id) && vistas.add(f.fuente_id));
       })
       .catch(() => (usadas.value = []));
+    fichaConversacion(id)
+      .then((f) => {
+        if (current.value === id) ficha.value = f;
+      })
+      .catch(() => {
+        if (current.value === id) ficha.value = null;
+      });
     setTimeout(() => scroller.value?.scrollTo({ top: scroller.value.scrollHeight }), 30);
   });
 
@@ -83,6 +103,7 @@ export default component$(() => {
     current.value = id;
     thread.value = null;
     usadas.value = [];
+    ficha.value = null;
     history.replaceState(null, "", `?c=${id}`);
     await loadThread();
   });
@@ -96,6 +117,15 @@ export default component$(() => {
     const c = Number(new URLSearchParams(location.search).get("c"));
     if (c) await open(c);
   });
+
+  // El aviso de clienta caliente pide abrir una conversación estando ya en esta página.
+  useOnWindow(
+    "kd-abrir-conversacion",
+    $(async (e: Event) => {
+      const id = Number((e as CustomEvent<number>).detail);
+      if (id) await open(id);
+    }),
+  );
 
   useOnWindow(
     "kd-change",
@@ -257,6 +287,8 @@ export default component$(() => {
                 ))}
               </div>
             )}
+
+            {ficha.value && <LoQueSabemos ficha={ficha.value} />}
 
             <div class="messages" ref={scroller}>
               {thread.value!.messages.map((m) => (

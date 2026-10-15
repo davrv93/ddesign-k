@@ -469,3 +469,68 @@ export const pedidosDeEmbudo = (id: number) =>
 export const moverEnEmbudo = (id: number, orderId: number, etapa: string) =>
   api(`/api/embudos/${id}/pedidos/${orderId}`, { method: "PUT", json: { etapa } });
 export const sacarDeEmbudo = (id: number, orderId: number) => api(`/api/embudos/${id}/pedidos/${orderId}`, { method: "DELETE" });
+
+// ---------------------------------------------------------------------------
+// Clienta caliente: avisos del robot (GET /api/alertas) y lo que sabe de cada conversación (GET …/ficha).
+
+/** Lo que el robot descubrió de la clienta cuando saltó el aviso. Cadenas vacías = no lo sabe. */
+export interface ResumenAlerta {
+  evento: string;
+  fecha: string;
+  dias: number | null;
+  horario: string;
+  talla: string;
+  color: string;
+  estilo: string;
+  presupuesto: string;
+  dudas: string[] | null;
+  prenda: string;
+  prenda_nombre: string;
+}
+
+export interface Alerta {
+  id: number;
+  tipo: "caliente" | string;
+  conversation_id: number;
+  customer_id: number;
+  nombre: string;
+  telefono: string;
+  motivo: string;
+  resumen: ResumenAlerta | null;
+  creado_en: string;
+  atendida_por: string;
+  atendida_en: string | null;
+  whatsapp_enviado: boolean;
+}
+
+export type Temperatura = "caliente" | "tibio" | "frio";
+
+export interface FichaConversacion {
+  temperatura: Temperatura | "";
+  temperatura_motivo: string;
+  dias_al_evento: number | null;
+  etapa: string;
+  sabemos: {
+    nombre: string;
+    ocasion: string;
+    fecha: string;
+    fecha_iso: string;
+    horario: string;
+    talla: string;
+    estatura: string;
+    color: string;
+    estilo: string;
+    presupuesto: string;
+    envio: string;
+    ciudad: string;
+    para_quien: string;
+  } | null;
+  objeciones: string[] | null;
+  producto: { codigo: string; nombre: string } | null;
+  pedido: { codigo: string; talla: string; confirmado: boolean } | null;
+}
+
+export const listarAlertas = (estado: "pendiente" | "todas" = "pendiente") =>
+  api<Alerta[] | null>(`/api/alertas${qs({ estado })}`).then((r) => r ?? []);
+export const marcarAlertaAtendida = (id: number) => api<Alerta>(`/api/alertas/${id}/atendida`, { method: "POST" });
+export const fichaConversacion = (id: number) => api<FichaConversacion>(`/api/conversations/${id}/ficha`);

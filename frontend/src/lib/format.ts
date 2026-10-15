@@ -84,3 +84,20 @@ export const iniciales2 = (nombre: string) =>
     .map((w) => w[0])
     .join("")
     .toUpperCase() || "?";
+
+/** Teléfono legible: «+51 977 555 444» para Perú; el resto, «+» y grupos de tres. */
+export function telefonoLegible(p: string): string {
+  const d = (p || "").replace(/\D/g, "");
+  if (!d) return "";
+  if (d.length === 11 && d.startsWith("51")) return `+51 ${d.slice(2, 5)} ${d.slice(5, 8)} ${d.slice(8)}`;
+  return `+${d.replace(/(\d{3})(?=\d)/g, "$1 ")}`;
+}
+
+/** Días al evento en palabras: «hoy», «mañana», «en 7 días», «ya pasó». */
+export function enDias(n: number | null | undefined): string {
+  if (n == null) return "";
+  if (n < 0) return "ya pasó";
+  if (n === 0) return "hoy";
+  if (n === 1) return "mañana";
+  return `en ${n} días`;
+}

@@ -366,6 +366,16 @@ material (pdf, docx, txt, md, csv; el texto se extrae y queda como borrador). Co
   `api/fuentes_test.go`, `bot/fuentes_test.go`, `kommo/promo_test.go` (SQLite y, con `JMD_TEST_MYSQL_DSN`, MariaDB).
 - La imagen del backend lleva `poppler-utils` (pdftotext) para los PDF.
 
+### Clienta caliente (15-10-2026)
+
+Cuando la temperatura que devuelve el agente **pasa** a caliente (evento en ≤ 14 días, quiere comprarlo, cita o
+urgencia), `bot/alertas.go` crea una alerta (tabla `alertas`, al final de `migrarFuentes`), avisa al panel por SSE
+(`alertas`) y, si Ajustes → «Clienta caliente» tiene un número, le manda un WhatsApp con el resumen y el enlace a la
+conversación (necesita `PUBLIC_URL`). Una por conversación y semana. El panel abre una ventana (`components/alertas.tsx`)
+y la conversación muestra «Lo que sabemos» (`GET /api/conversations/{id}/ficha`). Contrato en
+[`docs/FUENTES_CONTRATO.md`](docs/FUENTES_CONTRATO.md) §4. **Probarlo manda un WhatsApp de verdad al número de
+Ajustes**: en pruebas, usa el stack local con evolution falso.
+
 ## Reglas
 
 1. **No despliegues sin que el usuario lo pida.** Aun así, una orden de desplegar ya es la autorización:

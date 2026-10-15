@@ -1305,6 +1305,7 @@ func (b *Bot) guardarMemoria(ctx context.Context, conv *store.Conversation, cc *
 	cc.Memoria = r.Memoria
 	b.setState(ctx, conv, conv.State, *cc)
 	b.registrarCita(ctx, conv, cc, antes, r.Memoria) // cita para probarse nueva: al tablero, para la asesora
+	b.avisarSiCaliente(ctx, conv, antes, r.Memoria)  // pasó a caliente: alerta en el panel y WhatsApp a la tienda
 }
 
 func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) bool {
