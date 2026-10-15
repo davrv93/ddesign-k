@@ -1,0 +1,222 @@
+{
+ "_nota": "Generado por deploy/catalogo-baruka-pe/capturas_colecciones.py. «all» = todo el catálogo.",
+ "colecciones": {
+  "blazer": {
+   "url": "https://baruka.pe/collections/blazer",
+   "titulo": "blazers",
+   "captura": "coleccion_blazer-20261014.jpg",
+   "alias": [
+    "blazer",
+    "blazers",
+    "sacos",
+    "saco"
+   ],
+   "productos": [
+    "kero"
+   ]
+  },
+  "blusas": {
+   "url": "https://baruka.pe/collections/blusas",
+   "titulo": "blusas",
+   "captura": "coleccion_blusas-20261014.jpg",
+   "alias": [
+    "blusas",
+    "blusa",
+    "tops",
+    "top"
+   ],
+   "productos": [
+    "rochelle",
+    "henrrieta",
+    "bernadette",
+    "franchesca",
+    "hobeika",
+    "emet",
+    "celestine",
+    "narciso",
+    "lila",
+    "ankara",
+    "evangeline",
+    "anastacia",
+    "jewell",
+    "hob",
+    "blum",
+    "isis",
+    "nieve",
+    "faye",
+    "camila-1",
+    "piume",
+    "yukio",
+    "olwen",
+    "margarita",
+    "bianca",
+    "eva",
+    "charlotte"
+   ]
+  },
+  "conjuntos": {
+   "url": "https://baruka.pe/collections/conjuntos",
+   "titulo": "conjuntos",
+   "captura": "coleccion_conjuntos-20261014.jpg",
+   "alias": [
+    "conjuntos",
+    "conjunto",
+    "dos piezas"
+   ],
+   "productos": [
+    "luz",
+    "ethel",
+    "faris",
+    "almudena",
+    "dakota"
+   ]
+  },
+  "enterizos": {
+   "url": "https://baruka.pe/collections/enterizos",
+   "titulo": "enterizos",
+   "captura": "coleccion_enterizos-20261014.jpg",
+   "alias": [
+    "enterizos",
+    "enterizo",
+    "jumpsuit",
+    "jumpsuits",
+    "monos",
+    "mono"
+   ],
+   "productos": [
+    "arlet",
+    "elowen",
+    "sereia",
+    "miara",
+    "riviera",
+    "elvi",
+    "murad",
+    "camila",
+    "gretta",
+    "tokio",
+    "rosalin",
+    "kalet",
+    "ambar",
+    "verona",
+    "sol",
+    "amapola"
+   ]
+  },
+  "pantalon": {
+   "url": "https://baruka.pe/collections/pantalon",
+   "titulo": "pantalones",
+   "captura": "coleccion_pantalon-20261014.jpg",
+   "alias": [
+    "pantalones",
+    "pantalon",
+    "palazzo",
+    "palazos"
+   ],
+   "productos": [
+    "rose-1",
+    "annette",
+    "codman",
+    "cristal",
+    "de-dee",
+    "gipsy",
+    "holly-1",
+    "lexy",
+    "maddy",
+    "nala",
+    "skady",
+    "sadie",
+    "soyala",
+    "tulipan",
+    "zury"
+   ]
+  },
+  "sastre": {
+   "url": "https://baruka.pe/collections/sastre",
+   "titulo": "conjuntos sastre",
+   "captura": "coleccion_sastre-20261014.jpg",
+   "alias": [
+    "conjuntos sastre",
+    "conjunto sastre",
+    "sastre",
+    "sastres",
+    "trajes sastre",
+    "traje sastre",
+    "ternos",
+    "terno"
+   ],
+   "productos": [
+    "amira",
+    "silvine"
+   ]
+  },
+  "vestido-cortos": {
+   "url": "https://baruka.pe/collections/vestido-cortos",
+   "titulo": "vestidos cortos",
+   "captura": "coleccion_vestido-cortos-20261014.jpg",
+   "alias": [
+    "vestidos cortos",
+    "vestido corto",
+    "cortos",
+    "vestidos de dia",
+    "vestidos casuales",
+    "minivestidos"
+   ],
+   "productos": [
+    "adana",
+    "donna",
+    "vestido-merlina",
+    "vestido-blear",
+    "vestido-zoraida",
+    "persefone",
+    "daleska",
+    "athena",
+    "sophia",
+    "aurora",
+    "zoraida",
+    "addison",
+    "selma",
+    "holly",
+    "samara",
+    "roberta"
+   ]
+  },
+  "vestidos": {
+   "url": "https://baruka.pe/collections/vestidos",
+   "titulo": "vestidos largos",
+   "captura": "coleccion_vestidos-20261014.jpg",
+   "alias": [
+    "vestidos largos",
+    "vestido largo",
+    "largos",
+    "vestidos de fiesta",
+    "vestido de fiesta",
+    "vestidos de gala",
+    "vestido de gala",
+    "vestidos de noche",
+    "vestido de noche",
+    "vestidos elegantes",
+    "vestidos para boda"
+   ],
+   "productos": [
+    "petra",
+    "vestido-paloma",
+    "vestido-bruna",
+    "vestido-saira",
+    "vestido-ilaria",
+    "vestido-alma",
+    "vestido-salome",
+    "vestido-celestia",
+    "vestido-nuria",
+    "vestido-santana",
+    "vestido-moolena"
+   ]
+  },
+  "all": {
+   "url": "https://baruka.pe/collections/all",
+   "titulo": "todos los modelos",
+   "captura": "coleccion_all-20261014.jpg",
+   "alias": [],
+   "productos": []
+  }
+ }
+}

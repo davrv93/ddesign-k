@@ -10,7 +10,7 @@ import logging
 import re
 import time
 
-from .. import colores, ficha_producto, fotos_color, memoria
+from .. import colecciones, colores, ficha_producto, fotos_color, memoria
 from . import cliente_llm, ficha as ficha_mod, plantillas, prompt, validador
 from .herramientas import Recolector
 
@@ -60,6 +60,10 @@ RE_OTRA_PRENDA = re.compile(r"\b(algo|algun\w*|otr[oa]s?|parecid\w*|similar\w*|m
 # Pregunta por un color de la prenda en foco («¿cuál es el tono verde olivo?», «¿y en rojo?», «mándamela en vino»).
 RE_SOBRE_COLOR = re.compile(r"\b(tonos?|colou?r(es)?|tonalidad|fot\w*|ver(lo|la)?|veo|muestra\w*|envia\w*|manda\w*|"
                             r"pasa\w*|tienes|tienen|hay|como es|como se ve)\b")
+# No le convence la prenda en foco («no me gusta», «otro modelo», «algo diferente»): se muestra otra, no se vuelve a esa.
+RE_RECHAZA = re.compile(r"\b(no me (gusta|gusto|convence|convencio|agrada)|no es lo que busco|otro modelo|otra opcion|otros modelos|"
+                        r"algo (diferente|distinto|mas)|otro estilo|mejor otro|muestrame otro|ensename otro|tienes otro|hay otro|"
+                        r"no,? otro|ese no|este no|ninguno)\b")
 TALLAS_REALES = ("S", "M", "L")
 TALLAS_BAJO_PEDIDO = ("XS", "XL", "2XL", "XXL")   # «pre orden» en baruka.pe: se confeccionan
 
@@ -104,6 +108,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
                           _traza("", [], ["plantilla:paso7"], 0, _ms(t0)), req)
 
     # 1. Extracción determinista (lo que la clienta ya dijo) y la pregunta pendiente.
+    antes = dict(f.get("sabemos") or {})      # para notar un cambio de idea (prenda, color)
     lectura = memoria.leer(f, mensaje, ahora=memoria.ahora_lima())
     f["etapa"] = _etapa(f, lectura)
 
@@ -118,6 +123,11 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     en_pago = (bool((f.get("pedido") or {}).get("confirmado")) or getattr(req, "etapa", "") == "venta_confirmada"
                or getattr(req, "estado", "") == "esperando_pago")
     foto_hecho = getattr(req, "foto_hecho", "") or ""   # /foto: lo que ya se sabe de la foto que mandó
+    # 2a. Pide el catálogo o ver todo: el enlace de LA SECCIÓN que pide con su captura (14-10-2026, como la tienda).
+    if not en_pago and not foto_hecho and colecciones.pide_catalogo(mensaje):
+        res = _catalogo(f, mensaje, fichas, hist, req, t0)
+        if res:
+            return res
     if not en_pago and not foto_hecho and not oferta_foto:
         txt = ""
         if RE_SALUDO_SOLO.match(mensaje) and not _bots(hist):
@@ -141,6 +151,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     rec = Recolector(fichas, consultar_stock, pie=pie, permitir_reserva=permitir_reserva, mensaje=mensaje,
                      mostrados=f.get("mostrados") or [], pago_ok=pago_ok,
                      contesta_cual=bool(RE_PREGUNTO_CUAL.search(ultimo_bot)))
+    cambio_hecho = _cambio_de_idea(rec, f, mensaje, antes, lectura.get("datos") or {})
     confirma_hecho = "" if pago_ok else _confirma_pedido(rec, f, mensaje, ultimo_bot, permitir_reserva)
     if confirma_hecho:
         pago_ok = rec.hechos["pago_ok"] = True
@@ -171,6 +182,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
         hecho = (hecho + "\n" + pedido).strip()
     if confirma_hecho:
         hecho = (hecho + "\n" + confirma_hecho).strip()
+    if cambio_hecho:
+        hecho = (hecho + "\n" + cambio_hecho).strip()
     if colores_hecho:
         hecho = (hecho + "\n" + colores_hecho).strip()
     # Pide las fotos de los modelos que el bot acaba de nombrar («¿tienes fot?», «de todos», «los tres») sin decir cuál:
@@ -224,8 +237,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
         paso = ("PREGUNTA POR «ESTE» MODELO SIN DECIR CUÁL: pídele la foto o el nombre/código del modelo que vio; no "
                 "mandes fotos ni adivines. " + (paso or "")).strip()
     elif RE_CATALOGO.search(mensaje):
-        paso = ("PIDIÓ EL CATÁLOGO: dale https://baruka.pe (es el único enlace) y ofrécete a ayudarla a elegir; no "
-                "mandes fotos de una prenda en lugar del catálogo. " + (paso or "")).strip()
+        paso = ("PIDIÓ EL CATÁLOGO O LA PÁGINA: usa enviar_catalogo con la sección que pide (o «all» si no dice "
+                "cuál) y pregúntale cuál le gustó; no escribas tú el enlace. " + (paso or "")).strip()
     elif rec._pide_modelos() and not pago_ok and not rec.colores_ok:
         paso = ("ELLA PIDIÓ VER MODELOS: muéstrale UNA prenda que cuadre con lo que contó (enviar_fotos), nómbrala con "
                 "su precio y pregunta qué le gustó; el resto del guion sigue después. " + (paso or "")).strip()
@@ -303,6 +316,9 @@ def _recortar_fotos(rec: Recolector, mensaje: str) -> None:
     tope = MAX_FOTOS if rec.varias_ok or RE_PIDE_VARIAS.search((mensaje or "").lower()) else 1
     if rec.colores_ok:                   # los colores de UNA prenda: van todas las que eligió el código
         tope = max(tope, MAX_FOTOS_COLORES)
+    if rec.catalogo_ok:                  # «vestidos» a secas son dos secciones (largos y cortos)
+        tope = max(tope, 2)
+        rec.fotos = [x for x in rec.fotos if x.get("coleccion")] + [x for x in rec.fotos if not x.get("coleccion")]
     if len(rec.fotos) > tope:
         rec.fotos = rec.fotos[:tope]
 
@@ -654,6 +670,77 @@ def _sin_insistir(texto: str, f: dict, historial) -> str:
     nuevo = re.sub(r"(\s*[,:;y]\s*)+(?=[.!]|$)", "", nuevo)
     nuevo = re.sub(r"\b(cu[eé]ntame|dime|y)\s*[:,]?\s*$", "", nuevo.strip(), flags=re.I)
     return re.sub(r"\s{2,}", " ", nuevo).strip(" ,;:")
+
+
+def _catalogo(f: dict, mensaje: str, fichas, hist, req, t0) -> dict | None:
+    """El enlace de la sección que pide, con su captura, sin LLM. Si nombra UN modelo («pásame el link del Holly»), el
+    enlace de ese modelo con su foto. Termina con la pregunta que toque: el evento si aún no se sabe, si no «¿cuál te gustó?»."""
+    nombrados = _nombradas(mensaje, fichas)
+    tarjetas = []
+    if len(nombrados) == 1 and not colecciones.en_texto(mensaje):
+        x = next((y for y in fichas if y.codigo.upper() == nombrados[0]), None)
+        w = ficha_producto.web(nombrados[0])
+        if x is not None and w.get("url"):
+            f["producto"] = x.codigo.upper()
+            if x.codigo.upper() not in f["mostrados"]:
+                f["mostrados"].append(x.codigo.upper())
+            tarjetas.append({"codigo": x.codigo, "nombre": x.nombre, "imagen": f"/media/tienda/{x.codigo.lower()}.jpg",
+                             "pie": f"Aquí te comparto el {x.nombre}, dale clic 👇👇👇👇\n{w['url']}", "titulo": "", "tallas": []})
+    if not tarjetas:
+        tarjetas = [t for t in (colecciones.tarjeta(h) for h in colecciones.elegir(mensaje, f)) if t]
+    if not tarjetas:
+        return None
+    nombre = (getattr(req, "cliente", "") or "").strip().split(" ")[0]
+    sab = f.get("sabemos") or {}
+    if not sab.get("ocasion") and _veces_preguntado(hist, f).get("ocasion", 0) < 2:
+        cierre = "Cuéntame, ¿qué evento se te aproxima? Así te ayudo a elegir 😊"
+    else:
+        cierre = "¿Cuál te gustó más? Dime su nombre y te cuento tallas y colores 😊"
+    texto = f"¡Claro{', ' + nombre if nombre else ''}! 😊\n\n{cierre}"
+    log.info("V3 catálogo: %s", [t.get("coleccion") or t["codigo"] for t in tarjetas])
+    return _respuesta(f, texto, "responder", tarjetas, None, _traza(texto, [], ["catalogo"], 0, _ms(t0)), req)
+
+
+def _cambio_de_idea(rec: Recolector, f: dict, mensaje: str, antes: dict, datos: dict) -> str:
+    """Nota un cambio de idea y deja la ficha al día, para que el bot no siga con lo anterior (14-10-2026):
+    otro modelo («y el Holly?»), «no me gusta / otro modelo», otro tipo de prenda («mejor un enterizo») u otro color que
+    la prenda en foco no tiene. Devuelve el hecho para el modelo ("" si no cambió nada)."""
+    plano = memoria._plano(mensaje)
+    previo = (f.get("producto") or "").upper()
+    nombre = lambda c: next((x.nombre for x in rec.fichas if x.codigo.upper() == c), c)
+    pedido = f.get("pedido") or {}
+    partes = []
+    nombrados = _nombradas(mensaje, rec.fichas)
+    if len(nombrados) == 1 and previo and nombrados[0] != previo:
+        nuevo = nombrados[0]
+        f["producto"] = nuevo
+        if pedido.get("codigo") and not pedido.get("confirmado"):
+            ficha_mod.fijar_pedido(f, codigo=nuevo)
+        partes.append(f"CAMBIO DE MODELO: ahora pregunta por el {nuevo} {nombre(nuevo)} (antes miraba el {previo} "
+                      f"{nombre(previo)}). Habla SOLO del {nuevo}; no retomes el {previo} salvo que ella lo nombre.")
+    elif previo and RE_RECHAZA.search(plano) and not re.search(r"\bcolou?r|tono\b", plano):
+        f["producto"] = ""
+        if pedido.get("codigo") == previo and not pedido.get("confirmado"):
+            pedido["codigo"] = ""
+        rec.contesta_cual = True        # puede ver otra prenda aunque no diga «muéstrame»
+        vistos = ", ".join(f.get("mostrados") or []) or previo
+        partes.append(f"NO LE CONVENCIÓ EL {previo} {nombre(previo)}: muéstrale OTRO modelo (enviar_fotos), distinto del "
+                      f"{previo} y de los ya mostrados ({vistos}), que cuadre con lo que contó. No vuelvas a ofrecer el {previo}.")
+    p_antes, p_ahora = memoria._plano(antes.get("prenda") or ""), memoria._plano((f.get("sabemos") or {}).get("prenda") or "")
+    if p_antes and p_ahora and p_antes != p_ahora:
+        foco = (f.get("producto") or "").upper()
+        if foco and not memoria._plano(nombre(foco)).startswith(p_ahora.rstrip("s")):
+            f["producto"] = ""
+        partes.append(f"CAMBIO DE PRENDA: ahora busca {p_ahora} (antes {p_antes}). Ofrécele {p_ahora}; no sigas con {p_antes}.")
+    color = (datos.get("color") or "").strip()
+    foco = (f.get("producto") or "").upper()
+    if color and foco and not rec.colores_ok:
+        web = colores.colores_de(rec._ficha(foco)) if rec._ficha(foco) else []
+        tiene = [c for c in web if memoria._plano(color).split()[0] in memoria._plano(c)]
+        if web and not tiene:
+            partes.append(f"EL {foco} {nombre(foco)} NO VIENE EN {color.upper()} (viene en {', '.join(web)}): díselo claro y "
+                          f"ofrécele modelos en {color} (buscar_catalogo); no digas que el {foco} existe en {color}.")
+    return "\n".join(partes)
 
 
 def _confirma_pedido(rec: Recolector, f: dict, mensaje: str, ultimo_bot: str, permitir: bool) -> str:

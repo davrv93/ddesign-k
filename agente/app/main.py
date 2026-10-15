@@ -29,7 +29,7 @@ import base64
 import json
 from contextvars import ContextVar
 
-from . import comprension, datos, etapas, ficha_producto, fotos_color, jev, looks, memoria, respuestas, venta
+from . import colecciones, comprension, datos, etapas, ficha_producto, fotos_color, jev, looks, memoria, respuestas, venta
 from . import animo, crm, estructurado, gasto, rerank
 from .solicitud import (RE_CATALOGO, RE_MAS_BARATO, RE_MAS_OPCIONES, RE_OTRAS, RE_PIDE_COLOR_VERBO, _color_txt, _de_color, _raiz_color,
                         color_dicho, color_pedido, color_que_pide, interpretar)
@@ -2932,6 +2932,11 @@ def imagen_catalogo(archivo: str):
 def imagen_tienda_color(archivo: str):
     """Cualquier foto del índice de la tienda (la del color que mostró la clienta: app/fotos_color.py). El bot la baja y
     la envía desde su propio servidor: el WhatsApp de jmdventas no llega a este contenedor."""
+    if colecciones.archivo_valido(archivo):          # captura de una sección de baruka.pe (app/colecciones.py)
+        ruta = os.path.join(IMG_DIR, "colecciones", archivo)
+        if not os.path.exists(ruta):
+            raise HTTPException(404)
+        return FileResponse(ruta, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=86400"})
     if not re.fullmatch(r"v\d{2,3}(_w?\d{1,2})?\.jpg", archivo):
         raise HTTPException(404)
     ruta = os.path.join(IMG_DIR, "tienda", archivo)

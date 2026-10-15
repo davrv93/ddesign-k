@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import re
 
-from .. import colores, datos, ficha_producto, fotos_color, memoria, stock as stk, venta
+from .. import colecciones, colores, datos, ficha_producto, fotos_color, memoria, stock as stk, venta
 from .validador import hechos_vacios
 
 MAX_CATALOGO = 6
@@ -70,6 +70,14 @@ ESQUEMA = [
         "parameters": {"type": "object", "properties": {
             "codigos": {"type": "array", "items": {"type": "string"}}}, "required": ["codigos"]}}},
     {"type": "function", "function": {
+        "name": "enviar_catalogo",
+        "description": "Manda el enlace de una sección del catálogo de baruka.pe con su captura (como la tienda). Úsala "
+                       "cuando pida el catálogo, la página web o ver TODO de un tipo de prenda. Secciones: vestidos "
+                       "(largos), vestido-cortos, enterizos, blusas, pantalon, conjuntos, sastre, blazer, all (todo).",
+        "parameters": {"type": "object", "properties": {
+            "seccion": {"type": "string", "enum": ["vestidos", "vestido-cortos", "enterizos", "blusas", "pantalon",
+                                                   "conjuntos", "sastre", "blazer", "all"]}}, "required": ["seccion"]}}},
+    {"type": "function", "function": {
         "name": "crear_reserva",
         "description": "Reserva una prenda en una talla para la clienta. Llámala SOLO cuando la clienta haya "
                        "confirmado el pedido en el turno anterior. El resumen #N lo arma el sistema.",
@@ -122,6 +130,7 @@ class Recolector:
         self.bloquear_fotos = False          # objeción al envío: se contesta y se vuelve a la pregunta pendiente, sin fotos
         self.color_pedido = ""               # pidió un color: cada foto sale en ESE color si el modelo lo tiene (13-10-2026)
         self.colores_ok = False              # pidió ver los colores de una prenda: salen hasta MAX_FOTOS_COLORES (14-10-2026)
+        self.catalogo_ok = False             # se mandó la captura de una sección del catálogo (enviar_catalogo)
         self.grupo = ""                      # «llamar la atención» → vibrante, «elegante y discreta» → sobrio (app/colores.py)
         self.grupos_cfg: dict | None = None  # grupos de color de la tienda (jmdventas); None = seed del agente
         self.mensaje = (mensaje or "").lower()
@@ -351,6 +360,15 @@ class Recolector:
             if (f.codigo.upper(), imagen) not in ya:
                 self.fotos.append(self._foto(f, imagen, color, pie_color=True))
         return {"con_foto": [c for _, c in fotos], "sin_foto": sin_foto}
+
+    def _t_enviar_catalogo(self, args: dict) -> dict:
+        t = colecciones.tarjeta((args.get("seccion") or "").strip())
+        if t is None:
+            return {"error": "esa sección no existe"}
+        if t["imagen"] not in {x["imagen"] for x in self.fotos}:
+            self.fotos.append(t)
+        self.catalogo_ok = True
+        return {"enviado": t["url"], "nota": "La captura y el enlace van como foto: no repitas el enlace en tu texto."}
 
     def _t_crear_reserva(self, args: dict) -> dict:
         if not self.permitir_reserva:

@@ -37,7 +37,8 @@ TIMEOUT = float(os.environ.get("V3_TIMEOUT_MS", "8000")) / 1000.0
 MAX_VUELTAS = max(1, int(os.environ.get("V3_MAX_VUELTAS", "3")))
 # Tope de salida y esfuerzo de razonamiento. Con 700 tokens, gpt-6-luna razonaba en la 3.ª vuelta hasta agotarlos y
 # devolvía contenido nulo (finish_reason=length) → «respuesta vacía» → V1 (12-10-2026). «low» no dejó vacías y abarata.
-MAX_TOKENS = int(os.environ.get("V3_MAX_TOKENS", "1500"))
+# 14-10-2026: 1500 → 2000 (pedido del usuario: catálogo por secciones y cambios de idea piden un poco más de margen).
+MAX_TOKENS = int(os.environ.get("V3_MAX_TOKENS", "2000"))
 RAZONAMIENTO = os.environ.get("V3_RAZONAMIENTO", "low").strip().lower()
 EXTRA = {"reasoning": {"effort": RAZONAMIENTO}} if RAZONAMIENTO not in ("", "default", "off") else {}
 

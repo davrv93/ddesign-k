@@ -562,6 +562,10 @@ def extraer(texto: str, pendiente: str = "") -> dict:
 RE_PARA_QUIEN = re.compile(r"\b(?:para|es para|era para|se lo (?:quiero )?regal\w+ a)\s+(?:mi|una?)\s+(novia|esposa|enamorada|mama|madre|hija|hermana|"
                            r"amiga|prima|tia|abuela|suegra|pareja|jefa|sobrina|cunada|nuera|ahijada)\b")
 # Cómo quiere sentirse (paso 4 de noche): lo vota en la encuesta o lo dice. «elegante» suelto solo cuenta si se le preguntó.
+# Cambia de color («mejor en rojo», «ahora la quiero en azul», «en vino porfa», «ya no negro, rojo»): lo nuevo pisa al
+# color anterior (14-10-2026, cambios de idea). Sin esto el primer color quedaba para siempre.
+RE_CAMBIO_COLOR = re.compile(r"\b(mejor|ahora|prefiero|preferiria|cambi\w*|ya no|mas bien|en vez de|en lugar de|otro colou?r|"
+                             r"(lo|la) quiero en|quiero(lo|la)? en)\b|^\s*(en|de colou?r|colou?r)\s+\w+")
 RE_ESTILO_LLAMAR = re.compile(r"\bllamar (un poco (mas )?)?la atencion\b|\bllamativ\w*|\bresaltar\b|\bque (se )?destaque\b|\bvibrante")
 # «sobri\w*» atrapaba «sobrina»: «los quince de mi sobrina» guardaba estilo «elegante y discreta» (14-10-2026).
 RE_ESTILO_DISCRETA = re.compile(r"\bdiscret\w*|\bsobri[oa]s?\b|\bsobriedad\b|\belegante y discreta\b")
@@ -986,7 +990,8 @@ def leer(mem: dict, texto: str, jev: dict | None = None, ahora: _dt.datetime | N
     for k, v in list(datos.items()):
         previo = mem["sabemos"].get(k)
         # Ocasión y color: lo nuevo no pisa lo que ya dijo salvo que se le haya preguntado (o sea más concreto).
-        if k in ("ocasion", "color") and previo and pend != k and (k == "color" or v in GENERICAS):
+        if k in ("ocasion", "color") and previo and pend != k and (k == "color" or v in GENERICAS) \
+                and not (k == "color" and RE_CAMBIO_COLOR.search(t)):
             datos.pop(k)
             fuente.pop(k, None)
             continue
