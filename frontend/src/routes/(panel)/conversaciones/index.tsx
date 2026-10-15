@@ -1,7 +1,7 @@
 import { $, component$, sync$, useOnWindow, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { titulo } from "~/lib/marca";
-import { api, miSesion, type Conversation, type Message, type Order } from "~/lib/api";
+import { api, fuentesDeConversacion, miSesion, type Conversation, type FuenteUsada, type Message, type Order } from "~/lib/api";
 import { Confirmar } from "~/components/confirmar";
 import { customerName, money, phoneLabel, STATUS, timeAgo, timeLabel, waText } from "~/lib/format";
 import { u } from "~/lib/base";
@@ -50,6 +50,8 @@ export default component$(() => {
   // responde o lo reactiva.
   const derivadas = useSignal<Derivada[]>([]);
   const soloDerivadas = useSignal(false);
+  // Fuentes con las que respondió el robot en esta conversación (promos, preguntas frecuentes…).
+  const usadas = useSignal<FuenteUsada[]>([]);
 
   const loadList = $(async () => {
     convs.value = await api<Conversation[]>("/api/conversations");
@@ -62,13 +64,25 @@ export default component$(() => {
 
   const loadThread = $(async () => {
     if (current.value == null) return;
-    thread.value = await api<Thread>(`/api/conversations/${current.value}/messages`);
+    const id = current.value;
+    thread.value = await api<Thread>(`/api/conversations/${id}/messages`);
+    fuentesDeConversacion(id)
+      .then((fs) => {
+        if (current.value !== id) return;
+        // Una vez por fuente, la más reciente primero.
+        const vistas = new Set<number>();
+        usadas.value = [...fs]
+          .sort((a, b) => b.creado_en.localeCompare(a.creado_en))
+          .filter((f) => !vistas.has(f.fuente_id) && vistas.add(f.fuente_id));
+      })
+      .catch(() => (usadas.value = []));
     setTimeout(() => scroller.value?.scrollTo({ top: scroller.value.scrollHeight }), 30);
   });
 
   const open = $(async (id: number) => {
     current.value = id;
     thread.value = null;
+    usadas.value = [];
     history.replaceState(null, "", `?c=${id}`);
     await loadThread();
   });
@@ -231,6 +245,16 @@ export default component$(() => {
                       {o.total > 0 && ` · ${money(o.total)}`}
                     </a>
                   ))}
+              </div>
+            )}
+
+            {usadas.value.length > 0 && (
+              <div class="thread-fuentes">
+                {usadas.value.slice(0, 6).map((f) => (
+                  <a key={f.fuente_id} class="chip fu-usada" href={u(`/fuentes?f=${f.fuente_id}`)} title={`Usada ${timeAgo(f.creado_en)}`}>
+                    {f.tipo === "promo" ? "🏷" : "📚"} Respondió con: {f.titulo}
+                  </a>
+                ))}
               </div>
             )}
 

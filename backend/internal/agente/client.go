@@ -58,6 +58,9 @@ type Request struct {
 	// ColoresGrupos: qué colores son «sobrios» y cuáles «vibrantes» en esta tienda (Ajustes → Colores). Con la respuesta
 	// a «¿cómo quieres sentirte?» del guion de noche, el agente ofrece prendas en esos colores. Vacío = la propuesta del agente.
 	ColoresGrupos map[string]string `json:"colores_grupos,omitempty"`
+	// Conocimiento: las fuentes vigentes de la tienda (promos, preguntas frecuentes, guion, políticas, material;
+	// docs/FUENTES_CONTRATO.md §3). nil = no se manda y el agente sigue con su seed.
+	Conocimiento any `json:"conocimiento,omitempty"`
 }
 
 // Perfil de una clienta que ya compró: el agente prellena la talla y puede mencionarlo con naturalidad.
@@ -96,6 +99,8 @@ type Reply struct {
 	// Comercial: la intención comercial del turno (consulta_material, objecion_precio…). La usa el CRM (Kommo) para
 	// anotar el hito; no cambia lo que hace el bot.
 	Comercial *Comercial `json:"comercial,omitempty"`
+	// FuentesUsadas: ids de las fuentes de la tienda (promos, preguntas frecuentes) en que se apoyó la respuesta.
+	FuentesUsadas []int64 `json:"fuentes_usadas,omitempty"`
 }
 
 type Comercial struct {
@@ -130,6 +135,8 @@ type PhotoRequest struct {
 	// Igual que en Request: con v3 activo el texto lo redacta V3 (guion de Rosmary); si no, V1.
 	Version string `json:"version,omitempty"`
 	Modo    string `json:"modo,omitempty"`
+	// Igual que en Request.
+	Conocimiento any `json:"conocimiento,omitempty"`
 }
 
 // PhotoResult dice qué tan seguro está el agente de haber encontrado la prenda.

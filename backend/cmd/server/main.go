@@ -92,6 +92,7 @@ func main() {
 		log.Printf("whatsapp: apagado en este backend (EVOLUTION_URL=off o sin WHATSAPP_TENANT)")
 	}
 	go resumePausedBots(ctx, st, hub, cfg.MultiTenant)
+	go cronFuentes(ctx, st, hub, cfg.MultiTenant) // vence promos y propone preguntas frecuentes (fuentes.go)
 	if !cfg.MultiTenant || botTenant > 0 {
 		go followups(ctx, botSt, b, hub)
 	}

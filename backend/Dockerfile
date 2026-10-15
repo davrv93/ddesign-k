@@ -9,7 +9,7 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o /out/server ./cmd/serve
  && CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o /out/jmd ./cmd/jmd
 
 FROM alpine:3.22
-RUN apk add --no-cache ca-certificates tzdata && adduser -D -u 10001 app && mkdir -p /data && chown app /data
+RUN apk add --no-cache ca-certificates tzdata poppler-utils && adduser -D -u 10001 app && mkdir -p /data && chown app /data
 COPY --from=build /out/server /out/kommo-seed /out/jmd /usr/local/bin/
 USER app
 ENV PORT=8080 DATA_DIR=/data TZ=America/Lima

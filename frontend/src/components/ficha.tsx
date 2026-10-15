@@ -2,7 +2,7 @@
 // talla pendientes, contradicciones y lo que falta confirmar) y se edita con todos sus campos. Al guardar, el
 // backend deja con fuente «tienda» lo que se cambió a mano.
 import { $, component$, useSignal, useStore, type QRL } from "@builder.io/qwik";
-import { api, type Dato, type Ficha, type Fuente } from "~/lib/api";
+import { api, type Dato, type Ficha, type OrigenDato } from "~/lib/api";
 
 export const ATRIBUTOS: [string, string][] = [
   ["silueta", "Silueta"],
@@ -19,7 +19,7 @@ export const ATRIBUTOS: [string, string][] = [
   ["color_visto", "Color (en la foto)"],
 ];
 
-const FUENTE: Record<Fuente, string> = { diners: "Tienda", foto: "Foto", ambas: "Tienda y foto", tienda: "Tienda · a mano" };
+const FUENTE: Record<OrigenDato, string> = { diners: "Tienda", foto: "Foto", ambas: "Tienda y foto", tienda: "Tienda · a mano" };
 
 /** Datos completos de 13 (12 atributos + cuidados). */
 export const datosFicha = (f?: Ficha | null): [number, number] => {
@@ -49,7 +49,7 @@ const clonar = (f?: Ficha | null): Ficha => {
   return c;
 };
 
-const Fuente_ = ({ f }: { f?: Fuente | null }) => (f ? <span class={["fuente", `fuente-${f}`]}>{FUENTE[f] ?? f}</span> : null);
+const Fuente_ = ({ f }: { f?: OrigenDato | null }) => (f ? <span class={["fuente", `fuente-${f}`]}>{FUENTE[f] ?? f}</span> : null);
 
 interface Props {
   productId: number;

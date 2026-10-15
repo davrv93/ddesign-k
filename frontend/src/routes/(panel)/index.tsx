@@ -1,21 +1,27 @@
 import { $, component$, useOnWindow, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { titulo } from "~/lib/marca";
-import { api, miSesion, type Clienta, type Inicio, type Sesion, type Tarea } from "~/lib/api";
+import { api, miSesion, resumenPromos, type Clienta, type Inicio, type PromoResumen, type Sesion, type Tarea } from "~/lib/api";
 import { u } from "~/lib/base";
 import { ETAPAS, STATUS, customerName, iniciales2, money, timeAgo } from "~/lib/format";
 import { EtapaPill, TareaFila, TareaModal, alternarTarea } from "~/components/crm";
+import { vigenciaTexto } from "~/lib/fuentes";
 
 // Panel de inicio: cómo va el mes, el embudo, los pedidos por estado y lo que toca hacer hoy.
 export default component$(() => {
   const data = useSignal<{ inicio: Inicio; moneda: string } | null>(null);
   const tareas = useSignal<Tarea[]>([]);
   const recientes = useSignal<Clienta[]>([]);
+  const promos = useSignal<PromoResumen[]>([]);
   const yo = useSignal<Sesion | null>(null);
   const nueva = useSignal(false);
   const error = useSignal("");
 
   const load = $(async () => {
+    // Promos vigentes con sus avisos («Vence en 2 días»): si falla, el inicio sigue igual.
+    resumenPromos()
+      .then((r) => (promos.value = r.filter((p) => p.vigente)))
+      .catch(() => (promos.value = []));
     try {
       const [d, vencidas, hoy, cs] = await Promise.all([
         api<{ inicio: Inicio; moneda: string }>("/api/inicio"),
@@ -118,6 +124,38 @@ export default component$(() => {
               <small class="muted">{d.tareas_hoy} vencen hoy</small>
             </a>
           </div>
+
+          {promos.value.length > 0 && (
+            <section class="panel inicio-promos">
+              <div class="panel-head">
+                <h2>Promos vigentes</h2>
+                <a class="small" href={u("/fuentes?tab=promo")}>
+                  Ver promos →
+                </a>
+              </div>
+              <ul class="mini-list">
+                {promos.value.map((p) => (
+                  <li key={p.id}>
+                    <a href={u(`/fuentes?tab=promo&f=${p.id}`)} class="mini-row wrap-row">
+                      <span class="grow">
+                        <strong>🏷 {p.titulo}</strong>
+                        <span class="muted small">
+                          {" "}
+                          · {vigenciaTexto(p.vigente_desde, p.vigente_hasta)} · {p.cifras.pedidos} pedidos · {p.cifras.pagados} pagados ·{" "}
+                          {money(p.cifras.monto, mon)}
+                        </span>
+                      </span>
+                      {(p.avisos ?? []).map((a) => (
+                        <span key={a} class="chip warn">
+                          ⚠ {a}
+                        </span>
+                      ))}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <div class="dash-grid">
             <section class="panel">

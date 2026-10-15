@@ -40,6 +40,7 @@ type Sincronizador struct {
 	pend     sync.WaitGroup
 	mu       sync.Mutex
 	esq      *Esquema
+	promos   map[string]*Esquema // embudos de las promos, por nombre (15-10-2026)
 	arranque sync.Once
 }
 
@@ -124,6 +125,37 @@ func (s *Sincronizador) Esquema(ctx context.Context) (*Esquema, error) {
 	if raw, err := json.Marshal(e); err == nil {
 		_ = s.st.SetSetting(ctx, "kommo_esquema", string(raw)) // a la vista para diagnosticar; se rehace al arrancar
 	}
+	return e, nil
+}
+
+// RegistrarEsquema guarda el esquema de un embudo de promo recién asegurado (así el primer lead no lo vuelve a pedir).
+func (s *Sincronizador) RegistrarEsquema(nombre string, e *Esquema) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.promos == nil {
+		s.promos = map[string]*Esquema{}
+	}
+	s.promos[normal(nombre)] = e
+}
+
+// esquemaDe: el embudo de la promo del evento si lo tiene; si no, el general. Los campos del lead son de la cuenta,
+// así que valen en los dos.
+func (s *Sincronizador) esquemaDe(ctx context.Context, ev Evento) (*Esquema, error) {
+	if ev.EmbudoPromo == "" {
+		return s.Esquema(ctx)
+	}
+	s.mu.Lock()
+	e := s.promos[normal(ev.EmbudoPromo)]
+	s.mu.Unlock()
+	if e != nil {
+		return e, nil
+	}
+	e, err := Asegurar(ctx, s.c, ev.EmbudoPromo)
+	if err != nil {
+		log.Printf("[KOMMO] embudo de la promo %q: %v; va al general", ev.EmbudoPromo, err)
+		return s.Esquema(ctx)
+	}
+	s.RegistrarEsquema(ev.EmbudoPromo, e)
 	return e, nil
 }
 
@@ -295,7 +327,7 @@ func titulo(s string) string {
 func gestionada(t string) bool {
 	t = normal(t)
 	return t == "whatsapp" || t == "web" || t == "kddesign" || t == "fría" || t == "tibia" || t == "caliente" ||
-		strings.HasPrefix(t, "anuncio")
+		strings.HasPrefix(t, "anuncio") || strings.HasPrefix(t, "promo:")
 }
 
 func (s *Sincronizador) etiquetas(ev Evento, d datos) []string {
@@ -308,6 +340,9 @@ func (s *Sincronizador) etiquetas(ev Evento, d datos) []string {
 	}
 	if ev.Demo {
 		tags = append(tags, "demo")
+	}
+	if ev.Promo != "" {
+		tags = append(tags, "promo: "+ev.Promo)
 	}
 	return tags
 }
@@ -354,7 +389,7 @@ func (s *Sincronizador) Aplicar(ctx context.Context, ev Evento) error {
 	if ev.Clave == "" {
 		return errors.New("evento sin clave")
 	}
-	e, err := s.Esquema(ctx)
+	e, err := s.esquemaDe(ctx, ev)
 	if err != nil {
 		return err
 	}

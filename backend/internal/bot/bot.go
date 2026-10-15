@@ -78,6 +78,7 @@ type Bot struct {
 	locks   map[string]*sync.Mutex
 	outbox  map[string]chan outJob
 	pending sync.WaitGroup
+	conoc   cacheConocimiento // fuentes vigentes de la tienda (fuentes.go)
 }
 
 func New(cfg *config.Config, st *store.Store, evo *evolution.Client, aic *ai.Client) *Bot {
@@ -1259,7 +1260,8 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 		Etapa: cc.Etapa, Conversacion: strconv.FormatInt(conv.ID, 10), Talla: cc.Size,
 		DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
 		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc),
-		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo, ColoresGrupos: b.coloresGrupos(ctx)}
+		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo, ColoresGrupos: b.coloresGrupos(ctx),
+		Conocimiento: b.conocimientoReq(ctx)}
 	if conv.State != stIdle && cc.ProductID > 0 {
 		if p, err := b.store.GetProduct(ctx, cc.ProductID); err == nil {
 			req.Producto = p.Code
@@ -1271,6 +1273,7 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 		return nil
 	}
 	b.crmRespuesta(ctx, r)
+	b.anotarFuentes(ctx, conv, r)
 	b.guardarMemoria(ctx, conv, cc, r)
 	return r
 }
@@ -1386,13 +1389,14 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 		Estado: conv.State, Negocio: b.cfg.BusinessName, Cliente: b.customerName(conv),
 		Historial: b.agentHistory(ctx, conv, msg.Body), Etapa: cc.Etapa, DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
 		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc),
-		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo}
+		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo, Conocimiento: b.conocimientoReq(ctx)}
 	r, err := b.Agent.Photo(actx, req)
 	if err != nil || r.Foto == nil {
 		log.Printf("bot: agente foto: %v", err)
 		return false
 	}
 	b.crmRespuesta(ctx, r)
+	b.anotarFuentes(ctx, conv, r)
 	b.guardarMemoria(ctx, conv, cc, r)
 	log.Printf("bot: agente foto=%s %s %s sim=%.3f", msg.Media, r.Foto.Caso, r.Foto.Codigo, r.Foto.Similitud)
 	b.hito(ctx, conv, fmt.Sprintf("📷 Mandó una foto: %s (%s, similitud %.2f)", firstNonEmpty(r.Foto.Codigo, "sin coincidencia"), r.Foto.Caso, r.Foto.Similitud))

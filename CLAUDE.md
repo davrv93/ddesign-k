@@ -341,6 +341,31 @@ Clientas (lista con filtros y ficha), etiquetas, embudo editable, notas, tareas,
 - **Pruebas:** `internal/store/crm_test.go` y `internal/api/crm_panel_test.go`, con dos empresas. Un recurso nuevo lleva su
   caso de aislamiento ahí.
 
+## Fuentes, promos y embudos (15-10-2026, rama `feat/jmdventas-fuentes`)
+
+Lo que el robot sabe lo carga la tienda en **JMD Ventas → Fuentes**: promos, preguntas frecuentes, guion, políticas y
+material (pdf, docx, txt, md, csv; el texto se extrae y queda como borrador). Contrato JSON panel ↔ backend ↔ agente en
+[`docs/FUENTES_CONTRATO.md`](docs/FUENTES_CONTRATO.md); plan en `PjgFactSalud_completo/PLAN_TRABAJO_FUENTES_Y_PROMOS_JMDVENTAS.md`.
+
+- **Tablas propias** (`store/fuentes.go`, `embudos.go`, `propuestas.go`; `migrarFuentes` al final de cada migración):
+  `fuentes`, `fuentes_versiones`, `embudos`, `pedido_embudo`, `uso_fuentes`. No tocan `orders` ni `conversations` (otra
+  sesión los edita) y **no** van en `TenantTables` (`jmd migrar-sqlite` las buscaría en la SQLite vieja).
+- **El robot no reentrena:** el bot manda `conocimiento` (solo lo VIGENTE, con `version` = hash del contenido) en cada
+  `/chat` y `/foto`; caché de 20 s en `bot/fuentes.go`. El agente devuelve `fuentes_usadas` y el bot las guarda en
+  `uso_fuentes`. Sin fuentes no se manda nada y el agente sigue con su seed.
+- **Embudo de una promo:** etapas libres que **no** cambian `orders.status` (el stock depende de él). Un pedido entra solo
+  si nace de una conversación en la que el robot usó la promo (1 h de holgura); a mano se mete, mueve o saca
+  (`pedido_embudo`, etapa vacía = sacado). Con Kommo encendido se crea el embudo espejo «Promo · <nombre>» con las etapas
+  del bot y el lead lleva la etiqueta `promo: <título>`.
+- **Cron** (`cmd/server/fuentes.go`, cada minuto): vence lo que pasó su fecha «hasta» (Lima) y, desde las 03:00 de Lima,
+  una vez al día propone preguntas frecuentes con las conversaciones del día (`ProponerPreguntas`: el robot derivó, una
+  persona contestó o la clienta repitió; agrupadas por palabras en común; mínimo `propuestas_minimo`, 3; anonimizadas).
+  Las propuestas quedan en estado `propuesta` y **nada entra al robot sin que una admin la active**. `POST
+  /api/fuentes/proponer` la corre a mano (72 h).
+- Leer es para todo el equipo; crear, editar, activar, subir y borrar, solo admin. Pruebas: `store/fuentes_test.go`,
+  `api/fuentes_test.go`, `bot/fuentes_test.go`, `kommo/promo_test.go` (SQLite y, con `JMD_TEST_MYSQL_DSN`, MariaDB).
+- La imagen del backend lleva `poppler-utils` (pdftotext) para los PDF.
+
 ## Reglas
 
 1. **No despliegues sin que el usuario lo pida.** Aun así, una orden de desplegar ya es la autorización:

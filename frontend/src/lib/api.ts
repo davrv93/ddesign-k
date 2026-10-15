@@ -75,11 +75,12 @@ export interface Product {
   ficha?: Ficha | null;
 }
 
-/** Ficha técnica (backend/internal/store/ficha.go; el esquema del agente V2). */
-export type Fuente = "diners" | "foto" | "ambas" | "tienda";
+/** Ficha técnica (backend/internal/store/ficha.go; el esquema del agente V2).
+ *  `OrigenDato` es de dónde salió cada dato de la ficha (no confundir con `Fuente`, el material del robot). */
+export type OrigenDato = "diners" | "foto" | "ambas" | "tienda";
 export interface Dato {
   valor: string;
-  fuente: Fuente;
+  fuente: OrigenDato;
 }
 export interface Ficha {
   codigo?: string;
@@ -297,3 +298,174 @@ export async function descargar(path: string, nombre: string) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
+
+// ---------------------------------------------------------------------------
+// Fuentes, promos, embudos y conocimiento del robot (docs/FUENTES_CONTRATO.md)
+
+export type TipoFuente = "promo" | "faq" | "guion" | "politica" | "material";
+export type EstadoFuente = "borrador" | "activo" | "vencido" | "archivado" | "propuesta" | "descartada";
+export type Mecanica = "porcentaje" | "monto" | "precio_especial" | "dos_por" | "envio_gratis" | "regalo" | "otra";
+export type Publico = "todas" | "primera_vez" | "que_compraron";
+
+export interface AlcancePromo {
+  tipo: "todo" | "categoria" | "coleccion" | "prendas";
+  categoria: string;
+  coleccion: string;
+  codigos: string[];
+}
+
+/** `datos` de una promo. */
+export interface PromoDatos {
+  mecanica: Mecanica;
+  valor: number;
+  alcance: AlcancePromo;
+  condiciones: string;
+  mensaje_apertura: string;
+  respuesta_promo: string;
+  respuesta_fuera: string;
+  objetivo: string;
+  meta: number;
+  publico: Publico;
+  embudo_id: number;
+}
+
+/** `datos` de una pregunta frecuente (`ocurrencias` solo en las propuestas del robot). */
+export interface FaqDatos {
+  pregunta: string;
+  variantes: string[];
+  respuesta: string;
+  ocurrencias?: number;
+}
+
+/** Material con el que atiende el robot. En la lista, `contenido` puede venir vacío y el texto recortado en `resumen`. */
+export interface Fuente {
+  id: number;
+  tipo: TipoFuente;
+  titulo: string;
+  contenido: string;
+  resumen?: string;
+  estado: EstadoFuente;
+  vigente_desde: string;
+  vigente_hasta: string;
+  vigente: boolean;
+  programada: boolean;
+  etiquetas: string[] | null;
+  datos: Partial<PromoDatos> & Partial<FaqDatos> & Record<string, unknown>;
+  origen: string;
+  archivo: string;
+  version: number;
+  actualizado_por: string;
+  actualizado_en: string;
+  creado_en: string;
+}
+
+/** Campos que se mandan al crear o guardar. */
+export interface FuenteEditable {
+  tipo: TipoFuente;
+  titulo: string;
+  contenido: string;
+  vigente_desde: string;
+  vigente_hasta: string;
+  etiquetas: string[];
+  datos: Record<string, unknown>;
+}
+
+export interface FuenteVersion {
+  version: number;
+  titulo: string;
+  contenido: string;
+  datos: Fuente["datos"];
+  autor: string;
+  creado_en: string;
+}
+
+export interface CifrasPromo {
+  conversaciones: number;
+  pedidos: number;
+  confirmados: number;
+  pagados: number;
+  monto: number;
+}
+
+export interface PromoResumen {
+  id: number;
+  titulo: string;
+  estado: EstadoFuente;
+  vigente: boolean;
+  programada: boolean;
+  vigente_desde: string;
+  vigente_hasta: string;
+  dias_restantes: number | null;
+  embudo_id: number;
+  cifras: CifrasPromo;
+  avisos: string[] | null;
+}
+
+export interface Embudo {
+  id: number;
+  nombre: string;
+  etapas: string[];
+  promo_id: number;
+  general: boolean;
+  kommo_pipeline_id: number;
+  creado_en: string;
+}
+
+export type PedidoEmbudo = Order & { etapa: string };
+
+export interface Conocimiento {
+  empresa: string;
+  version: string;
+  hoy: string;
+  promos: ({ id: number; titulo: string; contenido: string; vigente_desde: string; vigente_hasta: string } & Partial<PromoDatos>)[] | null;
+  faqs: { id: number; pregunta: string; variantes: string[] | null; respuesta: string }[] | null;
+  politicas: { id: number; titulo: string; contenido: string }[] | null;
+  guion: { id: number; titulo: string; contenido: string } | null;
+  material: { id: number; titulo: string; contenido: string }[] | null;
+}
+
+export interface FuenteUsada {
+  fuente_id: number;
+  titulo: string;
+  tipo: TipoFuente;
+  creado_en: string;
+}
+
+const qs = (p: Record<string, string | undefined>) => {
+  const s = new URLSearchParams();
+  for (const [k, v] of Object.entries(p)) if (v) s.set(k, v);
+  const t = s.toString();
+  return t ? `?${t}` : "";
+};
+
+export const listarFuentes = (f: { tipo?: string; estado?: string; q?: string } = {}) => api<Fuente[] | null>(`/api/fuentes${qs(f)}`).then((r) => r ?? []);
+export const leerFuente = (id: number) => api<Fuente>(`/api/fuentes/${id}`);
+export const crearFuente = (body: FuenteEditable) => api<Fuente>("/api/fuentes", { method: "POST", json: body });
+export const guardarFuente = (id: number, body: FuenteEditable) => api<Fuente>(`/api/fuentes/${id}`, { method: "PUT", json: body });
+export const cambiarEstadoFuente = (id: number, estado: "activo" | "borrador" | "archivado" | "descartada") =>
+  api<Fuente>(`/api/fuentes/${id}/estado`, { method: "POST", json: { estado } });
+export const borrarFuente = (id: number) => api(`/api/fuentes/${id}`, { method: "DELETE" });
+export const versionesFuente = (id: number) => api<FuenteVersion[] | null>(`/api/fuentes/${id}/versiones`).then((r) => r ?? []);
+
+/** Sube un archivo (pdf, docx, txt, md, csv): el backend extrae el texto y crea un borrador. */
+export const subirFuente = (archivo: File, tipo: TipoFuente, titulo: string) => {
+  const fd = new FormData();
+  fd.append("archivo", archivo);
+  fd.append("tipo", tipo);
+  fd.append("titulo", titulo);
+  return api<Fuente>("/api/fuentes/subir", { method: "POST", body: fd });
+};
+
+export const leerConocimiento = () => api<Conocimiento>("/api/conocimiento");
+export const resumenPromos = () => api<PromoResumen[] | null>("/api/promos/resumen").then((r) => r ?? []);
+export const fuentesDeConversacion = (id: number) => api<FuenteUsada[] | null>(`/api/conversations/${id}/fuentes`).then((r) => r ?? []);
+
+export const listarEmbudos = () => api<Embudo[] | null>("/api/embudos").then((r) => r ?? []);
+export const crearEmbudo = (body: { nombre: string; etapas: string[]; promo_id: number }) => api<Embudo>("/api/embudos", { method: "POST", json: body });
+export const guardarEmbudo = (id: number, body: { nombre: string; etapas: string[] }) => api<Embudo>(`/api/embudos/${id}`, { method: "PUT", json: body });
+export const borrarEmbudo = (id: number) => api(`/api/embudos/${id}`, { method: "DELETE" });
+export const pedidosDeEmbudo = (id: number) =>
+  api<{ embudo: Embudo; pedidos: PedidoEmbudo[] | null }>(`/api/embudos/${id}/pedidos`).then((r) => ({ embudo: r.embudo, pedidos: r.pedidos ?? [] }));
+export const moverEnEmbudo = (id: number, orderId: number, etapa: string) =>
+  api(`/api/embudos/${id}/pedidos/${orderId}`, { method: "PUT", json: { etapa } });
+export const sacarDeEmbudo = (id: number, orderId: number) => api(`/api/embudos/${id}/pedidos/${orderId}`, { method: "DELETE" });

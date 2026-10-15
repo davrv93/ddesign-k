@@ -188,6 +188,15 @@ func EventoDe(ctx context.Context, st *store.Store, conv *store.Conversation, t 
 			ev.Pagado = true
 		}
 	}
+	// Promo con la que respondió el robot en esta conversación: etiqueta y, si tiene embudo espejo, ese embudo.
+	if pid, _, err := st.PromoDeConversacion(ctx, conv.ID); err == nil && pid > 0 {
+		if f, err := st.GetFuente(ctx, pid); err == nil {
+			ev.Promo = f.Titulo
+			if e, err := st.EmbudoDePromo(ctx, pid); err == nil && e != nil && e.KommoPipelineID > 0 {
+				ev.EmbudoPromo = "Promo · " + e.Nombre
+			}
+		}
+	}
 	if t.desdeMsg > 0 {
 		if msgs, err := st.ListMessages(ctx, conv.ID, 30); err == nil {
 			for _, m := range msgs {

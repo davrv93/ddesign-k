@@ -431,6 +431,9 @@ func (s *Store) migrateSQLite() error {
 	if _, err := s.DB.Exec(`INSERT OR IGNORE INTO tenants(id, slug, name) VALUES(1, 'default', 'Tienda')`); err != nil {
 		return err
 	}
+	if err := s.migrarFuentes(); err != nil { // fuentes, promos y embudos (fuentes.go)
+		return err
+	}
 	return s.rellenarEtapas()
 }
 
@@ -759,6 +762,9 @@ func (s *Store) migrateMySQL() error {
 		if _, err := s.DB.Exec(q); err != nil {
 			return err
 		}
+	}
+	if err := s.migrarFuentes(); err != nil { // fuentes, promos y embudos (fuentes.go)
+		return err
 	}
 	return s.rellenarEtapas()
 }

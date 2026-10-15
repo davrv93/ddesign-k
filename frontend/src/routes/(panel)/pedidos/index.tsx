@@ -1,10 +1,11 @@
 import { $, component$, sync$, useComputed$, useOnWindow, useSignal, useStore, useVisibleTask$, type QRL } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { titulo } from "~/lib/marca";
-import { api, descargar, equipo, miSesion, type Miembro, type Order, type Product, type Sesion, type Stats } from "~/lib/api";
+import { api, descargar, equipo, listarEmbudos, miSesion, type Embudo, type Miembro, type Order, type Product, type Sesion, type Stats } from "~/lib/api";
 import { customerName, iniciales2, mapsLink, money, phoneLabel, STATUS, timeAgo } from "~/lib/format";
 import { u } from "~/lib/base";
 import { NotasPanel, TareaModal } from "~/components/crm";
+import { AnadirAEmbudo, EmbudoBoard } from "~/components/embudos";
 
 interface Board {
   statuses: string[];
@@ -24,6 +25,9 @@ export default component$(() => {
   const filter = useSignal("");
   const miembros = useSignal<Miembro[]>([]);
   const yo = useSignal<Sesion | null>(null);
+  // Embudos propios (de promos). 0 = el general: el tablero de siempre, sin cambios.
+  const embudos = useSignal<Embudo[]>([]);
+  const embudoSel = useSignal(0);
 
   const notify = $((text: string, error = false) => {
     toast.value = { text, error };
@@ -51,6 +55,13 @@ export default component$(() => {
   useVisibleTask$(async () => {
     miSesion().then((s) => (yo.value = s));
     equipo().then((ms) => (miembros.value = ms));
+    listarEmbudos()
+      .then((es) => {
+        embudos.value = es.filter((e) => !e.general && e.id > 0);
+        const emb = Number(new URLSearchParams(location.search).get("embudo"));
+        if (emb && embudos.value.some((e) => e.id === emb)) embudoSel.value = emb;
+      })
+      .catch(() => {});
     await Promise.all([load(), loadProducts()]);
     const id = Number(new URLSearchParams(location.search).get("pedido"));
     if (id) selectedId.value = id;
@@ -101,6 +112,26 @@ export default component$(() => {
           <p class="muted">Arrastra las tarjetas entre columnas. El stock se descuenta al confirmar y vuelve al cancelar.</p>
         </div>
         <div class="head-actions">
+          {embudos.value.length > 0 && (
+            <label class="emb-selector">
+              <span class="muted small">Embudo</span>
+              <select
+                class="auto"
+                value={String(embudoSel.value)}
+                onChange$={(_, el) => {
+                  embudoSel.value = Number(el.value);
+                  history.replaceState(null, "", embudoSel.value ? `?embudo=${embudoSel.value}` : location.pathname);
+                }}
+              >
+                <option value="0">General</option>
+                {embudos.value.map((e) => (
+                  <option key={e.id} value={String(e.id)}>
+                    {e.nombre}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <input class="search" type="search" placeholder="Buscar cliente, código, #pedido…" bind:value={filter} />
           {yo.value?.admin && (
             <button
@@ -149,6 +180,8 @@ export default component$(() => {
 
       {loading.value ? (
         <div class="loading">Cargando pedidos…</div>
+      ) : embudoSel.value > 0 ? (
+        <EmbudoBoard key={embudoSel.value} id={embudoSel.value} filtro={filter.value} onAbrir$={(id) => (selectedId.value = id)} onToast$={notify} />
       ) : (
         <div class="kanban">
           {board.statuses.map((st) => {
@@ -256,6 +289,7 @@ export default component$(() => {
           key={selected.id}
           order={selected}
           miembros={miembros.value}
+          embudos={embudos.value}
           admin={!!yo.value?.admin}
           onClose$={() => (selectedId.value = null)}
           onMove$={move}
@@ -291,6 +325,7 @@ const nombreDe = (ms: Miembro[], id: number) => {
 interface DrawerProps {
   order: Order;
   miembros: Miembro[];
+  embudos: Embudo[];
   admin: boolean;
   onClose$: QRL<() => void>;
   onMove$: QRL<(id: number, status: string, notify?: boolean) => Promise<void>>;
@@ -298,7 +333,7 @@ interface DrawerProps {
   onToast$: QRL<(text: string, error?: boolean) => void>;
 }
 
-const OrderDrawer = component$<DrawerProps>(({ order, miembros, admin, onClose$, onMove$, onSaved$, onToast$ }) => {
+const OrderDrawer = component$<DrawerProps>(({ order, miembros, embudos, admin, onClose$, onMove$, onSaved$, onToast$ }) => {
   const notes = useSignal(order.notes);
   const tarea = useSignal(false);
   const target = useSignal(order.status);
@@ -442,6 +477,14 @@ const OrderDrawer = component$<DrawerProps>(({ order, miembros, admin, onClose$,
             <input type="checkbox" bind:checked={notifyCustomer} /> Avisar al cliente por WhatsApp
           </label>
         </section>
+
+        {embudos.length > 0 && (
+          <section class="drawer-sec">
+            <h3>Embudo de promo</h3>
+            <AnadirAEmbudo orderId={order.id} embudos={embudos} onToast$={onToast$} />
+            <p class="muted small">No cambia el estado del pedido: solo lo pone (o lo mueve) en ese tablero.</p>
+          </section>
+        )}
 
         <section class="drawer-sec">
           <h3>Nota del pedido</h3>

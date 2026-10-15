@@ -34,7 +34,11 @@ type Evento struct {
 	Hitos         []string
 	Turno         []Linea // último intercambio, para la transcripción (si está activada)
 	Demo          bool    // dato de demostración (seed): lleva la etiqueta «demo»
-	Cuando        time.Time
+	// Promo: título de la promo con la que respondió el robot (etiqueta «promo: …»). EmbudoPromo: nombre del embudo
+	// de Kommo de esa promo («Promo · …»); vacío = el embudo general (15-10-2026).
+	Promo       string
+	EmbudoPromo string
+	Cuando      time.Time
 }
 
 // Pedido es el pedido de la conversación en el tablero de kddesign.

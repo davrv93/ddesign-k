@@ -8,4 +8,5 @@ func (s *Server) rutasExtra(p, a func(pattern string, h http.HandlerFunc)) {
 	p("GET /api/colores", s.listColores)
 	a("PUT /api/colores", s.putColores)
 	p("GET /api/derivadas", s.listDerivadas)
+	s.rutasFuentes(p, a) // fuentes, promos y embudos (fuentes.go, 15-10-2026)
 }
