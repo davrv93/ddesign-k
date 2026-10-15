@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -52,6 +53,23 @@ func (b *Bot) conocimientoReq(ctx context.Context) any {
 		return c
 	}
 	return nil
+}
+
+// precio: el de una unidad del producto con la promo vigente que lo cubre (el mismo que le dice el robot); sin promo,
+// el de siempre. Lo usan el pedido, el resumen y la tarjeta del producto (15-10-2026).
+func (b *Bot) precio(ctx context.Context, p *store.Product) float64 {
+	if pr, promo := b.conocimiento(ctx).PrecioConPromo(p); promo != nil {
+		return pr
+	}
+	return p.Price
+}
+
+// precioTxt: «S/ 232.00 (antes S/ 290.00, promo «Fiestas de Octubre»)» o el precio de siempre.
+func (b *Bot) precioTxt(ctx context.Context, p *store.Product) string {
+	if pr, promo := b.conocimiento(ctx).PrecioConPromo(p); promo != nil {
+		return fmt.Sprintf("%s (antes %s, promo «%s»)", b.money(pr), b.money(p.Price), promo.Titulo)
+	}
+	return b.money(p.Price)
 }
 
 // anotarFuentes guarda las fuentes con que respondió el agente en este turno.

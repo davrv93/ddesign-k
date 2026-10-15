@@ -816,3 +816,71 @@ func (s *Store) PromoDeConversacion(ctx context.Context, convID int64) (int64, t
 	}
 	return id, aTiempo(cuando), err
 }
+
+// ---------------------------------------------------------------------------
+// Precio con promo en el lado del CRM (15-10-2026): el robot le dice a la clienta el precio con promo y el pedido que
+// arma el bot tiene que llevar ese mismo precio. Misma tabla que el agente (contrato §3); la colección de baruka.pe no
+// se conoce aquí (son handles de la web), así que una promo por colección no rebaja el pedido: lo ajusta una persona.
+
+// categoriasPromo: categoría del contrato → raíz con que se reconoce en el nombre o la categoría del producto.
+var categoriasPromo = map[string]string{"vestido": "vestid", "blusa": "blus", "enterizo": "enteriz", "pantalon": "pantal",
+	"conjunto": "conjunt", "blazer": "blazer", "falda": "fald"}
+
+func cubrePromo(p PromoConocimiento, prod *Product) bool {
+	switch p.Alcance.Tipo {
+	case "", "todo":
+		return true
+	case "prendas":
+		return enLista(strings.ToUpper(prod.Code), p.Alcance.Codigos)
+	case "categoria":
+		raiz := categoriasPromo[p.Alcance.Categoria]
+		if raiz == "" {
+			return false
+		}
+		for _, t := range []string{prod.Name, prod.Category} {
+			for _, w := range strings.Fields(sinTildesLower(t)) {
+				if strings.HasPrefix(w, raiz) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func sinTildesLower(s string) string { return sinTildes.Replace(strings.ToLower(s)) }
+
+// redondear a céntimos, la mitad hacia arriba (como el agente: 289,90 × 0,85 = 246,42).
+func redondear(x float64) float64 { return float64(int64(x*100+0.5+1e-9)) / 100 }
+
+// PrecioConPromo: el precio de una unidad con la promo vigente que cubre el producto (la que más rebaja) y esa promo;
+// sin promo, el precio de siempre y nil. Solo rebajan porcentaje, monto y precio especial (2 por, envío gratis y regalo
+// no cambian el precio unitario).
+func (c *Conocimiento) PrecioConPromo(prod *Product) (float64, *PromoConocimiento) {
+	if c == nil || prod == nil {
+		return 0, nil
+	}
+	mejor, cual := prod.Price, (*PromoConocimiento)(nil)
+	for i := range c.Promos {
+		p := c.Promos[i]
+		if !cubrePromo(p, prod) {
+			continue
+		}
+		precio := prod.Price
+		switch p.Mecanica {
+		case "porcentaje":
+			precio = redondear(prod.Price * (100 - p.Valor) / 100)
+		case "monto":
+			precio = redondear(prod.Price - p.Valor)
+			if precio < 0 {
+				precio = 0
+			}
+		case "precio_especial":
+			precio = redondear(p.Valor)
+		}
+		if precio < mejor {
+			mejor, cual = precio, &c.Promos[i]
+		}
+	}
+	return mejor, cual
+}

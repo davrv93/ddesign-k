@@ -210,7 +210,7 @@ func (b *Bot) registrarCita(ctx context.Context, conv *store.Conversation, cc *c
 	if v.Producto != "" {
 		if p, err := b.store.GetProductByCode(ctx, v.Producto); err == nil {
 			items = []store.OrderItem{{ProductID: &p.ID, ProductCode: p.Code, ProductName: p.Name, Image: p.Image, Size: v.Talla,
-				Qty: 1, UnitPrice: p.Price}}
+				Qty: 1, UnitPrice: b.precio(ctx, p)}}
 		}
 	}
 	if cc.OrderID > 0 {

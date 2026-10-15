@@ -662,7 +662,7 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 	}
 	// Sin código a la vista (15-10-2026, pedido de la tienda): la clienta pide por el nombre del modelo.
 	caption := fmt.Sprintf("%s\n*%s*\n%s\n💰 %s\n📏 Tallas disponibles: %s\n\n¿Qué *talla* deseas?",
-		intro, p.Name, p.Description, b.money(p.Price), strings.Join(sizes, ", "))
+		intro, p.Name, p.Description, b.precioTxt(ctx, p), strings.Join(sizes, ", "))
 	b.setState(ctx, conv, stSize, next)
 	if p.Image != "" {
 		b.replyImage(ctx, conv, b.cfg.MediaBaseURL+p.Image, caption)
@@ -680,7 +680,7 @@ func (b *Bot) draftFor(ctx context.Context, conv *store.Conversation, cc *convCo
 			next.OrderID = o.ID
 		}
 	}
-	item := store.OrderItem{ProductID: &p.ID, ProductCode: p.Code, ProductName: p.Name, Image: p.Image, Qty: 1, UnitPrice: p.Price}
+	item := store.OrderItem{ProductID: &p.ID, ProductCode: p.Code, ProductName: p.Name, Image: p.Image, Qty: 1, UnitPrice: b.precio(ctx, p)}
 	if next.OrderID > 0 {
 		_ = b.store.ReplaceOrderItems(ctx, next.OrderID, []store.OrderItem{item})
 		_, _ = b.store.UpdateOrderStatus(ctx, next.OrderID, "consulta", nil)
@@ -821,7 +821,7 @@ func (b *Bot) handleSize(ctx context.Context, conv *store.Conversation, cc *conv
 
 func (b *Bot) sendSummary(ctx context.Context, conv *store.Conversation, cc *convContext, p *store.Product, v *store.Variant) {
 	item := store.OrderItem{ProductID: &p.ID, VariantID: &v.ID, ProductCode: p.Code, ProductName: p.Name, Image: p.Image,
-		Size: v.Size, Qty: cc.Qty, UnitPrice: p.Price}
+		Size: v.Size, Qty: cc.Qty, UnitPrice: b.precio(ctx, p)}
 	if cc.OrderID > 0 {
 		if err := b.store.ReplaceOrderItems(ctx, cc.OrderID, []store.OrderItem{item}); err != nil {
 			cc.OrderID = 0
@@ -856,7 +856,7 @@ func (b *Bot) sendSummary(ctx context.Context, conv *store.Conversation, cc *con
 	cc.Memoria = memSabemos(memoriaActual(conv, cc), "talla", v.Size) // con el resumen, la pendiente es «confirmar»
 	b.setState(ctx, conv, stConfirm, *cc)
 	b.reply(ctx, conv, fmt.Sprintf("🧾 *Resumen de tu pedido #%d*\n\n• %s\n• Talla: *%s*\n• Cantidad: *%d*\n• Total: *%s*\n\nTe la apartamos por *%d minutos* ⏳\n¿Confirmas tu pedido? Responde *SI* para confirmar o *NO* para cancelar.\n(Para cambiar la cantidad, escribe el número.)",
-		cc.OrderID, p.Name, v.Size, cc.Qty, b.money(p.Price*float64(cc.Qty)), int(reserveTTL.Minutes())))
+		cc.OrderID, p.Name, v.Size, cc.Qty, b.money(b.precio(ctx, p)*float64(cc.Qty)), int(reserveTTL.Minutes())))
 }
 
 func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *convContext, text, raw string) {

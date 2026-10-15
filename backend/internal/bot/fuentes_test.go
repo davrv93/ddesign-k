@@ -59,3 +59,35 @@ func TestConocimientoViajaYUsoSeAnota(t *testing.T) {
 		t.Fatalf("promo de la conversación: %d", pid)
 	}
 }
+
+// El pedido que arma el bot lleva el precio con la promo vigente (el mismo que le dijo el robot) y el resumen lo dice
+// (15-10-2026: el robot decía S/ 232 y el pedido quedaba en S/ 290).
+func TestPedidoConPrecioDePromo(t *testing.T) {
+	b, st, fe := setup(t, `{"intent":"otro"}`, false)
+	ctx := context.Background()
+	datos, _ := json.Marshal(store.PromoDatos{Mecanica: "porcentaje", Valor: 20, Alcance: store.PromoAlcance{Tipo: "categoria", Categoria: "vestido"}})
+	f := &store.Fuente{Tipo: "promo", Titulo: "Fiestas", Datos: datos}
+	if err := st.CrearFuente(ctx, f); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.CambiarEstadoFuente(ctx, f.ID, "activo"); err != nil {
+		t.Fatal(err)
+	}
+	handle(b, text("v01"))
+	mustContain(t, fe.lastText(), "S/ 95.20", "antes S/ 119.00", "Fiestas")
+	handle(b, text("M"))
+	mustContain(t, fe.lastText(), "Total: *S/ 95.20*")
+	cvs, _ := st.ListConversations(ctx, 10)
+	os, err := st.ListOrders(ctx, cvs[0].CustomerID)
+	if err != nil || len(os) == 0 || os[0].Total != 95.2 || os[0].Items[0].UnitPrice != 95.2 {
+		t.Fatalf("pedido con promo: %+v %v", os, err)
+	}
+}
+
+// Sin promo vigente, el precio de siempre.
+func TestPedidoSinPromoPrecioDeSiempre(t *testing.T) {
+	b, _, fe := setup(t, `{"intent":"otro"}`, false)
+	handle(b, text("v01"))
+	mustContain(t, fe.lastText(), "S/ 119.00")
+	mustNotContain(t, fe.lastText(), "antes", "promo")
+}
