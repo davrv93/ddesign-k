@@ -294,6 +294,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     motivos += _repite(out["respuesta"], getattr(req, "historial", []) or [])
     motivos += _ofrece(out["respuesta"], rec)
     motivos += _despedida(out["respuesta"], "" if rec.sigue else mensaje)
+    motivos += _precio_sin_promo(out["respuesta"], rec)
     motivos_1, salida2 = bool(motivos), None
     if motivos:
         log.info("V3 rechazo 1: %s | %s", "; ".join(motivos), out["respuesta"][:160])
@@ -309,8 +310,11 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
         motivos += _repite(out["respuesta"], getattr(req, "historial", []) or [])
         motivos += _ofrece(out["respuesta"], rec)
         motivos += _despedida(out["respuesta"], "" if rec.sigue else mensaje)
+        motivos += _precio_sin_promo(out["respuesta"], rec)
         if motivos and all(m.startswith(("pregunta ya respondida", "más de una pregunta", "repite una frase",
-                                         "no avanza", "ofrece modelos", "se despidió")) for m in motivos):
+                                         "no avanza", "ofrece modelos", "se despidió", "precio sin la promo")) for m in motivos):
+            if any(m.startswith("precio sin la promo") for m in motivos):
+                out["respuesta"] = _con_precio_promo(out["respuesta"], rec)
             if any(m.startswith("se despidió") for m in motivos):
                 out["respuesta"] = _sin_preguntas(out["respuesta"])
             if any(m.startswith("ofrece modelos") for m in motivos):
@@ -526,6 +530,10 @@ def _hechos_conocimiento(rec: Recolector, f: dict, mensaje: str, producto: str, 
                     + (f"; puedes abrir con: «{apertura}»" if apertura else "") + "." if nuevas else
                     "Usa estas cifras exactas si habla del precio o de la promo."))
                 dichas.extend(p["id"] for p in nuevas)
+            else:   # ya se dijo: no se repite, pero si da el precio, que sea el de la promo
+                lineas = " ".join(conocimiento.linea_promo(p, ficha) for p in aplican)
+                partes.append(f"HECHO YA VERIFICADO (la promo ya se le dijo; no la repitas): {lineas} Si mencionas el precio "
+                              "de esta prenda, da el precio con la promo, nunca solo el normal.")
         elif pide_promo:
             fuera = next((p["respuesta_fuera"] for p in vig if p["respuesta_fuera"]), "")
             partes.append(f"HECHO YA VERIFICADO: el {ficha.nombre} NO entra en ninguna promo vigente: su precio es el publicado "
@@ -540,6 +548,29 @@ def _hechos_conocimiento(rec: Recolector, f: dict, mensaje: str, producto: str, 
                       "pregúntale qué prenda le interesa; no inventes otras promos ni otras cifras.")
         dichas.extend(p["id"] for p in vig if p["id"] not in dichas)
     return "\n".join(partes)
+
+
+def _precios_dichos(texto: str) -> set[float]:
+    return {round(float(m.group(1).replace(",", ".")), 2) for m in validador.RE_PRECIO.finditer(texto or "")}
+
+
+def _precio_sin_promo(texto: str, rec: Recolector) -> list[str]:
+    """Da el precio normal de una prenda en promo sin el precio con promo (15-10-2026: «el Vestido Salome cuesta S/ 290»
+    con la promo del 20 % vigente y ya dicha). El precio normal solo puede ir junto al de la promo."""
+    dichos = _precios_dichos(texto)
+    faltan = [(n, p) for n, p in rec.con_promo.items() if n in dichos and p not in dichos]
+    return [f"precio sin la promo: dijiste S/ {n:.2f} y con la promo vigente es S/ {p:.2f}; da el precio con promo"
+            for n, p in faltan[:1]]
+
+
+def _con_precio_promo(texto: str, rec: Recolector) -> str:
+    """Arreglo de la segunda vuelta: «S/ 290» → «S/ 290 (con la promo, S/ 232)»."""
+    for n, p in rec.con_promo.items():
+        if p in _precios_dichos(texto):
+            continue
+        texto = re.sub(r"(S/\.?\s*" + re.escape(f"{n:g}") + r"(?:[.,]00)?)(?!\d|[.,]\d)", lambda m: f"{m.group(1)} (con la promo, S/ {p:.2f})",
+                       texto, count=1)
+    return texto
 
 
 def _fuentes_usadas(rec: Recolector, texto: str) -> list[int]:

@@ -169,6 +169,8 @@ class Recolector:
         self.promos_usadas: list[int] = []   # promos que respaldó este turno (herramienta o precálculo), en orden
         self.precios_promo: dict[int, set] = {}   # id → precios que solo existen con la promo (para fuentes_usadas)
         self.faq_usada: int | None = None    # FAQ de la tienda que contestó este turno
+        # precio normal → precio con promo de las prendas respaldadas: el texto no puede dar solo el normal (15-10-2026)
+        self.con_promo: dict[float, float] = {}
 
     # -- puerta -----------------------------------------------------------
     def esquema(self) -> list[dict]:
@@ -446,6 +448,8 @@ class Recolector:
         for f in fichas:
             pp = conocimiento.precio_promo(promo, f.precio)
             solo.update(x for x in (pp["precio_final"], pp["precio_por_dos"]) if x is not None and x != pp["precio_normal"])
+            if pp["precio_normal"] is not None and pp["precio_final"] is not None and pp["precio_final"] != pp["precio_normal"]:
+                self.con_promo[pp["precio_normal"]] = pp["precio_final"]
         if promo["id"] not in self.promos_usadas:
             self.promos_usadas.append(promo["id"])
 

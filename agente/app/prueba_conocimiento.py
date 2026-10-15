@@ -226,6 +226,22 @@ def prueba_pie_con_promo(fichas):
     caso("pie sin conocimiento: igual", rec2._foto(salome, salome.imagen, "")["pie"], "*Vestido Salome* — *S/ 290.00*")
 
 
+def prueba_precio_sin_promo(fichas):
+    """Con una promo respaldada, el texto no puede dar solo el precio normal (15-10-2026)."""
+    K.limpiar_cache()
+    c = K.leer(payload(version="psp", promos=[promo(12, alcance={"tipo": "categoria", "categoria": "vestido"})]))
+    rec = Recolector(fichas, _stock)
+    rec.poner_conocimiento(c)
+    salome = next(f for f in fichas if f.codigo == "V50")
+    rec.respaldar_promo(c.base.promos[0], [salome])
+    m = agente._precio_sin_promo("El Vestido Salome cuesta S/ 290 😊", rec)
+    si("precio normal solo: motivo", bool(m) and "232" in m[0])
+    caso("precio normal y de promo: sin motivo", agente._precio_sin_promo("De S/ 290 a S/ 232 con la promo", rec), [])
+    caso("arreglo de la segunda vuelta", agente._con_precio_promo("Cuesta S/ 290. ¿Qué talla?", rec),
+         "Cuesta S/ 290 (con la promo, S/ 232.00). ¿Qué talla?")
+    caso("sin promo: sin motivo", agente._precio_sin_promo("Cuesta S/ 290", Recolector(fichas, _stock)), [])
+
+
 def prueba_v3(fichas):
     K.limpiar_cache()
     base = [C("hola"), B("¡Hola! Te saluda Rosmary 😊 ¿Qué evento se te aproxima?"), C("una boda"),
@@ -355,6 +371,7 @@ def main() -> int:
         prueba_textos()
         prueba_validador()
         prueba_pie_con_promo(fichas)
+        prueba_precio_sin_promo(fichas)
         prueba_v3(fichas)
         prueba_v1(fichas)
     finally:
