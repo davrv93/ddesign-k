@@ -276,6 +276,37 @@ func normalize(s string) string {
 	return strings.Join(strings.Fields(r.Replace(s)), " ")
 }
 
+// productByName busca el producto activo cuyo nombre es el texto entero («vestido alma», «el alma», «alma»). Solo
+// resuelve cuando hay UN candidato: «holly» (vestido y pantalón) no se adivina.
+func (b *Bot) productByName(ctx context.Context, text string) *store.Product {
+	t := strings.TrimSpace(text)
+	for _, art := range []string{"el ", "la ", "quiero el ", "quiero la ", "modelo "} {
+		t = strings.TrimPrefix(t, art)
+	}
+	if t == "" || len(strings.Fields(t)) > 4 {
+		return nil
+	}
+	products, err := b.store.ListProducts(ctx, true)
+	if err != nil {
+		return nil
+	}
+	var hit []*store.Product
+	for _, p := range products {
+		full := normalize(p.Name)
+		propio := full
+		if i := strings.Index(full, " "); i > 0 {
+			propio = full[i+1:]
+		}
+		if t == full || t == propio {
+			hit = append(hit, p)
+		}
+	}
+	if len(hit) == 1 {
+		return hit[0]
+	}
+	return nil
+}
+
 func isAny(s string, words ...string) bool {
 	for _, w := range words {
 		if s == w {
@@ -372,6 +403,14 @@ func (b *Bot) step(ctx context.Context, conv *store.Conversation, in *Incoming, 
 			return
 		}
 	}
+	// El NOMBRE del modelo solo («Vestido Alma», «el Alma») también es pedirlo cuando no hay agente: la tienda ya no
+	// enseña códigos a la clienta (15-10-2026). Con agente, el nombre lo entiende el agente con su guion.
+	if sinAgente {
+		if p := b.productByName(ctx, text); p != nil {
+			b.offerProduct(ctx, conv, &cc, p, "", 0, nil)
+			return
+		}
+	}
 	b.freeText(ctx, conv, &cc, in.Text)
 }
 
@@ -441,7 +480,7 @@ func (b *Bot) sendCatalog(ctx context.Context, conv *store.Conversation) {
 				sizes = append(sizes, v.Size)
 			}
 		}
-		fmt.Fprintf(&sb, "*%s* %s — %s (%s)\n", p.Code, p.Name, b.money(p.Price), strings.Join(sizes, ", "))
+		fmt.Fprintf(&sb, "• *%s* — %s (%s)\n", p.Name, b.money(p.Price), strings.Join(sizes, ", "))
 		n++
 		if n >= 30 {
 			break
@@ -453,7 +492,7 @@ func (b *Bot) sendCatalog(ctx context.Context, conv *store.Conversation) {
 	if b.cfg.PublicURL != "" {
 		sb.WriteString("\n🖼️ Mira las fotos aquí: " + b.cfg.PublicURL + "/catalogo\n")
 	}
-	sb.WriteString("\nPara pedir, responde con el *código* (ej. *V05*) o envíanos la *foto* del modelo 📸.")
+	sb.WriteString("\nPara pedir, dime el *nombre* del modelo que te gustó o envíanos su *foto* 📸.")
 	b.setState(ctx, conv, stIdle, convContext{})
 	b.reply(ctx, conv, sb.String())
 }
@@ -475,7 +514,7 @@ func (b *Bot) sendOrderStatus(ctx context.Context, conv *store.Conversation) {
 			continue
 		}
 		it := o.Items[0]
-		fmt.Fprintf(&sb, "• Pedido *#%d* — %s %s talla %s ×%d — %s\n", o.ID, it.ProductCode, it.ProductName, it.Size, it.Qty, labels[o.Status])
+		fmt.Fprintf(&sb, "• Pedido *#%d* — %s talla %s ×%d — %s\n", o.ID, it.ProductName, it.Size, it.Qty, labels[o.Status])
 		n++
 		if n >= 5 {
 			break
@@ -562,9 +601,9 @@ func (b *Bot) handlePhoto(ctx context.Context, conv *store.Conversation, cc *con
 	var sb strings.Builder
 	sb.WriteString("🤔 No estoy segura de cuál es. ¿Es alguno de estos?\n\n")
 	for _, p := range alts {
-		fmt.Fprintf(&sb, "*%s* %s — %s\n", p.Code, p.Name, b.money(p.Price))
+		fmt.Fprintf(&sb, "• *%s* — %s\n", p.Name, b.money(p.Price))
 	}
-	sb.WriteString("\nResponde con el *código* o espera a que una asesora te ayude 🙌.")
+	sb.WriteString("\nDime el *nombre* del que es, o espera a que una asesora te ayude 🙌.")
 	b.setState(ctx, conv, stIdle, convContext{})
 	b.reply(ctx, conv, sb.String())
 }
@@ -590,15 +629,15 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 		_ = b.store.CreateOrder(ctx, o)
 		b.Notify("orders")
 		b.hito(ctx, conv, "😔 Consultó el "+p.Code+" "+p.Name+", agotado")
-		text := "😔 El modelo *" + p.Code + " " + p.Name + "* está agotado por ahora."
+		text := "😔 El modelo *" + p.Name + "* está agotado por ahora."
 		inStock := []string{}
 		for _, a := range alts {
 			if a.TotalAvailable() > 0 {
-				inStock = append(inStock, fmt.Sprintf("*%s* %s — %s", a.Code, a.Name, b.money(a.Price)))
+				inStock = append(inStock, fmt.Sprintf("• *%s* — %s", a.Name, b.money(a.Price)))
 			}
 		}
 		if len(inStock) > 0 {
-			text += "\n\nTe pueden gustar estos que sí tenemos:\n" + strings.Join(inStock, "\n") + "\n\nResponde con el *código* para pedirlo."
+			text += "\n\nTe pueden gustar estos que sí tenemos:\n" + strings.Join(inStock, "\n") + "\n\nDime el *nombre* del que te guste para pedirlo."
 		} else {
 			text += "\n\nEscribe *1* para ver los modelos disponibles o *4* para que una asesora te avise cuando llegue."
 		}
@@ -620,8 +659,9 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 	if customerImage != "" {
 		intro = "✨ ¡Encontré tu modelo!"
 	}
-	caption := fmt.Sprintf("%s\n*%s — %s*\n%s\n💰 %s\n📏 Tallas disponibles: %s\n\n¿Qué *talla* deseas?",
-		intro, p.Code, p.Name, p.Description, b.money(p.Price), strings.Join(sizes, ", "))
+	// Sin código a la vista (15-10-2026, pedido de la tienda): la clienta pide por el nombre del modelo.
+	caption := fmt.Sprintf("%s\n*%s*\n%s\n💰 %s\n📏 Tallas disponibles: %s\n\n¿Qué *talla* deseas?",
+		intro, p.Name, p.Description, b.money(p.Price), strings.Join(sizes, ", "))
 	b.setState(ctx, conv, stSize, next)
 	if p.Image != "" {
 		b.replyImage(ctx, conv, b.cfg.MediaBaseURL+p.Image, caption)
@@ -814,8 +854,8 @@ func (b *Bot) sendSummary(ctx context.Context, conv *store.Conversation, cc *con
 	b.crmPedido(ctx, cc.OrderID)
 	cc.Memoria = memSabemos(memoriaActual(conv, cc), "talla", v.Size) // con el resumen, la pendiente es «confirmar»
 	b.setState(ctx, conv, stConfirm, *cc)
-	b.reply(ctx, conv, fmt.Sprintf("🧾 *Resumen de tu pedido #%d*\n\n• %s %s\n• Talla: *%s*\n• Cantidad: *%d*\n• Total: *%s*\n\nTe la apartamos por *%d minutos* ⏳\n¿Confirmas tu pedido? Responde *SI* para confirmar o *NO* para cancelar.\n(Para cambiar la cantidad, escribe el número.)",
-		cc.OrderID, p.Code, p.Name, v.Size, cc.Qty, b.money(p.Price*float64(cc.Qty)), int(reserveTTL.Minutes())))
+	b.reply(ctx, conv, fmt.Sprintf("🧾 *Resumen de tu pedido #%d*\n\n• %s\n• Talla: *%s*\n• Cantidad: *%d*\n• Total: *%s*\n\nTe la apartamos por *%d minutos* ⏳\n¿Confirmas tu pedido? Responde *SI* para confirmar o *NO* para cancelar.\n(Para cambiar la cantidad, escribe el número.)",
+		cc.OrderID, p.Name, v.Size, cc.Qty, b.money(p.Price*float64(cc.Qty)), int(reserveTTL.Minutes())))
 }
 
 func (b *Bot) handleConfirm(ctx context.Context, conv *store.Conversation, cc *convContext, text, raw string) {
@@ -1141,7 +1181,7 @@ func (b *Bot) freeText(ctx context.Context, conv *store.Conversation, cc *convCo
 			b.offerProduct(ctx, conv, cc, p, "", 0, nil)
 			return
 		}
-		b.reply(ctx, conv, "No encontré ese código 🤔. Escribe *1* para ver el catálogo.")
+		b.reply(ctx, conv, "No encontré ese modelo 🤔. Escribe *1* para ver el catálogo.")
 	case "saludo", "si", "no", "talla", "cantidad":
 		b.sendMenu(ctx, conv)
 	default:
