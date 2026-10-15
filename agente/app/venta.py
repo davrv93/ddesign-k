@@ -103,10 +103,11 @@ def respuesta_tela(codigo: str, nombre: str, descripcion: str) -> str:
     """Si el LLM no contestó la tela (o se la quitó la verificación), la frase la pone el código."""
     t = tela(codigo, descripcion)
     if t and len(t) > 40:
-        return f"Sobre la tela del *{codigo}* {nombre}: {t[0].lower() + t[1:]}"
+        return f"Sobre la tela {'de la' if nombre.lower().startswith(('blusa', 'falda')) else 'del'} *{nombre}*: {t[0].lower() + t[1:]}"
     if t:
-        return f"El *{codigo}* {nombre} es de {t} 😊"
-    return f"La tela exacta del *{codigo}* {nombre} no la tengo a la mano 🙈 Si quieres, una asesora te la confirma escribiendo *4*."
+        return f"{'La' if nombre.lower().startswith(('blusa', 'falda')) else 'El'} *{nombre}* es de {t} 😊"
+    return (f"La tela exacta {'de la' if nombre.lower().startswith(('blusa', 'falda')) else 'del'} *{nombre}* no la tengo a la "
+            "mano 🙈 Si quieres, una asesora te la confirma escribiendo *4*.")
 
 
 def info_pago() -> str:
@@ -358,7 +359,8 @@ REGLAS DE CONVERSACIÓN
 - ESTÁS ESPERANDO dice qué le preguntaste antes: si su mensaje no lo responde, no lo inventes ni lo des por dicho.
 - Entusiasmo sincero cuando cuente su evento («¡qué bonito!», «te va a quedar precioso»). Como mucho un emoji por mensaje.
 - Si dice que va a una boda o un matrimonio, es invitada: no le hables de vestido de novia salvo que diga que ella se casa.
-- *Negritas* de WhatsApp solo para códigos y precios. Saluda solo si el HISTORIAL está vacío.
+- *Negritas* de WhatsApp solo para nombres de modelo y precios. Nunca escribas el código de la prenda (V24): nómbrala.
+  Saluda solo si el HISTORIAL está vacío.
 - No repitas frases tuyas del HISTORIAL.
 
 REGLAS DE VENTA

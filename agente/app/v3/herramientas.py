@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import re
 
-from .. import colecciones, colores, datos, ficha_producto, fotos_color, memoria, stock as stk, venta
+from .. import colecciones, colores, datos, ficha_producto, fotos_color, memoria, nombres, stock as stk, venta
 from .validador import hechos_vacios
 
 MAX_CATALOGO = 6
@@ -172,12 +172,9 @@ class Recolector:
             return True
         if RE_VERBO_PEDIR.search(self.mensaje) and RE_PRENDA.search(self.mensaje):
             return True
-        plano = memoria._plano(self.mensaje)
-        for f in self.fichas:
-            clave = [p for p in memoria._plano(f.nombre).split() if len(p) >= 4 and p not in GENERICAS]
-            if clave and all(re.search(r"\b" + re.escape(p) + r"\b", plano) for p in clave[:1]):
-                return True
-        return False
+        # Nombra una prenda (app/nombres.py: «con toda el alma» ya no es el Vestido Alma).
+        lectura = nombres.nombradas(self.mensaje, self.fichas, {"contesta_cual": self.contesta_cual})
+        return bool(lectura.codigos or lectura.ambiguas)
 
     # -- fichas -----------------------------------------------------------
     def _ficha(self, codigo: str):
@@ -331,7 +328,8 @@ class Recolector:
         online = (st.get("online") or {}) if st.get("product") else {}
         tallas = [{"talla": t, "disponible": online[t] > 0, "precio": f.precio, "codigo": f.codigo}
                   for t in sorted(online, key=lambda t: ORDEN_TALLAS.index(t) if t in ORDEN_TALLAS else 99)]
-        titulo = f"*{f.codigo}* {f.nombre}" + (f" — *{MONEDA} {f.precio:.2f}*" if f.precio is not None else "")
+        # Sin código a la vista: la clienta pide por el nombre (15-10-2026). El código sigue en `codigo` y en las tallas.
+        titulo = f"*{f.nombre}*" + (f" — *{MONEDA} {f.precio:.2f}*" if f.precio is not None else "")
         self.hechos["codigos"].add(f.codigo.upper())
         self.hechos["fotos"].add(f.codigo.upper())
         if f.precio is not None:

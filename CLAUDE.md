@@ -11,7 +11,7 @@ CRM para **Baruka Design** (BARUKA DESIGN SAC), tienda de ropa de mujer en Perú
 WhatsApp. Es la demo que se le enseña al cliente. Tiene tres piezas que conviven:
 
 1. **Bot de WhatsApp.** La clienta escribe o manda una foto. El bot conversa, identifica la prenda, revisa
-   el stock por talla y arma el pedido: código → talla → resumen → *SI* → ubicación.
+   el stock por talla y arma el pedido: nombre del modelo (o código) → talla → resumen → *SI* → ubicación.
 2. **Panel web.** Kanban de pedidos, conversaciones con respuesta manual, productos y stock, vinculación
    de WhatsApp por QR y catálogo público.
 3. **Chat web de prueba del agente** (`/demo-design`). Es el mismo agente que contesta en WhatsApp, con un
@@ -118,6 +118,15 @@ En `step()` de `backend/internal/bot/bot.go`:
   motores y también sin LLM (`FUERA_DE_GIRO`).
 - **Fotos sugeridas** (`quiere_opciones`): solo se envían si la clienta pide opciones o abre una búsqueda
   nueva. No se envían si pregunta dónde queda la tienda, cómo pagar o por la talla del modelo que ya vio.
+- **Sin códigos a la vista (15-10-2026, pedido de la tienda: «el vendedor que dice V50 parece un robot»).** A la
+  clienta se le habla por el NOMBRE del modelo («el Vestido Salome»); el código sigue por dentro (herramientas, pedido,
+  CRM, Kommo, botones de talla). `app/nombres.py` es la única puerta: `nombradas()` reconoce por nombre —un nombre
+  REPETIDO sin tipo (Holly, Camila, Zoraida) no se adivina: V3 pregunta «¿el vestido o el pantalón?»; uno que es palabra
+  común o color (Alma, Sol, Luz, Lila, Nieve, Paloma, Cristal…) solo cuenta con determinante o tipo delante— y
+  `sin_codigos()` es la red de salida en `/chat` y `/foto` (texto, pies y títulos). «El primero», «la otra», «ese mismo»
+  se resuelven contra `mostrados` con `catalogos/referencias.py` (`_referencia` en V3). `KD_SIN_CODIGOS=0` apaga la red.
+  Si la clienta escribe un código, se le entiende igual y se le contesta por el nombre. El bot Go sin agente también
+  arranca el pedido con el nombre solo (`productByName`). Prueba: `python3 -m app.prueba_nombres`.
 - **Productos por nombre** (`nombrados`): «el conjunto Xela» equivale a escribir `V32`. Si nombra una
   prenda, solo se habla de esa; **nunca se sustituye por otra**. Si ya la vio o está agotada, el bot
   pregunta «¿Quieres ver otras opciones?» (`OFERTA`): en WhatsApp con «Responde *SI*», en la web con un

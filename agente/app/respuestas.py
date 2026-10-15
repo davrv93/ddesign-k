@@ -95,7 +95,7 @@ def _t_no_hay(c, h):
 def _t_una_opcion(c, h):
     oc = memoria.OCASION_TXT.get(c.sabemos.get("ocasion") or "", "")
     f = c.una_opcion
-    return (f"Para {oc} te recomiendo" if oc else "Te recomiendo") + f" {c.art(f)} *{f.codigo}* {f.nombre} 😊 Te paso la foto."
+    return (f"Para {oc} te recomiendo" if oc else "Te recomiendo") + f" {c.art(f)} *{f.nombre}* 😊 Te paso la foto."
 
 
 def _t_vitrina(c, h):
@@ -218,7 +218,7 @@ TABLA: list[Regla] = [
           "Por ahora eso es todo lo que tengo en esa línea 😊"),
     Regla("foto", "encabezado", "va una foto sugerida",
           lambda c, h: bool(c.sugeridas),
-          lambda c, h: f"¡Claro! 😊 Te paso la foto {_de(c, c.sugeridas[0])} *{c.sugeridas[0].codigo}* {c.sugeridas[0].nombre}."),
+          lambda c, h: f"¡Claro! 😊 Te paso la foto {_de(c, c.sugeridas[0])} *{c.sugeridas[0].nombre}*."),
     Regla("tenemos_categoria", "encabezado", "pregunta por un tipo de prenda sin una en foco («¿tienen blusas?»)",
           lambda c, h: bool(c.cat_p) and h["pregunta"] and c.foco is None,
           lambda c, h: f"¡Sí, tenemos {c.k.PLURAL.get(c.cat_p, c.cat_p)}! 😊"),

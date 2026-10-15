@@ -10,7 +10,7 @@ import logging
 import re
 import time
 
-from .. import colecciones, colores, ficha_producto, fotos_color, memoria
+from .. import colecciones, colores, ficha_producto, fotos_color, memoria, nombres
 from . import cliente_llm, ficha as ficha_mod, plantillas, prompt, validador
 from .herramientas import Recolector
 
@@ -118,6 +118,16 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     if RE_FUERA_GIRO.search(mensaje):
         return _respuesta(f, "Eso no es mi giro 😅 ¿Te ayudo con algo de la tienda?", "responder", [], None,
                           _traza("", [], [], 0, _ms(t0)), req)
+    # 2c. Nombre repetido sin decidir («el Holly»: vestido y pantalón) y nada lo resuelve (foco, lo que el bot nombró):
+    # se pregunta cuál, sin LLM. Antes el código elegía el primero del catálogo en silencio (15-10-2026).
+    ctx_nombres = {"foco": f.get("producto") or "", "bot": ultimo_bot, "contesta_cual": bool(RE_PREGUNTO_CUAL.search(ultimo_bot))}
+    amb = _ambiguas(mensaje, fichas, ctx_nombres)
+    if amb and not _nombradas(mensaje, fichas, ctx_nombres):
+        txt = nombres.pregunta_cual(amb[0], fichas)
+        log.info("V3 nombre repetido: %s → %s", amb[0][0], amb[0][1])
+        res = _respuesta(f, txt, "responder", [], None, _traza("", [], ["plantilla:cual"], 0, _ms(t0)), req)
+        res["respuestas_rapidas"] = [{"label": next((x.nombre for x in fichas if x.codigo.upper() == c), c)} for c in amb[0][1][:3]]
+        return res
 
     # 2b. Pasos del guion por plantilla (app/v3/plantillas.py): el dato esperado y nada más, sin pago en curso.
     en_pago = (bool((f.get("pedido") or {}).get("confirmado")) or getattr(req, "etapa", "") == "venta_confirmada"
@@ -151,7 +161,15 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     rec = Recolector(fichas, consultar_stock, pie=pie, permitir_reserva=permitir_reserva, mensaje=mensaje,
                      mostrados=f.get("mostrados") or [], pago_ok=pago_ok,
                      contesta_cual=bool(RE_PREGUNTO_CUAL.search(ultimo_bot)))
-    cambio_hecho = _cambio_de_idea(rec, f, mensaje, antes, lectura.get("datos") or {})
+    # «el primero», «la otra», «ese mismo», «el verde»: la prenda ya mostrada a la que se refiere, sin nombrarla.
+    ref_cod, ref_hecho = _referencia(f, mensaje, fichas, ctx_nombres)
+    if ref_cod:
+        f["producto"] = ref_cod
+        if (f.get("pedido") or {}).get("codigo") and not (f.get("pedido") or {}).get("confirmado"):
+            ficha_mod.fijar_pedido(f, codigo=ref_cod)
+    cambio_hecho = _cambio_de_idea(rec, f, mensaje, antes, lectura.get("datos") or {}, ctx_nombres)
+    if ref_hecho:
+        cambio_hecho = (ref_hecho + "\n" + cambio_hecho).strip()
     confirma_hecho = "" if pago_ok else _confirma_pedido(rec, f, mensaje, ultimo_bot, permitir_reserva)
     if confirma_hecho:
         pago_ok = rec.hechos["pago_ok"] = True
@@ -228,13 +246,13 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     paso = "" if (lectura.get("datos") or {}).get("horario") else _paso_guion(f, getattr(req, "historial", []) or [], pago_ok)
     if re.search(r"\bsepar", memoria._plano(mensaje)) and not (f.get("producto") or f.get("mostrados")
                                                                or (f.get("pedido") or {}).get("codigo")) \
-            and not _nombradas(mensaje, rec.fichas):
+            and not _nombradas(mensaje, rec.fichas, ctx_nombres):
         rec.sin_cual = True
-        paso = ("QUIERE SEPARAR SIN DECIR QUÉ PRENDA: pregúntale cuál (el nombre, el código o una foto); no inventes "
+        paso = ("QUIERE SEPARAR SIN DECIR QUÉ PRENDA: pregúntale cuál (el nombre del modelo o una foto); no inventes "
                 "una ni mandes fotos. " + (paso or "")).strip()
-    elif RE_ESTE_SIN_CUAL.search(mensaje) and not _nombradas(mensaje, rec.fichas):
+    elif RE_ESTE_SIN_CUAL.search(mensaje) and not _nombradas(mensaje, rec.fichas, ctx_nombres) and not ref_cod:
         rec.sin_cual = True
-        paso = ("PREGUNTA POR «ESTE» MODELO SIN DECIR CUÁL: pídele la foto o el nombre/código del modelo que vio; no "
+        paso = ("PREGUNTA POR «ESTE» MODELO SIN DECIR CUÁL: pídele la foto o el nombre del modelo que vio; no "
                 "mandes fotos ni adivines. " + (paso or "")).strip()
     elif RE_CATALOGO.search(mensaje):
         paso = ("PIDIÓ EL CATÁLOGO O LA PÁGINA: usa enviar_catalogo con la sección que pide (o «all» si no dice "
@@ -330,12 +348,10 @@ def _foto_pedida(rec: Recolector, f: dict, mensaje: str) -> None:
     if rec.fotos or not RE_PIDE_FOTO.search(m):
         return
     plano = memoria._plano(mensaje)
-    for x in rec.fichas:
-        nombre = memoria._plano(x.nombre)
-        clave = [p for p in nombre.split() if len(p) >= 4 and p not in ("vestido", "conjunto", "blusa", "pantalon", "falda", "enterizo", "blazer")]
-        if x.codigo.lower() in plano or (clave and all(p in plano for p in clave[:1])):
-            rec.ejecutar("enviar_fotos", {"codigos": [x.codigo]})
-            return
+    nombrada = _nombradas(mensaje, rec.fichas, {"foco": f.get("producto") or ""})
+    if nombrada:
+        rec.ejecutar("enviar_fotos", {"codigos": nombrada[:1]})
+        return
     if f.get("producto") and re.search(r"\b(como es|ver(lo|la)?|foto)\b", plano):
         rec.ejecutar("enviar_fotos", {"codigos": [f["producto"]]})
 
@@ -518,28 +534,48 @@ def _fotos_de_colores(rec: Recolector, f: dict, mensaje: str, ultimo_bot: str) -
 GENERICAS_NOMBRE = {"vestido", "conjunto", "blusa", "pantalon", "falda", "enterizo", "blazer"}
 
 
-def _nombradas(texto: str, fichas) -> list[str]:
+def _nombradas(texto: str, fichas, ctx: dict | None = None) -> list[str]:
     """Códigos de las prendas que el texto nombra («Vestido Pandora», «Kabanova rojo», «V31»), en orden de aparición.
-    Si un nombre está dentro de otro más largo («Kabanova» en «Kabanova Rojo»), vale el largo."""
-    plano = memoria._plano(texto or "")
-    hallados = []
-    for x in fichas:
-        nombre = " ".join(p for p in memoria._plano(x.nombre).split() if p not in GENERICAS_NOMBRE)
-        # El nombre completo también cuenta y, por largo, gana: «pantalón Holly» es el pantalón aunque el «Vestido
-        # Holly» comparta «holly» (baruka.pe tiene Holly, Camila y Zoraida en dos prendas, 12-10-2026).
-        for clave in {nombre, memoria._plano(x.nombre), x.codigo.lower()}:
-            if len(clave) >= 3:
-                for m in re.finditer(r"\b" + re.escape(clave) + r"\b", plano):
-                    hallados.append((m.start(), m.end(), x.codigo.upper()))
-    hallados.sort(key=lambda h: (h[0], -(h[1] - h[0])))
-    out, fin = [], -1
-    for ini, f_, cod in hallados:
-        if ini < fin:          # dentro de un nombre más largo ya contado
-            continue
-        fin = f_
-        if cod not in out:
-            out.append(cod)
-    return out
+    Lo decide app/nombres.py: un nombre repetido sin tipo (Holly) no cuenta —se pregunta— y uno que es palabra común
+    (Alma, Sol, Lila) solo con contexto. `ctx` = {"foco", "bot", "contesta_cual"} para resolver los repetidos."""
+    return nombres.nombradas(texto, fichas, ctx).codigos
+
+
+def _ambiguas(texto: str, fichas, ctx: dict | None = None) -> list[tuple[str, list[str]]]:
+    """Nombres repetidos que el texto deja sin decidir: [("holly", ["V41", "V88"])]."""
+    return nombres.nombradas(texto, fichas, ctx).ambiguas
+
+
+# Pistas de que habla de una prenda ya mostrada sin nombrarla: «el primero», «la otra», «ese mismo», «el de la foto».
+RE_REFERENCIA = re.compile(r"\b(primer[oa]?|segund[oa]|tercer[oa]?|ultim[oa]|penultim[oa]|anterior|otr[oa])\b|"
+                           r"\b(ese|esa|este|esta|aquel|aquella)\b\s*(mism[oa]|vestido|modelo|conjunto|blusa|prenda|pantalon|"
+                           r"enterizo|blazer|falda)?|\bque me (mostraste|mandaste|pasaste|enviaste|ensenaste)\b|\bde la foto\b|"
+                           r"\b(el|la) (de|del) (arriba|abajo|medio|antes|recien)\b")
+
+
+def _referencia(f: dict, mensaje: str, fichas, ctx: dict) -> tuple[str, str]:
+    """Resuelve «el primero», «la otra», «ese», «el verde» contra las prendas ya mostradas (app/catalogos/referencias.py).
+    Devuelve (código, hecho para el modelo); ("", "") si no aplica. Si queda entre dos, el hecho pide preguntar cuál.
+    Sin código a la vista (15-10-2026), estas referencias son la forma normal de elegir."""
+    from ..catalogos import referencias as refs
+    plano = memoria._plano(mensaje)
+    mostrados = [str(c).upper() for c in (f.get("mostrados") or []) if c]
+    if not mostrados or nombres.nombradas(mensaje, fichas, ctx) or not RE_REFERENCIA.search(plano):
+        return "", ""
+    por = {x.codigo.upper(): x for x in fichas}
+    cands = [{"codigo": c, "nombre": por[c].nombre, "color": fotos_color.color_de(f"{c.lower()}.jpg") or (por[c].color or "")}
+             for c in mostrados if c in por]
+    if not cands:
+        return "", ""
+    r = refs.resolver_referencia(mensaje, cands)
+    if r.tipo == "candidato" and r.candidato:
+        cod = r.candidato["codigo"]
+        return cod, (f"SE REFIERE AL {r.candidato['nombre']} ({r.motivo or 'la prenda ya mostrada'}): habla de ESA prenda, "
+                     "no cambies de modelo ni mandes otra foto salvo que la pida.")
+    if r.tipo == "ambiguo" and len(r.empatados) >= 2:
+        lista = " o ".join(f"{nombres.articulo(x['nombre'])} {x['nombre']}" for x in r.empatados[:3])
+        return "", f"NO QUEDA CLARO A CUÁL SE REFIERE ({lista}): pregúntale cuál, sin elegir por ella ni mandar fotos."
+    return "", ""
 
 
 def _retirado(mensaje: str, fichas) -> str:
@@ -682,9 +718,12 @@ def _sin_insistir(texto: str, f: dict, historial) -> str:
 def _catalogo(f: dict, mensaje: str, fichas, hist, req, t0) -> dict | None:
     """El enlace de la sección que pide, con su captura, sin LLM. Si nombra UN modelo («pásame el link del Holly»), el
     enlace de ese modelo con su foto. Termina con la pregunta que toque: el evento si aún no se sabe, si no «¿cuál te gustó?»."""
-    nombrados = _nombradas(mensaje, fichas)
+    nombrados = _nombradas(mensaje, fichas, {"foco": f.get("producto") or ""})
     tarjetas = []
-    if len(nombrados) == 1 and not colecciones.en_texto(mensaje):
+    # Nombra UN modelo: va su enlace aunque diga el tipo («link del pantalón Holly»); con el tipo en plural («link de
+    # los pantalones») o «todo», la sección.
+    if len(nombrados) == 1 and not re.search(r"\b(vestidos|pantalones|blusas|enterizos|conjuntos|blazers|faldas|tod[oa]s?)\b",
+                                             memoria._plano(mensaje)):
         x = next((y for y in fichas if y.codigo.upper() == nombrados[0]), None)
         w = ficha_producto.web(nombrados[0])
         if x is not None and w.get("url"):
@@ -708,7 +747,7 @@ def _catalogo(f: dict, mensaje: str, fichas, hist, req, t0) -> dict | None:
     return _respuesta(f, texto, "responder", tarjetas, None, _traza(texto, [], ["catalogo"], 0, _ms(t0)), req)
 
 
-def _cambio_de_idea(rec: Recolector, f: dict, mensaje: str, antes: dict, datos: dict) -> str:
+def _cambio_de_idea(rec: Recolector, f: dict, mensaje: str, antes: dict, datos: dict, ctx: dict | None = None) -> str:
     """Nota un cambio de idea y deja la ficha al día, para que el bot no siga con lo anterior (14-10-2026):
     otro modelo («y el Holly?»), «no me gusta / otro modelo», otro tipo de prenda («mejor un enterizo») u otro color que
     la prenda en foco no tiene. Devuelve el hecho para el modelo ("" si no cambió nada)."""
@@ -717,7 +756,7 @@ def _cambio_de_idea(rec: Recolector, f: dict, mensaje: str, antes: dict, datos: 
     nombre = lambda c: next((x.nombre for x in rec.fichas if x.codigo.upper() == c), c)
     pedido = f.get("pedido") or {}
     partes = []
-    nombrados = _nombradas(mensaje, rec.fichas)
+    nombrados = _nombradas(mensaje, rec.fichas, ctx)
     if len(nombrados) == 1 and previo and nombrados[0] != previo:
         nuevo = nombrados[0]
         f["producto"] = nuevo
@@ -741,6 +780,9 @@ def _cambio_de_idea(rec: Recolector, f: dict, mensaje: str, antes: dict, datos: 
         partes.append(f"CAMBIO DE PRENDA: ahora busca {p_ahora} (antes {p_antes}). Ofrécele {p_ahora}; no sigas con {p_antes}.")
     color = (datos.get("color") or "").strip()
     foco = (f.get("producto") or "").upper()
+    # «la Blusa Lila» es el nombre de la prenda, no un color pedido: no se avisa que «no viene en lila» (15-10-2026).
+    if color and foco and memoria._plano(color).split()[0] in nombres.propio(nombre(foco)).split():
+        color = ""
     if color and foco and not rec.colores_ok:
         web = colores.colores_de(rec._ficha(foco)) if rec._ficha(foco) else []
         tiene = [c for c in web if memoria._plano(color).split()[0] in memoria._plano(c)]

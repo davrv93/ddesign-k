@@ -44,16 +44,27 @@ def prueba_turnos(fichas):
     r = _turno(fichas, "quiero ver todo", base + [B("*V83* Enterizo Elowen")], mem)
     ok([s["imagen"].split("/")[-1].split("-")[0] for s in r["sugerencias"]] == ["coleccion_enterizos"], f"ver todo con el Elowen en foco: {r['sugerencias']}")
     ok("cual te gusto" in memoria._plano(r["respuesta"]), f"con el evento sabido pregunta cuál le gustó: {r['respuesta']!r}")
-    r = _turno(fichas, "pásame el link del Holly", base)
+    r = _turno(fichas, "pásame el link del pantalón Holly", base)
     ok(r["sugerencias"] and "baruka.pe/products/" in r["sugerencias"][0]["pie"], f"link de un modelo: {r['sugerencias']}")
+    # Holly es vestido y pantalón (app/nombres.py, 15-10-2026): sin el tipo no se adivina, se pregunta cuál.
+    r = _turno(fichas, "pásame el link del Holly", base)
+    ok(not r["sugerencias"] and "cual de los dos" in memoria._plano(r["respuesta"]) and "pantalon holly" in memoria._plano(r["respuesta"]),
+       f"nombre repetido: pregunta cuál: {r['respuesta']!r} {r['sugerencias']}")
+    ok([x["label"] for x in r["respuestas_rapidas"]] == ["Vestido Holly", "Pantalón Holly"], f"botones con los dos: {r['respuestas_rapidas']}")
 
     # Cambios de idea
     mem = ficha_mod.normalizar(None)
     mem["producto"], mem["mostrados"] = "V50", ["V50"]
     mem["sabemos"].update({"ocasion": "boda", "prenda": "vestido", "color": "negro"})
     hist = base + [C("boda"), B("*V50* Vestido Salome — S/ 290"), B("¿Qué es lo que más te gustó del modelo?")]
-    r = _turno(fichas, "y el Holly?", hist, mem)
-    ok("CAMBIO DE MODELO" in (PROMPTS[0] if PROMPTS else "") and r["memoria"]["producto"] != "V50", f"otro modelo: foco {r['memoria']['producto']}")
+    r = _turno(fichas, "y el vestido Holly?", hist, mem)
+    ok("CAMBIO DE MODELO" in (PROMPTS[0] if PROMPTS else "") and r["memoria"]["producto"] == "V41", f"otro modelo: foco {r['memoria']['producto']}")
+    # «el segundo» / «el otro»: la prenda ya mostrada, resuelta por el código (catalogos/referencias.py).
+    mem2 = ficha_mod.normalizar(None)
+    mem2["producto"], mem2["mostrados"] = "V53", ["V50", "V53"]
+    r = _turno(fichas, "me gustó más el primero", hist, mem2)
+    ok("SE REFIERE AL Vestido Salome" in (PROMPTS[0] if PROMPTS else "") and r["memoria"]["producto"] == "V50",
+       f"«el primero» es el V50: foco {r['memoria']['producto']}")
     r = _turno(fichas, "no me gusta, tienes otro modelo?", hist, mem, herramientas=[("enviar_fotos", {"codigos": ["V53"]})])
     ok("NO LE CONVENCIÓ EL V50" in (PROMPTS[0] if PROMPTS else ""), "«no me gusta» → otro modelo")
     ok([s["codigo"] for s in r["sugerencias"]] == ["V53"], f"y puede mandar otra prenda: {[s['codigo'] for s in r['sugerencias']]}")

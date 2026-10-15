@@ -410,7 +410,7 @@ caso("tela: «tejido de lino prada»", V.tela("V28", "la ligereza que le dota el
 caso("tela: solo las mangas no son la tela", V.tela("V27", "Su manga en organza francesa la convierte en ideal"), "")
 caso("tela: la ficha no la dice", V.tela("V31", "Clásico atemporal con escote corazón y cremallera."), "")
 caso("tela que no figura: deriva, no inventa", "asesora" in V.respuesta_tela("V31", "Vestido Pandora", "Clásico con cremallera."), True)
-caso("tela que figura: la dice", V.respuesta_tela("V35", "Vestido Irla", "Tipo de tela Roma"), "El *V35* Vestido Irla es de tela Roma 😊")
+caso("tela que figura: la dice", V.respuesta_tela("V35", "Vestido Irla", "Tipo de tela Roma"), "El *Vestido Irla* es de tela Roma 😊")
 
 
 # Cita (prueba con conversaciones, 04-10-2026): la fecha del evento dicha junto con el pedido de cita no es el día de la
