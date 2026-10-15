@@ -30,7 +30,10 @@ const (
 
 var (
 	reNoSupo = regexp.MustCompile(`(?i)asesora|te lo confirm|te la confirm|no (tengo|cuento con) ese dato|no lo tengo a la mano|` +
-		`no la tengo a la mano|escribe \*?4\*?|no te s[eé] decir|no estoy segura|no tengo esa informaci`)
+		`no la tengo a la mano|escribe \*?4\*?|no te s[eé] decir|no estoy segura|no tengo esa informaci|` +
+		// Como contesta V3 cuando no lo sabe (15-10-2026): «no puedo confirmar entrega para hoy», «no tengo confirmado…»,
+		// «no tengo un plazo confirmado».
+		`no (tengo|puedo|te puedo|podr[ií]a)\b[^.?!\n]{0,30}confirm|no (tengo|cuento con) (un |una |ese |esa )?(dato|plazo|informaci)`)
 	reInterrogativa = regexp.MustCompile(`(?i)^\s*¿|\?|^\s*(qu[eé]|c[oó]mo|cu[aá]nto|cu[aá]ndo|d[oó]nde|cu[aá]l|tienen|tienes|hacen|haces|` +
 		`aceptan|puedo|se puede|hay|venden|env[ií]an|trabajan|dan)\b`)
 	reCorreo   = regexp.MustCompile(`[\w.+-]+@[\w-]+\.[\w.]+`)
@@ -92,7 +95,7 @@ func parecido(a, b map[string]bool) float64 {
 	return float64(in) / float64(m)
 }
 
-const umbralParecido = 0.67
+const umbralParecido = 0.66 // 2 de 3 palabras (0,666…) cuenta como parecida
 
 // anonimizar tapa lo que identifica a una persona: números largos, correos y su nombre.
 func anonimizar(texto, nombre string) string {

@@ -309,17 +309,34 @@ func TestPropuestasDelRobot(t *testing.T) {
 					}
 				}
 			}
+			// Como contesta V3 cuando no lo sabe («no puedo confirmar…»): también cuenta como que no supo.
+			for i, q := range []string{"¿Hacen entregas el mismo día?", "¿pueden entregar el mismo día?", "¿la entrega puede ser el mismo día?"} {
+				_, cv, err := a.st.UpsertCustomer(ctx, "5198800000"+string(rune('1'+i))+"@s.whatsapp.net", "", "")
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, m := range []*Message{{ConversationID: cv.ID, Direction: "in", Author: "cliente", Body: q},
+					{ConversationID: cv.ID, Direction: "out", Author: "bot", Body: "En Lima el envío cuesta S/ 15; no puedo confirmar entrega para el mismo día."}} {
+					m.Kind = "text"
+					if err := a.st.AddMessage(ctx, m); err != nil {
+						t.Fatal(err)
+					}
+				}
+			}
 			// Una pregunta suelta que el robot sí contestó: no se propone.
 			_ = a.st.AddMessage(ctx, &Message{ConversationID: a.conv.ID, Direction: "in", Author: "cliente", Kind: "text", Body: "¿cuánto cuesta el envío?"})
 			_ = a.st.AddMessage(ctx, &Message{ConversationID: a.conv.ID, Direction: "out", Author: "bot", Kind: "text", Body: "El envío a Lima es S/ 15."})
 
 			n, err := a.st.ProponerPreguntas(ctx, desde)
-			if err != nil || n != 1 {
+			if err != nil || n != 2 {
 				t.Fatalf("propuestas: %d %v", n, err)
 			}
-			l, _ := a.st.ListarFuentes(ctx, FiltroFuentes{Estado: "propuesta"})
+			l, _ := a.st.ListarFuentes(ctx, FiltroFuentes{Estado: "propuesta", Q: "factura"})
 			if len(l) != 1 {
 				t.Fatalf("propuestas guardadas: %v", l)
+			}
+			if m, _ := a.st.ListarFuentes(ctx, FiltroFuentes{Estado: "propuesta", Q: "mismo"}); len(m) != 1 {
+				t.Fatalf("la propuesta del «mismo día» (no puedo confirmar): %v", m)
 			}
 			var q FaqDatos
 			_ = json.Unmarshal(l[0].Datos, &q)
@@ -334,10 +351,10 @@ func TestPropuestasDelRobot(t *testing.T) {
 				t.Fatalf("una propuesta llegó al robot sin aprobar: %+v", c.Faqs)
 			}
 			// Otra pasada suma ocurrencias, no duplica.
-			if n, _ := a.st.ProponerPreguntas(ctx, desde); n != 1 {
+			if n, _ := a.st.ProponerPreguntas(ctx, desde); n != 2 {
 				t.Fatalf("segunda pasada: %d", n)
 			}
-			l, _ = a.st.ListarFuentes(ctx, FiltroFuentes{Estado: "propuesta"})
+			l, _ = a.st.ListarFuentes(ctx, FiltroFuentes{Estado: "propuesta", Q: "factura"})
 			_ = json.Unmarshal(l[0].Datos, &q)
 			if len(l) != 1 || q.Ocurrencias != 6 {
 				t.Fatalf("segunda pasada: %d propuestas, %d ocurrencias", len(l), q.Ocurrencias)
@@ -346,7 +363,7 @@ func TestPropuestasDelRobot(t *testing.T) {
 			if _, err := a.st.CambiarEstadoFuente(ctx, l[0].ID, "descartada"); err != nil {
 				t.Fatal(err)
 			}
-			if n, _ := a.st.ProponerPreguntas(ctx, desde); n != 0 {
+			if n, _ := a.st.ProponerPreguntas(ctx, desde); n != 1 { // solo suma a la del «mismo día»
 				t.Fatalf("volvió a proponer una descartada: %d", n)
 			}
 			// La otra empresa no recibe propuestas de la primera.
