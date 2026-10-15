@@ -91,3 +91,34 @@ func TestPedidoSinPromoPrecioDeSiempre(t *testing.T) {
 	mustContain(t, fe.lastText(), "S/ 119.00")
 	mustNotContain(t, fe.lastText(), "antes", "promo")
 }
+
+// Precios solo si la clienta los pregunta (Ajustes, 15-10-2026): la tarjeta del producto y el catálogo del bot no llevan
+// precio, el agente recibe la configuración y el resumen del pedido sí lleva el total.
+func TestPreciosSoloSiPregunta(t *testing.T) {
+	b, st, fe := setup(t, `{"intent":"otro"}`, false)
+	ctx := context.Background()
+	if err := st.SetSetting(ctx, store.SettingPreciosSoloSiPregunta, "true"); err != nil {
+		t.Fatal(err)
+	}
+	handle(b, text("v01"))
+	mustContain(t, fe.lastText(), "Vestido Esmeralda", "talla")
+	mustNotContain(t, fe.lastText(), "S/", "💰")
+	handle(b, text("M"))
+	mustContain(t, fe.lastText(), "Total: *S/ 119.00*") // en el cierre, el precio va
+	handle(b, text("NO"))
+	handle(b, text("1"))
+	mustContain(t, fe.lastText(), "Vestido Esmeralda")
+	mustNotContain(t, fe.lastText(), "S/")
+
+	var last agente.Request
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewDecoder(r.Body).Decode(&last)
+		_ = json.NewEncoder(w).Encode(agente.Reply{Accion: "responder", Respuesta: "¡Hola! 😊"})
+	}))
+	t.Cleanup(srv.Close)
+	b.Agent = agente.New(srv.URL, 0)
+	handle(b, text("hola, quiero ver vestidos"))
+	if !last.PreciosSoloSiPregunta {
+		t.Fatal("el agente debía recibir precios_solo_si_pregunta")
+	}
+}

@@ -9,6 +9,11 @@ const TOGGLES = [
   { key: "bot_enabled", label: "Bot activo", hint: "Si lo apagas, los mensajes se guardan pero nadie responde automáticamente." },
   { key: "notify_status_changes", label: "Avisar cambios de estado", hint: "Al mover un pedido (preparando, enviado, entregado…) el cliente recibe un mensaje." },
   { key: "pause_on_manual_reply", label: "Pausar el bot cuando respondo desde el celular", hint: "Si escribes al cliente desde el teléfono, el bot deja de responder en ese chat." },
+  {
+    key: "precios_solo_si_pregunta",
+    label: "Precios solo si la clienta los pregunta",
+    hint: "El robot no dice precios por su cuenta (ni en el texto ni en las fotos o el catálogo): los dice cuando la clienta pregunta «¿cuánto cuesta?». En el resumen del pedido y el pago, el total va siempre. Las promos se mencionan sin cifras.",
+  },
 ];
 
 export default component$(() => {

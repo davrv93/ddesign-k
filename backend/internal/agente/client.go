@@ -61,6 +61,8 @@ type Request struct {
 	// Conocimiento: las fuentes vigentes de la tienda (promos, preguntas frecuentes, guion, políticas, material;
 	// docs/FUENTES_CONTRATO.md §3). nil = no se manda y el agente sigue con su seed.
 	Conocimiento any `json:"conocimiento,omitempty"`
+	// PreciosSoloSiPregunta: la tienda quiere que el robot diga precios solo cuando la clienta los pregunta (Ajustes).
+	PreciosSoloSiPregunta bool `json:"precios_solo_si_pregunta,omitempty"`
 }
 
 // Perfil de una clienta que ya compró: el agente prellena la talla y puede mencionarlo con naturalidad.
@@ -136,7 +138,8 @@ type PhotoRequest struct {
 	Version string `json:"version,omitempty"`
 	Modo    string `json:"modo,omitempty"`
 	// Igual que en Request.
-	Conocimiento any `json:"conocimiento,omitempty"`
+	Conocimiento          any  `json:"conocimiento,omitempty"`
+	PreciosSoloSiPregunta bool `json:"precios_solo_si_pregunta,omitempty"`
 }
 
 // PhotoResult dice qué tan seguro está el agente de haber encontrado la prenda.

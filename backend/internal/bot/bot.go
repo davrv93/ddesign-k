@@ -470,6 +470,7 @@ func (b *Bot) sendCatalog(ctx context.Context, conv *store.Conversation) {
 	}
 	var sb strings.Builder
 	sb.WriteString("👗 *Catálogo " + b.cfg.BusinessName + "*\n\n")
+	ocultos := b.preciosOcultos(ctx)
 	n := 0
 	for _, p := range products {
 		if p.TotalAvailable() == 0 {
@@ -481,7 +482,11 @@ func (b *Bot) sendCatalog(ctx context.Context, conv *store.Conversation) {
 				sizes = append(sizes, v.Size)
 			}
 		}
-		fmt.Fprintf(&sb, "• *%s* — %s (%s)\n", p.Name, b.money(p.Price), strings.Join(sizes, ", "))
+		if ocultos {
+			fmt.Fprintf(&sb, "• *%s* (%s)\n", p.Name, strings.Join(sizes, ", "))
+		} else {
+			fmt.Fprintf(&sb, "• *%s* — %s (%s)\n", p.Name, b.money(p.Price), strings.Join(sizes, ", "))
+		}
 		n++
 		if n >= 30 {
 			break
@@ -602,7 +607,11 @@ func (b *Bot) handlePhoto(ctx context.Context, conv *store.Conversation, cc *con
 	var sb strings.Builder
 	sb.WriteString("🤔 No estoy segura de cuál es. ¿Es alguno de estos?\n\n")
 	for _, p := range alts {
-		fmt.Fprintf(&sb, "• *%s* — %s\n", p.Name, b.money(p.Price))
+		if b.preciosOcultos(ctx) {
+			fmt.Fprintf(&sb, "• *%s*\n", p.Name)
+		} else {
+			fmt.Fprintf(&sb, "• *%s* — %s\n", p.Name, b.money(p.Price))
+		}
 	}
 	sb.WriteString("\nDime el *nombre* del que es, o espera a que una asesora te ayude 🙌.")
 	b.setState(ctx, conv, stIdle, convContext{})
@@ -634,7 +643,11 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 		inStock := []string{}
 		for _, a := range alts {
 			if a.TotalAvailable() > 0 {
-				inStock = append(inStock, fmt.Sprintf("• *%s* — %s", a.Name, b.money(a.Price)))
+				if b.preciosOcultos(ctx) {
+					inStock = append(inStock, fmt.Sprintf("• *%s*", a.Name))
+				} else {
+					inStock = append(inStock, fmt.Sprintf("• *%s* — %s", a.Name, b.money(a.Price)))
+				}
 			}
 		}
 		if len(inStock) > 0 {
@@ -661,8 +674,12 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 		intro = "✨ ¡Encontré tu modelo!"
 	}
 	// Sin código a la vista (15-10-2026, pedido de la tienda): la clienta pide por el nombre del modelo.
-	caption := fmt.Sprintf("%s\n*%s*\n%s\n💰 %s\n📏 Tallas disponibles: %s\n\n¿Qué *talla* deseas?",
-		intro, p.Name, p.Description, b.precioTxt(ctx, p), strings.Join(sizes, ", "))
+	precio := "\n💰 " + b.precioTxt(ctx, p)
+	if b.preciosOcultos(ctx) { // precios solo si la clienta los pregunta (Ajustes, 15-10-2026)
+		precio = ""
+	}
+	caption := fmt.Sprintf("%s\n*%s*\n%s%s\n📏 Tallas disponibles: %s\n\n¿Qué *talla* deseas?",
+		intro, p.Name, p.Description, precio, strings.Join(sizes, ", "))
 	b.setState(ctx, conv, stSize, next)
 	if p.Image != "" {
 		b.replyImage(ctx, conv, b.cfg.MediaBaseURL+p.Image, caption)
@@ -1261,7 +1278,7 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 		DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
 		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc),
 		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo, ColoresGrupos: b.coloresGrupos(ctx),
-		Conocimiento: b.conocimientoReq(ctx)}
+		Conocimiento: b.conocimientoReq(ctx), PreciosSoloSiPregunta: b.preciosOcultos(ctx)}
 	if conv.State != stIdle && cc.ProductID > 0 {
 		if p, err := b.store.GetProduct(ctx, cc.ProductID); err == nil {
 			req.Producto = p.Code
@@ -1389,7 +1406,8 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 		Estado: conv.State, Negocio: b.cfg.BusinessName, Cliente: b.customerName(conv),
 		Historial: b.agentHistory(ctx, conv, msg.Body), Etapa: cc.Etapa, DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
 		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc),
-		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo, Conocimiento: b.conocimientoReq(ctx)}
+		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo, Conocimiento: b.conocimientoReq(ctx),
+		PreciosSoloSiPregunta: b.preciosOcultos(ctx)}
 	r, err := b.Agent.Photo(actx, req)
 	if err != nil || r.Foto == nil {
 		log.Printf("bot: agente foto: %v", err)

@@ -103,6 +103,10 @@ type FuenteVersion struct {
 
 var ErrFuenteInvalida = errors.New("fuente inválida")
 
+// SettingPreciosSoloSiPregunta: «true» = el robot y el bot dicen precios de prendas solo cuando la clienta los pregunta
+// (Ajustes, 15-10-2026). En el cierre de la compra (resumen, total, pago) el precio va siempre.
+const SettingPreciosSoloSiPregunta = "precios_solo_si_pregunta"
+
 // ---------------------------------------------------------------------------
 // Migración
 

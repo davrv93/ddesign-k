@@ -27,6 +27,8 @@ import (
 	"github.com/davrv93/ddesign-k/backend/internal/store"
 )
 
+func init() { settingDefaults[store.SettingPreciosSoloSiPregunta] = "false" }
+
 func (s *Server) rutasFuentes(p, a func(pattern string, h http.HandlerFunc)) {
 	p("GET /api/fuentes", s.listFuentes)
 	a("POST /api/fuentes", s.crearFuente)

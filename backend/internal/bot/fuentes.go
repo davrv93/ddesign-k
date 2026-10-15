@@ -55,6 +55,12 @@ func (b *Bot) conocimientoReq(ctx context.Context) any {
 	return nil
 }
 
+// preciosOcultos: la tienda quiere precios solo si la clienta los pregunta (Ajustes). El bot entonces no los pone en la
+// tarjeta del producto, el catálogo ni las alternativas; el resumen y el pago sí los llevan.
+func (b *Bot) preciosOcultos(ctx context.Context) bool {
+	return b.store.Setting(ctx, store.SettingPreciosSoloSiPregunta, "false") == "true"
+}
+
 // precio: el de una unidad del producto con la promo vigente que lo cubre (el mismo que le dice el robot); sin promo,
 // el de siempre. Lo usan el pedido, el resumen y la tarjeta del producto (15-10-2026).
 func (b *Bot) precio(ctx context.Context, p *store.Product) float64 {
