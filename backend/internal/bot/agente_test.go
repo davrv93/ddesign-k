@@ -139,7 +139,7 @@ func TestAgenteFotoOfreceSiHayStock(t *testing.T) {
 	if last.ImagenB64 == "" {
 		t.Fatal("el agente debía recibir la foto")
 	}
-	mustContain(t, fe.lastText(), "Encontré tu modelo", "V01")
+	mustContain(t, fe.lastText(), "Encontré tu modelo", "Vestido Esmeralda")
 }
 
 func TestAgenteFotoSucursalDejaConsulta(t *testing.T) {

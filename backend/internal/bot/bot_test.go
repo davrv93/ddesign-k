@@ -133,7 +133,8 @@ func TestFlujoCompletoFotoTallaConfirmaUbicacion(t *testing.T) {
 	if last["_path"] != "/send/media" || last["url"] != "http://backend:8080/media/products/v01.jpg" {
 		t.Fatalf("se esperaba la foto del catálogo, llegó %v", last)
 	}
-	mustContain(t, fe.lastText(), "V01", "S/ 119.00", "S (1)", "M (2)", "talla")
+	mustContain(t, fe.lastText(), "Vestido Esmeralda", "S/ 119.00", "S (1)", "M (2)", "talla")
+	mustNotContain(t, fe.lastText(), "V01") // el código no se le enseña a la clienta (15-10-2026)
 
 	handle(b, text("quiero 2 en talla M"))
 	mustContain(t, fe.lastText(), "Resumen", "Talla: *M*", "Cantidad: *2*", "S/ 238.00", "SI")
@@ -175,10 +176,11 @@ func TestProductoAgotadoYCodigo(t *testing.T) {
 	b, st, fe := setup(t, `{"code":"V07","confidence":0.9,"seen":"sirena celeste","alternatives":["V01"]}`, false)
 	ctx := context.Background()
 	handle(b, photo())
-	mustContain(t, fe.lastText(), "agotado", "V01")
+	mustContain(t, fe.lastText(), "agotado", "Vestido Esmeralda")
+	mustNotContain(t, fe.lastText(), "V01", "V07")
 
 	handle(b, text("v01"))
-	mustContain(t, fe.lastText(), "¡Lo tenemos!", "V01")
+	mustContain(t, fe.lastText(), "¡Lo tenemos!", "Vestido Esmeralda")
 	handle(b, text("XL"))
 	mustContain(t, fe.lastText(), "Tenemos: *S*, *M*")
 	handle(b, text("no"))
@@ -293,4 +295,25 @@ func TestEnvioLentoNoBloqueaAlBot(t *testing.T) {
 	if !strings.Contains(fe.sent[0]["text"].(string), "Hola Ana") || !strings.Contains(fe.sent[1]["text"].(string), "Catálogo") {
 		t.Fatal("las respuestas debían salir en orden")
 	}
+}
+
+func mustNotContain(t *testing.T, got string, bad ...string) {
+	t.Helper()
+	for _, w := range bad {
+		if strings.Contains(got, w) {
+			t.Fatalf("no debía salir %q en:\n%s", w, got)
+		}
+	}
+}
+
+// Sin agente, el nombre del modelo solo («vestido esmeralda», «la esmeralda») arranca el pedido como lo hacía el
+// código; la clienta ya no ve códigos (15-10-2026).
+func TestPedidoPorNombreSinAgente(t *testing.T) {
+	b, _, fe := setup(t, `{"intent":"otro"}`, false)
+	handle(b, text("Vestido Esmeralda"))
+	mustContain(t, fe.lastText(), "¡Lo tenemos!", "Vestido Esmeralda", "talla")
+	mustNotContain(t, fe.lastText(), "V01")
+	handle(b, text("hola"))
+	handle(b, text("la esmeralda"))
+	mustContain(t, fe.lastText(), "¡Lo tenemos!", "Vestido Esmeralda")
 }
