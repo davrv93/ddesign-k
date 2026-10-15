@@ -130,6 +130,12 @@ def prueba_una_vez(fichas):
     si("cambia de color: el precio no se repite en el texto", precio not in r["respuesta"] and "rojo" in r["respuesta"]
        and "¿Qué talla usas?" in r["respuesta"])
     si("cambia de color: ni en el pie de la foto", "S/" not in r["sugerencias"][0]["pie"] and "S/" not in r["sugerencias"][0]["titulo"])
+    # Nombrado en el texto sin estar en foco ni mostrado: igual queda anotado (prueba local del 15-10-2026).
+    r = {"respuesta": f"El Vestido Salome cuesta {precio} 😊 ¿Qué talla usas?", "memoria": {"producto": "", "mostrados": []}}
+    cods = P.relevantes(r["memoria"], r, fichas)
+    si("relevantes: lo que nombra la respuesta", "V50" in cods)
+    r = P.no_repetir(r, "¿cuánto cuesta?", False, {c: P.montos(next(x for x in fichas if x.codigo == c)) for c in cods})
+    caso("nombrado: precio anotado", r["memoria"]["precios_dichos"], ["V50"])
     r = P.no_repetir(res(f"En rojo cuesta lo mismo, {precio} 😊", ["V50"]), "¿cuánto cuesta en rojo?", False, montos)
     si("si lo pregunta, se repite", precio in r["respuesta"])
     r = P.no_repetir(res(f"Tu pedido: Vestido Salome talla M, {precio} + envío S/ 15", ["V50"]), "si", True, montos)
@@ -155,6 +161,47 @@ def prueba_una_vez(fichas):
     si("V3: el precio repetido no sale", precio not in r["respuesta"] and "divino" in r["respuesta"])
     r = turno("¿cuánto cuesta el salome?", f"El Salome sigue a {precio}, con la tela que viste 😊", mem)
     si("V3: si pregunta, sin pista y con precio", PROMPTS and "YA LE DISTE EL PRECIO" not in PROMPTS[0] and precio in r["respuesta"])
+
+
+def prueba_promo_y_urgencia_una_vez(fichas):
+    """La promo ya dicha y la urgencia no se repiten (15-10-2026, prueba local con WhatsApp falso)."""
+    from .v3 import plantillas
+    rec = Recolector(fichas, lambda c: {})
+    rec.promos_no_repetir = [{"id": 1, "titulo": "Fiestas de Octubre", "mecanica": "porcentaje", "valor": 20}]
+    si("promo anunciada otra vez → motivo", agente._promo_repetida("¡Fiestas de Octubre! Esta semana hay 20% en vestidos 🎉", rec))
+    si("20 % suelto también", agente._promo_repetida("Recuerda que tienes 20 % de descuento 😊", rec))
+    caso("precio con la promo sí vale", agente._promo_repetida("Te queda en S/ 208 con la promo Fiestas de Octubre", rec), [])
+    caso("sin promo dicha, nada", agente._promo_repetida("Fiestas de Octubre 🎉", Recolector(fichas, lambda c: {})), [])
+    caso("arreglo: se quita la frase de la promo",
+         agente._sin_promo_repetida("Te entiendo 😊 ¡Fiestas de Octubre! Esta semana hay 20% de descuento 🎉 ¿Cuánto mides?", rec),
+         "Te entiendo 😊 ¡Fiestas de Octubre! ¿Cuánto mides?".replace("¡Fiestas de Octubre! ", ""))
+    from . import conocimiento as K
+    K.limpiar_cache()
+    conoc = K.leer({"empresa": "baruka", "version": "pp", "hoy": "2026-10-15", "promos": [
+        {"id": 7, "titulo": "Fiestas de Octubre", "mecanica": "porcentaje", "valor": 20, "alcance": {"tipo": "todo"}}]})
+    f = {"promos_dichas": []}
+    agente._anotar_promos_dichas(f, conoc, {"fuentes_usadas": [7]})
+    caso("promo usada en el texto (herramienta) queda dicha", f["promos_dichas"], [7])
+    f = {"promos_dichas": []}
+    agente._anotar_promos_dichas(f, conoc, {"fuentes_usadas": [], "sugerencias": [
+        {"pie": "*Vestido Merlina* — ~S/ 220.00~ *S/ 176.00* con la promo «Fiestas de Octubre»"}]})
+    caso("promo en el pie de la foto queda dicha", f["promos_dichas"], [7])
+    for t in ["Sería genial tenerlo listo antes mientras aún hay stock, por si necesitas algún ajuste.",
+              "Wooow, estamos muy pronto.", "Mejor separarlo antes de que se agote.",
+              "sería genial tener el vestido listo antes, mientras aún haya stock"]:
+        si(f"urgencia reconocida: {t[:30]}", plantillas.RE_ESCASEZ.search(t))
+    hist = [B("Wooow, estamos muy pronto. Lo ideal es tenerlo antes. ¿No lo consideras?")]
+    f = {"temperatura": "caliente", "temperatura_motivo": "evento en 10 días", "sabemos": {}}
+    si("tono caliente sin urgencia previa: crea urgencia", "crea urgencia" in agente._tono(f, []))
+    si("tono caliente con urgencia ya dicha: no la repite", "YA se le dijo" in agente._tono(f, hist))
+
+
+def prueba_sin_insistir_sin_colgajo():
+    """Quitar una pregunta repetida no deja su introducción colgando (15-10-2026, prueba local)."""
+    hist = [B("¿Cuánto mides de estatura?"), C("elegante"), B("¿Cuánto mides de estatura?"), C("¿cuánto cuesta?")]
+    t = agente._sin_insistir("Te entiendo 😊 Nuestras tallas son completas; para orientarte mejor con el largo, ¿cuánto mides?",
+                             {"sabemos": {}, "veces": {"estatura": 2}}, hist)
+    caso("sin colgajo", t, "Te entiendo 😊 Nuestras tallas son completas.")
 
 
 def prueba_temperatura_v3(fichas):
@@ -186,6 +233,10 @@ def prueba_temperatura_v3(fichas):
     caso("V3: quiere comprarlo = caliente aunque falte", r["memoria"]["temperatura"], "caliente")
     r = turno("me encanta el salome", None)
     caso("V3: sin fecha ni señales = fría", r["memoria"]["temperatura"], "frio")
+    r = turno("me da miedo que no me quede", (hoy + dt.timedelta(days=9)).isoformat())
+    si("V3: temor anotado para la asesora", "talla" in r["memoria"]["objeciones"])
+    si("V3: el temor se contesta (hecho en el prompt)", PROMPTS and "TEMOR: que no le quede" in PROMPTS[0])
+    caso("V3: con miedo a la talla no salen fotos de otra prenda", r["sugerencias"], [])
 
 
 def main() -> int:
@@ -200,6 +251,8 @@ def main() -> int:
         prueba_v3(fw)
         prueba_una_vez(fw)
         prueba_temperatura_v3(fw)
+        prueba_promo_y_urgencia_una_vez(fw)
+        prueba_sin_insistir_sin_colgajo()
     finally:
         cliente_llm.responder, cliente_llm.configurado = antes
     print(f"prueba_precios: {FALLOS} fallos")

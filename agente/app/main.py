@@ -2712,7 +2712,7 @@ def _precio_una_vez(req, res: dict) -> dict:
                                                                         res.get("etapa") or getattr(req, "etapa", ""), pedido)
         conoc = conocimiento.leer(getattr(req, "conocimiento", None))
         por_cod = {x.codigo.upper(): x for x in E.fichas}
-        montos = {c: precios.montos(por_cod[c], conoc) for c in precios.relevantes(mem, res) if c in por_cod}
+        montos = {c: precios.montos(por_cod[c], conoc) for c in precios.relevantes(mem, res, E.fichas) if c in por_cod}
         return precios.no_repetir(res, getattr(req, "mensaje", "") or "", en_compra, montos, _envios())
     except Exception as e:      # la red nunca tumba una respuesta
         log.warning("precio una vez: %s", e)

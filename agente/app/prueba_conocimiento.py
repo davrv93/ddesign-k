@@ -163,6 +163,12 @@ def prueba_faq():
     caso("FAQ: una palabra suelta no cuenta", K.buscar_faq(c, "factura", embed_falso), None)
     caso("FAQ sin embedder: nada", K.buscar_faq(c, "hacen factura?", None), None)
     caso("umbral configurable", K.buscar_faq(c, "hacen factura?", embed_falso, umbral=1.01), None)
+    # Parecido alto sin ninguna palabra en común no basta (e5: «¿cuánto cuesta?» ≈ «¿emiten factura?» = 0,880).
+    c = K.leer(payload(version="faq-raices", faqs=[{"id": 3, "pregunta": "¿Hacen factura?", "variantes": ["dan factura electronica"],
+                                                    "respuesta": "Sí, emitimos factura electrónica 😊"}]))
+    todo_igual = lambda textos: [[1.0, 0.0, 0.0] if ("hacen" in t or "dan " in t) else [0.9, 0.4359, 0.0] for t in textos]
+    caso("FAQ: sin palabras en común no cuenta", K.buscar_faq(c, "¿cuánto cuesta?", todo_igual, umbral=0.5), None)
+    caso("FAQ: con una palabra en común sí", (K.buscar_faq(c, "¿y facturan?", todo_igual, umbral=0.5) or {}).get("faq", {}).get("id"), 3)
 
 
 def prueba_textos():

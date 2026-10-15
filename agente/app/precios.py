@@ -148,11 +148,19 @@ def montos(ficha, conoc=None) -> set:
     return out
 
 
-def relevantes(mem: dict, res: dict | None = None) -> list[str]:
-    """Códigos de los que se puede estar hablando: en foco, en el pedido, los últimos mostrados y los de las fotos."""
+def relevantes(mem: dict, res: dict | None = None, fichas=None) -> list[str]:
+    """Códigos de los que se puede estar hablando: en foco, en el pedido, los últimos mostrados, los de las fotos, los que
+    ya tienen el precio dicho y (con `fichas`) los que la respuesta nombra («El Vestido Blear cuesta…» sin mostrarlo)."""
     cods = [mem.get("producto") or "", ((mem.get("pedido") or {}).get("codigo") or "")]
     cods += list(mem.get("mostrados") or [])[-6:]
+    cods += list(mem.get("precios_dichos") or [])[-10:]
     cods += [s.get("codigo") or "" for s in ((res or {}).get("sugerencias") or []) if isinstance(s, dict)]
+    if fichas is not None and isinstance((res or {}).get("respuesta"), str):
+        try:
+            from . import nombres
+            cods += nombres.nombradas(res["respuesta"], fichas).codigos
+        except Exception:
+            pass
     out = []
     for c in cods:
         c = (c or "").strip().upper()

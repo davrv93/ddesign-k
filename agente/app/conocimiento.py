@@ -488,7 +488,22 @@ def buscar_faq(conoc: Optional[Conocimiento], texto: str, embed: Optional[Callab
         return None
     if score < (UMBRAL_FAQ if umbral is None else umbral):
         return None
+    # Con e5 dos preguntas cortas se parecen aunque no hablen de lo mismo: «¿cuánto cuesta?» dio 0,880 contra «¿emiten
+    # factura?» (15-10-2026, prueba local). Bajo FAQ_SEGURA hace falta al menos una palabra con contenido en común.
+    if score < FAQ_SEGURA and not (_raices(q) & _raices(pares[i][1])):
+        return None
     return {"faq": pares[i][0], "score": round(score, 4), "texto": pares[i][1]}
+
+
+FAQ_SEGURA = float(os.environ.get("FAQ_SEGURA", "0.94"))
+_VACIAS = set("hola tienen tiene tienes puedo puede pueden quiero quisiera como cuanto cuanta cuantos donde cuando para "
+              "esta este estos estas tambien hacen hace bueno buenas buenos dias tardes noches gracias favor porfa "
+              "saber seria sobre algun alguna ustedes usted mucho".split())
+
+
+def _raices(t: str) -> set:
+    """Raíces (5 letras) de las palabras con contenido: «factura» y «facturan» comparten «factu»."""
+    return {w[:5] for w in re.findall(r"[a-zñ]+", memoria._plano(t or "")) if len(w) >= 4 and w not in _VACIAS}
 
 
 # ---------------------------------------------------------------------------

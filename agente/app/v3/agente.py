@@ -117,7 +117,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     lectura = memoria.leer(f, mensaje, ahora=memoria.ahora_lima())
     f["etapa"] = _etapa(f, lectura)
     # Temperatura (fría / tibia / caliente) en cada turno: el bot Go la mira para avisar de una clienta caliente.
-    _temperatura(f, mensaje, lectura)
+    dudas_nuevas = _temperatura(f, mensaje, lectura)
 
     # 2. Enrutador barato.
     if RE_ASESORA.search(mensaje):
@@ -283,9 +283,14 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
                 "su precio y pregunta qué le gustó; el resto del guion sigue después. " + (paso or "")).strip()
     if paso:
         hecho = (hecho + "\n" + paso).strip()
-    tono = "" if pago_ok else _tono(f)
+    tono = "" if pago_ok else _tono(f, hist)
     if tono:
         hecho = (hecho + "\n" + tono).strip()
+    for d in dudas_nuevas:
+        if d in TEMOR_HECHO:
+            hecho = (hecho + "\n" + TEMOR_HECHO[d]).strip()
+    if "talla" in dudas_nuevas and not rec._pide_modelos():
+        rec.bloquear_fotos = True          # miedo a que no le quede: se le contesta, no se le cambia de prenda
     # El precio de un modelo se dice una vez: al cambiar de color no se repite, salvo que lo pregunte (15-10-2026).
     rec.montos_ya, ya_nombres = _precios_ya_dichos(rec, f, mensaje, conoc, pago_ok or bool(confirma_hecho))
     if ya_nombres:
@@ -312,6 +317,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     motivos += _despedida(out["respuesta"], "" if rec.sigue else mensaje)
     motivos += _precio_sin_promo(out["respuesta"], rec)
     motivos += _precio_no_pedido(out["respuesta"], rec)
+    motivos += _promo_repetida(out["respuesta"], rec)
     motivos_1, salida2 = bool(motivos), None
     if motivos:
         log.info("V3 rechazo 1: %s | %s", "; ".join(motivos), out["respuesta"][:160])
@@ -329,9 +335,12 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
         motivos += _despedida(out["respuesta"], "" if rec.sigue else mensaje)
         motivos += _precio_sin_promo(out["respuesta"], rec)
         motivos += _precio_no_pedido(out["respuesta"], rec)
+        motivos += _promo_repetida(out["respuesta"], rec)
         if motivos and all(m.startswith(("pregunta ya respondida", "más de una pregunta", "repite una frase",
                                          "no avanza", "ofrece modelos", "se despidió", "precio sin la promo",
-                                         "dio un precio", "repite el precio")) for m in motivos):
+                                         "dio un precio", "repite el precio", "repite la promo")) for m in motivos):
+            if any(m.startswith("repite la promo") for m in motivos):
+                out["respuesta"] = _sin_promo_repetida(out["respuesta"], rec)
             if any(m.startswith("dio un precio") for m in motivos):
                 out["respuesta"] = precios.quitar_de_texto(out["respuesta"])
             if any(m.startswith("repite el precio") for m in motivos):
@@ -368,6 +377,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     res = _cierra(f, rec, out, salida["usadas"], salida["vueltas"], _ms(t0), req)
     res["v3"]["uso"] = cliente_llm.sumar_uso(salida.get("uso"), (salida2 or {}).get("uso") if motivos_1 else None)
     res["fuentes_usadas"] = res["v3"]["fuentes_usadas"] = _fuentes_usadas(rec, res["respuesta"])
+    _anotar_promos_dichas(f, conoc, res)
     if conoc is not None:
         res["v3"]["conocimiento"] = {"empresa": conoc.empresa, "version": conoc.version,
                                      "en_prompt": conocimiento.ids_prompt(conoc)}
@@ -554,6 +564,7 @@ def _hechos_conocimiento(rec: Recolector, f: dict, mensaje: str, producto: str, 
                     "Usa estas cifras exactas si habla del precio o de la promo."))
                 dichas.extend(p["id"] for p in nuevas)
             else:   # ya se dijo: no se repite, pero si da el precio, que sea el de la promo
+                rec.promos_no_repetir = [p for p in aplican]
                 lineas = " ".join(conocimiento.linea_promo(p, ficha) for p in aplican)
                 partes.append(f"HECHO YA VERIFICADO (la promo ya se le dijo; no la repitas): {lineas} Si mencionas el precio "
                               "de esta prenda, da el precio con la promo, nunca solo el normal.")
@@ -571,6 +582,47 @@ def _hechos_conocimiento(rec: Recolector, f: dict, mensaje: str, producto: str, 
                       "pregúntale qué prenda le interesa; no inventes otras promos ni otras cifras.")
         dichas.extend(p["id"] for p in vig if p["id"] not in dichas)
     return "\n".join(partes)
+
+
+def _anotar_promos_dichas(f: dict, conoc, res: dict) -> None:
+    """La promo cuenta como dicha si salió en el texto (por la herramienta promocion_vigente, sin pasar por el hecho del
+    foco) o en el pie de una foto («con la promo «X»»). Antes solo la anotaba el hecho y se anunciaba dos veces (15-10-2026)."""
+    vig = conocimiento.vigentes(conoc) if conoc is not None else []
+    if not vig:
+        return
+    dichas = f.setdefault("promos_dichas", [])
+    pies = " ".join((s.get("pie") or "") + " " + (s.get("titulo") or "") for s in (res.get("sugerencias") or []) if isinstance(s, dict))
+    for p in vig:
+        en_pie = p.get("titulo") and f"«{p['titulo']}»" in pies
+        if (p["id"] in (res.get("fuentes_usadas") or []) or en_pie) and p["id"] not in dichas:
+            dichas.append(p["id"])
+    f["promos_dichas"] = dichas[-30:]
+
+
+def _promo_repetida(texto: str, rec: Recolector) -> list[str]:
+    """La promo ya dicha que el modelo vuelve a anunciar («¡Fiestas de Octubre! Esta semana hay 20 %…») sin que ella
+    pregunte por promos ni por el precio (15-10-2026, prueba local). Dar el precio con promo sigue valiendo."""
+    ps = getattr(rec, "promos_no_repetir", None) or []
+    if not ps or not texto:
+        return []
+    plano = memoria._plano(texto)
+    for p in ps:
+        titulo = memoria._plano(p.get("titulo") or "")
+        pct = p.get("valor") if p.get("mecanica") == "porcentaje" else None
+        if (titulo and titulo in plano and not RE_PRECIO_PLANO.search(plano)) or \
+                (pct and re.search(rf"\b{int(pct)}\s?%", plano)):
+            return [f"repite la promo «{p.get('titulo')}» que ya le dijiste: no la anuncies otra vez"]
+    return []
+
+
+RE_PRECIO_PLANO = re.compile(r"s/\s?\d")
+
+
+def _sin_promo_repetida(texto: str, rec: Recolector) -> str:
+    """Arreglo de la segunda vuelta: se quitan las frases que vuelven a anunciar la promo."""
+    frases = [x for linea in (texto or "").split("\n") for x in precios.RE_CORTE.split(linea)]
+    quedan = [x for x in frases if x and x.strip() and not _promo_repetida(x, rec)]
+    return " ".join(quedan).strip() or texto
 
 
 def _precios_dichos(texto: str) -> set[float]:
@@ -597,9 +649,9 @@ def _precios_ya_dichos(rec: Recolector, f: dict, mensaje: str, conoc, en_compra:
             precios.permitido(True, "", "", f.get("etapa", ""), f.get("pedido")):
         return set(), []
     montos, nombres_ = set(), []
-    for c in precios.relevantes(f):
+    for c in dichos[-5:]:
         fx = rec._ficha(c)
-        if fx is not None and c in dichos:
+        if fx is not None:
             montos |= precios.montos(fx, conoc)
             nombres_.append(fx.nombre)
     return montos, nombres_
@@ -613,23 +665,53 @@ RE_COMPRA = re.compile(r"\b(lo|la|los|las) (quiero|compro|llevo|separo)\b|\bquie
 RE_INTERES = re.compile(r"\b(tallas?|colou?r(es)?|tela|material|stock|disponible|hay en|tienes en|tienen en|medidas?|largo)\b")
 
 
-def _temperatura(f: dict, mensaje: str, lectura: dict) -> None:
+# Temores o dudas (dato 7 del guion de la tienda): se anotan en `objeciones` para la asesora (ficha y alerta del panel).
+DUDAS = (("precio", re.compile(r"\b(muy |bien |algo )?car[oa]\b|no me alcanza|fuera de mi presupuesto|mas barat")),
+         ("confianza", re.compile(r"\bestafa|\bconfiable|\bdesconfi|\bpagar antes|\bes seguro (pagar|comprar)|\bme da miedo pagar")),
+         ("talla", re.compile(r"\bsi no me (queda|entra)|\bno (se|creo) (si|que) me (quede|entre)|\bmiedo (a )?que no me quede")),
+         ("tiempo", re.compile(r"\bllega(ra)? a tiempo|\bcuanto (demora|tarda)|\bno (llegue|alcance) a tiempo")),
+         ("pensarlo", re.compile(r"\b(lo|la) (voy a )?pens(o|ar)\b|\bdejame pensarlo|\blo pensare")),
+         ("consultar", re.compile(r"\b(consultar|preguntar)(lo)? (con|a) (mi|mis)\b")))
+
+
+def _temperatura(f: dict, mensaje: str, lectura: dict) -> list[str]:
+    """Anota señales, temperatura y temores de este mensaje; devuelve los temores que trae (para contestarlos)."""
     plano = memoria._plano(mensaje)
+    obj = f.setdefault("objeciones", [])
+    dudas = [clave for clave, rx in DUDAS if rx.search(plano)]
+    for clave in dudas:
+        if clave not in obj:
+            obj.append(clave)
     intent = ("intencion_compra" if RE_COMPRA.search(plano) else "consulta_precio" if precios.pregunta_precio(mensaje)
               else "consulta_disponibilidad" if RE_INTERES.search(plano) else "")
     memoria.anotar_senales(f, mensaje, intent, "alta", cita=bool(lectura.get("es_cita") and (f.get("sabemos") or {}).get("cita")))
     memoria.temperatura(f, memoria.ahora_lima().date())
+    return dudas
 
 
-def _tono(f: dict) -> str:
+# Qué hacer con cada temor (dato 7 del guion): contestarlo con datos de la tienda, no cambiar de tema ni de prenda.
+TEMOR_HECHO = {
+    "talla": "TEMOR: que no le quede. Tranquilízala con datos: la tabla de medidas del modelo en foco (si falta su medida, "
+             "pídela) y la política de cambios de la tienda si la tienes. NO le muestres otra prenda.",
+    "confianza": "TEMOR: desconfía de pagar antes. Tranquilízala solo con lo que la tienda ofrece (showroom con cita, "
+                 "comprobante, política de cambios); no inventes garantías.",
+    "tiempo": "TEMOR: que no llegue a tiempo. Dile los tiempos de envío de los datos de la tienda y que lo ideal es separarlo ya.",
+    "precio": "TEMOR: el precio. Resalta el valor (tela, calce, acabado) y, si una promo vigente la cubre, el precio con la "
+              "promo; no inventes descuentos.",
+}
+
+
+def _tono(f: dict, historial=()) -> str:
     """El tono según la temperatura (guion de la tienda, 15-10-2026): caliente = el evento es pronto («para la otra
     semana») o quiere comprar: urgencia amable; fría con fecha lejana (p. ej. en 3 meses): acompañarla sin presión."""
     t, mot = f.get("temperatura") or "frio", f.get("temperatura_motivo") or ""
     dias = memoria.dias_hasta((f.get("sabemos") or {}).get("fecha_iso"), memoria.ahora_lima().date())
+    if t == "caliente" and plantillas.ya_hubo_escasez(historial):
+        return (f"CLIENTA CALIENTE ({mot}). La urgencia YA se le dijo: no la repitas (nada de stock, «tenerlo listo antes» ni "
+                "«¿no lo consideras?»). Sé concreta y ayúdala a decidir: resuelve su duda y avanza hacia separar la prenda.")
     if t == "caliente":
         return (f"CLIENTA CALIENTE ({mot}). Lleva la conversación hacia separar la prenda: sé concreta y crea urgencia "
-                "amable (tenerlo listo antes, mientras hay stock, por si necesita un ajuste), sin agobiarla y sin repetir "
-                "una frase de urgencia que ya dijiste.")
+                "amable UNA vez (tenerlo listo antes, mientras hay stock, por si necesita un ajuste), sin agobiarla.")
     if t == "frio" and dias is not None and dias > 30:
         return (f"CLIENTA FRÍA ({mot}): todavía falta mucho para su evento. Acompáñala con calidez y comentarios sobre el "
                 "look y la ocasión; sin presión, sin urgencia y sin pedirle que lo separe ya. Mantén viva la conversación "
@@ -926,6 +1008,8 @@ def _sin_insistir(texto: str, f: dict, historial) -> str:
     nuevo = re.sub(r"\s*,(\s*,)+", ",", nuevo)
     nuevo = re.sub(r"(\s*[,:;y]\s*)+(?=[.!]|$)", "", nuevo)
     nuevo = re.sub(r"\b(cu[eé]ntame|dime|y)\s*[:,]?\s*$", "", nuevo.strip(), flags=re.I)
+    # La pregunta quitada dejaba su introducción colgando: «…medidas peruanas; para orientarte mejor con el largo» (15-10).
+    nuevo = re.sub(r"\s*[;,]\s*(para|as[ií]|si|pero|y|entonces)\b[^.!?…;,¿]*$", ".", nuevo.strip(), flags=re.I)
     return re.sub(r"\s{2,}", " ", nuevo).strip(" ,;:")
 
 

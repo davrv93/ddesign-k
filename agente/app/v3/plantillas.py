@@ -58,7 +58,11 @@ ESCASEZ_1 = (
     "Sería genial tenerlo listo antes de tiempo, mientras dispongo de stock; y si necesitas algún ajuste o cambio, tranquilamente lo resolvemos. ¿No lo consideras?",
 )
 # El mensaje de escasez va UNA sola vez por conversación (pedido del usuario, 12-10-2026: tras «Sí, tienes razón» se repetía).
-RE_ESCASEZ = re.compile(r"dispongo de stock|mujer precavida|estamos muy pronto", re.I)
+# Las frases de urgencia del guion y las que el modelo arma con otras palabras («mientras aún hay stock», «tenerlo listo
+# antes»): la urgencia va una vez por conversación (15-10-2026, prueba local: el modelo la repitió dos turnos después).
+RE_ESCASEZ = re.compile(r"dispongo de stock|mujer precavida|estamos muy pronto|(mientras|ahora que) (a[uú]n |todav[ií]a )?"
+                        r"(hay|haya|tengo|tenga|tenemos|tengamos|queda|quede|dispongo|disponga)\b[^.?!]{0,20}stock|"
+                        r"tener(lo|la)? (el vestido |la prenda |el modelo )?listo antes|antes de que se agote", re.I)
 
 
 def ya_hubo_escasez(historial) -> bool:
