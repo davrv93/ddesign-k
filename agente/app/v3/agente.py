@@ -487,6 +487,13 @@ def _fotos_de_colores(rec: Recolector, f: dict, mensaje: str, ultimo_bot: str) -
     vista = {str(c).upper() for c in f.get("mostrados") or []} | {(f.get("producto") or "").upper()}
     saltar = fotos_color.color_de(f"{cod.lower()}.jpg") if cod in vista else ""
     r = rec.enviar_colores(cod, nombrados or None, saltar=saltar)
+    if not r["con_foto"] and nombrados:
+        # Viene en ese color según baruka.pe pero no hay foto (Vestido Adana en rojo, 14-10-2026): se dice que SÍ lo hay
+        # y no se cambia de modelo. Antes caía a buscar el color en todo el catálogo y le ofrecía otros vestidos rojos.
+        rec.colores_ok = True
+        return (f"PREGUNTA POR EL {ficha.nombre} {cod} EN {', '.join(nombrados).upper()}: SÍ viene en ese color (baruka.pe), "
+                "pero no tengo foto en ese color. Díselo así (que sí lo hay) y ofrécele que una asesora le mande la foto "
+                "en ese color; NO cambies de modelo ni ofrezcas otras prendas, y no mandes fotos de otro color.")
     if not r["con_foto"]:
         return ""
     rec.colores_ok = True

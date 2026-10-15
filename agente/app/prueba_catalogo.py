@@ -65,6 +65,11 @@ def prueba_turnos(fichas):
     mem2["producto"], mem2["mostrados"], mem2["sabemos"]["ocasion"] = "V83", ["V83"], "boda"
     _turno(fichas, "lo tienes en verde?", base + [B("*V83* Enterizo Elowen")], mem2)
     ok("NO VIENE EN VERDE" in (PROMPTS[0] if PROMPTS else ""), "color que la prenda en foco no tiene: se dice")
+    mem3 = ficha_mod.normalizar(None)
+    mem3["producto"], mem3["mostrados"], mem3["sabemos"]["ocasion"] = "V82", ["V82"], "boda"
+    r = _turno(fichas, "mejor en rojo", base + [B("¡Claro! El Vestido Adana cuesta S/ 220 😊"), B("*V82* Vestido Adana — S/ 220.00")], mem3)
+    ok("SÍ viene en ese color" in (PROMPTS[0] if PROMPTS else "") and "HECHO YA VERIFICADO (color" not in (PROMPTS[0] if PROMPTS else ""),
+       "color que existe sin foto (Adana en rojo): sí lo hay, sin buscar otras prendas")
     r = _turno(fichas, "me gusta, de qué tela es?", hist, mem)
     ok("CAMBIO" not in (PROMPTS[0] if PROMPTS else ""), "sin cambio de idea no hay aviso")
 
