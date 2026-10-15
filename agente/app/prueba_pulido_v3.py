@@ -65,6 +65,8 @@ def prueba_reglas():
                             ('{"respuesta": "Te mando la foto [pregunta_hecha=que_le_gusto] 😊", "pregunta_hecha": ""}', "Te mando la foto 😊")):
         r = prompt.leer_salida(crudo)["respuesta"]
         ok(r == esperado, f"marca interna fuera: {r!r}")
+    r = prompt.leer_salida("¿Cuánto mides de estatura?», «pregunta_hecha»: «talla»")["respuesta"]
+    ok(r == "¿Cuánto mides de estatura?", f"marca con comillas angulares fuera: {r!r}")
     r = prompt.leer_salida('Te recomiendo el Bruna ✨ ¿Qué te gustó?\\",\\"pregunta_hecha\\":\\"que_le_gusto"')["respuesta"]
     ok(r == "Te recomiendo el Bruna ✨ ¿Qué te gustó?", f"marca con comillas escapadas fuera: {r!r}")
     # El bot Go manda solo 11 mensajes: lo que ya se preguntó viaja en la ficha (veces) y vale aunque no esté en la ventana.
