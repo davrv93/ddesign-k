@@ -30,7 +30,7 @@ import json
 from contextvars import ContextVar
 
 from . import colecciones, comprension, datos, etapas, ficha_producto, fotos_color, jev, looks, memoria, respuestas, venta
-from . import animo, conocimiento, crm, estructurado, gasto, nombres, rerank
+from . import animo, conocimiento, crm, estructurado, gasto, nombres, precios, rerank
 from .solicitud import (RE_CATALOGO, RE_MAS_BARATO, RE_MAS_OPCIONES, RE_OTRAS, RE_PIDE_COLOR_VERBO, _color_txt, _de_color, _raiz_color,
                         color_dicho, color_pedido, color_que_pide, interpretar)
 from .solicitud import pide_otro_color as _pide_otro_color
@@ -278,6 +278,8 @@ class ChatIn(BaseModel):
     # Conocimiento de la tienda (JMD Ventas, 15-10-2026; contrato docs/FUENTES_CONTRATO.md §3): promos vigentes, FAQ,
     # políticas, guion y material de ESA empresa. Vacío = seed de siempre. Uno roto se ignora (app/conocimiento.py).
     conocimiento: dict | None = None
+    # Precios solo si la clienta los pregunta (JMD Ventas → Ajustes, 15-10-2026; app/precios.py). False = como siempre.
+    precios_solo_si_pregunta: bool = False
 
 
 RE_NO_TEXTO = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\ud800-\udfff]")
@@ -316,6 +318,8 @@ _pend_previa: ContextVar[str | None] = ContextVar("_pend_previa", default=None)
 _conoc_actual: ContextVar = ContextVar("_conoc_actual", default=None)
 # La pregunta frecuente de la tienda que contesta ESTE mensaje (conocimiento.buscar_faq), o None.
 _faq_actual: ContextVar = ContextVar("_faq_actual", default=None)
+# Precios ocultos en este turno: la tienda los pidió solo si la clienta pregunta y aquí no preguntó (app/precios.py).
+_ocultar_precios: ContextVar[bool] = ContextVar("_ocultar_precios", default=False)
 
 
 def _memoria_de(req) -> dict:
@@ -547,8 +551,10 @@ def _vigentes() -> list[dict]:
 
 
 def _con_promos(sistema: str) -> str:
-    """Con promos vigentes, la línea «Descuentos… NO hay, para nadie» del sistema se cambia por la de las promos."""
-    return RE_SIN_DESCUENTOS.sub(LINEA_CON_PROMOS, sistema) if _vigentes() else sistema
+    """Con promos vigentes, la línea «Descuentos… NO hay, para nadie» del sistema se cambia por la de las promos. Si la
+    tienda pidió precios solo cuando la clienta pregunta y aquí no preguntó, se suma esa política (15-10-2026)."""
+    s = RE_SIN_DESCUENTOS.sub(LINEA_CON_PROMOS, sistema) if _vigentes() else sistema
+    return s + "\n" + precios.NOTA_SISTEMA if _ocultar_precios.get() else s
 
 
 def _fichas_vivas() -> list:
@@ -1644,6 +1650,8 @@ def conversar(req: ChatIn) -> dict:
     _conoc_actual.set(conocimiento.leer(req.conocimiento))
     # FAQ de la tienda también en V1 (el respaldo sin LLM y los prompts de V1), no solo en V3 (15-10-2026).
     _faq_actual.set(conocimiento.buscar_faq(_conoc_actual.get(), req.mensaje))
+    _ocultar_precios.set(not precios.permitido(req.precios_solo_si_pregunta, req.mensaje, req.estado, req.etapa,
+                                               (_memoria_de(req) or {}).get("pedido")))
     pend = mem["pendiente"]
     _pend_previa.set(pend)
     etapa_in = req.etapa or (mem["etapa"] if req.memoria else "")
@@ -2191,7 +2199,7 @@ def conversar(req: ChatIn) -> dict:
                 promo=promo_foco, promo_precio=conocimiento.precio_promo(promo_foco, foco.precio) if promo_foco else None,
                 promos_txt=" ".join(conocimiento.resumen_promo(p) for p in _vigentes()),
                 promo_fuera=next((p["respuesta_fuera"] for p in _vigentes() if p["respuesta_fuera"]), ""),
-                faq=_faq_actual.get(),
+                faq=_faq_actual.get(), ocultar_precio=_ocultar_precios.get(),
                 k=SimpleNamespace(UMBRAL_ACCION=UMBRAL_ACCION, RE_ROPA=RE_ROPA, RE_TEMA_TIENDA=RE_TEMA_TIENDA, FUERA_DE_GIRO=FUERA_DE_GIRO,
                                   OFERTA=OFERTA, AVISO_DESCUENTO=_aviso_descuento(), AVISO_TIEMPO=AVISO_TIEMPO, MONEDA=MONEDA, PLURAL=PLURAL))
             texto, traza = respuestas.componer(ctx)
@@ -2674,6 +2682,22 @@ def _v3_modo(req: ChatIn) -> str:
     return m if m in ("sombra", "activo") else "sombra"
 
 
+def _envios() -> tuple:
+    return tuple(float(e["costo"]) for e in (venta.VENTA.get("envio") or {}).values() if isinstance(e, dict) and "costo" in e) or (15.0, 20.0)
+
+
+def _sin_precios_si_toca(req, res: dict) -> dict:
+    """Precios solo si la clienta los pregunta (JMD Ventas → Ajustes): la red de salida de V1, V2, V3 y /foto. En el cierre
+    de la compra (pedido, resumen, pago) el precio va siempre."""
+    if not getattr(req, "precios_solo_si_pregunta", False):
+        return res
+    pedido = ((res.get("memoria") or {}).get("pedido") if isinstance(res.get("memoria"), dict) else None) or {}
+    if res.get("accion") == "pedido" or precios.permitido(True, getattr(req, "mensaje", "") or "", getattr(req, "estado", ""),
+                                                          res.get("etapa") or getattr(req, "etapa", ""), pedido):
+        return res
+    return precios.aplicar(res, _envios())
+
+
 def _v3_conversar(req: ChatIn, permitir_reserva: bool) -> dict:
     return v3agente.conversar(req, E.fichas, E.stock.consultar, pie=_pie, permitir_reserva=permitir_reserva, embed=E.emb)
 
@@ -2713,6 +2737,7 @@ def ruta_chat(req: ChatIn):
         res = conversar(req) | {"version": "v1"}
     _METRICAS.turno(res.get("version", "v1"), res.get("ms", res.get("v2", {}).get("ms", 0)), res.get("v2"))
     res.setdefault("fuentes_usadas", [])               # contrato de fuentes (§3): siempre presente, [] si ninguna
+    res = _sin_precios_si_toca(req, res)
     crm.avisar(req, res, venta.VENTA.get("envio"))   # chat web → Kommo, en segundo plano (app/crm.py)
     return nombres.respuesta_sin_codigos(res, E.fichas)   # a la clienta nunca le llega un código (15-10-2026)
 
@@ -2739,6 +2764,7 @@ class FotoIn(BaseModel):
     version: str = ""        # v3 + modo activo: el texto lo redacta V3 (guion de Rosmary); si no, V1
     modo: str = ""
     conocimiento: dict | None = None   # igual que en /chat (JMD Ventas, 15-10-2026): pasa a V3 tal cual
+    precios_solo_si_pregunta: bool = False   # igual que en /chat
 
 
 PLANTILLA_FOTO = {
@@ -3022,7 +3048,8 @@ def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, suge
                   negocio=req.negocio, etapa=req.etapa, conversacion=req.conversacion, memoria=mem, perfil=req.perfil,
                   desde_anuncio=req.desde_anuncio, anuncio=req.anuncio, version="v3", modo="activo", foto_hecho=hecho,
                   foto_codigo=f.codigo if caso in ("online", "sucursal", "agotado", "parecido", "look") else "",
-                  foto_oferta=caso in ("parecido", "ninguno"), conocimiento=req.conocimiento)
+                  foto_oferta=caso in ("parecido", "ninguno"), conocimiento=req.conocimiento,
+                  precios_solo_si_pregunta=req.precios_solo_si_pregunta)
     try:
         res = _v3_conversar(creq, permitir_reserva=False)
     except Exception as e:
@@ -3037,6 +3064,7 @@ def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, suge
 def ruta_foto(req: FotoIn):
     res = conversar_foto(req)
     res.setdefault("fuentes_usadas", [])
+    res = _sin_precios_si_toca(req, res)
     crm.avisar(req, res, venta.VENTA.get("envio"))
     return nombres.respuesta_sin_codigos(res, E.fichas)
 

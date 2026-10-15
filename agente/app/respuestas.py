@@ -136,6 +136,10 @@ def _t_promo(c, h):
     p, pp, k = c.promo, c.promo_precio or {}, c.k
     ref = f"{c.art(c.foco).capitalize()} {c.ref}"
     titulo = f" «{p['titulo']}»" if p.get("titulo") else ""
+    if getattr(c, "ocultar_precio", False):
+        # Precios solo si los pregunta (15-10-2026): la promo sí, las cifras en soles no.
+        que = f": {p['valor']:g}% de descuento" if p.get("mecanica") == "porcentaje" else ""
+        return f"¡Sí! {ref} está en promo{titulo}{que} 😊" + (f" {p['condiciones']}" if p.get("condiciones") else "")
     if pp.get("precio_por_dos") is not None:
         txt = (f"¡Sí! {ref} está en promo{titulo}: llevas 2 por *{k.MONEDA} {pp['precio_por_dos']:.2f}*"
                + (f" (uno sale a {k.MONEDA} {pp['precio_normal']:.2f})" if pp.get("precio_normal") is not None else "") + " 😊")
@@ -287,7 +291,8 @@ TABLA: list[Regla] = [
     Regla("elogio", "dato_prenda", "elogia la prenda y no hay nada más que decir", lambda c, h: h["elogia"] and not c.encabezado and not c.q,
           lambda c, h: f"¡Qué bueno que te guste {c.art(c.foco)} {c.ref}! 😊"),
     Regla("precio_al_nombrar", "dato_prenda", "la nombró sin preguntar nada: el precio abre la charla",
-          lambda c, h: h["nombra_sin_preguntar"] and not c.encabezado and not c.q and not c.sugeridas and c.foco.precio is not None,
+          lambda c, h: h["nombra_sin_preguntar"] and not c.encabezado and not c.q and not c.sugeridas and c.foco.precio is not None
+          and not getattr(c, "ocultar_precio", False),
           lambda c, h: _precio(c)),
     Regla("detalle", "dato_prenda", "pregunta algo de la prenda que no es precio, talla, tela ni color",
           lambda c, h: h["pide_detalle"] and bool(c.foco.detalle) and not c.sugeridas,

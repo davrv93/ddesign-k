@@ -10,7 +10,7 @@ import logging
 import re
 import time
 
-from .. import colecciones, colores, conocimiento, ficha_producto, fotos_color, memoria, nombres
+from .. import colecciones, colores, conocimiento, ficha_producto, fotos_color, memoria, nombres, precios
 from . import cliente_llm, ficha as ficha_mod, plantillas, prompt, validador
 from .herramientas import Recolector
 
@@ -279,8 +279,12 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
                 "su precio y pregunta qué le gustó; el resto del guion sigue después. " + (paso or "")).strip()
     if paso:
         hecho = (hecho + "\n" + paso).strip()
+    # Precios solo si los pregunta (JMD Ventas → Ajustes, 15-10-2026): en el cierre de la compra van siempre.
+    sin_precios = not precios.permitido(bool(getattr(req, "precios_solo_si_pregunta", False)), mensaje, getattr(req, "estado", ""),
+                                        getattr(req, "etapa", ""), f.get("pedido"), pago_ok or bool(confirma_hecho))
+    rec.sin_precios = sin_precios
     msgs = prompt.construir(f, getattr(req, "historial", []) or [], mensaje, getattr(req, "canal", ""), hecho=hecho,
-                            cliente=getattr(req, "cliente", ""), pago=pago_ok, conoc=conoc)
+                            cliente=getattr(req, "cliente", ""), pago=pago_ok, conoc=conoc, sin_precios=sin_precios)
     # Respuesta a una foto: todo lo necesario ya viene en el hecho; una sola vuelta (sin herramientas) ahorra 3–5 s.
     vueltas_max = 1 if foto_hecho else 0
     salida = cliente_llm.responder(msgs, rec.esquema(), rec.ejecutar, max_vueltas=vueltas_max)
@@ -295,6 +299,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     motivos += _ofrece(out["respuesta"], rec)
     motivos += _despedida(out["respuesta"], "" if rec.sigue else mensaje)
     motivos += _precio_sin_promo(out["respuesta"], rec)
+    motivos += _precio_no_pedido(out["respuesta"], rec)
     motivos_1, salida2 = bool(motivos), None
     if motivos:
         log.info("V3 rechazo 1: %s | %s", "; ".join(motivos), out["respuesta"][:160])
@@ -311,8 +316,12 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
         motivos += _ofrece(out["respuesta"], rec)
         motivos += _despedida(out["respuesta"], "" if rec.sigue else mensaje)
         motivos += _precio_sin_promo(out["respuesta"], rec)
+        motivos += _precio_no_pedido(out["respuesta"], rec)
         if motivos and all(m.startswith(("pregunta ya respondida", "más de una pregunta", "repite una frase",
-                                         "no avanza", "ofrece modelos", "se despidió", "precio sin la promo")) for m in motivos):
+                                         "no avanza", "ofrece modelos", "se despidió", "precio sin la promo",
+                                         "dio un precio")) for m in motivos):
+            if any(m.startswith("dio un precio") for m in motivos):
+                out["respuesta"] = precios.quitar_de_texto(out["respuesta"])
             if any(m.startswith("precio sin la promo") for m in motivos):
                 out["respuesta"] = _con_precio_promo(out["respuesta"], rec)
             if any(m.startswith("se despidió") for m in motivos):
@@ -552,6 +561,15 @@ def _hechos_conocimiento(rec: Recolector, f: dict, mensaje: str, producto: str, 
 
 def _precios_dichos(texto: str) -> set[float]:
     return {round(float(m.group(1).replace(",", ".")), 2) for m in validador.RE_PRECIO.finditer(texto or "")}
+
+
+def _precio_no_pedido(texto: str, rec: Recolector) -> list[str]:
+    """La tienda quiere precios solo si la clienta los pregunta y aquí no preguntó: ningún monto de prenda (15-10-2026)."""
+    if not getattr(rec, "sin_precios", False):
+        return []
+    from .herramientas import ENVIOS
+    malos = [m for m in _precios_dichos(texto) if m not in {round(e, 2) for e in ENVIOS}]
+    return [f"dio un precio (S/ {malos[0]:g}) sin que ella lo preguntara: quita los precios en soles"] if malos else []
 
 
 def _precio_sin_promo(texto: str, rec: Recolector) -> list[str]:

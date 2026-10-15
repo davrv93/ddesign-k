@@ -137,7 +137,7 @@ def _resumen_ficha(f: dict) -> str:
 
 
 def construir(ficha: dict, historial: list, mensaje: str, canal: str = "", hecho: str = "",
-              cliente: str = "", pago: bool = False, conoc=None) -> list[dict]:
+              cliente: str = "", pago: bool = False, conoc=None, sin_precios: bool = False) -> list[dict]:
     """Los mensajes para el LLM: sistema + historial + el mensaje nuevo. `pago`: el pedido ya está confirmado y
     se le pasan los datos de pago (seed/pago.md) para que los dé tal cual. `conoc`: conocimiento de la tienda (políticas,
     guion y promos de JMD Ventas); None = seed."""
@@ -155,6 +155,9 @@ def construir(ficha: dict, historial: list, mensaje: str, canal: str = "", hecho
                      "el paso 9 del guion o ella los pida):\n" + PAGO})
     if hecho:  # system, al final: pesa más que si fuera parte del mensaje de la clienta (11-10: si no, pierde contra el saludo)
         msgs.append({"role": "system", "content": "ANTES DE RESPONDER, ESTO YA SE VERIFICÓ Y VA EN TU RESPUESTA:\n" + hecho})
+    if sin_precios:  # la última palabra: manda sobre «nómbralo con su precio» de los hechos (15-10-2026)
+        from .. import precios
+        msgs.append({"role": "system", "content": precios.NOTA_SISTEMA})
     return msgs
 
 
