@@ -1409,7 +1409,9 @@ func (b *Bot) replySuggestion(ctx context.Context, conv *store.Conversation, sg 
 	b.crmMostrado(ctx, sg.Codigo)
 }
 
-var reFotoTienda = regexp.MustCompile(`^v\d{2,3}(_w?\d{1,2})?\.jpg$`)
+// Fotos de producto (v45_2.jpg) y capturas de las secciones del catálogo de baruka.pe (coleccion_enterizos-20261014.jpg,
+// 14-10-2026: «si pide enterizos, el enlace de los enterizos con su captura»). La fecha en el nombre evita reusar una vieja.
+var reFotoTienda = regexp.MustCompile(`^(v\d{2,3}(_w?\d{1,2})?|coleccion_[a-z0-9-]+)\.jpg$`)
 
 // fotoDelAgente baja (una sola vez) una foto de la tienda que sirve el agente y devuelve su ruta /media/agente/… en
 // nuestro servidor; "" si no se pudo (entonces va la foto del producto).

@@ -3,6 +3,7 @@ package bot
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -43,6 +44,10 @@ func fakeAgente(t *testing.T, last *agente.Request) *agente.Client {
 		case "quiero ver su catalogo":
 			rep = agente.Reply{Intencion: "catalogo", Accion: "responder", Respuesta: "¡Claro! Mira estos 😍\n\n¿Para qué ocasión buscas?",
 				Sugerencias: []agente.Sugerencia{{Codigo: "V01", Fuente: "seed", Imagen: "/media/products/v01.jpg", Pie: "*V01* Vestido Esmeralda"}}}
+		case "pasame el catalogo de enterizos":
+			rep = agente.Reply{Intencion: "catalogo", Accion: "responder", Respuesta: "¡Claro! 😊\n\n¿Qué evento se te aproxima?",
+				Sugerencias: []agente.Sugerencia{{Imagen: "/media/tienda/coleccion_enterizos-20261014.jpg",
+					Pie: "Aquí te comparto el catálogo de enterizos, dale clic 👇👇👇👇\nhttps://baruka.pe/collections/enterizos"}}}
 		case "me gusta en verde":
 			rep = agente.Reply{Intencion: "catalogo", Accion: "responder", Respuesta: "Lo tengo en verde 😍",
 				Sugerencias: []agente.Sugerencia{{Codigo: "V01", Fuente: "seed", Imagen: "/media/tienda/v01_5.jpg", Pie: "*V01* Vestido Esmeralda"}}}
@@ -293,6 +298,33 @@ func TestSugerenciaConFotoDelColor(t *testing.T) {
 	handle(b, text("me gusta en verde"))
 	if fotosPedidas != 1 {
 		t.Fatalf("la segunda vez se reutiliza la guardada: se bajó %d veces", fotosPedidas)
+	}
+}
+
+// Catálogo por secciones (14-10-2026): la captura de la sección la baja el bot del agente y la manda desde su servidor, con
+// el enlace en el pie; la pregunta va después de la foto.
+func TestCatalogoPorSeccion(t *testing.T) {
+	b, _, fe := setup(t, `{}`, false)
+	var last agente.Request
+	b.Agent = fakeAgente(t, &last)
+	n := len(fe.sent)
+	handle(b, text("pasame el catalogo de enterizos"))
+	var foto map[string]any
+	var orden []string
+	for _, m := range fe.sent[n:] {
+		orden = append(orden, fmt.Sprint(m["_path"]))
+		if m["_path"] == "/send/media" {
+			foto = m
+		}
+	}
+	if foto == nil || !strings.HasSuffix(fmt.Sprint(foto["url"]), "/media/agente/coleccion_enterizos-20261014.jpg") {
+		t.Fatalf("debía mandarse la captura de enterizos desde nuestro servidor: %v", foto)
+	}
+	if !strings.Contains(fmt.Sprint(foto["caption"]), "https://baruka.pe/collections/enterizos") {
+		t.Fatalf("el pie debe llevar el enlace de la sección: %v", foto["caption"])
+	}
+	if len(orden) < 3 || orden[len(orden)-1] != "/send/text" {
+		t.Fatalf("la pregunta va después de la captura: %v", orden)
 	}
 }
 
