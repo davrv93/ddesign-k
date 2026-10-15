@@ -53,6 +53,8 @@ def nueva() -> dict:
             "foto_look": [],
             # Temperatura de la clienta (reglas, no LLM) y las señales que la explican, en orden.
             "temperatura": "frio", "temperatura_motivo": SIN_DATOS, "senales": [],
+            # Modelos cuyo precio ya se le dio: no se repite al cambiar de color (app/precios.py, 15-10-2026).
+            "precios_dichos": [],
             # Cita para probarse que se está armando: día y hora sueltos hasta que los dos valen.
             "cita_tentativa": {"dia": None, "hora": None},
             # Pidió ver modelos antes de contar su necesidad: se le preguntó la ocasión una vez; con la respuesta, se
@@ -80,7 +82,7 @@ def normalizar(m: dict | None) -> dict:
         base["talla_perfil"] = m["talla_perfil"].upper()
     if isinstance(m.get("temperatura"), str) and m["temperatura"] in TEMPERATURAS:
         base["temperatura"] = m["temperatura"]
-    for k in ("mostrados", "objeciones", "preguntado", "senales", "foto_parecidas", "foto_look"):
+    for k in ("mostrados", "objeciones", "preguntado", "senales", "foto_parecidas", "foto_look", "precios_dichos"):
         if isinstance(m.get(k), list):
             base[k] = [x for x in m[k] if isinstance(x, str) and x][-30:]
     sab = m.get("sabemos") if isinstance(m.get("sabemos"), dict) else {}
@@ -810,7 +812,8 @@ def pide_ver(texto: str) -> bool:
 # ---------------------------------------------------------------------------
 # Temperatura de la clienta: fría, tibia o caliente. Reglas, no LLM.
 #
-# - Por la fecha del evento (hoy en Lima): ≤ 7 días caliente; 8–30 tibia; > 30 fría.
+# - Por la fecha del evento (hoy en Lima): ≤ 14 días caliente («para la otra semana» ya es caliente: pedido de la
+#   tienda, 15-10-2026); 15–30 tibia; > 30 fría (p. ej. dentro de 3 meses: se la acompaña sin presionar).
 # - Por señales, en orden (la última fría reinicia las anteriores): «solo estoy viendo», «más adelante», «para el
 #   próximo año» → fría; preguntar precio, talla, disponibilidad, color o material, o decir que le interesa → al
 #   menos tibia; querer comprarlo, pedir cita para probárselo o «lo necesito urgente» → caliente. Después de que ELLA
@@ -819,6 +822,7 @@ def pide_ver(texto: str) -> bool:
 # - Sin datos: fría («sin datos todavía»). Así el bot acompaña sin presionar hasta saber más.
 
 SIN_DATOS = "sin datos todavía: se la trata como fría hasta saber más"
+DIAS_CALIENTE = 14
 RE_FRIO = re.compile(r"\bsolo (estoy |ando )?(viendo|mirando|averiguando|preguntando|cotizando)|\bnada mas (viendo|mirando)|"
                      r"\bmas adelante|\btodavia no (tengo fecha|se cuando)|\baun no (tengo fecha|se cuando)|"
                      r"\b(para el|el) (proximo|otro|siguiente) ano\b|\bano que viene\b|\bno (tengo|hay) (apuro|prisa)|"
@@ -874,7 +878,7 @@ def temperatura(mem: dict, hoy: _dt.date) -> tuple[str, str]:
         d = _desde_iso(sab["fecha_iso"])
         cuando = (f"evento el {_corta(d)} (en {dias} día{'s' if dias != 1 else ''})" if len(sab["fecha_iso"]) == 10
                   else f"evento en {sab['fecha_iso']} (faltan al menos {dias} días)")
-        por_fecha = "caliente" if dias <= 7 else "tibio" if dias <= 30 else "frio"
+        por_fecha = "caliente" if dias <= DIAS_CALIENTE else "tibio" if dias <= 30 else "frio"
         mot_fecha = cuando
     if por_fecha is None and por_senal is None:
         nivel, motivo = "frio", SIN_DATOS

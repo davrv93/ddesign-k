@@ -2688,7 +2688,9 @@ def _envios() -> tuple:
 
 def _sin_precios_si_toca(req, res: dict) -> dict:
     """Precios solo si la clienta los pregunta (JMD Ventas → Ajustes): la red de salida de V1, V2, V3 y /foto. En el cierre
-    de la compra (pedido, resumen, pago) el precio va siempre."""
+    de la compra (pedido, resumen, pago) el precio va siempre. Además, siempre: el precio de un modelo se dice una vez
+    (`precios.no_repetir`)."""
+    res = _precio_una_vez(req, res)
     if not getattr(req, "precios_solo_si_pregunta", False):
         return res
     pedido = ((res.get("memoria") or {}).get("pedido") if isinstance(res.get("memoria"), dict) else None) or {}
@@ -2696,6 +2698,25 @@ def _sin_precios_si_toca(req, res: dict) -> dict:
                                                           res.get("etapa") or getattr(req, "etapa", ""), pedido):
         return res
     return precios.aplicar(res, _envios())
+
+
+def _precio_una_vez(req, res: dict) -> dict:
+    """«Si ya le informamos el precio y cambia de color del mismo modelo, no hace falta decirlo a cada rato» (15-10-2026).
+    Se repite si lo pregunta o en el cierre de la compra."""
+    mem = res.get("memoria") if isinstance(res, dict) else None
+    if not isinstance(mem, dict):
+        return res
+    try:
+        pedido = mem.get("pedido") if isinstance(mem.get("pedido"), dict) else {}
+        en_compra = res.get("accion") == "pedido" or precios.permitido(True, "", getattr(req, "estado", ""),
+                                                                        res.get("etapa") or getattr(req, "etapa", ""), pedido)
+        conoc = conocimiento.leer(getattr(req, "conocimiento", None))
+        por_cod = {x.codigo.upper(): x for x in E.fichas}
+        montos = {c: precios.montos(por_cod[c], conoc) for c in precios.relevantes(mem, res) if c in por_cod}
+        return precios.no_repetir(res, getattr(req, "mensaje", "") or "", en_compra, montos, _envios())
+    except Exception as e:      # la red nunca tumba una respuesta
+        log.warning("precio una vez: %s", e)
+        return res
 
 
 def _v3_conversar(req: ChatIn, permitir_reserva: bool) -> dict:

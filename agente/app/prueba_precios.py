@@ -108,6 +108,86 @@ def prueba_v3(fichas):
     caso("validador V3: sin la configuración no hay motivo", agente._precio_no_pedido("Cuesta S/ 290", rec), [])
 
 
+def prueba_una_vez(fichas):
+    """El precio de un modelo se dice una vez: al cambiar de color no se repite (15-10-2026)."""
+    salome = next(x for x in fichas if x.codigo == "V50")
+    montos = {"V50": P.montos(salome)}
+    caso("montos del Salome", montos["V50"], {round(float(salome.precio), 2)}
+         )
+    precio = f"S/ {salome.precio:g}"
+
+    def res(texto, dichos, pie=None):
+        r = {"respuesta": texto, "memoria": {"producto": "V50", "mostrados": ["V50"], "precios_dichos": list(dichos)}}
+        if pie:
+            r["sugerencias"] = [{"codigo": "V50", "pie": pie, "titulo": pie.split("\n")[0]}]
+        return r
+
+    r = P.no_repetir(res(f"¡Te va a encantar! El Vestido Salome cuesta {precio} 😍 ¿Qué talla usas?", []), "me gusta el salome",
+                     False, montos)
+    si("primera vez: el precio se dice y queda anotado", precio in r["respuesta"] and r["memoria"]["precios_dichos"] == ["V50"])
+    r = P.no_repetir(res(f"¡Sí, en rojo también lo tenemos! Cuesta {precio} 😍 ¿Qué talla usas?", ["V50"],
+                         pie=f"*Vestido Salome* — *{precio}.00*\nTallas: S, M"), "y en rojo?", False, montos)
+    si("cambia de color: el precio no se repite en el texto", precio not in r["respuesta"] and "rojo" in r["respuesta"]
+       and "¿Qué talla usas?" in r["respuesta"])
+    si("cambia de color: ni en el pie de la foto", "S/" not in r["sugerencias"][0]["pie"] and "S/" not in r["sugerencias"][0]["titulo"])
+    r = P.no_repetir(res(f"En rojo cuesta lo mismo, {precio} 😊", ["V50"]), "¿cuánto cuesta en rojo?", False, montos)
+    si("si lo pregunta, se repite", precio in r["respuesta"])
+    r = P.no_repetir(res(f"Tu pedido: Vestido Salome talla M, {precio} + envío S/ 15", ["V50"]), "si", True, montos)
+    si("en el cierre de la compra, va", precio in r["respuesta"] and "S/ 15" in r["respuesta"])
+    r = P.no_repetir(res("El envío a Lima cuesta S/ 15. ¿Lima o provincia?", ["V50"]), "envío?", False, montos)
+    caso("el envío no es el precio de la prenda", r["respuesta"], "El envío a Lima cuesta S/ 15. ¿Lima o provincia?")
+
+    # V3: la pista va al prompt y, si el modelo lo repite igual, sale sin el precio.
+    base = [C("hola"), B("¡Hola! Te saluda Rosmary 😊 ¿Qué evento se te aproxima?"), C("una boda"),
+            B(f"¡Te va a encantar el Vestido Salome! Cuesta {precio} 😍 ¿Qué talla usas?")]
+
+    def turno(mensaje, texto, mem):
+        RESPUESTA["texto"], RESPUESTA["herramientas"] = texto, []
+        req = types.SimpleNamespace(mensaje=mensaje, historial=list(base), memoria=json.loads(json.dumps(mem)), cliente="Ana",
+                                    etapa="", producto="", talla="", canal="whatsapp", estado="", foto_hecho="", foto_codigo="",
+                                    foto_oferta=False, colores_grupos=None, precios_solo_si_pregunta=False)
+        PROMPTS.clear()
+        return agente.conversar(req, fichas, _stock, pie=lambda f, st: f"*{f.nombre}* — *S/ {f.precio:.2f}*")
+
+    mem = {"producto": "V50", "mostrados": ["V50"], "sabemos": {"ocasion": "boda"}, "precios_dichos": ["V50"]}
+    r = turno("me encanta el salome", f"¡Sí, también es divino! Cuesta {precio} 😍 ¿Qué talla usas?", mem)
+    si("V3: la pista «ya le diste el precio» va al prompt", PROMPTS and "YA LE DISTE EL PRECIO" in PROMPTS[0])
+    si("V3: el precio repetido no sale", precio not in r["respuesta"] and "divino" in r["respuesta"])
+    r = turno("¿cuánto cuesta el salome?", f"El Salome sigue a {precio}, con la tela que viste 😊", mem)
+    si("V3: si pregunta, sin pista y con precio", PROMPTS and "YA LE DISTE EL PRECIO" not in PROMPTS[0] and precio in r["respuesta"])
+
+
+def prueba_temperatura_v3(fichas):
+    """V3 calcula la temperatura en cada turno y ajusta el tono (15-10-2026): ≤ 14 días caliente, > 30 fría."""
+    import datetime as dt
+    from . import memoria
+    hoy = memoria.ahora_lima().date()
+    base = [C("hola"), B("¡Hola! Te saluda Rosmary 😊 ¿Qué evento se te aproxima?"), C("una boda"),
+            B("¡Qué lindo! ¿Para cuándo es?")]
+
+    def turno(mensaje, fecha, texto="¡Te va a quedar precioso! 😍 ¿Qué talla usas?"):
+        RESPUESTA["texto"], RESPUESTA["herramientas"] = texto, []
+        mem = {"producto": "V50", "mostrados": ["V50"], "sabemos": {"ocasion": "boda", "fecha_iso": fecha}}
+        req = types.SimpleNamespace(mensaje=mensaje, historial=list(base), memoria=mem, cliente="Ana",
+                                    etapa="", producto="", talla="", canal="whatsapp", estado="", foto_hecho="", foto_codigo="",
+                                    foto_oferta=False, colores_grupos=None, precios_solo_si_pregunta=False)
+        PROMPTS.clear()
+        return agente.conversar(req, fichas, _stock, pie=lambda f, st: f"*{f.nombre}* — *S/ {f.precio:.2f}*")
+
+    r = turno("me encanta el salome", (hoy + dt.timedelta(days=9)).isoformat())
+    caso("V3: evento la otra semana = caliente", r["memoria"]["temperatura"], "caliente")
+    si("V3: caliente lleva el tono de urgencia", PROMPTS and "CLIENTA CALIENTE" in PROMPTS[0])
+    r = turno("me encanta el salome", (hoy + dt.timedelta(days=90)).isoformat())
+    caso("V3: evento en 3 meses = fría", r["memoria"]["temperatura"], "frio")
+    si("V3: fría lleva el tono sin presión", PROMPTS and "CLIENTA FRÍA" in PROMPTS[0])
+    r = turno("me encanta el salome", (hoy + dt.timedelta(days=20)).isoformat())
+    caso("V3: evento en 20 días = tibia", r["memoria"]["temperatura"], "tibio")
+    r = turno("lo quiero, sepáramelo", (hoy + dt.timedelta(days=90)).isoformat())
+    caso("V3: quiere comprarlo = caliente aunque falte", r["memoria"]["temperatura"], "caliente")
+    r = turno("me encanta el salome", None)
+    caso("V3: sin fecha ni señales = fría", r["memoria"]["temperatura"], "frio")
+
+
 def main() -> int:
     antes = (cliente_llm.responder, cliente_llm.configurado)
     cliente_llm.responder, cliente_llm.configurado = _llm_fijo, (lambda: True)
@@ -116,7 +196,10 @@ def main() -> int:
         prueba_permitido()
         prueba_texto()
         prueba_pie()
-        prueba_v3(fichas_web())
+        fw = fichas_web()
+        prueba_v3(fw)
+        prueba_una_vez(fw)
+        prueba_temperatura_v3(fw)
     finally:
         cliente_llm.responder, cliente_llm.configurado = antes
     print(f"prueba_precios: {FALLOS} fallos")

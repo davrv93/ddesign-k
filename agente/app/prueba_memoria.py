@@ -271,7 +271,7 @@ for msg, etapa, intent in GUION:
 caso("guion b): preguntas en orden y sin repetir", hechas, ["ocasion", "fecha", "horario", "talla", "probar"])
 caso("guion b): lo que sabemos al llegar al cierre", {k: v for k, v in m["sabemos"].items() if v},
      {"ocasion": "matrimonio", "fecha": "el sabado 17", "fecha_iso": "2026-10-17", "horario": "noche", "prenda": "vestido", "talla": "M"})
-caso("guion b): tibia por la fecha", (m["temperatura"], m["temperatura_motivo"].split(";")[0]), ("tibio", "evento el 17-oct (en 13 días)"))
+caso("guion b): caliente por la fecha (la otra semana)", (m["temperatura"], m["temperatura_motivo"].split(";")[0]), ("caliente", "evento el 17-oct (en 13 días)"))
 
 # --- 10. Fechas a ISO, con «hoy» fijo (domingo 4-oct-2026) ------------------------------------------------------
 FECHAS = [
@@ -335,8 +335,8 @@ def temp(fecha_iso=None, senales=(), **sab):
     return M.temperatura(mm, HOY)[0]
 
 caso("sin datos: fría", (temp(), M.temperatura(M.nueva(), HOY)[1]), ("frio", M.SIN_DATOS))
-for iso, t in [("2026-10-04", "caliente"), ("2026-10-10", "caliente"), ("2026-10-11", "caliente"), ("2026-10-12", "tibio"),
-               ("2026-10-17", "tibio"), ("2026-11-03", "tibio"), ("2026-11-04", "frio"), ("2026-11", "tibio"), ("2027", "frio")]:
+for iso, t in [("2026-10-04", "caliente"), ("2026-10-10", "caliente"), ("2026-10-11", "caliente"), ("2026-10-12", "caliente"),
+               ("2026-10-17", "caliente"), ("2026-10-19", "tibio"), ("2026-11-03", "tibio"), ("2026-11-04", "frio"), ("2026-11", "tibio"), ("2027", "frio")]:
     caso(f"temperatura por fecha {iso}", temp(iso), t)
 caso("solo viendo: fría", temp(senales=["frio"]), "frio")
 caso("preguntó precio: tibia", temp(senales=["interes"]), "tibio")

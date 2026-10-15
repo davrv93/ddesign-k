@@ -116,6 +116,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     antes = dict(f.get("sabemos") or {})      # para notar un cambio de idea (prenda, color)
     lectura = memoria.leer(f, mensaje, ahora=memoria.ahora_lima())
     f["etapa"] = _etapa(f, lectura)
+    # Temperatura (fría / tibia / caliente) en cada turno: el bot Go la mira para avisar de una clienta caliente.
+    _temperatura(f, mensaje, lectura)
 
     # 2. Enrutador barato.
     if RE_ASESORA.search(mensaje):
@@ -185,6 +187,8 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     confirma_hecho = "" if pago_ok else _confirma_pedido(rec, f, mensaje, ultimo_bot, permitir_reserva)
     if confirma_hecho:
         pago_ok = rec.hechos["pago_ok"] = True
+        f["senales"] = (list(f.get("senales") or []) + ["compra"])[-20:]
+        memoria.temperatura(f, memoria.ahora_lima().date())
     rec.color_pedido = (f.get("sabemos") or {}).get("color") or ""
     # Guion de noche: «¿llamar la atención o elegante y discreta?» → grupo de colores (vibrante | sobrio) que la tienda
     # define (jmdventas, Ajustes → Colores; si no manda nada, seed/colores_grupos.json). Ver app/colores.py (14-10-2026).
@@ -279,6 +283,14 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
                 "su precio y pregunta qué le gustó; el resto del guion sigue después. " + (paso or "")).strip()
     if paso:
         hecho = (hecho + "\n" + paso).strip()
+    tono = "" if pago_ok else _tono(f)
+    if tono:
+        hecho = (hecho + "\n" + tono).strip()
+    # El precio de un modelo se dice una vez: al cambiar de color no se repite, salvo que lo pregunte (15-10-2026).
+    rec.montos_ya, ya_nombres = _precios_ya_dichos(rec, f, mensaje, conoc, pago_ok or bool(confirma_hecho))
+    if ya_nombres:
+        hecho = (hecho + f"\nYA LE DISTE EL PRECIO de {', '.join(ya_nombres)}: no lo repitas (tampoco al cambiar de color o "
+                 "talla) salvo que ella lo pregunte.").strip()
     # Precios solo si los pregunta (JMD Ventas → Ajustes, 15-10-2026): en el cierre de la compra van siempre.
     sin_precios = not precios.permitido(bool(getattr(req, "precios_solo_si_pregunta", False)), mensaje, getattr(req, "estado", ""),
                                         getattr(req, "etapa", ""), f.get("pedido"), pago_ok or bool(confirma_hecho))
@@ -319,9 +331,11 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
         motivos += _precio_no_pedido(out["respuesta"], rec)
         if motivos and all(m.startswith(("pregunta ya respondida", "más de una pregunta", "repite una frase",
                                          "no avanza", "ofrece modelos", "se despidió", "precio sin la promo",
-                                         "dio un precio")) for m in motivos):
+                                         "dio un precio", "repite el precio")) for m in motivos):
             if any(m.startswith("dio un precio") for m in motivos):
                 out["respuesta"] = precios.quitar_de_texto(out["respuesta"])
+            if any(m.startswith("repite el precio") for m in motivos):
+                out["respuesta"] = precios.quitar_de_texto(out["respuesta"], solo=rec.montos_ya)
             if any(m.startswith("precio sin la promo") for m in motivos):
                 out["respuesta"] = _con_precio_promo(out["respuesta"], rec)
             if any(m.startswith("se despidió") for m in motivos):
@@ -564,12 +578,63 @@ def _precios_dichos(texto: str) -> set[float]:
 
 
 def _precio_no_pedido(texto: str, rec: Recolector) -> list[str]:
-    """La tienda quiere precios solo si la clienta los pregunta y aquí no preguntó: ningún monto de prenda (15-10-2026)."""
-    if not getattr(rec, "sin_precios", False):
-        return []
+    """La tienda quiere precios solo si la clienta los pregunta y aquí no preguntó: ningún monto de prenda (15-10-2026).
+    Y, siempre, el precio de un modelo ya dicho no se repite (al cambiar de color) si ella no lo pregunta."""
     from .herramientas import ENVIOS
-    malos = [m for m in _precios_dichos(texto) if m not in {round(e, 2) for e in ENVIOS}]
-    return [f"dio un precio (S/ {malos[0]:g}) sin que ella lo preguntara: quita los precios en soles"] if malos else []
+    env = {round(e, 2) for e in ENVIOS}
+    if getattr(rec, "sin_precios", False):
+        malos = [m for m in _precios_dichos(texto) if m not in env]
+        return [f"dio un precio (S/ {malos[0]:g}) sin que ella lo preguntara: quita los precios en soles"] if malos else []
+    rep = sorted(m for m in _precios_dichos(texto) & set(getattr(rec, "montos_ya", None) or ()) if m not in env)
+    return [f"repite el precio (S/ {rep[0]:g}) que ya le diste: no lo repitas si ella no lo pregunta"] if rep else []
+
+
+def _precios_ya_dichos(rec: Recolector, f: dict, mensaje: str, conoc, en_compra: bool) -> tuple[set, list[str]]:
+    """Montos y nombres de los modelos cuyo precio ya se le dio (memoria `precios_dichos`). Vacío si ella pregunta el
+    precio ahora o si está cerrando la compra (resumen, total, pago)."""
+    dichos = [c for c in (f.get("precios_dichos") or []) if isinstance(c, str)]
+    if not dichos or en_compra or precios.pregunta_precio(mensaje) or \
+            precios.permitido(True, "", "", f.get("etapa", ""), f.get("pedido")):
+        return set(), []
+    montos, nombres_ = set(), []
+    for c in precios.relevantes(f):
+        fx = rec._ficha(c)
+        if fx is not None and c in dichos:
+            montos |= precios.montos(fx, conoc)
+            nombres_.append(fx.nombre)
+    return montos, nombres_
+
+
+# Señales de temperatura sin el clasificador de V1: comprar o separar, preguntar el precio, o preguntar por talla, color,
+# tela o stock (interés). Las frías («solo estoy viendo», «más adelante») y la urgencia las lee memoria.anotar_senales.
+RE_COMPRA = re.compile(r"\b(lo|la|los|las) (quiero|compro|llevo|separo)\b|\bquiero (comprar|separar|llevar|pedir|hacer (el|mi) "
+                       r"pedido)|\bme (lo|la) (llevo|separas|separan|apartas)|\bsepar(a|e)me(l[oa])?\b|\bcomo (pago|compro|hago "
+                       r"(el|mi) pedido)|\bdonde (pago|deposito|yapeo)")
+RE_INTERES = re.compile(r"\b(tallas?|colou?r(es)?|tela|material|stock|disponible|hay en|tienes en|tienen en|medidas?|largo)\b")
+
+
+def _temperatura(f: dict, mensaje: str, lectura: dict) -> None:
+    plano = memoria._plano(mensaje)
+    intent = ("intencion_compra" if RE_COMPRA.search(plano) else "consulta_precio" if precios.pregunta_precio(mensaje)
+              else "consulta_disponibilidad" if RE_INTERES.search(plano) else "")
+    memoria.anotar_senales(f, mensaje, intent, "alta", cita=bool(lectura.get("es_cita") and (f.get("sabemos") or {}).get("cita")))
+    memoria.temperatura(f, memoria.ahora_lima().date())
+
+
+def _tono(f: dict) -> str:
+    """El tono según la temperatura (guion de la tienda, 15-10-2026): caliente = el evento es pronto («para la otra
+    semana») o quiere comprar: urgencia amable; fría con fecha lejana (p. ej. en 3 meses): acompañarla sin presión."""
+    t, mot = f.get("temperatura") or "frio", f.get("temperatura_motivo") or ""
+    dias = memoria.dias_hasta((f.get("sabemos") or {}).get("fecha_iso"), memoria.ahora_lima().date())
+    if t == "caliente":
+        return (f"CLIENTA CALIENTE ({mot}). Lleva la conversación hacia separar la prenda: sé concreta y crea urgencia "
+                "amable (tenerlo listo antes, mientras hay stock, por si necesita un ajuste), sin agobiarla y sin repetir "
+                "una frase de urgencia que ya dijiste.")
+    if t == "frio" and dias is not None and dias > 30:
+        return (f"CLIENTA FRÍA ({mot}): todavía falta mucho para su evento. Acompáñala con calidez y comentarios sobre el "
+                "look y la ocasión; sin presión, sin urgencia y sin pedirle que lo separe ya. Mantén viva la conversación "
+                "con una pregunta suave.")
+    return ""
 
 
 def _precio_sin_promo(texto: str, rec: Recolector) -> list[str]:
