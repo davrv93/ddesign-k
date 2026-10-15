@@ -36,6 +36,10 @@ def normalizar(m: dict | None) -> dict:
     v = m.get("veces") if isinstance(m, dict) else None
     f["veces"] = {k: n for k, n in v.items() if isinstance(k, str) and len(k) <= 20 and isinstance(n, int) and 0 <= n < 100} \
         if isinstance(v, dict) else {}
+    # Promos de la tienda que el bot ya mencionó en esta conversación (15-10-2026): la promo se dice UNA vez al hablar de
+    # una prenda que entra; después solo si ella pregunta por promos o por el precio.
+    d = m.get("promos_dichas") if isinstance(m, dict) else None
+    f["promos_dichas"] = [x for x in d if isinstance(x, int) and not isinstance(x, bool)][-30:] if isinstance(d, list) else []
     return f
 
 

@@ -6,13 +6,16 @@ devuelve la lista de motivos: V3 regenera UNA vez con esos motivos y, si vuelve 
 
 Reglas (lista cerrada de hechos verificables del plan):
 - precio, código, talla y tela: respaldados por una herramienta de este turno;
-- descuento/promesa de entrega: nunca, salvo que una herramienta lo autorice (no existe);
+- descuento/promesa de entrega: nunca, salvo que una herramienta lo autorice. Desde el 15-10-2026 la autoriza
+  `promocion_vigente` (o el precálculo de V3, que la ejecuta) con una promo VIGENTE de la tienda: `hechos["promos"]`
+  pasa a ser el conjunto de promos respaldadas en ESTE turno. Sin promos, la veda de siempre («no hay descuentos para
+  nadie»); con promos, además cada «20%» del texto tiene que ser el porcentaje de una promo respaldada;
 - una sola pregunta por mensaje y no repetir una pregunta ya respondida;
 - no prometer fotos si no hay ninguna que mandar.
 
 `hechos` es lo que devolvieron las herramientas este turno (ver `herramientas.Recolector`):
     {"codigos": set, "precios": set(float), "tallas": set, "telas": set, "plazos": set,
-     "descuento": bool, "fotos": set(códigos con foto)}
+     "descuento": bool, "fotos": set(códigos con foto), "promos": set(ids), "porcentajes": set(float)}
 """
 from __future__ import annotations
 
@@ -24,6 +27,10 @@ from .. import datos, venta
 RE_TALLA_AFIRMADA = re.compile(r"\b(?:talla|en|la|una)\s+(XS|XXL|XL|S|M|L)\b", re.I)
 RE_PRECIO = re.compile(r"(?:S/\.?|soles)\s*(\d+(?:[.,]\d{1,2})?)", re.I)
 RE_DESCUENTO = re.compile(r"\b(descuent\w*|rebaj\w*|promo\w*|oferta\w*|dto\.?|%\s*(?:de\s+)?(?:descuento|off))\b", re.I)
+# Un porcentaje dicho («20%», «20 %», «15,5%»). Si va pegado a una tela («95% poliéster») es composición, no descuento.
+RE_PORCENTAJE = re.compile(r"(\d{1,3}(?:[.,]\d{1,2})?)\s*%")
+RE_COMPOSICION = re.compile(r"^\s*(?:de\s+)?(algod[oó]n|poli[eé]ster|spandex|elastano|lycra|licra|seda|viscosa|lino|ray[oó]n|"
+                            r"nylon|nail[oó]n|lana|acr[ií]lico)", re.I)
 RE_PLAZO = re.compile(r"\b(en\s+\d+\s+d[ií]as?|de\s+\d+\s+a\s+\d+\s+d[ií]as?|mañana|llegar[aá]\s+en|demora\w*\s+\d+|en\s+\d+\s+horas?)\b", re.I)
 RE_PROMESA_FOTO = re.compile(r"\b(te\s+(paso|mando|env[ií]o|muestro|dejo)|aqu[ií]\s+(tienes|van)|ah[ií]\s+van)\b[^.!?\n]*\bfotos?\b", re.I)
 
@@ -38,7 +45,7 @@ RE_INDAGA = re.compile(r"talla|estatura|mides|d[ií]a o de noche|de d[ií]a|de n
 
 def hechos_vacios() -> dict:
     return {"codigos": set(), "precios": set(), "tallas": set(), "telas": set(), "plazos": set(),
-            "descuento": False, "fotos": set()}
+            "descuento": False, "fotos": set(), "promos": set(), "porcentajes": set()}
 
 
 def _num(s: str) -> float:
@@ -68,11 +75,21 @@ def validar(respuesta: str, hechos: dict, pregunta_hecha: str = "", preguntas_re
         if re.search(r"\b(no|sin|ni|nunca)\b", antes):   # «no tenemos XL» declina, no afirma
             continue
         errores.append(f"talla no respaldada: {m.group(1)}")
-    if not h.get("descuento"):
+    if h.get("promos"):
+        # Hay una promo vigente respaldada en este turno: «descuento», «promo», «oferta» valen; las cifras no se fían.
+        backed = {round(float(x), 2) for x in h.get("porcentajes", set())}
+        for m in RE_PORCENTAJE.finditer(r):
+            if RE_COMPOSICION.match(r[m.end():m.end() + 14]):
+                continue
+            if round(_num(m.group(1)), 2) not in backed:
+                errores.append(f"porcentaje no respaldado: {m.group(0).strip()}")
+    elif not h.get("descuento"):
         for m in RE_DESCUENTO.finditer(r):
             antes = re.split(r"[.!?\n]", r[:m.start()])[-1].lower()
             if not re.search(r"\b(no|sin|ni|nunca|tampoco)\b", antes):   # «no hacemos descuentos» lo dice, no lo promete
-                errores.append("promete un descuento")
+                # La tienda tiene promos vigentes pero ninguna herramienta respaldó una en este turno: que la pida.
+                errores.append("menciona un descuento sin respaldo: llama a promocion_vigente con la prenda o no lo menciones"
+                               if h.get("hay_promos") else "promete un descuento")
                 break
     for m in RE_PLAZO.finditer(r):
         frase = re.split(r"[.!?\n]", r[:m.start()])[-1] + r[m.start():m.end() + 40]

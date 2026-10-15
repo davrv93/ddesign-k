@@ -48,10 +48,16 @@ COPY app/imagen.py ./app/
 RUN python -m app.imagen && chmod -R a+rX /models /app/index
 COPY seed ./seed
 COPY app ./app
+# Catálogos semánticos de V2 (data/catalogos, app/catalogos). 15-10-2026: en producción salía «catálogos semánticos no
+# cargaron (FileNotFoundError)» y V2 seguía sin ellos EN SILENCIO: la imagen se horneó sin los YAML (ya van en git, pero
+# el árbol del servidor no los tenía). La copia explícita y la comprobación convierten ese fallo mudo en un build roto.
+COPY data/catalogos ./data/catalogos
+RUN python -c "from app.catalogos.catalogos import directorio_datos, listar_catalogos as l; from app.v2.semantica import CATALOGOS; \
+faltan = set(CATALOGOS) - set(l()); assert not faltan, f'faltan catálogos en {directorio_datos()}: {sorted(faltan)}'; print('catálogos:', l())"
 # La máquina de etapas (prospección → seguimiento → cierre) y la memoria de la conversación (pregunta
 # pendiente, extracción, siguiente pregunta) se prueban en cada build: si un cambio las rompe, la imagen no
 # se construye.
-RUN python -m app.prueba_etapas && python -m app.prueba_memoria && python -m app.prueba_estructurado && python -m app.prueba_crm && python -m app.prueba_v2 && python -m app.prueba_v2_activo && python -m app.prueba_v2_plantillas && python -m app.prueba_v2_temas && python -m app.prueba_v2_semantica && python -m app.prueba_v2_rag && python -m app.prueba_v2_lexico && python -m app.prueba_v2_rerank && python -m app.prueba_v2_medicion && python -m app.prueba_v2_fuentes && python -m app.prueba_v2_aclarar && python -m app.prueba_solicitud && python -m app.prueba_respuestas && python -m app.prueba_comprension && python -m app.prueba_ficha_producto && python -m app.prueba_colores && python -m app.prueba_fotos_colores && python -m app.prueba_pulido_v3 && python -m app.prueba_catalogo && python -m app.prueba_conversaciones_opus && python -m app.prueba_fotos_clientas && python -m app.catalogos.prueba_catalogos && python -m app.v3.prueba_v3
+RUN python -m app.prueba_etapas && python -m app.prueba_memoria && python -m app.prueba_estructurado && python -m app.prueba_crm && python -m app.prueba_v2 && python -m app.prueba_v2_activo && python -m app.prueba_v2_plantillas && python -m app.prueba_v2_temas && python -m app.prueba_v2_semantica && python -m app.prueba_v2_rag && python -m app.prueba_v2_lexico && python -m app.prueba_v2_rerank && python -m app.prueba_v2_medicion && python -m app.prueba_v2_fuentes && python -m app.prueba_v2_aclarar && python -m app.prueba_solicitud && python -m app.prueba_respuestas && python -m app.prueba_comprension && python -m app.prueba_ficha_producto && python -m app.prueba_colores && python -m app.prueba_fotos_colores && python -m app.prueba_pulido_v3 && python -m app.prueba_catalogo && python -m app.prueba_conversaciones_opus && python -m app.prueba_fotos_clientas && python -m app.catalogos.prueba_catalogos && python -m app.v3.prueba_v3 && python -m app.prueba_conocimiento
 # El modelo ya está dentro: que nada intente bajarlo de Hugging Face al arrancar.
 ENV HF_HUB_OFFLINE=1
 

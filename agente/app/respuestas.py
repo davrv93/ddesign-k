@@ -130,6 +130,42 @@ def _t_showroom(c, h):
     return f"Nuestro showroom está en *{sr.get('direccion', '')}* ({sr.get('referencia', '')}). Atendemos solo con cita, {sr.get('horario', '')}."
 
 
+def _t_promo(c, h):
+    """La prenda en foco entra en una promo vigente de la tienda (15-10-2026): precio normal y precio con promo, ambos
+    calculados por código (app/conocimiento.py), con las condiciones."""
+    p, pp, k = c.promo, c.promo_precio or {}, c.k
+    ref = f"{c.art(c.foco).capitalize()} {c.ref}"
+    titulo = f" «{p['titulo']}»" if p.get("titulo") else ""
+    if pp.get("precio_por_dos") is not None:
+        txt = (f"¡Sí! {ref} está en promo{titulo}: llevas 2 por *{k.MONEDA} {pp['precio_por_dos']:.2f}*"
+               + (f" (uno sale a {k.MONEDA} {pp['precio_normal']:.2f})" if pp.get("precio_normal") is not None else "") + " 😊")
+    elif pp.get("envio") == 0.0:
+        txt = (f"¡Sí! {ref} está en promo{titulo}: " + (f"*{k.MONEDA} {pp['precio_normal']:.2f}* " if pp.get("precio_normal") is not None else "")
+               + "y el envío te sale gratis 😊")
+    elif pp.get("precio_final") is not None and pp.get("precio_normal") is not None and pp["precio_final"] != pp["precio_normal"]:
+        pct = f" ({p['valor']:g}% de descuento)" if p.get("mecanica") == "porcentaje" else ""
+        txt = (f"¡Sí! {ref} está en promo{titulo}: de {k.MONEDA} {pp['precio_normal']:.2f} a "
+               f"*{k.MONEDA} {pp['precio_final']:.2f}*{pct} 😊")
+    elif pp.get("precio_final") is not None:
+        txt = f"¡Sí! {ref} está en promo{titulo}: *{k.MONEDA} {pp['precio_final']:.2f}* 😊"
+    else:
+        txt = f"¡Sí! {ref} está en promo{titulo} 😊"
+    if p.get("condiciones"):
+        txt += f" {p['condiciones']}"
+    return txt
+
+
+def _t_descuento(c, h):
+    """Pide descuento. Sin promos vigentes, la política de siempre (no hay para nadie). Con promos (15-10-2026): si habla
+    de una prenda que no entra, la respuesta de la tienda para eso; si no, las promos vigentes."""
+    promos_txt = getattr(c, "promos_txt", "")
+    if not promos_txt:
+        return c.k.AVISO_DESCUENTO
+    if c.foco is not None and getattr(c, "promo", None) is None:
+        return getattr(c, "promo_fuera", "") or f"{c.art(c.foco).capitalize()} {c.ref} no entra en la promo: su precio es el publicado 😊"
+    return promos_txt
+
+
 def _precio(c) -> str:
     return f"{c.art(c.foco).capitalize()} {c.ref} está a *{c.k.MONEDA} {c.foco.precio:.2f}* 😊"
 
@@ -161,6 +197,8 @@ EXCLUYE = {
     "tela": {"detalle"},
     "atributo": {"detalle"},
     "precio": {"precio_al_nombrar", "detalle"},
+    "promo": {"precio", "precio_al_nombrar", "detalle"},
+    "faq": {"pago", "showroom", "envio", "descuento", "detalle", "duda"},
     "color": {"detalle"},
 }
 # Un dato EXTRA (el segundo o el tercero) solo entra si el texto lo pide de forma explícita: la intención sola no basta
@@ -168,6 +206,7 @@ EXCLUYE = {
 RE_NO_QUIERE = re.compile(r"\bno (me )?(digas|preguntes|hables|mandes|pases)\b[^.?!]{0,20}")
 EXPLICITO = {
     "precio": lambda c, h: bool(RE_PRECIO.search(c.plano)),
+    "promo": lambda c, h: bool(RE_PRECIO.search(c.plano)) or h["menciona_descuento"],
     "talla_dicha": lambda c, h: bool(c.datos.get("talla")),
     "tallas": lambda c, h: bool(RE_TALLAS.search(c.plano)),
     "color": lambda c, h: c.pregunta_variante or bool(re.search(r"\bcolou?r(es)?\b", c.plano)),
@@ -235,6 +274,8 @@ TABLA: list[Regla] = [
           lambda c, h: ficha_producto.respuesta(c.foco.codigo, c.ref, c.pide_attr)),
     Regla("envio_no_es_precio", "dato_prenda", "habla de envío: «¿cuánto sale el envío?» no pregunta el precio de la prenda",
           lambda c, h: h["habla_envio"], lambda c, h: ""),
+    Regla("promo", "dato_prenda", "la prenda en foco entra en una promo vigente y pregunta el precio o por descuentos (15-10-2026)",
+          lambda c, h: getattr(c, "promo", None) is not None and (h["pregunta_precio"] or h["menciona_descuento"]), _t_promo),
     Regla("precio", "dato_prenda", "pregunta el precio", lambda c, h: h["pregunta_precio"] and c.foco.precio is not None,
           lambda c, h: _precio(c)),
     Regla("talla_dicha", "dato_prenda", "dijo o preguntó una talla concreta", lambda c, h: bool(c.datos.get("talla")), _t_talla_dicha),
@@ -253,8 +294,13 @@ TABLA: list[Regla] = [
           lambda c, h: f"Te cuento {_de(c, c.foco)} {c.ref}: " + (estructurado._frases(c.foco.detalle) or [c.foco.detalle])[0][:220]),
 
     # --- dato de la tienda (solo si no hubo dato de la prenda)
-    Regla("descuento", "dato_tienda", "pide descuento o rebaja (política: no hay para nadie)", lambda c, h: h["menciona_descuento"],
-          lambda c, h: c.k.AVISO_DESCUENTO),
+    # Pregunta frecuente que cargó la tienda en JMD Ventas (15-10-2026): su respuesta, tal cual. Va primero: la tienda la
+    # escribió para ESA pregunta («¿dan factura?» caía en la regla del pago).
+    Regla("faq", "dato_tienda", "pregunta frecuente de la tienda (JMD Ventas → Fuentes)",
+          lambda c, h: getattr(c, "faq", None) is not None, lambda c, h: c.faq["faq"]["respuesta"]),
+    Regla("descuento", "dato_tienda", "pide descuento o rebaja (política: no hay para nadie, salvo una promo vigente que no "
+          "cubra la prenda en foco)",
+          lambda c, h: h["menciona_descuento"] and getattr(c, "promo", None) is None, _t_descuento),
     Regla("envio", "dato_tienda", "pregunta por el envío", lambda c, h: h["pide_envio"] and bool(venta.VENTA.get("envio")), _t_envio),
     Regla("showroom", "dato_tienda", "pregunta dónde están o el horario", lambda c, h: h["pide_ubicacion"] and bool(venta.SHOWROOM),
           _t_showroom),

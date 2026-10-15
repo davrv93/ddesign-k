@@ -10,7 +10,7 @@ import logging
 import re
 import time
 
-from .. import colecciones, colores, ficha_producto, fotos_color, memoria, nombres
+from .. import colecciones, colores, conocimiento, ficha_producto, fotos_color, memoria, nombres
 from . import cliente_llm, ficha as ficha_mod, plantillas, prompt, validador
 from .herramientas import Recolector
 
@@ -73,11 +73,16 @@ class Rechazado(RuntimeError):
 
 
 def _traza(respuesta: str, motivos, usadas, vueltas, ms) -> dict:
-    return {"version": "v3", "motivos": motivos, "herramientas": usadas, "vueltas": vueltas, "ms": ms}
+    return {"version": "v3", "motivos": motivos, "herramientas": usadas, "vueltas": vueltas, "ms": ms, "fuentes_usadas": []}
 
 
-def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = False) -> dict:
-    """Un turno de V3. `req` es un ChatIn; `fichas` el catálogo vivo; `consultar_stock` E.stock.consultar."""
+# Pregunta el precio («¿cuánto está?», «¿a cuánto?»): ahí se repite la promo aunque ya se haya dicho.
+RE_PIDE_PRECIO = re.compile(r"\b(precio|cuanto (cuesta|sale|esta|vale|es|seria|queda)|a cuanto|cuesta|vale|total)\b")
+
+
+def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = False, embed=None) -> dict:
+    """Un turno de V3. `req` es un ChatIn; `fichas` el catálogo vivo; `consultar_stock` E.stock.consultar. `embed`: el
+    embedder del agente (E.emb) para la FAQ de la tienda; None = conocimiento.EMBED."""
     t0 = time.time()
     mensaje = (req.mensaje or "").strip()
     f = ficha_mod.normalizar(getattr(req, "memoria", None))
@@ -133,12 +138,18 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     en_pago = (bool((f.get("pedido") or {}).get("confirmado")) or getattr(req, "etapa", "") == "venta_confirmada"
                or getattr(req, "estado", "") == "esperando_pago")
     foto_hecho = getattr(req, "foto_hecho", "") or ""   # /foto: lo que ya se sabe de la foto que mandó
+    # Conocimiento de la tienda (JMD Ventas, 15-10-2026): promos vigentes, FAQ, políticas y guion. Sin él, todo como siempre.
+    conoc = conocimiento.leer(getattr(req, "conocimiento", None))
+    faq = None if (foto_hecho or en_pago) else conocimiento.buscar_faq(conoc, mensaje, embed)
+    promo_q = bool(conocimiento.vigentes(conoc)) and conocimiento.pregunta_promo(mensaje)
+    if faq:
+        log.info("V3 FAQ de la tienda: %s (%.3f)", faq["faq"]["id"], faq["score"])
     # 2a. Pide el catálogo o ver todo: el enlace de LA SECCIÓN que pide con su captura (14-10-2026, como la tienda).
     if not en_pago and not foto_hecho and colecciones.pide_catalogo(mensaje):
         res = _catalogo(f, mensaje, fichas, hist, req, t0)
         if res:
             return res
-    if not en_pago and not foto_hecho and not oferta_foto:
+    if not en_pago and not foto_hecho and not oferta_foto and not faq and not promo_q:
         txt = ""
         if RE_SALUDO_SOLO.match(mensaje) and not _bots(hist):
             txt = plantillas.saludo(getattr(req, "cliente", ""), hist)
@@ -161,6 +172,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     rec = Recolector(fichas, consultar_stock, pie=pie, permitir_reserva=permitir_reserva, mensaje=mensaje,
                      mostrados=f.get("mostrados") or [], pago_ok=pago_ok,
                      contesta_cual=bool(RE_PREGUNTO_CUAL.search(ultimo_bot)))
+    rec.poner_conocimiento(conoc)
     # «el primero», «la otra», «ese mismo», «el verde»: la prenda ya mostrada a la que se refiere, sin nombrarla.
     ref_cod, ref_hecho = _referencia(f, mensaje, fichas, ctx_nombres)
     if ref_cod:
@@ -195,6 +207,11 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     foco = (f.get("producto") or "").strip().upper()
     if foco and rec._ficha(foco):
         rec.ejecutar("stock", {"codigo": foco})
+    if conoc is not None:
+        conoc_hecho = _hechos_conocimiento(rec, f, mensaje, getattr(req, "producto", "") or f.get("producto")
+                                           or ((f.get("mostrados") or [""])[-1]), faq, ctx_nombres)
+        if conoc_hecho:
+            hecho = (hecho + "\n" + conoc_hecho).strip()
     pedido = _pedido_en_curso(rec, req, f)
     if pedido:
         hecho = (hecho + "\n" + pedido).strip()
@@ -263,7 +280,7 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     if paso:
         hecho = (hecho + "\n" + paso).strip()
     msgs = prompt.construir(f, getattr(req, "historial", []) or [], mensaje, getattr(req, "canal", ""), hecho=hecho,
-                            cliente=getattr(req, "cliente", ""), pago=pago_ok)
+                            cliente=getattr(req, "cliente", ""), pago=pago_ok, conoc=conoc)
     # Respuesta a una foto: todo lo necesario ya viene en el hecho; una sola vuelta (sin herramientas) ahorra 3–5 s.
     vueltas_max = 1 if foto_hecho else 0
     salida = cliente_llm.responder(msgs, rec.esquema(), rec.ejecutar, max_vueltas=vueltas_max)
@@ -323,6 +340,10 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
             out["respuesta"], out["pregunta_hecha"] = _con_siguiente(sin or "¡Perfecto! 😊", f, hist), ""
     res = _cierra(f, rec, out, salida["usadas"], salida["vueltas"], _ms(t0), req)
     res["v3"]["uso"] = cliente_llm.sumar_uso(salida.get("uso"), (salida2 or {}).get("uso") if motivos_1 else None)
+    res["fuentes_usadas"] = res["v3"]["fuentes_usadas"] = _fuentes_usadas(rec, res["respuesta"])
+    if conoc is not None:
+        res["v3"]["conocimiento"] = {"empresa": conoc.empresa, "version": conoc.version,
+                                     "en_prompt": conocimiento.ids_prompt(conoc)}
     return res
 
 
@@ -464,6 +485,85 @@ def _precalculo(rec: Recolector, datos: dict) -> str:
             partes.append(f"HECHO YA VERIFICADO: no tenemos nada color {color}. Dilo tal cual, no lo disimules "
                           "con otra prenda ni preguntes la ocasión antes.")
     return "\n".join(partes)
+
+
+def _hechos_conocimiento(rec: Recolector, f: dict, mensaje: str, producto: str, faq: dict | None, ctx: dict) -> str:
+    """Lo que el conocimiento de la tienda (JMD Ventas, 15-10-2026) ya deja verificado para este turno:
+
+    - FAQ de la tienda que contesta el mensaje → su respuesta, casi textual.
+    - Prenda en foco (o nombrada) con una promo vigente → «HECHO YA VERIFICADO: PROMO …» con precio normal, precio con
+      promo (calculado por código), condiciones y vigencia, UNA vez por conversación (`f["promos_dichas"]`); después solo
+      si pregunta por la promo o el precio. La promo queda respaldada para el validador aunque no se mencione.
+    - «¿tienen promo?» sin prenda → las vigentes (su `respuesta_promo` o un resumen).
+    - Pide descuento de una prenda que NO entra → `respuesta_fuera` de la tienda o que su precio es el publicado.
+    Sin promos vigentes no dice nada de descuentos: la veda de siempre la siguen aplicando el prompt y el validador."""
+    partes = []
+    if faq:
+        rec.faq_usada = faq["faq"]["id"]
+        partes.append(f"RESPUESTA DE LA TIENDA (pregunta frecuente): {faq['faq']['respuesta']} Dila casi textual (solo "
+                      "ajusta el tuteo o une las frases), sin agregar datos que no estén ahí, y luego sigue con el paso del guion.")
+    vig = conocimiento.vigentes(rec.conoc)
+    if not vig:
+        return "\n".join(partes)
+    plano = memoria._plano(mensaje)
+    pide_promo = conocimiento.pregunta_promo(mensaje)
+    nombradas = _nombradas(mensaje, rec.fichas, ctx)
+    cod = nombradas[0] if len(nombradas) == 1 else ("" if nombradas else (producto or "").strip().upper())
+    ficha = rec._ficha(cod) if cod else None
+    dichas = f.setdefault("promos_dichas", [])
+    if ficha is not None:
+        aplican = conocimiento.promos_para(rec.conoc, ficha)
+        if aplican:
+            for p in aplican:                      # respaldo para el validador, la mencione o no
+                rec.respaldar_promo(p, [ficha])
+            rec.usadas.append("promocion_vigente")
+            nuevas = [p for p in aplican if p["id"] not in dichas]
+            if nuevas or pide_promo or RE_PIDE_PRECIO.search(plano):
+                lineas = " ".join(conocimiento.linea_promo(p, ficha) for p in aplican)
+                apertura = next((p["mensaje_apertura"] for p in nuevas if p["mensaje_apertura"]), "")
+                partes.append(f"HECHO YA VERIFICADO: {lineas} " + (
+                    "Menciónala en este mensaje con estas cifras exactas (una sola vez en la conversación)"
+                    + (f"; puedes abrir con: «{apertura}»" if apertura else "") + "." if nuevas else
+                    "Usa estas cifras exactas si habla del precio o de la promo."))
+                dichas.extend(p["id"] for p in nuevas)
+        elif pide_promo:
+            fuera = next((p["respuesta_fuera"] for p in vig if p["respuesta_fuera"]), "")
+            partes.append(f"HECHO YA VERIFICADO: el {ficha.nombre} NO entra en ninguna promo vigente: su precio es el publicado "
+                          f"y no tiene descuento. Dile casi textual: «{fuera or f'El {ficha.nombre} no entra en la promo: su precio es el publicado 😊'}». "
+                          "No ofrezcas ningún otro descuento.")
+    elif pide_promo:
+        for p in vig:
+            rec.respaldar_promo(p, [x for x in rec.fichas if conocimiento.cubre(p, x)])
+        rec.usadas.append("promocion_vigente")
+        lista = " ".join(conocimiento.resumen_promo(p) for p in vig)
+        partes.append(f"PREGUNTA POR PROMOS. HECHO YA VERIFICADO (son las únicas vigentes): {lista} Díselo casi textual y "
+                      "pregúntale qué prenda le interesa; no inventes otras promos ni otras cifras.")
+        dichas.extend(p["id"] for p in vig if p["id"] not in dichas)
+    return "\n".join(partes)
+
+
+def _fuentes_usadas(rec: Recolector, texto: str) -> list[int]:
+    """Ids de las fuentes en las que se apoyó la respuesta de ESTE turno (contrato §3): las promos respaldadas que el texto
+    de verdad menciona (por su título, una palabra de descuento o un precio que solo existe con la promo) y la FAQ usada.
+    Las políticas y el guion van en el prompt siempre: no cuentan como «usadas»."""
+    out = []
+    if rec.promos_usadas and texto:
+        plano = memoria._plano(texto)
+        por_id = {p["id"]: p for p in conocimiento.vigentes(rec.conoc)}
+        dice_descuento = bool(conocimiento.RE_MENCIONA_DESCUENTO.search(texto))
+        precios = {round(float(m.group(1).replace(",", ".")), 2) for m in validador.RE_PRECIO.finditer(texto)}
+        titulos = [pid for pid in rec.promos_usadas if por_id.get(pid, {}).get("titulo")
+                   and memoria._plano(por_id[pid]["titulo"]) in plano]
+        for pid in rec.promos_usadas:
+            p = por_id.get(pid)
+            if p is None:
+                continue
+            solo_promo = {round(x, 2) for x in rec.precios_promo.get(pid, set())}
+            if pid in titulos or (dice_descuento and not titulos) or (precios & solo_promo):
+                out.append(pid)
+    if getattr(rec, "faq_usada", None) is not None:
+        out.append(rec.faq_usada)
+    return out
 
 
 def _fotos_de_colores(rec: Recolector, f: dict, mensaje: str, ultimo_bot: str) -> str:
@@ -935,7 +1035,16 @@ def _pedido_en_curso(rec: Recolector, req, f: dict) -> str:
     talla = (getattr(req, "talla", "") or (f.get("pedido") or {}).get("talla") or "").strip().upper()
     precio = r.get("precio")
     p = f"PEDIDO EN CURSO: {cod} {r.get('nombre', '')}" + (f", talla {talla}" if talla else "")
-    if precio is not None:
+    # Con una promo vigente que cubre la prenda, el total sale del precio con promo (calculado por código, 15-10-2026).
+    ficha = rec._ficha(cod)
+    promo = next((x for x in conocimiento.promos_para(rec.conoc, ficha)
+                  if conocimiento.precio_promo(x, precio)["precio_final"] not in (None, precio)), None) if ficha else None
+    if promo is not None and precio is not None:
+        final = conocimiento.precio_promo(promo, precio)["precio_final"]
+        rec.respaldar_promo(promo, [ficha])
+        p += (f", precio normal S/ {float(precio):.2f}, con la promo «{promo['titulo']}» S/ {final:.2f}. Total = precio con "
+              "promo + envío (Lima S/ 15, provincia S/ 20, agencia de viaje S/ 15).")
+    elif precio is not None:
         p += f", precio S/ {float(precio):.0f}. Total = precio + envío (Lima S/ 15, provincia S/ 20, agencia de viaje S/ 15)."
     return p
 
@@ -1101,6 +1210,7 @@ def _respuesta(f: dict, texto: str, accion: str, fotos, reserva, traza: dict, re
                     "titulo": x.get("titulo", ""), "tallas": x.get("tallas", [])}
                    for x in (fotos or [])]
     return {"respuesta": texto, "accion": accion, "codigo": (reserva or {}).get("codigo", ""),
+            "fuentes_usadas": list(traza.get("fuentes_usadas") or []),
             "talla": (reserva or {}).get("talla", ""), "sugerencias": sugerencias, "etapa": f.get("etapa", "prospeccion"),
             "memoria": f, "modelo_llm": cliente_llm.MODELO, "motor": "v3", "version": "v3", "v3": traza,
             "respuestas_rapidas": [{"label": o} for o in _opciones(texto)] if accion == "responder" else []}

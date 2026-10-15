@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import re
 
-from .. import colecciones, colores, datos, ficha_producto, fotos_color, memoria, nombres, stock as stk, venta
+from .. import colecciones, colores, conocimiento, datos, ficha_producto, fotos_color, memoria, nombres, stock as stk, venta
 from .validador import hechos_vacios
 
 MAX_CATALOGO = 6
@@ -96,6 +96,20 @@ ESQUEMA = [
         "parameters": {"type": "object", "properties": {"motivo": {"type": "string"}}, "required": []}}},
 ]
 
+# Promos de la tienda (15-10-2026, plan «Fuentes y promos» §2.3). Solo se le ofrece al modelo cuando JMD Ventas mandó
+# alguna promo VIGENTE en `conocimiento`: sin promos, el esquema es el de siempre y la veda de descuentos sigue igual.
+ESQUEMA_PROMO = {"type": "function", "function": {
+    "name": "promocion_vigente",
+    "description": "Promos VIGENTES de la tienda con su precio final YA calculado. Úsala antes de mencionar un descuento, "
+                   "una promo o un precio de promo. Con codigo: las promos de esa prenda (o que no entra en ninguna). Con "
+                   "consulta (tipo de prenda o colección): las de eso. Sin nada: todas las vigentes. Nunca calcules tú el "
+                   "precio: usa el que devuelve.",
+    "parameters": {"type": "object", "properties": {
+        "codigo": {"type": "string", "description": "código de la prenda (opcional)"},
+        "consulta": {"type": "string", "description": "tipo de prenda o colección (opcional)"}},
+        "required": []}}}
+MAX_PRENDAS_PROMO = 6
+
 
 def _cat(c: str) -> str:
     """Categoría comparable: sin tildes, mayúsculas ni plural («Pantalones» = «pantalón»)."""
@@ -151,10 +165,20 @@ class Recolector:
         self.cita: dict | None = None
         self.derivar = False
         self.sugerencia_foto: str | None = None
+        self.conoc = None                    # conocimiento de la tienda (app/conocimiento.py); None = seed de siempre
+        self.promos_usadas: list[int] = []   # promos que respaldó este turno (herramienta o precálculo), en orden
+        self.precios_promo: dict[int, set] = {}   # id → precios que solo existen con la promo (para fuentes_usadas)
+        self.faq_usada: int | None = None    # FAQ de la tienda que contestó este turno
 
     # -- puerta -----------------------------------------------------------
     def esquema(self) -> list[dict]:
-        return ESQUEMA
+        return ESQUEMA + [ESQUEMA_PROMO] if conocimiento.vigentes(self.conoc) else ESQUEMA
+
+    def poner_conocimiento(self, conoc) -> None:
+        """Conocimiento de la tienda para este turno. Con promos vigentes, el validador sabe que existen (para pedir que
+        se respalden con la herramienta en vez de vetarlas sin más)."""
+        self.conoc = conoc
+        self.hechos["hay_promos"] = bool(conocimiento.vigentes(conoc))
 
     def ejecutar(self, nombre: str, args: dict) -> dict:
         fn = getattr(self, "_t_" + nombre, None)
@@ -391,3 +415,67 @@ class Recolector:
     def _t_derivar_asesora(self, args: dict) -> dict:
         self.derivar = True
         return {"ok": True, "motivo": (args.get("motivo") or "").strip()}
+
+    # -- promos de la tienda (15-10-2026) -------------------------------------
+    def respaldar_promo(self, promo: dict, fichas=()) -> None:
+        """Lo que el modelo ya puede afirmar de esa promo: que existe (veda levantada), su porcentaje y sus precios
+        calculados por código para esas prendas."""
+        r = conocimiento.respaldo(promo, fichas)
+        self.hechos["promos"].add(promo["id"])
+        self.hechos["precios"].update(r["precios"])
+        self.hechos["porcentajes"].update(r["porcentajes"])
+        if promo["mecanica"] == "envio_gratis":
+            self.hechos["precios"].add(0.0)
+        solo = self.precios_promo.setdefault(promo["id"], set())
+        for f in fichas:
+            pp = conocimiento.precio_promo(promo, f.precio)
+            solo.update(x for x in (pp["precio_final"], pp["precio_por_dos"]) if x is not None and x != pp["precio_normal"])
+        if promo["id"] not in self.promos_usadas:
+            self.promos_usadas.append(promo["id"])
+
+    def _promo_dict(self, promo: dict, fichas) -> dict:
+        prendas = []
+        for f in fichas[:MAX_PRENDAS_PROMO]:
+            pp = conocimiento.precio_promo(promo, f.precio)
+            self.hechos["codigos"].add(f.codigo.upper())
+            prendas.append({"codigo": f.codigo, "nombre": f.nombre, "precio_normal": pp["precio_normal"],
+                            "precio_promo": pp["precio_final"], "precio_por_dos": pp["precio_por_dos"],
+                            "envio": pp["envio"]})
+        self.respaldar_promo(promo, fichas[:MAX_PRENDAS_PROMO])
+        return {"id": promo["id"], "titulo": promo["titulo"], "mecanica": promo["mecanica"], "valor": promo["valor"],
+                "que_es": conocimiento.mecanica_txt(promo) + " " + conocimiento.alcance_txt(promo),
+                "condiciones": promo["condiciones"], "vigente_hasta": promo["hasta"].isoformat() if promo["hasta"] else "",
+                "mensaje_apertura": promo["mensaje_apertura"], "prendas": prendas}
+
+    def _t_promocion_vigente(self, args: dict) -> dict:
+        vig = conocimiento.vigentes(self.conoc)
+        if not vig:
+            return {"promos": [], "aviso": "No hay ninguna promo vigente: no hay descuentos; el precio es el publicado."}
+        codigo = (args.get("codigo") or "").strip()
+        consulta = (args.get("consulta") or "").strip()
+        if codigo:
+            f = self._ficha(codigo)
+            if f is None:
+                return {"error": "no conozco ese código"}
+            aplican = conocimiento.promos_para(self.conoc, f)
+            if not aplican:
+                fuera = next((p["respuesta_fuera"] for p in vig if p["respuesta_fuera"]), "")
+                return {"promos": [], "prenda": f.nombre, "aviso": f"El {f.nombre} NO entra en ninguna promo vigente: su "
+                        f"precio es el publicado y no tiene descuento." + (f" Dilo así: «{fuera}»" if fuera else "")}
+            return {"promos": [self._promo_dict(p, [f]) for p in aplican],
+                    "aviso": "Usa SOLO estas cifras (las calculó el sistema) y menciona las condiciones."}
+        if consulta:
+            plano = memoria._plano(consulta)
+            cat = conocimiento._norm_cat(plano.split()[0]) if plano.split() else ""
+            nombradas = nombres.nombradas(consulta, self.fichas).codigos
+            if nombradas:
+                return self._t_promocion_vigente({"codigo": nombradas[0]})
+            elegidas = [p for p in vig if p["alcance"]["tipo"] == "todo"
+                        or (p["alcance"]["tipo"] == "categoria" and p["alcance"]["categoria"] == cat)
+                        or (p["alcance"]["tipo"] == "coleccion" and p["alcance"]["coleccion"] in plano)]
+            vig = elegidas or vig
+        out = []
+        for p in vig:
+            fichas = [f for f in self.fichas if conocimiento.cubre(p, f)]
+            out.append(self._promo_dict(p, fichas))
+        return {"promos": out, "aviso": "Usa SOLO estas cifras (las calculó el sistema) y menciona las condiciones."}

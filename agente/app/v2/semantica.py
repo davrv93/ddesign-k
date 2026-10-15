@@ -89,7 +89,9 @@ class Semantica:
                 self._listo = True
             except Exception as e:           # sin catálogos V2 sigue igual
                 self._roto = type(e).__name__
-                log.warning("catálogos semánticos no cargaron (%s): V2 sigue sin ellos", self._roto)
+                # Con la ruta: «FileNotFoundError» a secas no decía QUÉ archivo faltaba (15-10-2026).
+                log.warning("catálogos semánticos no cargaron (%s: %s; directorio %s): V2 sigue sin ellos", self._roto, e,
+                            self.directorio or os.environ.get("CATALOGOS_DIR") or os.environ.get("AGENTE_DATA_DIR") or "data/")
         return self._listo
 
     def precargar(self) -> bool:

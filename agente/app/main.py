@@ -30,7 +30,7 @@ import json
 from contextvars import ContextVar
 
 from . import colecciones, comprension, datos, etapas, ficha_producto, fotos_color, jev, looks, memoria, respuestas, venta
-from . import animo, crm, estructurado, gasto, nombres, rerank
+from . import animo, conocimiento, crm, estructurado, gasto, nombres, rerank
 from .solicitud import (RE_CATALOGO, RE_MAS_BARATO, RE_MAS_OPCIONES, RE_OTRAS, RE_PIDE_COLOR_VERBO, _color_txt, _de_color, _raiz_color,
                         color_dicho, color_pedido, color_que_pide, interpretar)
 from .solicitud import pide_otro_color as _pide_otro_color
@@ -215,6 +215,7 @@ def _arranque():
     E = Estado()
     E.emb(["hola"])  # la primera inferencia de ONNX es la lenta: que la pague el arranque
     E.emb_clf(["hola"])
+    conocimiento.EMBED = E.emb      # FAQ de la tienda (JMD Ventas): el mismo e5 que el resto del agente
     log.info("agente listo en %.1fs (modelo %s, %d fichas, %d ejemplos)", time.time() - t, E.emb.model_name, len(E.fichas), len(E.ejemplos))
 
     # El catálogo vivo se lee ANTES de atender: si no, los primeros segundos tras un reinicio el agente
@@ -274,6 +275,9 @@ class ChatIn(BaseModel):
     # Respuesta rápida pulsada: {"intent": "provide_size", "size": "M"} (app/v2/temas.py). Solo la lee V2; V1 la ignora. El texto de la
     # respuesta (`mensaje`) sigue siendo lo que se ve en el chat: el payload solo le ahorra a V2 interpretarlo.
     payload: dict | None = None
+    # Conocimiento de la tienda (JMD Ventas, 15-10-2026; contrato docs/FUENTES_CONTRATO.md §3): promos vigentes, FAQ,
+    # políticas, guion y material de ESA empresa. Vacío = seed de siempre. Uno roto se ignora (app/conocimiento.py).
+    conocimiento: dict | None = None
 
 
 RE_NO_TEXTO = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\ud800-\udfff]")
@@ -307,6 +311,11 @@ def no_mostrar_m(req: "ChatIn") -> bool:
     return memoria.no_mostrar(req.mensaje) or "no_mostrar" in _clf_actual.get()
 # La pregunta que estaba pendiente ANTES de leer este mensaje (la memoria ya la limpió si se respondió).
 _pend_previa: ContextVar[str | None] = ContextVar("_pend_previa", default=None)
+# El conocimiento de la tienda de ESTE mensaje (app/conocimiento.py), para los prompts y filtros de V1 sin pasarlo por
+# parámetro. None = sin fuentes: todo como siempre.
+_conoc_actual: ContextVar = ContextVar("_conoc_actual", default=None)
+# La pregunta frecuente de la tienda que contesta ESTE mensaje (conocimiento.buscar_faq), o None.
+_faq_actual: ContextVar = ContextVar("_faq_actual", default=None)
 
 
 def _memoria_de(req) -> dict:
@@ -497,13 +506,19 @@ Cada foto lleva su propio pie con nombre, precio y tallas: no escribas listas de
 
 
 def info_tienda() -> str:
-    """TIENDA para el motor deepseek: el texto editable de seed/tienda.md y las sucursales con su horario."""
+    """TIENDA para el motor deepseek: el texto editable de seed/tienda.md y las sucursales con su horario. Si JMD Ventas
+    mandó políticas de la tienda, sustituyen a tienda.md; con promos vigentes se suma el bloque de promos (15-10-2026)."""
     partes = []
-    try:
-        with open(TIENDA_MD, encoding="utf-8") as fh:
-            partes.append(fh.read().strip())
-    except OSError:
-        pass
+    conoc = _conoc_actual.get()
+    politicas = conocimiento.texto_tienda(conoc)
+    if politicas:
+        partes.append(politicas)
+    else:
+        try:
+            with open(TIENDA_MD, encoding="utf-8") as fh:
+                partes.append(fh.read().strip())
+        except OSError:
+            pass
     try:
         if not stk.USAR_SUCURSALES:
             raise OSError("sucursales desactivadas")
@@ -513,7 +528,101 @@ def info_tienda() -> str:
             partes.append("Sucursales:\n" + "\n".join(f"- {x['nombre']}: {x.get('direccion', '')} ({x.get('horario', 'horario por confirmar')})" for x in sucs))
     except (OSError, ValueError):
         pass
+    if bloque := bloque_promos():
+        partes.append(bloque)
     return "\n\n".join(partes) or "(sin datos)"
+
+
+# ---------------------------------------------------------------------------
+# Promos de la tienda en V1 (15-10-2026). El precio lo calcula el código (app/conocimiento.py); el LLM solo lo copia.
+
+MAX_PRENDAS_BLOQUE = 8
+RE_SIN_DESCUENTOS = re.compile(r"- Descuentos, rebajas.*?NO hay, para nadie.*?(?=\n- |\n\n|\n[A-Z])", re.S)
+LINEA_CON_PROMOS = ("- Descuentos y promociones: SOLO las de PROMOS VIGENTES (en TIENDA), con las cifras que ahí figuran y solo "
+                    "para las prendas que cubren. Fuera de eso no hay descuentos ni rebajas para nadie: dilo con amabilidad, "
+                    "sin derivar a la asesora.")
+
+
+def _vigentes() -> list[dict]:
+    return conocimiento.vigentes(_conoc_actual.get())
+
+
+def _con_promos(sistema: str) -> str:
+    """Con promos vigentes, la línea «Descuentos… NO hay, para nadie» del sistema se cambia por la de las promos."""
+    return RE_SIN_DESCUENTOS.sub(LINEA_CON_PROMOS, sistema) if _vigentes() else sistema
+
+
+def _fichas_vivas() -> list:
+    with E.lock:
+        return [f for f in E.fichas if f.fuente == "seed"]
+
+
+def bloque_promos() -> str:
+    """«PROMOS VIGENTES (las únicas que existen)» con cifras calculadas por código; "" sin promos."""
+    vig = _vigentes()
+    if not vig:
+        return ""
+    lineas = []
+    fichas = _fichas_vivas() if E is not None else []
+    for p in vig:
+        lineas.append("- " + conocimiento.linea_promo(p))
+        cubiertas = [f for f in fichas if conocimiento.cubre(p, f)][:MAX_PRENDAS_BLOQUE]
+        for f in cubiertas:
+            lineas.append("  · " + conocimiento.linea_promo(p, f).split(". ")[1] + ".")
+    return "PROMOS VIGENTES (las únicas que existen; usa estas cifras tal cual, no calcules otras):\n" + "\n".join(lineas)
+
+
+def faq_bloque() -> str:
+    """La respuesta de la tienda a la pregunta frecuente que hizo la clienta, para los prompts de V1; "" si no hay."""
+    faq = _faq_actual.get()
+    if not faq:
+        return ""
+    return ("RESPUESTA DE LA TIENDA A SU PREGUNTA (pregunta frecuente; dila casi textual, sin agregar datos):\n"
+            + faq["faq"]["respuesta"] + "\n\n")
+
+
+def promos_de(fichas) -> str:
+    """Las promos de las prendas de las que se habla (la primera es la del foco), con sus cifras; "" si ninguna entra."""
+    conoc = _conoc_actual.get()
+    out = []
+    for f in [x for x in fichas if x is not None][:4]:
+        for p in conocimiento.promos_para(conoc, f):
+            out.append("- " + conocimiento.linea_promo(p, f))
+    return ("PROMO DE ESTAS PRENDAS (calculada por el sistema; si habla del precio o de descuentos, dila con estas cifras):\n"
+            + "\n".join(out) + "\n\n") if out else ""
+
+
+def _promo_respaldada(frase: str) -> bool:
+    """La frase habla de una promo que SÍ existe: hay promos vigentes y cada «N%» es el de una de ellas."""
+    vig = _vigentes()
+    if not vig:
+        return False
+    backed = {float(p["valor"]) for p in vig if p["mecanica"] == "porcentaje"}
+    return all(float(m.group(1).replace(",", ".")) in backed for m in re.finditer(r"(\d{1,3}(?:[.,]\d{1,2})?)\s?%", frase))
+
+
+def _aviso_descuento() -> str:
+    return AVISO_DESCUENTO if not _vigentes() else AVISO_DESCUENTO_CON_PROMOS
+
+
+def _fuentes_v1(foco, respuesta: str) -> list[int]:
+    """Fuentes en las que se apoyó la respuesta de V1: la FAQ de la tienda si su respuesta va en el texto, y las promos del
+    foco si el texto habla de promo o descuento (o todas las vigentes si no hay foco que entre)."""
+    faq = _faq_actual.get()
+    con_faq = [faq["faq"]["id"]] if faq and respuesta and memoria._plano(faq["faq"]["respuesta"])[:60] in memoria._plano(respuesta) else []
+    return con_faq + _promos_v1(foco, respuesta)
+
+
+def _promos_v1(foco, respuesta: str) -> list[int]:
+    vig = _vigentes()
+    if not vig or not respuesta or not conocimiento.RE_MENCIONA_DESCUENTO.search(respuesta):
+        return []
+    if respuesta.strip() in (AVISO_DESCUENTO, AVISO_DESCUENTO_CON_PROMOS):
+        return []
+    del_foco = conocimiento.promos_para(_conoc_actual.get(), foco) if foco is not None else []
+    if foco is not None and not del_foco:
+        return []
+    return [p["id"] for p in (del_foco or vig)]
 
 
 def nota_catalogo(cl: dict) -> str:
@@ -578,11 +687,11 @@ HISTORIAL:
 FICHAS:
 {fich}
 
-{nota_catalogo(cl)}PRENDAS A SUGERIR (el bot enviará sus fotos justo después de tu texto): {", ".join(f"{f.codigo} {f.nombre}" for f in sugeridas) or "ninguna"}{_nota_oferta(ofrecer)}
+{faq_bloque()}{promos_de(fichas)}{nota_catalogo(cl)}PRENDAS A SUGERIR (el bot enviará sus fotos justo después de tu texto): {", ".join(f"{f.codigo} {f.nombre}" for f in sugeridas) or "ninguna"}{_nota_oferta(ofrecer)}
 
 MENSAJE NUEVO DEL CLIENTE:
 {req.mensaje}"""
-    sistema = SISTEMA_PERSONA.format(negocio=req.negocio or NEGOCIO, moneda=MONEDA)
+    sistema = _con_promos(SISTEMA_PERSONA.format(negocio=req.negocio or NEGOCIO, moneda=MONEDA))
     return [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}]
 
 
@@ -624,11 +733,11 @@ HISTORIAL:
 PRODUCTO (fichas; la primera es de la que se habla):
 {fich}
 
-{nota + chr(10) + chr(10) if nota else ""}{nota_catalogo(cl)}FOTOS QUE EL BOT ENVIARÁ DESPUÉS DE TU TEXTO: {", ".join(f"{f.codigo} {f.nombre}" for f in sugeridas) or "ninguna"}{"; y la lámina de materiales del vestido (dilo: «te paso la lámina de materiales»)" if lamina else ""}{_nota_oferta(ofrecer)}
+{faq_bloque()}{promos_de(([foco] if foco is not None else []) + [f for f in fichas if f is not foco])}{nota + chr(10) + chr(10) if nota else ""}{nota_catalogo(cl)}FOTOS QUE EL BOT ENVIARÁ DESPUÉS DE TU TEXTO: {", ".join(f"{f.codigo} {f.nombre}" for f in sugeridas) or "ninguna"}{"; y la lámina de materiales del vestido (dilo: «te paso la lámina de materiales»)" if lamina else ""}{_nota_oferta(ofrecer)}
 {(chr(10) + estilo + chr(10)) if (estilo := venta.bloque_estilo(dec["etapa"])) else ""}
 MENSAJE NUEVO DE LA CLIENTA:
 {req.mensaje}"""
-    return [{"role": "system", "content": venta.sistema(req.negocio or NEGOCIO)}, {"role": "user", "content": usuario}]
+    return [{"role": "system", "content": _con_promos(venta.sistema(req.negocio or NEGOCIO))}, {"role": "user", "content": usuario}]
 
 
 def _prompt(req: ChatIn, cl: dict, fichas, ejemplos, sugeridas=(), ofrecer=False) -> list[dict]:
@@ -656,7 +765,7 @@ EJEMPLOS DE TONO (respuestas de referencia a mensajes parecidos; imita el estilo
 
 MENSAJE NUEVO DEL CLIENTE:
 {req.mensaje}"""
-    sistema = SISTEMA.format(negocio=req.negocio or NEGOCIO, moneda=MONEDA)
+    sistema = _con_promos(SISTEMA.format(negocio=req.negocio or NEGOCIO, moneda=MONEDA))
     return [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}]
 
 
@@ -1346,6 +1455,8 @@ RE_CORTE_EMOJI = re.compile(r"(?<=[\U0001F300-\U0001FAFF☀-➿])\s+(?=[A-ZÁÉ�
 AVISO_TIEMPO = "El tiempo exacto de entrega te lo confirma la asesora al programar tu envío 😊"
 # Política de la tienda (07-10-2026): no hay descuentos para nadie. Se dice sin derivar a la asesora: pedir rebaja no es pedir a una persona.
 AVISO_DESCUENTO = "Por ahora no tenemos descuentos ni promociones: el precio es el publicado 😊"
+# Con promos vigentes de la tienda (15-10-2026) «no tenemos promociones» sería falso: lo que no está en una promo, no tiene.
+AVISO_DESCUENTO_CON_PROMOS = "Fuera de la promo vigente no tenemos descuentos: el precio es el publicado 😊"
 
 
 def _precios_reales() -> set[int]:
@@ -1353,6 +1464,16 @@ def _precios_reales() -> set[int]:
     with E.lock:
         base = {int(round(f.precio)) for f in E.fichas if f.fuente == "seed" and f.precio is not None}
     envios = {int(e["costo"]) for e in (venta.VENTA.get("envio") or {}).values() if isinstance(e, dict) and "costo" in e}
+    # Precios con promo (calculados por código) también valen, con y sin envío (15-10-2026).
+    if vig := _vigentes():
+        fichas = _fichas_vivas()
+        for p in vig:
+            for f in fichas:
+                if conocimiento.cubre(p, f):
+                    pp = conocimiento.precio_promo(p, f.precio)
+                    base |= {int(round(x)) for x in (pp["precio_final"], pp["precio_por_dos"]) if x is not None}
+            if p["mecanica"] in ("monto", "precio_especial", "dos_por"):
+                base.add(int(round(p["valor"])))
     return base | envios | {b + e for b in base for e in envios}
 
 
@@ -1369,8 +1490,8 @@ def _sin_inventos(texto: str, prendas=()) -> str:
         for fr in [x for f in estructurado._frases(p) for x in RE_CORTE_EMOJI.split(f) if x.strip()]:
             if RE_TIEMPO_ENTREGA.search(fr):
                 avisos.append(AVISO_TIEMPO)
-            elif RE_DESCUENTO_INVENTADO.search(fr):
-                avisos.append(AVISO_DESCUENTO)
+            elif RE_DESCUENTO_INVENTADO.search(fr) and not _promo_respaldada(fr):
+                avisos.append(_aviso_descuento())
             elif validos and any(int(m.group(1)) not in validos for m in RE_PRECIO_DICHO.finditer(fr)):
                 continue
             elif ficha and any(_sin_tildes(m.group(1)) not in ficha for m in RE_TELA_DICHA.finditer(fr)):
@@ -1521,6 +1642,9 @@ def conversar(req: ChatIn) -> dict:
     # como respuesta a esa pregunta (memoria.leer, más abajo, cuando Jev ya opinó).
     mem = _memoria_de(req)
     _mem_actual.set(mem)
+    _conoc_actual.set(conocimiento.leer(req.conocimiento))
+    # FAQ de la tienda también en V1 (el respaldo sin LLM y los prompts de V1), no solo en V3 (15-10-2026).
+    _faq_actual.set(conocimiento.buscar_faq(_conoc_actual.get(), req.mensaje))
     pend = mem["pendiente"]
     _pend_previa.set(pend)
     etapa_in = req.etapa or (mem["etapa"] if req.memoria else "")
@@ -2051,6 +2175,8 @@ def conversar(req: ChatIn) -> dict:
             if datos_l.get("nombre"):
                 cab = (cab + " " if cab else "") + f"¡Mucho gusto, {datos_l['nombre']}!"
             # Lo que se dice lo decide la tabla de app/respuestas.py (hechos con nombre + reglas por grupo), no una cadena de if.
+            # La promo vigente que cubre la prenda en foco (15-10-2026): regla `promo`, precio calculado por código.
+            promo_foco = next(iter(conocimiento.promos_para(_conoc_actual.get(), foco)), None) if foco is not None else None
             ctx = SimpleNamespace(
                 mensaje=req.mensaje, plano=plano_m, canal=req.canal, negocio=req.negocio or NEGOCIO,
                 intent=intent, intent_crudo=dec["intent"], nivel=dec["nivel"], cl_intencion=cl["intencion"], cl_confianza=cl["confianza"],
@@ -2063,8 +2189,12 @@ def conversar(req: ChatIn) -> dict:
                 libres=[x["talla"] for x in tallas_de(foco) if x["disponible"]] if foco is not None else [],
                 pregunta_variante=pregunta_variante(req), ofrecer=ofrecer,
                 afirma=memoria.afirma(req.mensaje), niega=memoria.niega(req.mensaje), art=_art, y=_y,
+                promo=promo_foco, promo_precio=conocimiento.precio_promo(promo_foco, foco.precio) if promo_foco else None,
+                promos_txt=" ".join(conocimiento.resumen_promo(p) for p in _vigentes()),
+                promo_fuera=next((p["respuesta_fuera"] for p in _vigentes() if p["respuesta_fuera"]), ""),
+                faq=_faq_actual.get(),
                 k=SimpleNamespace(UMBRAL_ACCION=UMBRAL_ACCION, RE_ROPA=RE_ROPA, RE_TEMA_TIENDA=RE_TEMA_TIENDA, FUERA_DE_GIRO=FUERA_DE_GIRO,
-                                  OFERTA=OFERTA, AVISO_DESCUENTO=AVISO_DESCUENTO, AVISO_TIEMPO=AVISO_TIEMPO, MONEDA=MONEDA, PLURAL=PLURAL))
+                                  OFERTA=OFERTA, AVISO_DESCUENTO=_aviso_descuento(), AVISO_TIEMPO=AVISO_TIEMPO, MONEDA=MONEDA, PLURAL=PLURAL))
             texto, traza = respuestas.componer(ctx)
             traza_codigo.update(traza)
             return texto
@@ -2308,6 +2438,7 @@ def conversar(req: ChatIn) -> dict:
         "stock_fuente": E.stock.ultima_fuente,
         "costo_usd": gasto.total(),
         "solicitud": solicitud_de(req).a_dict(),
+        "fuentes_usadas": _fuentes_v1(foco, respuesta),
         "comprension": {"modo": modo_clf, "detecta": sorted(clf_detecta)} if modo_clf != "0" else None,     # lo que pide el texto (app/solicitud.py), para la traza y para V2
         "ms": int((time.time() - t0) * 1000),
     }
@@ -2545,7 +2676,7 @@ def _v3_modo(req: ChatIn) -> str:
 
 
 def _v3_conversar(req: ChatIn, permitir_reserva: bool) -> dict:
-    return v3agente.conversar(req, E.fichas, E.stock.consultar, pie=_pie, permitir_reserva=permitir_reserva)
+    return v3agente.conversar(req, E.fichas, E.stock.consultar, pie=_pie, permitir_reserva=permitir_reserva, embed=E.emb)
 
 
 def _v3_sombra(req: ChatIn) -> None:
@@ -2582,6 +2713,7 @@ def ruta_chat(req: ChatIn):
     else:
         res = conversar(req) | {"version": "v1"}
     _METRICAS.turno(res.get("version", "v1"), res.get("ms", res.get("v2", {}).get("ms", 0)), res.get("v2"))
+    res.setdefault("fuentes_usadas", [])               # contrato de fuentes (§3): siempre presente, [] si ninguna
     crm.avisar(req, res, venta.VENTA.get("envio"))   # chat web → Kommo, en segundo plano (app/crm.py)
     return nombres.respuesta_sin_codigos(res, E.fichas)   # a la clienta nunca le llega un código (15-10-2026)
 
@@ -2607,6 +2739,7 @@ class FotoIn(BaseModel):
     conversacion: str = ""   # sesión del chat web
     version: str = ""        # v3 + modo activo: el texto lo redacta V3 (guion de Rosmary); si no, V1
     modo: str = ""
+    conocimiento: dict | None = None   # igual que en /chat (JMD Ventas, 15-10-2026): pasa a V3 tal cual
 
 
 PLANTILLA_FOTO = {
@@ -2829,6 +2962,7 @@ Máximo 3 frases."""
         "sugerencias": [dict(x, imagen=_imagen_look(x, f, foto_color, vec, look)) for x in _sugerencias_json(sugeridas)],
         "respuestas_rapidas": respuestas_rapidas,
         "version": "v3" if modelo and modelo != "plantilla" and locals().get("v3r") else "v1",
+        "fuentes_usadas": list((locals().get("v3r") or {}).get("fuentes_usadas") or []),
         # Mandar la foto de una prenda que sí hay es mostrar interés: de prospección pasa a seguimiento.
         "etapa": etapa_nueva,
         "memoria": mem, "sentimiento": animo_r["sentimiento"], "urgencia": animo_r["urgencia"],
@@ -2889,7 +3023,7 @@ def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, suge
                   negocio=req.negocio, etapa=req.etapa, conversacion=req.conversacion, memoria=mem, perfil=req.perfil,
                   desde_anuncio=req.desde_anuncio, anuncio=req.anuncio, version="v3", modo="activo", foto_hecho=hecho,
                   foto_codigo=f.codigo if caso in ("online", "sucursal", "agotado", "parecido", "look") else "",
-                  foto_oferta=caso in ("parecido", "ninguno"))
+                  foto_oferta=caso in ("parecido", "ninguno"), conocimiento=req.conocimiento)
     try:
         res = _v3_conversar(creq, permitir_reserva=False)
     except Exception as e:
@@ -2903,6 +3037,7 @@ def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, suge
 @app.post("/foto")
 def ruta_foto(req: FotoIn):
     res = conversar_foto(req)
+    res.setdefault("fuentes_usadas", [])
     crm.avisar(req, res, venta.VENTA.get("envio"))
     return nombres.respuesta_sin_codigos(res, E.fichas)
 

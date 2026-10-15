@@ -31,7 +31,7 @@ PAGO = _seed("pago.md")
 
 PREGUNTAS_TXT = "\n".join(f"- {k}: {v}" for k, v in memoria.PREGUNTAS.items())
 
-SISTEMA = """Eres Rosmary, asesora de ventas de Baruka Design (ropa de mujer, Perú), por WhatsApp. Hablas \
+_PLANTILLA = """Eres Rosmary, asesora de ventas de Baruka Design (ropa de mujer, Perú), por WhatsApp. Hablas \
 natural, cálido y breve (máximo 2 o 3 frases). Tuteas. Uno o dos emojis, como en el guion.
 
 CÓMO DECIDES
@@ -80,8 +80,43 @@ PREGUNTAS DISPONIBLES (usa la clave exacta en "pregunta_hecha" si preguntas algo
 
 SALIDA: responde SIEMPRE con un objeto JSON, sin texto fuera de él:
 {{"respuesta": "el texto que se le envía a la clienta", "pregunta_hecha": "clave de la pregunta o vacío"}}
-""".format(tienda=TIENDA or "(sin datos de la tienda)", preguntas=PREGUNTAS_TXT).replace(
-    "<<GUION>>", SPEECH or "MÉTODO DE VENTA: indaga la necesidad (ocasión, fecha, día/noche); ofrece UNA opción; cierra con precio.")
+"""
+METODO_GENERICO = "MÉTODO DE VENTA: indaga la necesidad (ocasión, fecha, día/noche); ofrece UNA opción; cierra con precio."
+LINEA_SIN_DESCUENTOS = "- Nunca ofrezcas descuentos, rebajas ni plazos de entrega: no existen."
+# Con promos vigentes de la tienda (15-10-2026): la veda se levanta SOLO para lo que respalda promocion_vigente.
+LINEA_CON_PROMOS = ("- Descuentos y promos: SOLO las PROMOS VIGENTES de abajo, y solo para las prendas que cubren; las cifras "
+                    "(precio con promo, porcentaje) solo las de promocion_vigente o un HECHO YA VERIFICADO, nunca las calcules "
+                    "tú. Fuera de eso no hay descuentos ni rebajas. Plazos de entrega: no existen.")
+
+
+def _sistema(tienda: str, guion: str, promos: str = "") -> str:
+    """El sistema de V3 con la TIENDA y el GUION dados. `promos`: el bloque de PROMOS VIGENTES ("" = la veda de siempre)."""
+    txt = _PLANTILLA.format(tienda=tienda or "(sin datos de la tienda)", preguntas=PREGUNTAS_TXT).replace(
+        "<<GUION>>", guion or METODO_GENERICO)
+    if promos:
+        txt = txt.replace(LINEA_SIN_DESCUENTOS, LINEA_CON_PROMOS).replace(
+            "\nPREGUNTAS DISPONIBLES", "\nPROMOS VIGENTES (las únicas que existen; cifras con promocion_vigente):\n"
+            + promos + "\n\nPREGUNTAS DISPONIBLES", 1)
+    return txt
+
+
+# Sin conocimiento de la tienda: el de siempre (seed/tienda.md y seed/speech.md), armado una sola vez.
+SISTEMA = _sistema(TIENDA, SPEECH)
+
+
+def sistema_para(conoc) -> str:
+    """El sistema de ESTE turno. Si JMD Ventas mandó políticas, sustituyen a seed/tienda.md; si mandó un guion, sustituye
+    a seed/speech.md (los marcadores «## Paso N» siguen valiendo para `_paso_guion`); con promos vigentes, la veda de
+    descuentos se cambia por el bloque de promos. Sin nada de eso, SISTEMA tal cual (15-10-2026)."""
+    from .. import conocimiento
+    if conoc is None:
+        return SISTEMA
+    tienda, guion = conocimiento.texto_tienda(conoc), conocimiento.texto_guion(conoc)
+    vig = conocimiento.vigentes(conoc)
+    if not (tienda or guion or vig):
+        return SISTEMA
+    promos = "\n".join("- " + conocimiento.linea_promo(p) for p in vig)
+    return _sistema(tienda or TIENDA, guion or SPEECH, promos)
 
 
 def _resumen_ficha(f: dict) -> str:
@@ -102,9 +137,10 @@ def _resumen_ficha(f: dict) -> str:
 
 
 def construir(ficha: dict, historial: list, mensaje: str, canal: str = "", hecho: str = "",
-              cliente: str = "", pago: bool = False) -> list[dict]:
+              cliente: str = "", pago: bool = False, conoc=None) -> list[dict]:
     """Los mensajes para el LLM: sistema + historial + el mensaje nuevo. `pago`: el pedido ya está confirmado y
-    se le pasan los datos de pago (seed/pago.md) para que los dé tal cual."""
+    se le pasan los datos de pago (seed/pago.md) para que los dé tal cual. `conoc`: conocimiento de la tienda (políticas,
+    guion y promos de JMD Ventas); None = seed."""
     hist = []
     for t in (historial or [])[-24:]:
         rol = "assistant" if getattr(t, "rol", "") != "cliente" else "user"
@@ -113,7 +149,7 @@ def construir(ficha: dict, historial: list, mensaje: str, canal: str = "", hecho
     usuario = (f"FICHA DE LA CONVERSACIÓN: {_resumen_ficha(ficha)}\n\n"
                + (f"NOMBRE DE LA CLIENTA (de WhatsApp): {nombre}\n\n" if nombre else "")
                + f"MENSAJE NUEVO DE LA CLIENTA: {mensaje}")
-    msgs = [{"role": "system", "content": SISTEMA}] + hist + [{"role": "user", "content": usuario}]
+    msgs = [{"role": "system", "content": sistema_para(conoc)}] + hist + [{"role": "user", "content": usuario}]
     if pago and PAGO:
         msgs.append({"role": "system", "content": "EL PEDIDO YA ESTÁ CONFIRMADO. DATOS DE PAGO (dalos tal cual cuando toque "
                      "el paso 9 del guion o ella los pida):\n" + PAGO})
