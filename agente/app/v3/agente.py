@@ -11,7 +11,7 @@ import re
 import time
 
 from .. import colecciones, colores, conocimiento, ficha_producto, fotos_color, memoria, nombres, precios
-from . import cliente_llm, ficha as ficha_mod, plantillas, prompt, validador
+from . import cliente_llm, ficha as ficha_mod, plantillas, prompt, prospectos, validador
 from .herramientas import Recolector
 
 log = logging.getLogger("agente.v3")
@@ -114,10 +114,33 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
 
     # 1. Extracción determinista (lo que la clienta ya dijo) y la pregunta pendiente.
     antes = dict(f.get("sabemos") or {})      # para notar un cambio de idea (prenda, color)
+    # «¿ya o lo coordinamos en diciembre?» (prospectos, octubre de 2026): «mejor en diciembre» NO es la fecha del evento.
+    cfg_pros = prospectos.config(req)
+    coord_pend = f.get("pendiente") == "coordinar"
+    if coord_pend:
+        f["pendiente"] = ""
     lectura = memoria.leer(f, mensaje, ahora=memoria.ahora_lima())
     f["etapa"] = _etapa(f, lectura)
     # Temperatura (fría / tibia / caliente) en cada turno: el bot Go la mira para avisar de una clienta caliente.
     dudas_nuevas = _temperatura(f, mensaje, lectura)
+    hoy = memoria.ahora_lima().date()
+    if coord_pend and cfg_pros:
+        decision = prospectos.leer_respuesta(mensaje)
+        if decision:
+            for k in ("fecha", "fecha_iso"):        # la fecha del evento no cambia con «en diciembre»
+                if antes.get(k):
+                    f["sabemos"][k] = antes[k]
+            if decision == "despues":
+                base = prospectos.aviso(f["sabemos"], cfg_pros, hoy)
+                fa = prospectos.fecha_de_mes(mensaje, base, prospectos._evento(f["sabemos"]), hoy) if base else None
+                if fa:
+                    prospectos.anotar(f, "despues", fa, memoria.ahora_lima())
+                    memoria.temperatura(f, hoy)
+                    log.info("V3 prospecto: coordinar el %s", fa)
+                    return _respuesta(f, prospectos.cierre(fa, getattr(req, "cliente", "")), "responder", [], None,
+                                      _traza("", [], ["plantilla:prospecto"], 0, _ms(t0)), req)
+            else:
+                prospectos.anotar(f, "ahora", None, memoria.ahora_lima())
 
     # 2. Enrutador barato.
     if RE_ASESORA.search(mensaje):
@@ -146,6 +169,24 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     promo_q = bool(conocimiento.vigentes(conoc)) and conocimiento.pregunta_promo(mensaje)
     if faq:
         log.info("V3 FAQ de la tienda: %s (%.3f)", faq["faq"]["id"], faq["score"])
+    # Bienvenida por anuncio (Ajustes → «Bienvenida por anuncio»): presentación, foto del modelo, garantía y colores/tallas.
+    if not _bots(hist) and not en_pago and not foto_hecho and getattr(req, "bienvenida_anuncio", False) \
+            and (getattr(req, "desde_anuncio", False) or getattr(req, "anuncio", "")):
+        res = _bienvenida_anuncio(f, req, fichas, consultar_stock, pie, conoc, t0)
+        if res:
+            return res
+    # «Ver tallas» (el botón de la bienvenida o escrito así, solo): las tallas con stock del modelo en foco, sin LLM.
+    if not en_pago and not foto_hecho and prospectos.RE_VER_TALLAS.match(memoria._plano(mensaje)) and f.get("producto"):
+        txt = _tallas_en_foco(f, fichas, consultar_stock)
+        if txt:
+            return _respuesta(f, txt, "responder", [], None, _traza("", [], ["plantilla:tallas"], 0, _ms(t0)), req)
+    # Evento lejano: «¿lo dejamos listo ya o lo coordinamos a <mes>?» una vez (prospectos; si ella preguntó algo, después).
+    if not foto_hecho and "?" not in mensaje and not faq and not promo_q:
+        fa = prospectos.toca_preguntar(f, cfg_pros, hoy, en_pago)
+        if fa:
+            log.info("V3 prospecto: pregunta (aviso %s)", fa)
+            return _respuesta(f, prospectos.pregunta(f, fa, getattr(req, "cliente", "")), "responder", [], None,
+                              _traza("", [], ["plantilla:prospecto"], 0, _ms(t0)), req)
     # 2a. Pide el catálogo o ver todo: el enlace de LA SECCIÓN que pide con su captura (14-10-2026, como la tienda).
     if not en_pago and not foto_hecho and colecciones.pide_catalogo(mensaje):
         res = _catalogo(f, mensaje, fichas, hist, req, t0)
@@ -289,6 +330,9 @@ def conversar(req, fichas, consultar_stock, pie=None, permitir_reserva: bool = F
     for d in dudas_nuevas:
         if d in TEMOR_HECHO:
             hecho = (hecho + "\n" + TEMOR_HECHO[d]).strip()
+    pres = "" if pago_ok else _hecho_presupuesto(f, req, rec.fichas)
+    if pres:
+        hecho = (hecho + "\n" + pres).strip()
     if "talla" in dudas_nuevas and not rec._pide_modelos():
         rec.bloquear_fotos = True          # miedo a que no le quede: se le contesta, no se le cambia de prenda
     # El precio de un modelo se dice una vez: al cambiar de color no se repite, salvo que lo pregunte (15-10-2026).
@@ -1428,3 +1472,85 @@ def _etapa(f: dict, lectura: dict) -> str:
 
 def _ms(t0: float) -> int:
     return int((time.time() - t0) * 1000)
+
+
+def _codigo_anuncio(req, fichas) -> str:
+    """El modelo del anuncio: el que nombra su título; si no nombra ninguno, el de la campaña (KD_PRODUCTO_DEMO)."""
+    from .. import venta
+    vivos = {x.codigo.upper() for x in fichas}
+    for c in _nombradas(getattr(req, "anuncio", "") or "", fichas):
+        if c in vivos:
+            return c
+    demo = (venta.PRODUCTO_DEMO or "").upper()
+    return demo if demo in vivos else ""
+
+
+def _bienvenida_anuncio(f: dict, req, fichas, consultar_stock, pie, conoc, t0) -> dict | None:
+    cod = _codigo_anuncio(req, fichas)
+    if not cod:
+        return None
+    rec = Recolector(fichas, consultar_stock, pie=pie, mostrados=f.get("mostrados") or [], contesta_cual=True)
+    rec.poner_conocimiento(conoc)
+    rec.ejecutar("enviar_fotos", {"codigos": [cod]})
+    if not rec.fotos:
+        return None
+    ficha = rec._ficha(cod)
+    f["producto"] = cod
+    if cod not in f.setdefault("mostrados", []):
+        f["mostrados"].append(cod)
+    f["etapa"] = "seguimiento"
+    f["pendiente"] = ""
+    texto = prospectos.bienvenida(getattr(req, "cliente", ""), ficha.nombre, prospectos.garantia(conoc))
+    log.info("V3 bienvenida por anuncio: %s", cod)
+    res = _respuesta(f, texto, "responder", rec.fotos[:1], None, _traza("", [], ["plantilla:bienvenida"], 0, _ms(t0)), req)
+    res["respuestas_rapidas"] = [{"label": "Ver colores"}, {"label": "Ver tallas"}]
+    if getattr(req, "precio_al_llegar_por_anuncio", False):
+        res["precio_al_llegar"] = True     # main no esconde el precio de esta foto aunque la tienda oculte precios
+    return res
+
+
+def _tallas_en_foco(f: dict, fichas, consultar_stock) -> str:
+    cod = (f.get("producto") or "").upper()
+    ficha = next((x for x in fichas if x.codigo.upper() == cod), None)
+    if ficha is None:
+        return ""
+    try:
+        online = ((consultar_stock([cod]) or {}).get(cod) or {}).get("online") or {}
+    except Exception:
+        online = {}
+    orden = ["XS", "S", "M", "L", "XL", "XXL", "2XL"]
+    hay = sorted([t for t, n in online.items() if (n or 0) > 0], key=lambda t: orden.index(t) if t in orden else 99)
+    plantillas._marca(f, "talla")
+    if not hay:
+        return f"Por ahora el {ficha.nombre} está agotado en todas las tallas 😔 ¿Te muestro uno parecido?"
+    lista = hay[0] if len(hay) == 1 else ", ".join(hay[:-1]) + " y " + hay[-1]
+    return f"El {ficha.nombre} está disponible en talla{'s' if len(hay) > 1 else ''} {lista} 😊 ¿Cuál es la tuya?"
+
+
+def _hecho_presupuesto(f: dict, req, fichas) -> str:
+    """Ajustes → «Presupuesto» (octubre de 2026, Luis: «hago consultas para no perder mi tiempo»). Después de conocer la
+    ocasión y antes de recomendar, UNA pregunta amable por el rango de presupuesto; con el presupuesto ya dicho y por
+    debajo de todo el catálogo, se le dice con cariño (el descarte), sin insistir."""
+    if not getattr(req, "preguntar_presupuesto", False):
+        return ""
+    sab = f.get("sabemos") or {}
+    if not sab.get("ocasion") or f.get("etapa") not in ("", "prospeccion", "seguimiento"):
+        return ""
+    pres = sab.get("presupuesto")
+    if not pres:
+        if "presupuesto" in (f.get("preguntado") or []) or f.get("mostrados"):
+            return ""
+        f.setdefault("preguntado", []).append("presupuesto")
+        return ("PREGUNTA DE PRESUPUESTO (la tienda la pide): en este mensaje, como única pregunta y con cariño, pregúntale si "
+                "tiene un rango de presupuesto en mente («¿Tienes un rango en mente? Así te muestro lo que mejor te queda 😊»). "
+                "Primero escucha y resuelve; no hables de precios todavía.")
+    try:
+        tope = float(pres)
+    except (TypeError, ValueError):
+        return ""
+    precios_ = [x.precio for x in fichas if isinstance(getattr(x, "precio", None), (int, float)) and x.precio > 0]
+    if precios_ and tope < min(precios_):
+        return (f"SU PRESUPUESTO (S/ {tope:g}) está por debajo de nuestros precios (desde S/ {min(precios_):g}): díselo con "
+                "cariño y sin rodeos, ofrécele lo más cercano a su presupuesto y no insistas.")
+    return ""
+

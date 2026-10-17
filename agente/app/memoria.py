@@ -36,7 +36,9 @@ except Exception:  # noqa: BLE001
     LIMA = _dt.timezone(_dt.timedelta(hours=-5), "America/Lima")
 
 CAMPOS = ("ocasion", "horario", "fecha", "fecha_iso", "prenda", "talla", "estatura", "color", "presupuesto", "envio",
-          "ciudad", "le_gusto", "cita", "nombre", "estilo", "para_quien")
+          "ciudad", "le_gusto", "cita", "nombre", "estilo", "para_quien",
+          # Prospectos a futuro (app/v3/prospectos.py): «ahora» | «despues», la fecha del aviso y cuándo lo decidió.
+          "coordinar", "coordinar_en", "coordinar_marca")
 TEMPERATURAS = ("frio", "tibio", "caliente")
 
 
@@ -154,6 +156,8 @@ ESPERA = {
     "foto": "la foto del modelo", "que_busca": "que te cuente qué está buscando",
     # La redacta el código V2 con las opciones del RAG (desempate del reranker): puntual, no va en ORDEN.
     "aclarar": "cuál de las opciones le gusta más",
+    # Prospectos a futuro (app/v3/prospectos.py): «¿lo dejamos listo ya o lo coordinamos a <mes>?». No va en ORDEN.
+    "coordinar": "si lo quiere ya o prefiere coordinarlo más cerca de su evento",
 }
 PENDIENTES = set(ESPERA)
 # Pendientes que se resuelven con un dato de `sabemos`.

@@ -280,6 +280,11 @@ class ChatIn(BaseModel):
     conocimiento: dict | None = None
     # Precios solo si la clienta los pregunta (JMD Ventas → Ajustes, 15-10-2026; app/precios.py). False = como siempre.
     precios_solo_si_pregunta: bool = False
+    # Seguimiento y bienvenida (JMD Ventas, octubre de 2026; docs/SEGUIMIENTO_CONTRATO.md §7). Todo apagado por defecto.
+    bienvenida_anuncio: bool = False            # quien llega por un anuncio: presentación, foto, garantía, colores/tallas
+    precio_al_llegar_por_anuncio: bool = False  # esa foto lleva el precio aunque los precios se oculten
+    prospectos: dict | None = None              # {"desde_dias": 45, "aviso_dias": 30}: evento lejano → ¿ahora o más adelante?
+    preguntar_presupuesto: bool = False         # el bot pregunta un rango de presupuesto tras conocer la ocasión
 
 
 RE_NO_TEXTO = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\ud800-\udfff]")
@@ -2691,8 +2696,8 @@ def _sin_precios_si_toca(req, res: dict) -> dict:
     de la compra (pedido, resumen, pago) el precio va siempre. Además, siempre: el precio de un modelo se dice una vez
     (`precios.no_repetir`)."""
     res = _precio_una_vez(req, res)
-    if not getattr(req, "precios_solo_si_pregunta", False):
-        return res
+    if not getattr(req, "precios_solo_si_pregunta", False) or res.get("precio_al_llegar"):
+        return res      # sin la configuración, o la bienvenida por anuncio con precio (Ajustes: precio_al_llegar_por_anuncio)
     pedido = ((res.get("memoria") or {}).get("pedido") if isinstance(res.get("memoria"), dict) else None) or {}
     if res.get("accion") == "pedido" or precios.permitido(True, getattr(req, "mensaje", "") or "", getattr(req, "estado", ""),
                                                           res.get("etapa") or getattr(req, "etapa", ""), pedido):
@@ -2786,6 +2791,11 @@ class FotoIn(BaseModel):
     modo: str = ""
     conocimiento: dict | None = None   # igual que en /chat (JMD Ventas, 15-10-2026): pasa a V3 tal cual
     precios_solo_si_pregunta: bool = False   # igual que en /chat
+    # Seguimiento y bienvenida (JMD Ventas, octubre de 2026; docs/SEGUIMIENTO_CONTRATO.md §7). Todo apagado por defecto.
+    bienvenida_anuncio: bool = False            # quien llega por un anuncio: presentación, foto, garantía, colores/tallas
+    precio_al_llegar_por_anuncio: bool = False  # esa foto lleva el precio aunque los precios se oculten
+    prospectos: dict | None = None              # {"desde_dias": 45, "aviso_dias": 30}: evento lejano → ¿ahora o más adelante?
+    preguntar_presupuesto: bool = False         # el bot pregunta un rango de presupuesto tras conocer la ocasión
 
 
 PLANTILLA_FOTO = {
@@ -3070,7 +3080,8 @@ def _foto_con_v3(req: FotoIn, mem: dict, f, caso: str, vis, color_web: str, suge
                   desde_anuncio=req.desde_anuncio, anuncio=req.anuncio, version="v3", modo="activo", foto_hecho=hecho,
                   foto_codigo=f.codigo if caso in ("online", "sucursal", "agotado", "parecido", "look") else "",
                   foto_oferta=caso in ("parecido", "ninguno"), conocimiento=req.conocimiento,
-                  precios_solo_si_pregunta=req.precios_solo_si_pregunta)
+                  precios_solo_si_pregunta=req.precios_solo_si_pregunta, prospectos=req.prospectos,
+                  preguntar_presupuesto=req.preguntar_presupuesto)
     try:
         res = _v3_conversar(creq, permitir_reserva=False)
     except Exception as e:
