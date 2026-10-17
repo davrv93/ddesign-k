@@ -1,6 +1,7 @@
 import { $, component$, useSignal, useStore, useVisibleTask$, type QRL } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { titulo } from "~/lib/marca";
+import { u } from "~/lib/base";
 import { api, equipo, miSesion, type Miembro, type Sesion } from "~/lib/api";
 
 type Settings = Record<string, string>;
@@ -91,6 +92,9 @@ export default component$(() => {
         </section>
       )}
       {loaded.value && <ClientaCaliente s={s} soloLectura={soloLectura} save={save} />}
+      {loaded.value && <BienvenidaAnuncio s={s} soloLectura={soloLectura} save={save} />}
+      {loaded.value && <ProspectosFuturo s={s} soloLectura={soloLectura} save={save} />}
+      {loaded.value && <HorarioSeguimiento s={s} soloLectura={soloLectura} save={save} />}
       {yo.value && <Colores yo={yo.value} />}
       {yo.value && <Equipo yo={yo.value} />}
     </div>
@@ -184,6 +188,202 @@ const ClientaCaliente = component$<{ s: Settings; soloLectura: boolean; save: QR
     );
   },
 );
+
+type SeccionProps = { s: Settings; soloLectura: boolean; save: QRL<(patch: Settings) => Promise<void>> };
+
+/** Interruptor de un ajuste "true"/"false" con su explicación. */
+const Interruptor = component$<SeccionProps & { clave: string; label: string; hint: string; porDefecto?: boolean }>(
+  ({ s, soloLectura, save, clave, label, hint, porDefecto }) => (
+    <label class="setting">
+      <div class="grow">
+        <strong>{label}</strong>
+        <p class="muted small">{hint}</p>
+      </div>
+      <input
+        type="checkbox"
+        class="switch"
+        checked={porDefecto ? s[clave] !== "false" : s[clave] === "true"}
+        disabled={soloLectura}
+        onChange$={(_, el) => save({ [clave]: el.checked ? "true" : "false" })}
+      />
+    </label>
+  ),
+);
+
+// Bienvenida por anuncio (SEGUIMIENTO_CONTRATO §1): quien llega por un anuncio de Meta recibe presentación, foto del modelo,
+// garantía y «Ver colores / Ver tallas». La garantía no es un ajuste: es una fuente de tipo política con «garantía» en el
+// título o las etiquetas.
+const BienvenidaAnuncio = component$<SeccionProps>((props) => (
+  <section class="panel">
+    <div class="panel-head">
+      <h2>📣 Bienvenida por anuncio</h2>
+    </div>
+    <Interruptor
+      {...props}
+      clave="bienvenida_anuncio"
+      label="Dar la bienvenida a quien llega por un anuncio"
+      hint="El robot se presenta, manda la foto del modelo del anuncio, la garantía y los botones «Ver colores» y «Ver tallas»."
+    />
+    <Interruptor
+      {...props}
+      clave="precio_al_llegar_por_anuncio"
+      label="Mostrar el precio en esa foto"
+      hint="La foto de bienvenida lleva el precio aunque «Precios solo si la clienta los pregunta» esté encendido."
+    />
+    <p class="muted small">
+      El texto de la garantía sale de una fuente de tipo <b>política</b> cuyo título o etiquetas digan «garantía». Créala o
+      revísala en <a href={u("/fuentes?tab=guion")}>Fuentes → Guion y políticas</a>. Sin esa fuente, la bienvenida va sin garantía.
+    </p>
+  </section>
+));
+
+const DIAS_MIN = 1;
+const DIAS_MAX = 365;
+
+/** Campo numérico de días (1–365) que se guarda al salir si es válido. */
+const CampoDias = component$<SeccionProps & { clave: string; label: string; hint: string; porDefecto: string }>(
+  ({ s, soloLectura, save, clave, label, hint, porDefecto }) => {
+    const error = useSignal("");
+    const id = `dias-${clave}`;
+    return (
+      <div class="setting">
+        <div class="grow">
+          <label for={id}>
+            <strong>{label}</strong>
+          </label>
+          <p class="muted small" id={`${id}-hint`}>
+            {hint}
+          </p>
+          {error.value && (
+            <p class="form-error small" role="alert">
+              {error.value}
+            </p>
+          )}
+        </div>
+        <input
+          id={id}
+          type="number"
+          min={DIAS_MIN}
+          max={DIAS_MAX}
+          step="1"
+          class="num"
+          inputMode="numeric"
+          aria-describedby={`${id}-hint`}
+          aria-invalid={error.value ? "true" : undefined}
+          value={s[clave] || porDefecto}
+          disabled={soloLectura}
+          onChange$={(_, el) => {
+            const n = Number(el.value);
+            if (!Number.isInteger(n) || n < DIAS_MIN || n > DIAS_MAX) {
+              error.value = `Escribe un número de días entre ${DIAS_MIN} y ${DIAS_MAX}.`;
+              return;
+            }
+            error.value = "";
+            if (String(n) !== s[clave]) save({ [clave]: String(n) });
+          }}
+        />
+      </div>
+    );
+  },
+);
+
+// Prospectos a futuro y presupuesto (§1): con un evento lejano el robot pregunta «¿ahora o coordinamos en <mes>?» y, si
+// elige más adelante, la clienta pasa a la etapa «Más adelante» con una tarea para volver a escribirle.
+const ProspectosFuturo = component$<SeccionProps>((props) => {
+  const { s } = props;
+  const desde = s.prospecto_desde_dias || "45";
+  const aviso = s.prospecto_aviso_dias || "30";
+  return (
+    <section class="panel">
+      <div class="panel-head">
+        <h2>🗓 Prospectos a futuro</h2>
+      </div>
+      <Interruptor
+        {...props}
+        clave="prospectos_habilitado"
+        label="Preguntar si compra ahora o más adelante"
+        hint={`Si el evento de la clienta está a ${desde} días o más, el robot le pregunta si lo ve ahora o lo coordinan más cerca de la fecha. Si elige después, pasa a la etapa «Más adelante» y queda una tarea para escribirle ${aviso} días antes.`}
+      />
+      <CampoDias
+        {...props}
+        clave="prospecto_desde_dias"
+        porDefecto="45"
+        label="Evento lejano desde (días)"
+        hint="Desde cuántos días antes del evento se le hace la pregunta."
+      />
+      <CampoDias
+        {...props}
+        clave="prospecto_aviso_dias"
+        porDefecto="30"
+        label="Volver a escribirle (días antes del evento)"
+        hint="La tarea de seguimiento vence ese día."
+      />
+      <div class="panel-head fila-sub">
+        <h2>💰 Presupuesto</h2>
+      </div>
+      <Interruptor
+        {...props}
+        clave="preguntar_presupuesto"
+        label="Preguntar el presupuesto"
+        hint="Cuando ya sabe la ocasión, el robot pregunta qué rango de precio tiene en mente para recomendar mejor."
+      />
+    </section>
+  );
+});
+
+const HORA = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+// Horario de seguimiento (§1): hora de Lima en la que pueden salir los pasos de las secuencias ("HH:MM-HH:MM").
+const HorarioSeguimiento = component$<SeccionProps>(({ s, soloLectura, save }) => {
+  const [ini0, fin0] = (s.seguimiento_horario || "08:00-21:00").split("-");
+  const ini = useSignal(HORA.test(ini0 ?? "") ? ini0 : "08:00");
+  const fin = useSignal(HORA.test(fin0 ?? "") ? fin0 : "21:00");
+  const error = useSignal("");
+
+  const guardar = $(async () => {
+    if (!HORA.test(ini.value) || !HORA.test(fin.value)) {
+      error.value = "Elige la hora de inicio y la de fin.";
+      return;
+    }
+    if (ini.value >= fin.value) {
+      error.value = "La hora de inicio debe ser antes que la de fin.";
+      return;
+    }
+    error.value = "";
+    const v = `${ini.value}-${fin.value}`;
+    if (v !== s.seguimiento_horario) await save({ seguimiento_horario: v });
+  });
+
+  return (
+    <section class="panel">
+      <div class="panel-head">
+        <h2>⏰ Horario de seguimiento</h2>
+        <a class="small" href={u("/seguimiento")}>
+          Ver secuencias →
+        </a>
+      </div>
+      <p class="muted small">
+        Los mensajes de seguimiento solo salen en este horario (hora de Lima). Lo que toque fuera de él espera a la mañana
+        siguiente; no se pierde.
+      </p>
+      <div class="horario">
+        <label>
+          Desde
+          <input type="time" value={ini.value} disabled={soloLectura} onChange$={(_, el) => ((ini.value = el.value), guardar())} />
+        </label>
+        <label>
+          Hasta
+          <input type="time" value={fin.value} disabled={soloLectura} onChange$={(_, el) => ((fin.value = el.value), guardar())} />
+        </label>
+      </div>
+      {error.value && (
+        <p class="form-error small" role="alert">
+          {error.value}
+        </p>
+      )}
+    </section>
+  );
+});
 
 // Colores: a qué grupo va cada color de los productos para el guion de noche del bot («¿Prefieres llamar un poco más la
 // atención, o buscas verte elegante, sofisticada y más discreta?»). Con la respuesta, el bot ofrece prendas en colores

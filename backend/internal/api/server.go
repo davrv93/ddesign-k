@@ -56,6 +56,7 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("GET /api/public/stock/{code}", s.publicStock)
 	mux.Handle("GET /media/", s.media())
 	mux.HandleFunc("POST /webhook/evolution/{secret}", s.webhook)
+	s.rutasPublicasSeguimiento(mux) // API oficial de WhatsApp y números secundarios (seguimiento.go)
 	// Interna: el agente avisa los turnos del chat web para el CRM. Solo desde la red de Docker (el nginx del panel
 	// la bloquea) y con CRM_EVENT_SECRET.
 	mux.HandleFunc("POST /api/internal/crm/evento", s.crmEvento)

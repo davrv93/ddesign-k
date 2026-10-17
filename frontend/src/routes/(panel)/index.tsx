@@ -61,8 +61,8 @@ export default component$(() => {
   const mon = data.value?.moneda ?? "S/";
   const mes = new Date().toLocaleDateString("es-PE", { month: "long", year: "numeric" });
 
-  // Embudo: cuántas llegaron al menos a cada etapa (las perdidas cuentan en la base, no avanzan).
-  const embudo = ETAPAS.filter((e) => e.key !== "perdida");
+  // Embudo: cuántas llegaron al menos a cada etapa (las perdidas y las de «más adelante» cuentan en la base, no avanzan).
+  const embudo = ETAPAS.filter((e) => e.key !== "perdida" && e.key !== "mas_adelante");
   const conEtapa = d ? ETAPAS.reduce((n, e) => n + (d.embudo[e.key] ?? 0), 0) : 0;
   const llegaron = (i: number) => (d ? embudo.slice(i).reduce((n, e) => n + (d.embudo[e.key] ?? 0), 0) : 0);
   const pct = (n: number, base: number) => (base > 0 ? Math.round((n / base) * 100) : 0);
@@ -189,7 +189,7 @@ export default component$(() => {
                 </ul>
               )}
               <p class="muted small funnel-foot">
-                Conversión a venta: <b>{pct(d.embudo.venta_confirmada ?? 0, conEtapa)}%</b> · Perdidas: {d.embudo.perdida ?? 0} · Sin etapa:{" "}
+                Conversión a venta: <b>{pct(d.embudo.venta_confirmada ?? 0, conEtapa)}%</b> · Más adelante: {d.embudo.mas_adelante ?? 0} · Perdidas: {d.embudo.perdida ?? 0} · Sin etapa:{" "}
                 {d.embudo[""] ?? 0}
               </p>
             </section>

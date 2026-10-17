@@ -147,7 +147,8 @@ func (b *Bot) avisarSiCaliente(ctx context.Context, conv *store.Conversation, an
 	b.hito(ctx, conv, "🔥 Clienta caliente: "+firstNonEmpty(m.Motivo, "lista para comprar"))
 	b.Notify("alertas")
 	numero := soloDigitos(b.store.Setting(ctx, store.SettingAlertaWhatsApp, ""))
-	if numero == "" || b.evo == nil {
+	aviso := b.mensajeroAvisos(ctx)
+	if numero == "" || aviso == nil {
 		return
 	}
 	texto := textoAlerta(b.customerName(conv), conv.Customer.Phone, m.Motivo, res, b.enlaceConversacion(conv.ID))
@@ -155,7 +156,7 @@ func (b *Bot) avisarSiCaliente(ctx context.Context, conv *store.Conversation, an
 	go func() {
 		c, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
-		if _, err := b.evo.SendText(c, numero, texto); err != nil {
+		if _, err := aviso.SendText(c, numero, texto); err != nil {
 			log.Printf("bot: aviso de clienta caliente a •••%s: %v", ultimos(numero, 3), err)
 			return
 		}

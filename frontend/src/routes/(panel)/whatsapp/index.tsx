@@ -2,6 +2,7 @@ import { $, component$, useOnWindow, useSignal, useVisibleTask$ } from "@builder
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { titulo } from "~/lib/marca";
 import { api } from "~/lib/api";
+import { NumerosWhatsApp } from "~/components/numeros";
 
 interface Status {
   available: boolean;
@@ -232,6 +233,8 @@ export default component$(() => {
       )}
 
       {error.value && <p class="form-error">{error.value}</p>}
+
+      <NumerosWhatsApp />
 
       <section class="panel muted small">
         <h2>¿Qué hace el bot?</h2>

@@ -63,6 +63,11 @@ type Request struct {
 	Conocimiento any `json:"conocimiento,omitempty"`
 	// PreciosSoloSiPregunta: la tienda quiere que el robot diga precios solo cuando la clienta los pregunta (Ajustes).
 	PreciosSoloSiPregunta bool `json:"precios_solo_si_pregunta,omitempty"`
+	// Seguimiento y bienvenida (octubre de 2026, docs/SEGUIMIENTO_CONTRATO.md §7). Todo apagado por defecto.
+	BienvenidaAnuncio    bool              `json:"bienvenida_anuncio,omitempty"`
+	PrecioAlLlegar       bool              `json:"precio_al_llegar_por_anuncio,omitempty"`
+	Prospectos           *ProspectosConfig `json:"prospectos,omitempty"`
+	PreguntarPresupuesto bool              `json:"preguntar_presupuesto,omitempty"`
 }
 
 // Perfil de una clienta que ya compró: el agente prellena la talla y puede mencionarlo con naturalidad.
@@ -140,6 +145,11 @@ type PhotoRequest struct {
 	// Igual que en Request.
 	Conocimiento          any  `json:"conocimiento,omitempty"`
 	PreciosSoloSiPregunta bool `json:"precios_solo_si_pregunta,omitempty"`
+	// Seguimiento y bienvenida (octubre de 2026, docs/SEGUIMIENTO_CONTRATO.md §7). Todo apagado por defecto.
+	BienvenidaAnuncio    bool              `json:"bienvenida_anuncio,omitempty"`
+	PrecioAlLlegar       bool              `json:"precio_al_llegar_por_anuncio,omitempty"`
+	Prospectos           *ProspectosConfig `json:"prospectos,omitempty"`
+	PreguntarPresupuesto bool              `json:"preguntar_presupuesto,omitempty"`
 }
 
 // PhotoResult dice qué tan seguro está el agente de haber encontrado la prenda.
@@ -178,4 +188,10 @@ func (c *Client) post(ctx context.Context, path string, req any) (*Reply, error)
 		return nil, fmt.Errorf("agente: %w", err)
 	}
 	return &r, nil
+}
+
+// ProspectosConfig: desde cuántos días el evento es lejano y cuántos días antes se le vuelve a escribir.
+type ProspectosConfig struct {
+	DesdeDias int `json:"desde_dias"`
+	AvisoDias int `json:"aviso_dias"`
 }

@@ -19,6 +19,7 @@ type outJob struct {
 	image   string // URL; si falla se envía sólo el texto
 	caption string
 	poll    *pollJob
+	canal   string // por dónde sale ("" principal, "cloud", "n:<id>"; canales.go)
 }
 
 type pollJob struct {
@@ -82,22 +83,34 @@ func (b *Bot) send(j outJob) {
 	defer cancel()
 	var id string
 	var err error
+	m := b.mensajero(j.canal)
+	if m == nil {
+		log.Printf("bot: sin número de WhatsApp para %s (canal %q)", j.to, j.canal)
+		b.markDelivery(j.msgID, "", "failed")
+		return
+	}
 	if j.poll != nil {
-		id, err = b.evo.SendPoll(ctx, j.to, j.poll.question, j.poll.options)
-		if err != nil {
+		id, err = m.SendPoll(ctx, j.to, j.poll.question, j.poll.options)
+		if err != nil && j.canal == CanalCloud {
+			// Por la API oficial los botones SON el mensaje: si fallan, sale el texto solo.
+			log.Printf("bot: botones a %s fallaron (%v); se envía el texto", j.to, err)
+			ctx2, cancel2 := context.WithTimeout(context.Background(), sendTimeout)
+			id, err = m.SendText(ctx2, j.to, j.poll.question)
+			cancel2()
+		} else if err != nil {
 			// La pregunta ya salió en el texto anterior: la encuesta es un extra; si falla, no se insiste.
 			log.Printf("bot: encuesta a %s falló (%v); queda la pregunta escrita", j.to, err)
 		}
 	} else if j.image != "" {
-		id, err = b.evo.SendImage(ctx, j.to, j.image, j.caption)
+		id, err = m.SendImage(ctx, j.to, j.image, j.caption)
 		if err != nil {
 			log.Printf("bot: imagen a %s falló (%v); se envía el texto", j.to, err)
 			ctx2, cancel2 := context.WithTimeout(context.Background(), sendTimeout)
-			id, err = b.evo.SendText(ctx2, j.to, j.caption)
+			id, err = m.SendText(ctx2, j.to, j.caption)
 			cancel2()
 		}
 	} else {
-		id, err = b.evo.SendText(ctx, j.to, j.text)
+		id, err = m.SendText(ctx, j.to, j.text)
 	}
 	status := "sent"
 	if err != nil {
@@ -123,6 +136,9 @@ func (b *Bot) queueMessage(ctx context.Context, conv *store.Conversation, m *sto
 		return err
 	}
 	j.msgID, j.to = m.ID, conv.Customer.JID
+	if j.canal == "" {
+		j.canal = b.canalDe(conv)
+	}
 	b.enqueue(j)
 	b.Notify("conversations")
 	return nil

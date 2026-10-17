@@ -3,7 +3,10 @@ import type { DocumentHead } from "@builder.io/qwik-city";
 import { titulo } from "~/lib/marca";
 import {
   api,
+  detenerSeguimiento,
   fichaConversacion,
+  origenConversacion,
+  seguimientoConversacion,
   fuentesDeConversacion,
   miSesion,
   type Conversation,
@@ -11,10 +14,12 @@ import {
   type FuenteUsada,
   type Message,
   type Order,
+  type OrigenConversacion,
+  type SeguimientoConversacion,
 } from "~/lib/api";
 import { LoQueSabemos } from "~/components/sabemos";
 import { Confirmar } from "~/components/confirmar";
-import { customerName, money, phoneLabel, STATUS, timeAgo, timeLabel, waText } from "~/lib/format";
+import { cuandoTexto, customerName, money, phoneLabel, STATUS, timeAgo, timeLabel, waText } from "~/lib/format";
 import { u } from "~/lib/base";
 
 interface Thread {
@@ -65,6 +70,10 @@ export default component$(() => {
   const usadas = useSignal<FuenteUsada[]>([]);
   // Lo que el robot sabe de la clienta (temperatura y los ocho datos que la tienda quiere descubrir).
   const ficha = useSignal<FichaConversacion | null>(null);
+  // Secuencia de seguimiento en curso (paso, próximo envío) y de qué anuncio llegó la clienta.
+  const seguimiento = useSignal<SeguimientoConversacion | null>(null);
+  const origen = useSignal<OrigenConversacion | null>(null);
+  const deteniendo = useSignal(false);
 
   const loadList = $(async () => {
     convs.value = await api<Conversation[]>("/api/conversations");
@@ -72,6 +81,17 @@ export default component$(() => {
       derivadas.value = await api<Derivada[]>("/api/derivadas");
     } catch {
       derivadas.value = [];
+    }
+  });
+
+  const loadSeguimiento = $(async () => {
+    const id = current.value;
+    if (id == null) return;
+    try {
+      const s = await seguimientoConversacion(id);
+      if (current.value === id) seguimiento.value = s && s.secuencia_id ? s : null;
+    } catch {
+      if (current.value === id) seguimiento.value = null;
     }
   });
 
@@ -96,6 +116,14 @@ export default component$(() => {
       .catch(() => {
         if (current.value === id) ficha.value = null;
       });
+    loadSeguimiento();
+    origenConversacion(id)
+      .then((o) => {
+        if (current.value === id) origen.value = o && (o.ad_id || o.titular) ? o : null;
+      })
+      .catch(() => {
+        if (current.value === id) origen.value = null;
+      });
     setTimeout(() => scroller.value?.scrollTo({ top: scroller.value.scrollHeight }), 30);
   });
 
@@ -104,6 +132,8 @@ export default component$(() => {
     thread.value = null;
     usadas.value = [];
     ficha.value = null;
+    seguimiento.value = null;
+    origen.value = null;
     history.replaceState(null, "", `?c=${id}`);
     await loadThread();
   });
@@ -137,6 +167,7 @@ export default component$(() => {
       }
       if (topic === "orders") await loadThread();
       if (topic === "tareas") await loadList();
+      if (topic === "seguimiento") await loadSeguimiento();
     }),
   );
 
@@ -153,6 +184,20 @@ export default component$(() => {
       error.value = (e as Error).message;
     } finally {
       sending.value = false;
+    }
+  });
+
+  const detener = $(async () => {
+    if (current.value == null) return;
+    deteniendo.value = true;
+    error.value = "";
+    try {
+      await detenerSeguimiento(current.value);
+      await loadSeguimiento();
+    } catch (e) {
+      error.value = (e as Error).message;
+    } finally {
+      deteniendo.value = false;
     }
   });
 
@@ -285,6 +330,41 @@ export default component$(() => {
                     {f.tipo === "promo" ? "🏷" : "📚"} Respondió con: {f.titulo}
                   </a>
                 ))}
+              </div>
+            )}
+
+            {(seguimiento.value || origen.value) && (
+              <div class="thread-seg">
+                {origen.value && (
+                  <span class="chip fu-usada" title={origen.value.llego_en ? `Llegó ${timeAgo(origen.value.llego_en)}` : undefined}>
+                    📣 Llegó por anuncio: {origen.value.titular || origen.value.ad_id}
+                  </span>
+                )}
+                {seguimiento.value && (
+                  <span class={["seg-estado", seguimiento.value.estado]}>
+                    ↻{" "}
+                    {seguimiento.value.estado === "activo" || seguimiento.value.estado === "pausado" ? (
+                      <>
+                        <a href={u(`/seguimiento?s=${seguimiento.value.secuencia_id}`)} title={seguimiento.value.nombre}>
+                          Seguimiento
+                        </a>
+                        : paso {seguimiento.value.paso} de {seguimiento.value.total}
+                        {seguimiento.value.estado === "pausado"
+                          ? " · en pausa"
+                          : seguimiento.value.proximo_en
+                            ? ` · próximo ${cuandoTexto(seguimiento.value.proximo_en)}`
+                            : ""}
+                        <button type="button" class="link-btn" disabled={deteniendo.value} onClick$={detener}>
+                          {deteniendo.value ? "Deteniendo…" : "Detener"}
+                        </button>
+                      </>
+                    ) : (
+                      <span class="muted">
+                        Seguimiento {seguimiento.value.estado === "terminado" ? "terminado" : "detenido"} ({seguimiento.value.nombre})
+                      </span>
+                    )}
+                  </span>
+                )}
               </div>
             )}
 

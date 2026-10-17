@@ -26,6 +26,7 @@ import (
 	"github.com/davrv93/ddesign-k/backend/internal/config"
 	"github.com/davrv93/ddesign-k/backend/internal/evolution"
 	"github.com/davrv93/ddesign-k/backend/internal/store"
+	"github.com/davrv93/ddesign-k/backend/internal/whatsapp/cloud"
 )
 
 // reserveTTL es cuánto se aparta la talla mientras la clienta confirma el resumen.
@@ -60,12 +61,15 @@ type convContext struct {
 	// Memoria de la conversación (ver memoria.go): lo que ya sabemos de la clienta y la pregunta pendiente.
 	// La actualiza el agente; sobrevive a los reinicios del flujo, como Anuncio.
 	Memoria json.RawMessage `json:"memoria,omitempty"`
+	// Canal del último mensaje de la clienta ("" principal, "cloud", "n:<id>"): por ahí se le contesta (canales.go).
+	Canal string `json:"canal,omitempty"`
 }
 
 type Bot struct {
 	cfg   *config.Config
 	store *store.Store
-	evo   *evolution.Client
+	evo   Mensajero     // número principal (evolution-go); nil = sin WhatsApp por evolution
+	cloud *cloud.Client // número oficial (WhatsApp Cloud API); nil = sin él
 	ai    *ai.Client
 	// Agent atiende el texto libre (clasificador local + DeepSeek). nil = sólo Gemini.
 	Agent *agente.Client
@@ -79,10 +83,15 @@ type Bot struct {
 	outbox  map[string]chan outJob
 	pending sync.WaitGroup
 	conoc   cacheConocimiento // fuentes vigentes de la tienda (fuentes.go)
+	can     canales           // canal de cada conversación y números secundarios (canales.go)
 }
 
 func New(cfg *config.Config, st *store.Store, evo *evolution.Client, aic *ai.Client) *Bot {
-	return &Bot{cfg: cfg, store: st, evo: evo, ai: aic, Notify: func(string) {}, locks: map[string]*sync.Mutex{}, outbox: map[string]chan outJob{}}
+	b := &Bot{cfg: cfg, store: st, ai: aic, Notify: func(string) {}, locks: map[string]*sync.Mutex{}, outbox: map[string]chan outJob{}}
+	if evo != nil { // sin esto, un *evolution.Client nil dentro de la interfaz no es nil y revienta al enviar
+		b.evo = evo
+	}
+	return b
 }
 
 // lock serializa los mensajes de un mismo chat para no mezclar estados.
@@ -119,6 +128,9 @@ func (b *Bot) Handle(ctx context.Context, in *Incoming) {
 		return
 	}
 	conv.Customer = cust
+	if !in.FromMe {
+		b.recordarCanal(in.Chat, in.Canal) // se le contesta por donde escribió (canales.go)
+	}
 
 	msg := &store.Message{ConversationID: conv.ID, WAID: in.ID, Direction: "in", Kind: "text", Body: in.Text, Author: "cliente"}
 	var img *ai.Image
@@ -144,6 +156,7 @@ func (b *Bot) Handle(ctx context.Context, in *Incoming) {
 		msg.Direction, msg.Author = "out", "asesora"
 		_ = b.store.AddMessage(ctx, msg)
 		_ = b.store.IntervencionHumana(ctx, conv.ID, "", "respondió desde el celular")
+		_ = b.store.DetenerSeguimiento(ctx, conv.ID) // una persona tomó la conversación
 		b.registrarDPO(ctx, conv, in.Text)
 		if b.store.Setting(ctx, "pause_on_manual_reply", "true") == "true" && !conv.BotPaused {
 			_ = b.store.SetBotPaused(ctx, conv.ID, true)
@@ -155,6 +168,7 @@ func (b *Bot) Handle(ctx context.Context, in *Incoming) {
 	if err := b.store.AddMessage(ctx, msg); err != nil {
 		log.Printf("bot: guardar mensaje: %v", err)
 	}
+	b.alEntrar(ctx, conv, in) // seguimiento en pausa, «más adelante» se suelta, origen del anuncio (seguimiento.go)
 	b.Notify("conversations")
 	// CRM: lo que pase en este turno (hitos, pedido, etapa, memoria) sale en un solo evento al terminar, en segundo
 	// plano. Va también si el bot está en pausa: la clienta escribió y el lead lo refleja.
@@ -185,6 +199,7 @@ func (b *Bot) Handle(ctx context.Context, in *Incoming) {
 		in.Text = "hola"
 	}
 	b.step(ctx, conv, in, msg, img)
+	b.armarSeguimiento(ctx, conv) // si quedó esperando a la clienta con un modelo en foco (seguimiento.go)
 }
 
 // esReinicio: «reiniciar», «empezar de nuevo», «reset»… solo como mensaje entero.
@@ -231,7 +246,11 @@ func (b *Bot) imageBytes(ctx context.Context, in *Incoming) ([]byte, string, err
 	if len(in.RawMessage) == 0 {
 		return nil, "", errors.New("mensaje sin datos de imagen")
 	}
-	data, mime, err := b.evo.DownloadMedia(ctx, in.RawMessage)
+	m := b.mensajero(in.Canal)
+	if m == nil {
+		return nil, "", errors.New("sin número para descargar la imagen")
+	}
+	data, mime, err := m.DownloadMedia(ctx, in.RawMessage)
 	if err != nil {
 		return nil, "", err
 	}
@@ -334,6 +353,10 @@ func (b *Bot) step(ctx context.Context, conv *store.Conversation, in *Incoming, 
 		cc.Anuncio, cc.AnuncioTitle = true, firstNonEmpty(in.AdTitle, cc.AnuncioTitle)
 		b.setState(ctx, conv, conv.State, cc)
 	}
+	if cc.Canal != in.Canal {
+		cc.Canal = in.Canal
+		b.setState(ctx, conv, conv.State, cc)
+	}
 
 	// Comandos globales. Con agente, el saludo lo contesta él como una persona; el menú sigue a mano
 	// con «menu» o «0».
@@ -422,6 +445,9 @@ func (b *Bot) setState(ctx context.Context, conv *store.Conversation, state stri
 	// pedido cerrado) no lo borran.
 	if !cc.Anuncio && prev.Anuncio {
 		cc.Anuncio, cc.AnuncioTitle = true, prev.AnuncioTitle
+	}
+	if cc.Canal == "" {
+		cc.Canal = prev.Canal // el canal tampoco se pierde con un reinicio del flujo
 	}
 	if cc.Desde == 0 {
 		cc.Desde = prev.Desde // el inicio de la sesión también sobrevive a los reinicios del flujo
@@ -1278,7 +1304,9 @@ func (b *Bot) askAgent(ctx context.Context, conv *store.Conversation, cc *convCo
 		DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
 		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc),
 		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo, ColoresGrupos: b.coloresGrupos(ctx),
-		Conocimiento: b.conocimientoReq(ctx), PreciosSoloSiPregunta: b.preciosOcultos(ctx)}
+		Conocimiento: b.conocimientoReq(ctx), PreciosSoloSiPregunta: b.preciosOcultos(ctx),
+		BienvenidaAnuncio: b.ajusteSi(ctx, store.SettingBienvenidaAnuncio), PrecioAlLlegar: b.ajusteSi(ctx, store.SettingPrecioAlLlegar),
+		Prospectos: b.prospectosCfg(ctx), PreguntarPresupuesto: b.ajusteSi(ctx, store.SettingPreguntarPresupuest)}
 	if conv.State != stIdle && cc.ProductID > 0 {
 		if p, err := b.store.GetProduct(ctx, cc.ProductID); err == nil {
 			req.Producto = p.Code
@@ -1304,8 +1332,9 @@ func (b *Bot) guardarMemoria(ctx context.Context, conv *store.Conversation, cc *
 	antes := memoriaActual(conv, cc)
 	cc.Memoria = r.Memoria
 	b.setState(ctx, conv, conv.State, *cc)
-	b.registrarCita(ctx, conv, cc, antes, r.Memoria) // cita para probarse nueva: al tablero, para la asesora
-	b.avisarSiCaliente(ctx, conv, antes, r.Memoria)  // pasó a caliente: alerta en el panel y WhatsApp a la tienda
+	b.registrarCita(ctx, conv, cc, antes, r.Memoria)  // cita para probarse nueva: al tablero, para la asesora
+	b.avisarSiCaliente(ctx, conv, antes, r.Memoria)   // pasó a caliente: alerta en el panel y WhatsApp a la tienda
+	b.registrarProspecto(ctx, conv, antes, r.Memoria) // eligió coordinar más adelante: etapa y tarea (prospectos.go)
 }
 
 func (b *Bot) agentReply(ctx context.Context, conv *store.Conversation, cc *convContext, raw string) bool {
@@ -1371,15 +1400,44 @@ func (b *Bot) sendAgentText(ctx context.Context, conv *store.Conversation, r *ag
 	if n := len(partes); len(r.Sugerencias) > 0 && n > 1 && strings.Contains(partes[n-1], "?") {
 		cierre, partes = partes[n-1], partes[:n-1]
 	}
-	// Sin encuestas (13-10-2026, pedido del usuario): la pregunta va en el texto y la clienta contesta escribiendo.
-	for _, parte := range partes {
+	// Sin encuestas (13-10-2026, pedido del usuario): la pregunta va en el texto y la clienta contesta escribiendo. Por la
+	// API oficial, en cambio, las respuestas rápidas salen como BOTONES de verdad en el último mensaje (octubre de 2026).
+	botones := b.canalDe(conv) == CanalCloud && len(r.RespuestasRapidas) > 0 && len(r.RespuestasRapidas) <= 10
+	ultimo := len(partes) - 1
+	if cierre != "" {
+		ultimo = -1
+	}
+	for i, parte := range partes {
+		if botones && i == ultimo && len(r.Sugerencias) == 0 {
+			b.replyBotones(ctx, conv, parte, r.RespuestasRapidas)
+			continue
+		}
 		b.reply(ctx, conv, parte)
 	}
 	for _, sg := range r.Sugerencias {
 		b.replySuggestion(ctx, conv, sg)
 	}
-	if cierre != "" {
+	switch {
+	case cierre != "" && botones:
+		b.replyBotones(ctx, conv, cierre, r.RespuestasRapidas)
+	case cierre != "":
 		b.reply(ctx, conv, cierre)
+	case botones && len(r.Sugerencias) > 0 && len(partes) > 0:
+		b.replyBotones(ctx, conv, "¿Qué te gustaría ver? 👇", r.RespuestasRapidas)
+	}
+}
+
+// replyBotones: un texto con botones de respuesta (solo por la API oficial; ahí sí se ven).
+func (b *Bot) replyBotones(ctx context.Context, conv *store.Conversation, texto string, rr []agente.RespuestaRapida) {
+	var ops []string
+	for _, x := range rr {
+		if l := strings.TrimSpace(x.Label); l != "" {
+			ops = append(ops, l)
+		}
+	}
+	m := &store.Message{Kind: "text", Body: texto + " · " + strings.Join(ops, " / "), Author: "bot"}
+	if err := b.queueMessage(ctx, conv, m, outJob{poll: &pollJob{question: texto, options: ops}}); err != nil {
+		log.Printf("bot: guardar respuesta con botones: %v", err)
 	}
 }
 
@@ -1408,7 +1466,9 @@ func (b *Bot) agentPhoto(ctx context.Context, conv *store.Conversation, cc *conv
 		Historial: b.agentHistory(ctx, conv, msg.Body), Etapa: cc.Etapa, DesdeAnuncio: cc.Anuncio, Anuncio: cc.AnuncioTitle,
 		Memoria: memoriaActual(conv, cc), Perfil: b.perfil(ctx, conv, cc),
 		Version: b.cfg.AgentVersion, Modo: b.cfg.AgentModo, Conocimiento: b.conocimientoReq(ctx),
-		PreciosSoloSiPregunta: b.preciosOcultos(ctx)}
+		PreciosSoloSiPregunta: b.preciosOcultos(ctx),
+		BienvenidaAnuncio:     b.ajusteSi(ctx, store.SettingBienvenidaAnuncio), PrecioAlLlegar: b.ajusteSi(ctx, store.SettingPrecioAlLlegar),
+		Prospectos: b.prospectosCfg(ctx), PreguntarPresupuesto: b.ajusteSi(ctx, store.SettingPreguntarPresupuest)}
 	r, err := b.Agent.Photo(actx, req)
 	if err != nil || r.Foto == nil {
 		log.Printf("bot: agente foto: %v", err)
@@ -1538,13 +1598,17 @@ func (b *Bot) replyPoll(ctx context.Context, conv *store.Conversation, question 
 
 // escribiendo muestra «escribiendo…» mientras el agente piensa (unos segundos). Sin bloquear: si falla, no pasa nada.
 func (b *Bot) escribiendo(conv *store.Conversation) {
-	if b.evo == nil || conv == nil || conv.Customer.JID == "" {
+	if conv == nil || conv.Customer == nil || conv.Customer.JID == "" {
+		return
+	}
+	m := b.mensajero(b.canalDe(conv))
+	if m == nil {
 		return
 	}
 	go func(to string) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		_ = b.evo.Presence(ctx, to, "composing")
+		_ = m.Presence(ctx, to, "composing")
 	}(conv.Customer.JID)
 }
 
@@ -1558,6 +1622,7 @@ func (b *Bot) replyImage(ctx context.Context, conv *store.Conversation, url, cap
 // SendManual encola un mensaje escrito por la asesora desde el panel.
 func (b *Bot) SendManual(ctx context.Context, conv *store.Conversation, text string) error {
 	_ = b.store.IntervencionHumana(ctx, conv.ID, "", "respondió desde el panel")
+	_ = b.store.DetenerSeguimiento(ctx, conv.ID) // la asesora tomó la conversación
 	b.registrarDPO(ctx, conv, text)
 	return b.queueMessage(ctx, conv, &store.Message{Kind: "text", Body: text, Author: "asesora"}, outJob{text: text})
 }
@@ -1583,5 +1648,23 @@ func (b *Bot) NotifyStatus(ctx context.Context, o *store.Order) {
 	if err != nil {
 		return
 	}
-	b.reply(ctx, conv, fmt.Sprintf(tpl, o.ID, b.cfg.BusinessName))
+	texto := fmt.Sprintf(tpl, o.ID, b.cfg.BusinessName)
+	// Por la API oficial, pasadas 24 h solo sale una plantilla (Ajustes: plantilla_estado_pedido, con {{1}} = n.º de
+	// pedido y {{2}} = estado). Sin plantilla, el aviso sale por un número secundario de salida, si hay; si no, no sale.
+	if b.canalDe(conv) == CanalCloud && b.FueraDeVentana(ctx, conv.ID, time.Now()) {
+		if tplName := b.store.Setting(ctx, "plantilla_estado_pedido", ""); tplName != "" {
+			if err := b.enviarPlantilla(ctx, conv, tplName, []string{fmt.Sprint(o.ID), store.EstadoLabel[o.Status]}, texto); err != nil {
+				log.Printf("bot: aviso de pedido %d por plantilla: %v", o.ID, err)
+			}
+			return
+		}
+		if n := b.numeroSalida(ctx); n != nil {
+			_ = b.queueMessage(ctx, conv, &store.Message{Kind: "text", Body: texto, Author: "bot"}, outJob{text: texto, canal: CanalSecundario(n.ID)})
+			_ = b.store.AnotarEnvio(ctx, conv.ID, 0, 0, n.ID, "aviso_pedido", "enviado", "")
+			return
+		}
+		log.Printf("bot: aviso de pedido %d no sale: pasaron 24 h por la API oficial y no hay plantilla ni número secundario", o.ID)
+		return
+	}
+	b.reply(ctx, conv, texto)
 }

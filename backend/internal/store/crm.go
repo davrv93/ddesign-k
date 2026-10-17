@@ -16,9 +16,10 @@ import (
 	"unicode/utf8"
 )
 
-// Etapas del embudo, en orden. Las cuatro primeras son las del agente (agente/app/etapas.py); «perdida» solo la pone
-// una persona.
-var Etapas = []string{"prospeccion", "seguimiento", "cierre", "venta_confirmada", "perdida"}
+// Etapas del embudo, en orden. Las cuatro primeras son las del agente (agente/app/etapas.py). «mas_adelante» la pone el
+// bot cuando la clienta elige coordinar más cerca de su evento (bot/prospectos.go); «perdida», una persona o el final de
+// una secuencia de seguimiento con marcar_perdida.
+var Etapas = []string{"prospeccion", "seguimiento", "cierre", "venta_confirmada", "mas_adelante", "perdida"}
 
 func ValidEtapa(e string) bool {
 	for _, x := range Etapas {
@@ -37,7 +38,7 @@ var EstadoLabel = map[string]string{
 
 var EtapaLabel = map[string]string{
 	"": "Sin etapa", "prospeccion": "Prospección", "seguimiento": "Seguimiento", "cierre": "Cierre",
-	"venta_confirmada": "Venta confirmada", "perdida": "Perdida",
+	"venta_confirmada": "Venta confirmada", "mas_adelante": "Más adelante", "perdida": "Perdida",
 }
 
 // Estados del pedido que cuentan como compra (los que descuentan stock).
@@ -359,7 +360,9 @@ func (s *Store) etapaDelBot(ctx context.Context, convID int64, contextJSON strin
 		AND cu.tenant_id=cv.tenant_id WHERE cv.id=? AND cv.tenant_id=? AND cu.etapa_fijada=0`, convID, s.tid).Scan(&custID, &prev); err != nil {
 		return
 	}
-	if prev == c.Etapa {
+	// «Más adelante» la pone el bot y se suelta cuando la clienta vuelve a escribir (SalirDeMasAdelante); entre
+	// tanto, los guardados del contexto (que traen la etapa del agente) no la pisan.
+	if prev == c.Etapa || prev == "mas_adelante" {
 		return
 	}
 	if _, err := s.DB.ExecContext(ctx, `UPDATE customers SET etapa=? WHERE id=? AND tenant_id=? AND etapa_fijada=0`, c.Etapa, custID, s.tid); err != nil {

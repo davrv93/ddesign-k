@@ -29,6 +29,11 @@ type Incoming struct {
 	// título del anuncio, que suele nombrar la prenda. Sin anuncio, «este vestido» no dice cuál es.
 	FromAd  bool
 	AdTitle string
+	// AdID y CtwaClid identifican el anuncio (la API oficial los trae siempre; evolution-go, si whatsmeow los da).
+	AdID     string
+	CtwaClid string
+	// Canal por el que llegó: "" el número principal, "cloud" la API oficial, "n:<id>" un número secundario.
+	Canal string
 }
 
 // webhook es el sobre que manda evolution-go: {"event":"Message","data":{"Info":{...},"Message":{...}}}
@@ -87,6 +92,9 @@ type contextInfo struct {
 		Body       string `json:"body"`
 		SourceType string `json:"sourceType"`
 		SourceURL  string `json:"sourceURL"`
+		SourceID   string `json:"sourceID"`
+		SourceID2  string `json:"sourceId"`
+		CtwaClid   string `json:"ctwaClid"`
 	} `json:"externalAdReply"`
 	ConversionSource           string `json:"conversionSource"`
 	EntryPointConversionSource string `json:"entryPointConversionSource"`
@@ -192,6 +200,10 @@ func ParseWebhook(body []byte) (*Incoming, error) {
 		ctxOf(m.ImageMessage != nil, func() *contextInfo { return m.ImageMessage.ContextInfo })} {
 		if ok, title := ci.fromAd(); ok {
 			in.FromAd, in.AdTitle = true, firstNonEmpty(in.AdTitle, title)
+			if ci.ExternalAdReply != nil {
+				in.AdID = firstNonEmpty(in.AdID, ci.ExternalAdReply.SourceID, ci.ExternalAdReply.SourceID2)
+				in.CtwaClid = firstNonEmpty(in.CtwaClid, ci.ExternalAdReply.CtwaClid)
+			}
 		}
 	}
 	loc := m.LocationMessage

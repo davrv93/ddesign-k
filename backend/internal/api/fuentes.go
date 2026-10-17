@@ -50,7 +50,8 @@ func (s *Server) rutasFuentes(p, a func(pattern string, h http.HandlerFunc)) {
 	p("GET /api/embudos/{id}/pedidos", s.pedidosEmbudo)
 	p("PUT /api/embudos/{id}/pedidos/{order}", s.moverPedidoEmbudo)
 	p("DELETE /api/embudos/{id}/pedidos/{order}", s.sacarPedidoEmbudo)
-	s.rutasAlertas(p, a) // clienta caliente: alertas y ficha de la conversación (alertas.go)
+	s.rutasAlertas(p, a)     // clienta caliente: alertas y ficha de la conversación (alertas.go)
+	s.rutasSeguimiento(p, a) // seguimiento, contenido, números de WhatsApp y campañas (seguimiento.go)
 }
 
 // errFuente: los errores de validación son 400; el resto como errStore.

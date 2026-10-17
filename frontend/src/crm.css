@@ -1563,3 +1563,414 @@ button.fu-card:focus-visible {
     width: auto;
   }
 }
+
+/* ======================================================================
+   Seguimiento, números de WhatsApp y campañas (docs/SEGUIMIENTO_CONTRATO.md)
+   ====================================================================== */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.panel-head.fila-sub {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- ajustes: horario ---------- */
+.horario {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.horario label {
+  margin-bottom: 4px;
+}
+.horario input {
+  width: 130px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- tablas que en el teléfono se vuelven tarjetas con etiqueta ---------- */
+.tbl.tbl-cards tbody tr {
+  cursor: default;
+}
+.tbl-titulo a {
+  text-decoration: none;
+  color: inherit;
+}
+.tbl-titulo a:hover {
+  color: var(--brand);
+}
+.tbl tfoot td {
+  border-top: 2px solid var(--line);
+  border-bottom: 0;
+  background: var(--surface-2);
+  font-weight: 600;
+}
+.tbl-wrap.cargando {
+  opacity: 0.6;
+}
+
+/* ---------- números de WhatsApp ---------- */
+.numeros {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.numero {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.numero:last-child {
+  border-bottom: 0;
+}
+.numero .chip {
+  margin-left: 6px;
+}
+.numero-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.numero-dot.ok {
+  background: var(--ok);
+}
+.numero-tope {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.numero-barra {
+  flex: 0 1 160px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.numero-barra span {
+  display: block;
+  height: 100%;
+  background: var(--ok);
+}
+.numero-barra span.casi {
+  background: var(--warn);
+}
+.numero-barra span.lleno {
+  background: var(--danger);
+}
+.numero-acc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+/* ---------- página de seguimiento ---------- */
+.seg-aviso {
+  margin: 0 0 16px;
+}
+.seg-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.seg-card {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.seg-card.activa {
+  border-color: color-mix(in srgb, var(--ok) 45%, var(--line));
+}
+.seg-card h2 {
+  margin: 0;
+}
+.seg-card-top {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.seg-card-top p {
+  margin: 2px 0 0;
+}
+.seg-switch {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.seg-resumen {
+  margin: 0;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.seg-card-acc {
+  margin-top: auto;
+}
+.seg-modelos {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px 10px;
+  margin: 0 0 12px;
+}
+.seg-modelos .search {
+  width: 100%;
+  margin-bottom: 8px;
+}
+.seg-modelos .chips {
+  justify-content: flex-start;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.seg-modelos .chip-btn {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  text-transform: none;
+}
+.pasos {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.paso {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px 2px;
+  background: var(--surface-2);
+}
+.paso-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.paso-num {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+.paso-acc {
+  display: flex;
+  gap: 2px;
+}
+.paso-acc .btn {
+  padding: 4px 8px;
+}
+.paso-campos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 10px;
+}
+.paso-espera {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+.paso-espera .num {
+  width: 80px;
+}
+.paso > p {
+  margin: -6px 0 10px;
+}
+.previa-pasos {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.previa-paso {
+  display: grid;
+  gap: 2px;
+}
+.previa-burbuja {
+  margin-top: 2px;
+  display: grid;
+  gap: 6px;
+  width: fit-content;
+}
+.previa-burbuja img {
+  width: 200px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.previa-paso.omitido {
+  opacity: 0.6;
+}
+.previa-motivo {
+  margin: 2px 0 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  width: fit-content;
+}
+
+/* ---------- contenido por modelo (pestaña de producto) ---------- */
+.contenido-pieza {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 12px 12px;
+  margin: 0 0 12px;
+}
+.contenido-pieza legend {
+  font-weight: 600;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.contenido-pieza p {
+  margin: 0 0 8px;
+}
+.contenido-pieza textarea {
+  margin-bottom: 8px;
+}
+.contenido-media {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.contenido-media label {
+  flex: 1;
+}
+.contenido-media img {
+  width: 90px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+/* ---------- conversación: seguimiento y origen ---------- */
+.thread-seg {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 6px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 0.85rem;
+}
+.seg-estado a {
+  font-weight: 600;
+}
+.seg-estado .link-btn {
+  color: var(--danger);
+}
+.seg-estado .link-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ---------- campañas ---------- */
+.camp-fechas label {
+  margin: 0;
+  font-size: 0.8rem;
+}
+.camp-fechas input {
+  width: 160px;
+}
+.camp-tbl .tbl-titulo {
+  min-width: 200px;
+}
+
+@media (max-width: 760px) {
+  .paso-campos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .numero {
+    flex-wrap: wrap;
+  }
+  .numero-acc {
+    width: 100%;
+    justify-content: flex-start;
+    padding-left: 20px;
+  }
+  .contenido-media {
+    flex-direction: column;
+  }
+  .camp-fechas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .camp-fechas input {
+    width: 100%;
+  }
+  .thread-seg {
+    padding: 6px 12px;
+  }
+  /* Tablas en tarjetas: cada celda con su etiqueta (data-label); el título ocupa la fila de arriba. */
+  .tbl.tbl-cards tr {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: none;
+  }
+  .tbl.tbl-cards td,
+  .tbl.tbl-cards td[data-label] {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    grid-area: auto;
+    text-align: right;
+    font-size: 0.85rem;
+  }
+  .tbl.tbl-cards td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    text-align: left;
+  }
+  .tbl.tbl-cards td.tbl-titulo {
+    grid-column: 1 / -1;
+    display: block;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+  .tbl.tbl-cards td.tbl-titulo::before {
+    content: none;
+  }
+  .tbl.tbl-cards tfoot {
+    display: block;
+  }
+  .tbl.tbl-cards tfoot tr {
+    background: var(--surface-2);
+  }
+  .tbl.tbl-cards tfoot td {
+    border: 0;
+    background: none;
+  }
+}

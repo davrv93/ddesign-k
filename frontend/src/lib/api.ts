@@ -534,3 +534,171 @@ export const listarAlertas = (estado: "pendiente" | "todas" = "pendiente") =>
   api<Alerta[] | null>(`/api/alertas${qs({ estado })}`).then((r) => r ?? []);
 export const marcarAlertaAtendida = (id: number) => api<Alerta>(`/api/alertas/${id}/atendida`, { method: "POST" });
 export const fichaConversacion = (id: number) => api<FichaConversacion>(`/api/conversations/${id}/ficha`);
+
+// ---------------------------------------------------------------------------
+// Seguimiento: contenido por modelo, secuencias, números de WhatsApp y campañas (docs/SEGUIMIENTO_CONTRATO.md §3–6).
+
+export type ClaveContenido = "beneficio" | "testimonio" | "tip";
+
+/** Una pieza de seguimiento de un modelo (como máximo una por clave). `origen`: «web» la trajo el script; «manual», la tienda. */
+export interface ContenidoProducto {
+  clave: ClaveContenido;
+  texto: string;
+  media_url: string;
+  origen: "web" | "manual" | string;
+  actualizado_en: string;
+}
+
+export interface ResumenContenido {
+  product_id: number;
+  codigo: string;
+  nombre: string;
+  beneficio: boolean;
+  testimonio: boolean;
+  tip: boolean;
+}
+
+export const contenidoProducto = (id: number) => api<ContenidoProducto[] | null>(`/api/productos/${id}/contenido`).then((r) => r ?? []);
+/** Guarda (origen «manual»). Con `texto` y `media_url` vacíos, se borra. */
+export const guardarContenido = (id: number, clave: ClaveContenido, body: { texto: string; media_url: string }) =>
+  api<ContenidoProducto | { ok: boolean }>(`/api/productos/${id}/contenido/${clave}`, { method: "PUT", json: body });
+export const importarContenido = (filas: { codigo: string; clave: ClaveContenido; texto: string; media_url: string }[]) =>
+  api<{ importados: number; omitidos: number }>("/api/contenido/importar", { method: "POST", json: filas });
+export const resumenContenido = () => api<ResumenContenido[] | null>("/api/contenido/resumen").then((r) => r ?? []);
+
+export type TipoPaso = "emoji" | "texto" | "beneficio" | "testimonio" | "tip" | "oferta";
+export type FueraDeVentana = "saltar" | "enviar" | "plantilla" | "numero_secundario";
+export type AlResponder = "continuar" | "reiniciar" | "detener";
+export type AlcanceSecuencia = "todas" | "categoria" | "productos";
+
+export interface PasoSecuencia {
+  /** Minutos desde el paso anterior (el primero, desde que la clienta se calló). 1…20160. */
+  espera_min: number;
+  tipo: TipoPaso;
+  texto: string;
+  promo_id: number;
+  plantilla: string;
+}
+
+export interface CifrasSecuencia {
+  en_curso: number;
+  enviados_hoy: number;
+  respondieron: number;
+  terminados: number;
+}
+
+export interface Secuencia {
+  id: number;
+  nombre: string;
+  activa: boolean;
+  alcance: AlcanceSecuencia;
+  alcance_valor: string;
+  pasos: PasoSecuencia[] | null;
+  fuera_de_ventana: FueraDeVentana;
+  al_responder: AlResponder;
+  marcar_perdida: boolean;
+  creada_en: string;
+  cifras?: CifrasSecuencia | null;
+}
+
+export type SecuenciaEditable = Pick<
+  Secuencia,
+  "nombre" | "alcance" | "alcance_valor" | "fuera_de_ventana" | "al_responder" | "marcar_perdida"
+> & { pasos: PasoSecuencia[] };
+
+export interface PasoVistaPrevia {
+  paso: number;
+  espera_min: number;
+  tipo: TipoPaso | string;
+  texto: string;
+  media_url: string;
+  omitido: boolean;
+  motivo: string;
+}
+
+export interface SeguimientoConversacion {
+  secuencia_id: number;
+  nombre: string;
+  /** Número del próximo paso (1…total). */
+  paso: number;
+  total: number;
+  proximo_en: string | null;
+  estado: "activo" | "pausado" | "terminado" | "detenido" | string;
+}
+
+export const listarSecuencias = () => api<Secuencia[] | null>("/api/secuencias").then((r) => r ?? []);
+export const crearSecuencia = (body: SecuenciaEditable) => api<Secuencia>("/api/secuencias", { method: "POST", json: body });
+export const guardarSecuencia = (id: number, body: SecuenciaEditable) => api<Secuencia>(`/api/secuencias/${id}`, { method: "PUT", json: body });
+export const borrarSecuencia = (id: number) => api(`/api/secuencias/${id}`, { method: "DELETE" });
+export const activarSecuencia = (id: number, activa: boolean) =>
+  api<Secuencia | { ok: boolean }>(`/api/secuencias/${id}/activa`, { method: "POST", json: { activa } });
+export const vistaPreviaSecuencia = (id: number, producto: string) =>
+  api<PasoVistaPrevia[] | null>(`/api/secuencias/${id}/vista-previa${qs({ producto })}`).then((r) => r ?? []);
+
+export const seguimientoConversacion = (id: number) => api<SeguimientoConversacion | null>(`/api/conversations/${id}/seguimiento`);
+export const detenerSeguimiento = (id: number) => api<{ ok: boolean }>(`/api/conversations/${id}/seguimiento/detener`, { method: "POST" });
+
+export type CanalNumero = "evolution" | "cloud";
+export type UsoNumero = "entrada" | "salida" | "ambos";
+
+export interface NumeroWhatsApp {
+  id: number;
+  nombre: string;
+  canal: CanalNumero;
+  numero: string;
+  uso: UsoNumero;
+  tope_diario: number;
+  enviados_hoy: number;
+  conectado: boolean;
+  /** El del `.env` (id 0): no se borra; solo se le edita el tope. */
+  principal: boolean;
+}
+
+export type NumeroEditable = Pick<NumeroWhatsApp, "nombre" | "canal" | "numero" | "uso" | "tope_diario">;
+
+export interface PlantillaCloud {
+  name: string;
+  language: string;
+  status: string;
+  category: string;
+  body: string;
+}
+
+export const listarNumeros = () => api<NumeroWhatsApp[] | null>("/api/numeros").then((r) => r ?? []);
+export const crearNumero = (body: NumeroEditable) => api<NumeroWhatsApp>("/api/numeros", { method: "POST", json: body });
+export const guardarNumero = (id: number, body: Partial<NumeroEditable>) => api<NumeroWhatsApp>(`/api/numeros/${id}`, { method: "PUT", json: body });
+export const borrarNumero = (id: number) => api(`/api/numeros/${id}`, { method: "DELETE" });
+export const qrNumero = (id: number) => api<{ qr: string; conectado: boolean }>(`/api/numeros/${id}/qr`);
+export const vincularNumero = (id: number, telefono: string) =>
+  api<{ codigo: string }>(`/api/numeros/${id}/vincular`, { method: "POST", json: { telefono } });
+export const plantillasCloud = () => api<PlantillaCloud[] | null>("/api/whatsapp-cloud/plantillas").then((r) => r ?? []);
+
+export interface CifrasCampana {
+  conversaciones: number;
+  calientes: number;
+  pedidos: number;
+  confirmados: number;
+  monto: number;
+}
+
+export interface FilaCampana extends CifrasCampana {
+  clave: string;
+  ad_id: string;
+  titular: string;
+  canal: string;
+}
+
+export interface OrigenConversacion {
+  canal: string;
+  ad_id: string;
+  titular: string;
+  ctwa_clid: string;
+  llego_en: string;
+}
+
+export const campanas = (desde: string, hasta: string) =>
+  api<{ filas: FilaCampana[] | null; total: Partial<CifrasCampana> | null }>(`/api/campanas${qs({ desde, hasta })}`).then((r) => ({
+    filas: r.filas ?? [],
+    total: r.total ?? null,
+  }));
+export const origenConversacion = (id: number) => api<OrigenConversacion | null>(`/api/conversations/${id}/origen`);

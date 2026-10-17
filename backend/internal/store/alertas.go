@@ -77,11 +77,15 @@ const schemaAlertasMySQL = `CREATE TABLE IF NOT EXISTS alertas (
 
 func (s *Store) migrarAlertas() error {
 	if !s.mysql() {
-		_, err := s.DB.Exec(schemaAlertasSQLite)
+		if _, err := s.DB.Exec(schemaAlertasSQLite); err != nil {
+			return err
+		}
+		return s.migrarSeguimiento()
+	}
+	if _, err := s.DB.Exec(schemaAlertasMySQL); err != nil {
 		return err
 	}
-	_, err := s.DB.Exec(schemaAlertasMySQL)
-	return err
+	return s.migrarSeguimiento() // seguimiento, contenido, números y origen (seguimiento.go)
 }
 
 // CrearAlerta guarda una alerta nueva. Si la conversación ya tuvo una del mismo tipo en la última semana devuelve

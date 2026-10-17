@@ -5,6 +5,9 @@ import { api, getToken, type Product } from "~/lib/api";
 import { money } from "~/lib/format";
 import { u } from "~/lib/base";
 import { FichaTecnica, datosFicha } from "~/components/ficha";
+import { ContenidoSeguimiento } from "~/components/contenido";
+
+type Pestana = "producto" | "ficha" | "seguimiento";
 
 const emptyProduct = (): Product => ({
   id: 0,
@@ -36,6 +39,8 @@ async function upload(path: string, file: File) {
 export default component$(() => {
   const products = useSignal<Product[]>([]);
   const editing = useSignal<Product | null>(null);
+  // Pestaña con la que se abre el producto (?p=<id>&tab=seguimiento llega desde el resumen de /seguimiento).
+  const pestana = useSignal<Pestana>("producto");
   const filter = useSignal("");
   const onlyLow = useSignal(false);
 
@@ -44,7 +49,17 @@ export default component$(() => {
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(() => load());
+  useVisibleTask$(async () => {
+    await load();
+    const qp = new URLSearchParams(location.search);
+    const id = Number(qp.get("p"));
+    const prod = id ? products.value.find((x) => x.id === id) : undefined;
+    if (prod) {
+      const t = qp.get("tab");
+      pestana.value = t === "seguimiento" || t === "ficha" ? t : "producto";
+      editing.value = structuredClone(prod);
+    }
+  });
   useOnWindow(
     "kd-change",
     $((e: Event) => {
@@ -74,7 +89,13 @@ export default component$(() => {
           <label class="check">
             <input type="checkbox" bind:checked={onlyLow} /> Stock bajo
           </label>
-          <button class="btn btn-primary" onClick$={() => (editing.value = emptyProduct())}>
+          <a class="btn" href={u("/seguimiento?tab=contenido")} title="Qué modelos tienen beneficio, testimonio y tip">
+            Contenido de seguimiento
+          </a>
+          <button class="btn btn-primary" onClick$={() => {
+              pestana.value = "producto";
+              editing.value = emptyProduct();
+            }}>
             + Producto
           </button>
         </div>
@@ -84,7 +105,11 @@ export default component$(() => {
         {list.map((p) => {
           const total = p.variants.reduce((n, v) => n + v.stock, 0);
           return (
-            <article key={p.id} class={["product", !p.active && "inactive"]} onClick$={() => (editing.value = structuredClone(p))}>
+            <article key={p.id} class={["product", !p.active && "inactive"]} onClick$={() => {
+                pestana.value = "producto";
+                editing.value = structuredClone(p);
+              }}
+            >
               <div class="product-img">
                 {p.image ? <img src={u(p.image)} alt={p.name} width={240} height={320} loading="lazy" /> : <span class="muted">Sin foto</span>}
                 {total === 0 && <span class="sold-out">Agotado</span>}
@@ -121,9 +146,14 @@ export default component$(() => {
         <ProductForm
           key={editing.value.id || "new"}
           product={editing.value}
-          onClose$={() => (editing.value = null)}
+          tab={pestana.value}
+          onClose$={() => {
+            editing.value = null;
+            if (location.search) history.replaceState(null, "", location.pathname);
+          }}
           onSaved$={async () => {
             editing.value = null;
+            if (location.search) history.replaceState(null, "", location.pathname);
             await load();
           }}
         />
@@ -136,17 +166,18 @@ export default component$(() => {
 
 interface FormProps {
   product: Product;
+  tab?: Pestana;
   onClose$: QRL<() => void>;
   onSaved$: QRL<() => Promise<void>>;
 }
 
-const ProductForm = component$<FormProps>(({ product, onClose$, onSaved$ }) => {
+const ProductForm = component$<FormProps>(({ product, tab: tabInicial, onClose$, onSaved$ }) => {
   const p = useStore<Product>(structuredClone(product), { deep: true });
   const file = useSignal<NoSerialize<File>>();
   const preview = useSignal(u(product.image));
   const busy = useSignal("");
   const error = useSignal("");
-  const tab = useSignal<"producto" | "ficha">("producto");
+  const tab = useSignal<Pestana>(product.id ? (tabInicial ?? "producto") : "producto");
 
   const describe = $(async () => {
     if (!file.value) return;
@@ -196,7 +227,26 @@ const ProductForm = component$<FormProps>(({ product, onClose$, onSaved$ }) => {
             <button type="button" role="tab" aria-selected={tab.value === "ficha"} class={["tab", tab.value === "ficha" && "active"]} onClick$={() => (tab.value = "ficha")}>
               Ficha técnica
             </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab.value === "seguimiento"}
+              class={["tab", tab.value === "seguimiento" && "active"]}
+              onClick$={() => (tab.value = "seguimiento")}
+            >
+              Seguimiento
+            </button>
           </div>
+        )}
+        {tab.value === "seguimiento" && p.id > 0 && (
+          <>
+            <ContenidoSeguimiento productId={p.id} />
+            <div class="modal-actions">
+              <button type="button" class="btn btn-ghost" onClick$={onClose$}>
+                Cerrar
+              </button>
+            </div>
+          </>
         )}
         {tab.value === "ficha" && p.id > 0 && (
           <>

@@ -63,7 +63,14 @@ type Config struct {
 	DBDSN       string
 	// WhatsAppTenant: slug de la empresa dueña del WhatsApp de este backend (vacío = ninguna).
 	WhatsAppTenant string
+
+	// WhatsApp Cloud API oficial (internal/whatsapp/cloud). Vacío = sin número oficial. El token es de un usuario del
+	// sistema del portafolio de la tienda; el secreto de la app firma el webhook. Nunca se imprimen.
+	WACloudToken, WACloudPhoneNumberID, WACloudWABAID, WACloudAppSecret, WACloudVerifyToken, WACloudVersion, WACloudURL string
 }
+
+// WACloudListo: hay número oficial configurado.
+func (c *Config) WACloudListo() bool { return c.WACloudToken != "" && c.WACloudPhoneNumberID != "" }
 
 // KommoListo: integración encendida y con credenciales.
 func (c *Config) KommoListo() bool {
@@ -116,6 +123,14 @@ func Load() *Config {
 		DBDriver:       env("DB_DRIVER", "sqlite"),
 		DBDSN:          env("DB_DSN", ""),
 		WhatsAppTenant: strings.TrimSpace(env("WHATSAPP_TENANT", "")),
+
+		WACloudToken:         strings.TrimSpace(env("WA_CLOUD_TOKEN", "")),
+		WACloudPhoneNumberID: strings.TrimSpace(env("WA_CLOUD_PHONE_NUMBER_ID", "")),
+		WACloudWABAID:        strings.TrimSpace(env("WA_CLOUD_WABA_ID", "")),
+		WACloudAppSecret:     strings.TrimSpace(env("WA_CLOUD_APP_SECRET", "")),
+		WACloudVerifyToken:   strings.TrimSpace(env("WA_CLOUD_VERIFY_TOKEN", "")),
+		WACloudVersion:       strings.TrimSpace(env("WA_CLOUD_VERSION", "")),
+		WACloudURL:           strings.TrimSpace(env("WA_CLOUD_URL", "")),
 	}
 	// EVOLUTION_URL=off: este backend no tiene WhatsApp (el stack nuevo, mientras el bot siga en el anterior).
 	switch strings.ToLower(c.EvolutionURL) {

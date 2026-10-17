@@ -72,6 +72,7 @@ func main() {
 		b.Notify = func(topic string) { hub.PublishTo(botTenant, topic) }
 	}
 	b.Agent = agente.New(cfg.AgentURL, time.Duration(cfg.AgentTimeoutSec)*time.Second)
+	usarCloud(cfg, b) // número oficial de WhatsApp (WA_CLOUD_*), si está configurado (seguimiento.go)
 	srv := api.New(cfg, st, evo, aic, b, auth.New(cfg.JWTSecret, cfg.AdminUser, cfg.AdminPassword), hub)
 	srv.BotTenant = botTenant
 	// Kommo CRM: apagado por defecto. Va en segundo plano: si Kommo cae, el bot contesta igual.
@@ -95,6 +96,7 @@ func main() {
 	go cronFuentes(ctx, st, hub, cfg.MultiTenant) // vence promos y propone preguntas frecuentes (fuentes.go)
 	if !cfg.MultiTenant || botTenant > 0 {
 		go followups(ctx, botSt, b, hub)
+		go seguimientos(ctx, b) // secuencias de seguimiento por modelo (seguimiento.go)
 	}
 
 	httpSrv := &http.Server{
