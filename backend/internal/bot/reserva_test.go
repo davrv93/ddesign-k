@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/davrv93/ddesign-k/backend/internal/store"
 )
 
 // Dos clientas quieren la última unidad: la segunda no debe verla disponible mientras la
@@ -73,4 +75,29 @@ func TestConfirmarDescuentaFisicoYBorraReserva(t *testing.T) {
 	if v.Stock != 1 || v.Reserved != 0 {
 		t.Fatalf("esperaba físico 1 y sin reserva: %+v", v)
 	}
+}
+
+// 17-10-2026: el Vestido Maura trae una variante «TALLA ÚNICA» junto a S, M, L y XL (baruka.pe la lista como una opción
+// más). No se ofrece al lado de las tallas con medida; sola, sí.
+func TestTallaUnicaNoSeMezclaConTallas(t *testing.T) {
+	b, st, fe := setup(t, `{}`, false)
+	ctx := context.Background()
+	for _, p := range []*store.Product{
+		{Code: "V102", Name: "Vestido Maura", Price: 250, Active: true,
+			Variants: []store.Variant{{Size: "TALLA ÚNICA", Stock: 10}, {Size: "S", Stock: 10}, {Size: "M", Stock: 10}}},
+		{Code: "V09", Name: "Vestido Libre", Price: 150, Active: true, Variants: []store.Variant{{Size: "TALLA ÚNICA", Stock: 3}}},
+	} {
+		if err := st.SaveProduct(ctx, p); err != nil {
+			t.Fatal(err)
+		}
+	}
+	handle(b, text("V102"))
+	mustContain(t, fe.lastText(), "Tallas disponibles: S (10), M (10)")
+	if strings.Contains(strings.ToUpper(fe.lastText()), "ÚNICA") {
+		t.Fatalf("no debía ofrecer TALLA ÚNICA junto a S y M: %q", fe.lastText())
+	}
+	otra := text("V09")
+	otra.Chat, otra.Phone = "51900000001@s.whatsapp.net", "51900000001"
+	handle(b, otra)
+	mustContain(t, fe.lastText(), "Tallas disponibles: TALLA ÚNICA (3)")
 }

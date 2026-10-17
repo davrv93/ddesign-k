@@ -690,7 +690,11 @@ func (b *Bot) offerProduct(ctx context.Context, conv *store.Conversation, cc *co
 	b.crmMostrado(ctx, p.Code)
 
 	var sizes []string
+	conMedida := conTallasConMedida(p)
 	for _, v := range p.Variants {
+		if conMedida && esTallaUnica(v.Size) {
+			continue
+		}
 		if n := v.Available(); n > 0 {
 			sizes = append(sizes, fmt.Sprintf("%s (%d)", v.Size, n))
 		}
@@ -748,6 +752,27 @@ func (b *Bot) orderWithSize(ctx context.Context, conv *store.Conversation, cc *c
 	next := b.draftFor(ctx, conv, cc, p, "", 0)
 	b.setState(ctx, conv, stSize, next)
 	b.handleSize(ctx, conv, &next, normalize(size), "") // sin texto libre: si la talla no sirve, se pregunta
+}
+
+// esTallaUnica: «TALLA ÚNICA», «única», «estándar».
+func esTallaUnica(size string) bool {
+	switch strings.TrimPrefix(normalize(size), "talla ") {
+	case "unica", "estandar", "standard", "std":
+		return true
+	}
+	return false
+}
+
+// conTallasConMedida: la prenda trae tallas con medida (S, M, L…) disponibles. Entonces una «TALLA ÚNICA» a su lado es un
+// error del catálogo y no se ofrece: 17-10-2026, el Vestido Maura salía con «S, M, L, TALLA ÚNICA» porque baruka.pe la
+// lista como una opción más y la importación la copió como variante con stock.
+func conTallasConMedida(p *store.Product) bool {
+	for _, v := range p.Variants {
+		if !esTallaUnica(v.Size) && v.Available() > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 var sizeAliases = map[string]string{
