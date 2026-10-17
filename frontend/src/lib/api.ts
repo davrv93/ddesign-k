@@ -606,14 +606,31 @@ export interface Secuencia {
   fuera_de_ventana: FueraDeVentana;
   al_responder: AlResponder;
   marcar_perdida: boolean;
+  /** Si ella responde a un paso que salió, una tarea para el equipo (la etapa «Negociación» de Kommo). */
+  tarea_al_responder?: boolean;
   creada_en: string;
   cifras?: CifrasSecuencia | null;
 }
 
 export type SecuenciaEditable = Pick<
   Secuencia,
-  "nombre" | "alcance" | "alcance_valor" | "fuera_de_ventana" | "al_responder" | "marcar_perdida"
+  "nombre" | "alcance" | "alcance_valor" | "fuera_de_ventana" | "al_responder" | "marcar_perdida" | "tarea_al_responder"
 > & { pasos: PasoSecuencia[] };
+
+/** Una conversación en el tablero de la secuencia: columna "paso-N" (el próximo), "respondio", "terminado" o "detenido". */
+export interface FilaTablero {
+  conversation_id: number;
+  nombre: string;
+  telefono: string;
+  producto: string;
+  producto_nombre: string;
+  columna: string;
+  paso: number;
+  proximo_en: string | null;
+  actualizado_en: string;
+}
+export const tableroSecuencia = (id: number, dias = 14) =>
+  api<FilaTablero[] | null>(`/api/secuencias/${id}/tablero?dias=${dias}`).then((r) => r ?? []);
 
 export interface PasoVistaPrevia {
   paso: number;

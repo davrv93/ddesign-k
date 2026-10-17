@@ -317,3 +317,46 @@ func TestPasoConImagen(t *testing.T) {
 		t.Fatalf("sale como imagen con la URL de la empresa: %+v", m)
 	}
 }
+
+// Flujos de Kommo de Luis (17-10-2026): «{contenido}» deja cerrar con pregunta; si responde a un paso que salió, tarea
+// para el equipo; el tablero pone cada conversación en su columna.
+func TestFlujoKommoTareaYTablero(t *testing.T) {
+	b, st, _ := setup(t, `{}`, false)
+	ctx := context.Background()
+	_ = st.SetSetting(ctx, store.SettingSeguimientoHorario, "00:00-24:00")
+	p, _ := st.GetProductByCode(ctx, "V01")
+	_, _ = st.GuardarContenido(ctx, p.ID, "beneficio", "• No se arruga", "", "web")
+	q := &store.Secuencia{Nombre: "Kommo", Activa: true, TareaAlResponder: true, Pasos: []store.Paso{
+		{EsperaMin: 60, Tipo: "beneficio", Texto: "Olvidé mostrarte las ventajas 😊\n{contenido}\n¿Qué opinas?"},
+		{EsperaMin: 300, Tipo: "texto", Texto: "¿Sigues por ahí?"}}}
+	if err := st.CrearSecuencia(ctx, q); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := st.GetSecuencia(ctx, q.ID); !got.TareaAlResponder {
+		t.Fatal("tarea_al_responder se guarda")
+	}
+	l := ContenidoPaso(ctx, st, nil, "", q.Pasos[0], "V01", "Ana")
+	if l.Texto != "Olvidé mostrarte las ventajas 😊\n• No se arruga\n¿Qué opinas?" {
+		t.Fatalf("{contenido}: %q", l.Texto)
+	}
+	var reqs []agente.Request
+	b.Agent = agenteGuion(t, map[string]agente.Reply{
+		"me gusta":       {Accion: "responder", Respuesta: "¡Precioso!", Memoria: memProducto("V01", "")},
+		"sí, me encanta": {Accion: "responder", Respuesta: "¡Qué bueno!", Memoria: memProducto("V01", "")},
+	}, &reqs)
+	handle(b, text("me gusta"))
+	conv, _ := st.ConversationByCustomer(ctx, 1)
+	if fs, _ := st.TableroSecuencia(ctx, q.ID, 14); len(fs) != 1 || fs[0].Columna != "paso-1" || fs[0].ProductoNombre != "Vestido Esmeralda" {
+		t.Fatalf("tablero antes: %+v", fs)
+	}
+	b.TickSeguimiento(ctx, time.Now().Add(61*time.Minute))
+	b.Drain(5 * time.Second)
+	handle(b, text("sí, me encanta"))
+	ts, _ := st.ListTareas(ctx, store.FiltroTareas{CustomerID: conv.CustomerID})
+	if len(ts) != 1 || !strings.Contains(ts[0].Titulo, "respondió al seguimiento (beneficio)") {
+		t.Fatalf("tarea al responder: %+v", ts)
+	}
+	if fs, _ := st.TableroSecuencia(ctx, q.ID, 14); len(fs) != 1 || fs[0].Columna != "paso-2" {
+		t.Fatalf("tras responder y callarse, sigue en paso 2: %+v", fs)
+	}
+}

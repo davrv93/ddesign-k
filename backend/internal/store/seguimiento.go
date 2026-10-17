@@ -199,12 +199,20 @@ var schemaSeguimientoMySQL = []string{
 
 func (s *Store) migrarSeguimiento() error {
 	if !s.mysql() {
-		_, err := s.DB.Exec(schemaSeguimientoSQLite)
-		return err
+		if _, err := s.DB.Exec(schemaSeguimientoSQLite); err != nil {
+			return err
+		}
+	} else {
+		for _, q := range schemaSeguimientoMySQL {
+			if _, err := s.DB.Exec(q + ` ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`); err != nil {
+				return fmt.Errorf("%.60s…: %w", q, err)
+			}
+		}
 	}
-	for _, q := range schemaSeguimientoMySQL {
-		if _, err := s.DB.Exec(q + ` ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`); err != nil {
-			return fmt.Errorf("%.60s…: %w", q, err)
+	// 17-10-2026 (flujos de Kommo de Luis): si la clienta responde a un paso, una tarea para el equipo («Negociación»).
+	if _, err := s.DB.Exec(`SELECT tarea_al_responder FROM secuencias LIMIT 0`); err != nil {
+		if _, err := s.DB.Exec(`ALTER TABLE secuencias ADD COLUMN tarea_al_responder INTEGER NOT NULL DEFAULT 0`); err != nil {
+			return fmt.Errorf("secuencias.tarea_al_responder: %w", err)
 		}
 	}
 	return nil
@@ -373,17 +381,20 @@ type CifrasSecuencia struct {
 }
 
 type Secuencia struct {
-	ID             int64           `json:"id"`
-	Nombre         string          `json:"nombre"`
-	Activa         bool            `json:"activa"`
-	Alcance        string          `json:"alcance"`
-	AlcanceValor   string          `json:"alcance_valor"`
-	Pasos          []Paso          `json:"pasos"`
-	FueraDeVentana string          `json:"fuera_de_ventana"`
-	AlResponder    string          `json:"al_responder"`
-	MarcarPerdida  bool            `json:"marcar_perdida"`
-	CreadaEn       time.Time       `json:"creada_en"`
-	Cifras         CifrasSecuencia `json:"cifras"`
+	ID             int64  `json:"id"`
+	Nombre         string `json:"nombre"`
+	Activa         bool   `json:"activa"`
+	Alcance        string `json:"alcance"`
+	AlcanceValor   string `json:"alcance_valor"`
+	Pasos          []Paso `json:"pasos"`
+	FueraDeVentana string `json:"fuera_de_ventana"`
+	AlResponder    string `json:"al_responder"`
+	MarcarPerdida  bool   `json:"marcar_perdida"`
+	// TareaAlResponder: si ella contesta a un paso que sí salió, se crea una tarea para el equipo (en Kommo, Luis la
+	// pasaba a la etapa «Negociación» para que una persona la atienda).
+	TareaAlResponder bool            `json:"tarea_al_responder"`
+	CreadaEn         time.Time       `json:"creada_en"`
+	Cifras           CifrasSecuencia `json:"cifras"`
 }
 
 func (q *Secuencia) normalizar() error {
@@ -449,17 +460,18 @@ func (q *Secuencia) normalizar() error {
 	return nil
 }
 
-const secuenciaCols = `id, nombre, activa, alcance, alcance_valor, pasos, fuera_de_ventana, al_responder, marcar_perdida, creada_en`
+const secuenciaCols = `id, nombre, activa, alcance, alcance_valor, pasos, fuera_de_ventana, al_responder, marcar_perdida, creada_en,
+	tarea_al_responder`
 
 func scanSecuencia(sc interface{ Scan(...any) error }) (*Secuencia, error) {
 	q := &Secuencia{}
-	var activa, perdida int
+	var activa, perdida, tarea int
 	var pasos string
 	if err := sc.Scan(&q.ID, &q.Nombre, &activa, &q.Alcance, &q.AlcanceValor, &pasos, &q.FueraDeVentana, &q.AlResponder,
-		&perdida, &q.CreadaEn); err != nil {
+		&perdida, &q.CreadaEn, &tarea); err != nil {
 		return nil, err
 	}
-	q.Activa, q.MarcarPerdida = activa != 0, perdida != 0
+	q.Activa, q.MarcarPerdida, q.TareaAlResponder = activa != 0, perdida != 0, tarea != 0
 	_ = json.Unmarshal([]byte(pasos), &q.Pasos)
 	if q.Pasos == nil {
 		q.Pasos = []Paso{}
@@ -521,8 +533,9 @@ func (s *Store) CrearSecuencia(ctx context.Context, q *Secuencia) error {
 	pasos, _ := json.Marshal(q.Pasos)
 	t := now()
 	res, err := s.DB.ExecContext(ctx, `INSERT INTO secuencias(tenant_id, nombre, activa, alcance, alcance_valor, pasos, fuera_de_ventana,
-		al_responder, marcar_perdida, creada_en, actualizada_en) VALUES(?,?,?,?,?,?,?,?,?,?,?)`, s.tid, q.Nombre, b2i(q.Activa),
-		q.Alcance, q.AlcanceValor, string(pasos), q.FueraDeVentana, q.AlResponder, b2i(q.MarcarPerdida), t, t)
+		al_responder, marcar_perdida, tarea_al_responder, creada_en, actualizada_en) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`, s.tid, q.Nombre,
+		b2i(q.Activa), q.Alcance, q.AlcanceValor, string(pasos), q.FueraDeVentana, q.AlResponder, b2i(q.MarcarPerdida),
+		b2i(q.TareaAlResponder), t, t)
 	if err != nil {
 		return err
 	}
@@ -540,8 +553,9 @@ func (s *Store) GuardarSecuencia(ctx context.Context, q *Secuencia) error {
 	}
 	pasos, _ := json.Marshal(q.Pasos)
 	_, err := s.DB.ExecContext(ctx, `UPDATE secuencias SET nombre=?, activa=?, alcance=?, alcance_valor=?, pasos=?, fuera_de_ventana=?,
-		al_responder=?, marcar_perdida=?, actualizada_en=? WHERE id=? AND tenant_id=?`, q.Nombre, b2i(q.Activa), q.Alcance,
-		q.AlcanceValor, string(pasos), q.FueraDeVentana, q.AlResponder, b2i(q.MarcarPerdida), now(), q.ID, s.tid)
+		al_responder=?, marcar_perdida=?, tarea_al_responder=?, actualizada_en=? WHERE id=? AND tenant_id=?`, q.Nombre, b2i(q.Activa),
+		q.Alcance, q.AlcanceValor, string(pasos), q.FueraDeVentana, q.AlResponder, b2i(q.MarcarPerdida), b2i(q.TareaAlResponder),
+		now(), q.ID, s.tid)
 	if err == nil && !q.Activa {
 		_, err = s.DB.ExecContext(ctx, `UPDATE seguimiento_en_curso SET estado='detenido', actualizado_en=? WHERE tenant_id=? AND secuencia_id=?
 			AND estado IN ('activo','pausado')`, now(), s.tid, q.ID)
@@ -700,14 +714,81 @@ func (s *Store) ArmarSeguimiento(ctx context.Context, convID int64, q *Secuencia
 
 // PausarSeguimiento: la clienta escribió. Lo que estaba activo queda pausado y se anota que respondió.
 func (s *Store) PausarSeguimiento(ctx context.Context, convID int64) error {
+	_, err := s.PausarYVer(ctx, convID)
+	return err
+}
+
+// PausarYVer pausa el seguimiento de la conversación y, si ella respondió a un paso que SÍ salió, devuelve el seguimiento
+// (para que el bot avise al equipo); si no había nada en curso o aún no salía ningún paso, nil.
+func (s *Store) PausarYVer(ctx context.Context, convID int64) (*SeguimientoEnCurso, error) {
 	e, err := s.SeguimientoDe(ctx, convID)
 	if err != nil || e == nil || e.Estado != EstadoActivo {
-		return err
+		return nil, err
 	}
-	if e.indice > 0 { // respondió a un paso que sí salió
-		_ = s.AnotarEnvio(ctx, convID, e.SecuenciaID, e.indice, 0, "", "respondio", "")
+	if err := s.marcarEnCurso(ctx, convID, EstadoPausado); err != nil {
+		return nil, err
 	}
-	return s.marcarEnCurso(ctx, convID, EstadoPausado)
+	if e.indice == 0 {
+		return nil, nil
+	}
+	_ = s.AnotarEnvio(ctx, convID, e.SecuenciaID, e.indice, 0, "", "respondio", "")
+	return e, nil
+}
+
+// FilaTablero: una conversación en el tablero de una secuencia (una columna por paso, como las etapas de Kommo).
+type FilaTablero struct {
+	ConversationID int64      `json:"conversation_id"`
+	Nombre         string     `json:"nombre"`
+	Telefono       string     `json:"telefono"`
+	Producto       string     `json:"producto"`
+	ProductoNombre string     `json:"producto_nombre"`
+	Columna        string     `json:"columna"` // "paso-<n>" (el próximo a enviar) | "respondio" | "terminado" | "detenido"
+	Paso           int        `json:"paso"`
+	ProximoEn      *time.Time `json:"proximo_en"`
+	Actualizado    time.Time  `json:"actualizado_en"`
+}
+
+// TableroSecuencia: conversaciones de una secuencia en los últimos `dias` días, para el tablero del panel.
+func (s *Store) TableroSecuencia(ctx context.Context, secID int64, dias int) ([]FilaTablero, error) {
+	if _, err := s.GetSecuencia(ctx, secID); err != nil {
+		return nil, err
+	}
+	rows, err := s.DB.QueryContext(ctx, `SELECT e.conversation_id, COALESCE(cu.name,''), COALESCE(cu.phone,''), e.product_code,
+		COALESCE(p.name,''), e.paso, e.estado, e.proximo_en, e.actualizado_en
+		FROM seguimiento_en_curso e JOIN conversations cv ON cv.id=e.conversation_id AND cv.tenant_id=e.tenant_id
+		LEFT JOIN customers cu ON cu.id=cv.customer_id AND cu.tenant_id=cv.tenant_id
+		LEFT JOIN products p ON p.code=e.product_code AND p.tenant_id=e.tenant_id
+		WHERE e.tenant_id=? AND e.secuencia_id=? AND e.actualizado_en>=? ORDER BY e.actualizado_en DESC LIMIT 500`,
+		s.tid, secID, time.Now().AddDate(0, 0, -dias).UTC())
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []FilaTablero{}
+	for rows.Next() {
+		var f FilaTablero
+		var estado string
+		var prox sql.NullTime
+		if err := rows.Scan(&f.ConversationID, &f.Nombre, &f.Telefono, &f.Producto, &f.ProductoNombre, &f.Paso, &estado, &prox,
+			&f.Actualizado); err != nil {
+			return nil, err
+		}
+		if prox.Valid {
+			t := prox.Time
+			f.ProximoEn = &t
+		}
+		switch estado {
+		case EstadoActivo:
+			f.Columna = fmt.Sprintf("paso-%d", f.Paso+1)
+		case EstadoPausado:
+			f.Columna = "respondio"
+		default:
+			f.Columna = estado
+		}
+		f.Paso++
+		out = append(out, f)
+	}
+	return out, rows.Err()
 }
 
 // DetenerSeguimiento: una persona lo detuvo, la asesora tomó la conversación o se confirmó la compra.

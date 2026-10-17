@@ -22,8 +22,10 @@ import (
 
 // alEntrar: lo que hace cada mensaje de la clienta antes del turno del bot.
 func (b *Bot) alEntrar(ctx context.Context, conv *store.Conversation, in *Incoming) {
-	if err := b.store.PausarSeguimiento(ctx, conv.ID); err != nil {
+	if e, err := b.store.PausarYVer(ctx, conv.ID); err != nil {
 		log.Printf("bot: pausar seguimiento %d: %v", conv.ID, err)
+	} else if e != nil {
+		b.respondioAlSeguimiento(ctx, conv, e)
 	}
 	_ = b.store.SalirDeMasAdelante(ctx, conv.ID) // volvió antes de tiempo: la etapa la vuelve a decidir el bot
 	if in.FromAd || in.AdID != "" {
@@ -35,6 +37,38 @@ func (b *Bot) alEntrar(ctx context.Context, conv *store.Conversation, in *Incomi
 			log.Printf("bot: origen %d: %v", conv.ID, err)
 		}
 	}
+}
+
+// respondioAlSeguimiento: contestó a un paso que sí salió. Con tarea_al_responder, una tarea para el equipo (en los
+// flujos de Kommo de Luis, la clienta pasaba a «Negociación» para que una persona la atienda).
+func (b *Bot) respondioAlSeguimiento(ctx context.Context, conv *store.Conversation, e *store.SeguimientoEnCurso) {
+	q, err := b.store.GetSecuencia(ctx, e.SecuenciaID)
+	if err != nil {
+		return
+	}
+	paso := ""
+	if i := e.Indice() - 1; i >= 0 && i < len(q.Pasos) {
+		paso = q.Pasos[i].Tipo
+	}
+	b.hito(ctx, conv, fmt.Sprintf("💬 Respondió al seguimiento «%s» (paso %d: %s)", q.Nombre, e.Indice(), paso))
+	if !q.TareaAlResponder {
+		return
+	}
+	custID, err := b.store.CustomerDeConversacion(ctx, conv.ID)
+	if err != nil {
+		return
+	}
+	titulo := fmt.Sprintf("Atender a %s: respondió al seguimiento (%s)", firstNonEmpty(primerNombre(b.customerName(conv)), "la clienta"),
+		firstNonEmpty(paso, "paso "+fmt.Sprint(e.Indice())))
+	if p, err := b.store.GetProductByCode(ctx, e.ProductCode); err == nil {
+		titulo += " · " + p.Name
+	}
+	ahora := time.Now()
+	if err := b.store.AddTarea(ctx, &store.Tarea{CustomerID: custID, Titulo: titulo, Vence: &ahora, CreadaPor: "bot"}); err != nil {
+		log.Printf("bot: tarea de seguimiento %d: %v", conv.ID, err)
+		return
+	}
+	b.Notify("tareas")
 }
 
 // armarSeguimiento: al terminar el turno, si la conversación quedó esperando a la clienta con un modelo en foco.
@@ -153,7 +187,14 @@ func ContenidoPaso(ctx context.Context, st *store.Store, conoc *store.Conocimien
 		if c == nil {
 			return PasoListo{Omitido: true, Motivo: "el " + prod.Name + " no tiene " + paso.Tipo + " cargado"}
 		}
-		texto := strings.TrimSpace(reemplazar(paso.Texto) + "\n\n" + c.Texto)
+		// «{contenido}» en el texto del paso dice dónde va el contenido del modelo, para cerrar con una pregunta como en
+		// los flujos de Kommo («…revisa la imagen. {contenido} ¿Qué opinas?»). Sin el marcador, el texto va antes.
+		texto := reemplazar(paso.Texto)
+		if strings.Contains(texto, "{contenido}") {
+			texto = strings.TrimSpace(strings.ReplaceAll(texto, "{contenido}", c.Texto))
+		} else {
+			texto = strings.TrimSpace(texto + "\n\n" + c.Texto)
+		}
 		media := abs(c.MediaURL)
 		if media != "" && !esImagen(media) { // un video o una página: va como enlace en el texto
 			texto, media = strings.TrimSpace(texto+"\n"+media), ""

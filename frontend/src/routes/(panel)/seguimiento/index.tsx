@@ -2,7 +2,7 @@ import { $, component$, useOnWindow, useSignal, useVisibleTask$ } from "@builder
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { titulo } from "~/lib/marca";
 import { u } from "~/lib/base";
-import { activarSecuencia, listarSecuencias, miSesion, type Secuencia } from "~/lib/api";
+import { activarSecuencia, listarSecuencias, miSesion, tableroSecuencia, type FilaTablero, type Secuencia } from "~/lib/api";
 import { Confirmar } from "~/components/confirmar";
 import { SecuenciaEditor, alcanceTexto, resumenPasos } from "~/components/seguimiento";
 import { ResumenContenidoTabla } from "~/components/contenido";
@@ -10,7 +10,7 @@ import { ResumenContenidoTabla } from "~/components/contenido";
 // Seguimiento: secuencias de mensajes para las clientas que vieron un modelo y dejaron de responder
 // (docs/SEGUIMIENTO_CONTRATO.md §4), y qué modelos tienen contenido para ellas (§3). Todo el equipo mira; solo admin edita.
 // El editor va por ?s=<id> (o ?s=nueva) y la pestaña por ?tab=contenido: el sitio es estático.
-type Pestana = "secuencias" | "contenido";
+type Pestana = "secuencias" | "tablero" | "contenido";
 type Abierta = { secuencia: Secuencia | null } | null;
 
 export default component$(() => {
@@ -63,7 +63,7 @@ export default component$(() => {
       .then((s) => (admin.value = s.admin))
       .catch(() => {});
     const p = new URLSearchParams(location.search);
-    if (p.get("tab") === "contenido") pestana.value = "contenido";
+    if (p.get("tab") === "contenido" || p.get("tab") === "tablero") pestana.value = p.get("tab") as Pestana;
     await load();
     const sid = p.get("s");
     if (sid === "nueva") await abrir(null);
@@ -124,6 +124,17 @@ export default component$(() => {
         </button>
         <button
           role="tab"
+          aria-selected={pestana.value === "tablero"}
+          class={["tab", pestana.value === "tablero" && "active"]}
+          onClick$={async () => {
+            pestana.value = "tablero";
+            await url();
+          }}
+        >
+          Tablero
+        </button>
+        <button
+          role="tab"
           aria-selected={pestana.value === "contenido"}
           class={["tab", pestana.value === "contenido" && "active"]}
           onClick$={async () => {
@@ -135,7 +146,9 @@ export default component$(() => {
         </button>
       </div>
 
-      {pestana.value === "contenido" ? (
+      {pestana.value === "tablero" ? (
+        <TableroSeguimiento secuencias={lista.value} />
+      ) : pestana.value === "contenido" ? (
         <ResumenContenidoTabla />
       ) : (
         <>
@@ -275,3 +288,120 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = { title: titulo("Seguimiento") };
+
+const TIPO_PASO_TXT: Record<string, string> = {
+  emoji: "Emoji o sticker",
+  texto: "Mensaje",
+  beneficio: "Beneficios",
+  testimonio: "Testimonio",
+  tip: "Tip",
+  oferta: "Oferta",
+};
+
+const cuando = (iso: string | null) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const hoy = new Date();
+  const hora = d.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
+  return d.toDateString() === hoy.toDateString() ? `hoy ${hora}` : `${d.toLocaleDateString("es-PE", { day: "numeric", month: "short" })} ${hora}`;
+};
+
+/** Tablero de una secuencia: una columna por paso (como las etapas SEGUI-1, SEGUI-2… de Kommo), más «Respondió»,
+ *  «Terminó sin respuesta» y «Detenido». Cada tarjeta abre la conversación. */
+export const TableroSeguimiento = component$<{ secuencias: Secuencia[] }>(({ secuencias }) => {
+  const elegida = useSignal<number>(0);
+  const filas = useSignal<FilaTablero[]>([]);
+  const cargando = useSignal(false);
+  const error = useSignal("");
+
+  const cargar = $(async () => {
+    const id = elegida.value || secuencias.find((s) => s.activa)?.id || secuencias[0]?.id || 0;
+    elegida.value = id;
+    if (!id) return;
+    cargando.value = true;
+    try {
+      filas.value = await tableroSecuencia(id);
+      error.value = "";
+    } catch (e) {
+      error.value = (e as Error).message;
+    } finally {
+      cargando.value = false;
+    }
+  });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    track(() => secuencias.length);
+    cargar();
+  });
+
+  useOnWindow(
+    "kd-change",
+    $((e: Event) => {
+      if ((e as CustomEvent<string>).detail === "seguimiento") cargar();
+    }),
+  );
+
+  const sec = secuencias.find((s) => s.id === elegida.value);
+  const pasos = sec?.pasos ?? [];
+  const columnas = [
+    ...pasos.map((p, i) => ({ clave: `paso-${i + 1}`, titulo: `${i + 1}. ${TIPO_PASO_TXT[p.tipo] ?? p.tipo}`, nota: "le toca" })),
+    { clave: "respondio", titulo: "Respondió", nota: "atender" },
+    { clave: "terminado", titulo: "Terminó sin respuesta", nota: "" },
+    { clave: "detenido", titulo: "Detenido", nota: "una persona tomó la conversación" },
+  ];
+
+  if (secuencias.length === 0) return <p class="muted pad">Todavía no hay secuencias.</p>;
+
+  return (
+    <div class="seg-tablero-wrap">
+      <div class="row seg-tablero-barra">
+        <label>
+          Secuencia{" "}
+          <select
+            value={String(elegida.value)}
+            onChange$={async (_, el) => {
+              elegida.value = Number(el.value);
+              await cargar();
+            }}
+          >
+            {secuencias.map((s) => (
+              <option key={s.id} value={String(s.id)}>
+                {s.nombre + (s.activa ? "" : " (apagada)")}
+              </option>
+            ))}
+          </select>
+        </label>
+        <span class="muted small">Últimos 14 días</span>
+      </div>
+      {error.value && <p class="form-error">{error.value}</p>}
+      {cargando.value && filas.value.length === 0 ? (
+        <div class="loading">Cargando…</div>
+      ) : (
+        <div class="seg-tablero" role="list">
+          {columnas.map((c) => {
+            const items = filas.value.filter((f) => f.columna === c.clave);
+            return (
+              <section key={c.clave} class={["seg-col", c.clave === "respondio" && "seg-col-ok"]} role="listitem" aria-label={c.titulo}>
+                <header>
+                  <strong>{c.titulo}</strong>
+                  <span class="badge">{items.length}</span>
+                </header>
+                {items.length === 0 && <p class="muted small">—</p>}
+                {items.map((f) => (
+                  <a key={f.conversation_id} class="seg-card" href={u(`/conversaciones/?c=${f.conversation_id}`)}>
+                    <strong>{f.nombre || f.telefono || "Clienta"}</strong>
+                    {f.producto_nombre && <span class="small">{f.producto_nombre}</span>}
+                    {c.clave.startsWith("paso-") && f.proximo_en && <span class="muted small">sale {cuando(f.proximo_en)}</span>}
+                    {!c.clave.startsWith("paso-") && <span class="muted small">{cuando(f.actualizado_en)}</span>}
+                  </a>
+                ))}
+              </section>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+});
+

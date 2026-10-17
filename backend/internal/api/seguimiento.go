@@ -55,6 +55,7 @@ func (s *Server) rutasSeguimiento(p, a func(pattern string, h http.HandlerFunc))
 	a("DELETE /api/secuencias/{id}", s.borrarSecuencia)
 	a("POST /api/secuencias/{id}/activa", s.activarSecuencia)
 	p("GET /api/secuencias/{id}/vista-previa", s.vistaPreviaSecuencia)
+	p("GET /api/secuencias/{id}/tablero", s.tableroSecuencia)
 	a("POST /api/secuencias/imagen", s.subirImagenPaso)
 	p("GET /api/conversations/{id}/seguimiento", s.seguimientoConv)
 	p("POST /api/conversations/{id}/seguimiento/detener", s.detenerSeguimiento)
@@ -274,6 +275,25 @@ func (s *Server) subirImagenPaso(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, map[string]string{"media_url": "/media/seguimiento/" + name})
+}
+
+// tableroSecuencia: las conversaciones de la secuencia por columna (paso pendiente, respondió, terminado, detenido).
+func (s *Server) tableroSecuencia(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		writeErr(w, 400, "id inválido")
+		return
+	}
+	dias, _ := strconv.Atoi(r.URL.Query().Get("dias"))
+	if dias <= 0 || dias > 90 {
+		dias = 14
+	}
+	fs, err := s.st(r).TableroSecuencia(r.Context(), id, dias)
+	if err != nil {
+		errSeg(w, err)
+		return
+	}
+	writeJSON(w, 200, fs)
 }
 
 type pasoPrevia struct {

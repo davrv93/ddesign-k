@@ -93,6 +93,7 @@ interface FormSecuencia {
   fuera_de_ventana: FueraDeVentana;
   al_responder: AlResponder;
   marcar_perdida: boolean;
+  tarea_al_responder: boolean;
   pasos: PasoUI[];
 }
 
@@ -120,6 +121,7 @@ const aEditable = (f: FormSecuencia): SecuenciaEditable => ({
   fuera_de_ventana: f.fuera_de_ventana,
   al_responder: f.al_responder,
   marcar_perdida: f.marcar_perdida,
+  tarea_al_responder: f.tarea_al_responder,
   pasos: f.pasos.map((p) => ({
     espera_min: p.espera_min,
     tipo: p.tipo,
@@ -149,6 +151,7 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
       fuera_de_ventana: x?.fuera_de_ventana ?? "saltar",
       al_responder: x?.al_responder ?? "continuar",
       marcar_perdida: x?.marcar_perdida ?? false,
+      tarea_al_responder: x?.tarea_al_responder ?? false,
       pasos: x ? (x.pasos ?? []).map(aUI) : [pasoNuevo()],
     },
     { deep: true },
@@ -490,7 +493,7 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
                           rows={2}
                           value={p.texto}
                           disabled={soloLectura}
-                          placeholder={p.tipo === "texto" ? "¿Pudiste ver el modelo? Si quieres te cuento más 😊" : "Por ejemplo: Te cuento algo de este modelo 👇"}
+                          placeholder={p.tipo === "texto" ? "¿Pudiste ver el modelo? Si quieres te cuento más 😊" : "Olvidé mostrarte sus ventajas 😊\n{contenido}\n¿Qué opinas?"}
                           onInput$={(_, el) => {
                             f.pasos[i].texto = el.value;
                             tocar();
@@ -631,6 +634,18 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
                 }}
               />{" "}
               Al terminar sin respuesta, pasar la clienta a «Perdida»
+            </label>
+            <label class="check">
+              <input
+                type="checkbox"
+                checked={f.tarea_al_responder}
+                disabled={soloLectura}
+                onChange$={(_, el) => {
+                  f.tarea_al_responder = el.checked;
+                  tocar();
+                }}
+              />{" "}
+              Si responde a un mensaje de seguimiento, crear una tarea para que el equipo la atienda
             </label>
           </section>
 
