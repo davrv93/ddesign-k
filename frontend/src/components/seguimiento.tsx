@@ -476,7 +476,7 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
                       </label>
                     )}
                     <label>
-                      {p.tipo === "emoji" ? "Emoji" : p.tipo === "texto" ? "Mensaje" : "Introducción (opcional)"}
+                      {p.tipo === "emoji" ? "Emoji" : p.tipo === "texto" ? "Mensaje" : "Mensaje (opcional)"}
                       {p.tipo === "emoji" ? (
                         <input
                           value={p.texto}
@@ -490,7 +490,7 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
                         />
                       ) : (
                         <textarea
-                          rows={2}
+                          rows={p.tipo === "texto" ? 3 : 6}
                           value={p.texto}
                           disabled={soloLectura}
                           placeholder={p.tipo === "texto" ? "¿Pudiste ver el modelo? Si quieres te cuento más 😊" : "Olvidé mostrarte sus ventajas 😊\n{contenido}\n¿Qué opinas?"}
@@ -501,6 +501,12 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
                         />
                       )}
                     </label>
+                    {(p.tipo === "beneficio" || p.tipo === "testimonio" || p.tipo === "tip") && (
+                      <p class="muted small">
+                        Escribe <code>{"{contenido}"}</code> donde va el {p.tipo} del modelo, para cerrar con una pregunta. También
+                        sirven <code>{"{nombre}"}</code> y <code>{"{modelo}"}</code>.
+                      </p>
+                    )}
                     {(p.tipo === "emoji" || p.tipo === "texto") && (
                       <div class="paso-imagen">
                         <span class="small">Imagen o sticker (opcional)</span>
