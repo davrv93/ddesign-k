@@ -157,4 +157,6 @@ def bienvenida(cliente: str, nombre_modelo: str, garantia_txt: str) -> str:
     return "\n\n".join([" ".join(partes[:2])] + partes[2:])
 
 
-RE_VER_TALLAS = re.compile(r"^\s*(ver\s+)?(las\s+)?tallas(\s+disponibles)?\s*[.!?]*\s*$")
+# «tallas», «ver tallas», «qué tallas hay», «¿cuáles tallas tienen?»: lo escribe la clienta (sin botones, 16-10-2026).
+RE_VER_TALLAS = re.compile(r"^\W*((ver|las|que|cuales|y|en)\s+)*tallas(\s+(disponibles|hay|tienes|tienen|tiene|hay disponibles))?"
+                           r"\s*[.!?]*\s*$")

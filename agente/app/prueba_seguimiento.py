@@ -119,6 +119,8 @@ def prueba_bienvenida(fichas):
     # «Ver tallas» con el modelo en foco: tallas con stock, sin LLM.
     r = turno(fichas, "Ver tallas", {"producto": "V50", "mostrados": ["V50"], "sabemos": {}}, [C("hola"), B("¡Hola! Te comparto el Salome")])
     si("ver tallas", "S, M y L" in r["respuesta"] and not PROMPTS)
+    for t in ["tallas", "qué tallas hay", "¿cuáles tallas tienen?", "tallas disponibles"]:
+        si(f"escrito: {t}", P.RE_VER_TALLAS.match(memoria._plano(t)))
     # Stock caído: no dice «agotado».
     RESPUESTA["texto"], RESPUESTA["herramientas"] = "x", []
     r = agente.conversar(req("Ver tallas", {"producto": "V50", "mostrados": ["V50"], "sabemos": {}}, [C("hola"), B("¡Hola!")]),
