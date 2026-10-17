@@ -1989,3 +1989,12 @@ button.fu-card:focus-visible {
 .seg-card { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 8px; background: var(--panel, #fff);
   border: 1px solid var(--border, rgba(127,127,127,.2)); color: inherit; text-decoration: none; min-height: 44px; }
 .seg-card:hover { border-color: var(--accent, #5b1f4a); }
+
+/* Editor de secuencias a todo el ancho (17-10-2026, pedido del usuario): los pasos en columnas en pantallas anchas. */
+.drawer-full { width: 100%; }
+.drawer-full .drawer-sec { padding-left: max(18px, 3vw); padding-right: max(18px, 3vw); }
+.drawer-full .drawer-head, .drawer-full .drawer-foot { padding-left: max(18px, 3vw); padding-right: max(18px, 3vw); }
+@media (min-width: 900px) {
+  .drawer-full .pasos { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; align-items: start; }
+  .drawer-full .previa-pasos { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-items: start; }
+}

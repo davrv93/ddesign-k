@@ -221,7 +221,7 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
   return (
     <>
       <div class="overlay" onClick$={onClose$}>
-        <aside class="drawer drawer-lg" role="dialog" aria-modal="true" aria-labelledby="sec-titulo" onClick$={(e) => e.stopPropagation()}>
+        <aside class="drawer drawer-full" role="dialog" aria-modal="true" aria-labelledby="sec-titulo" onClick$={(e) => e.stopPropagation()}>
           <header class="drawer-head">
             <div>
               <h2 id="sec-titulo">{x ? x.nombre || "Sin nombre" : "Nueva secuencia"}</h2>
