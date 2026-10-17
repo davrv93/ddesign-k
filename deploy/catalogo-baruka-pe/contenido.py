@@ -67,8 +67,27 @@ def reseñas(product_id) -> list[dict]:
     return ((d.get("data") or {}).get("list")) or []
 
 
-def mejor_testimonio(lista: list[dict]) -> dict | None:
-    buenas = [x for x in lista if (x.get("star") or 0) >= 5 and len((x.get("content") or "").strip()) >= 20]
+TIPOS = ("vestido", "enterizo", "pantalon", "conjunto", "blazer", "falda", "blusa", "top", "palazzo", "short")
+
+
+def _plano(t: str) -> str:
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFD", (t or "").lower()) if unicodedata.category(c) != "Mn")
+
+
+def habla_de_otra_prenda(texto: str, nombre_producto: str) -> bool:
+    """La reseña nombra otro tipo de prenda que el modelo (16-10-2026: la del Vestido Maura habla de «el enterizo que
+    elegí»; la tienda la dejó en ese producto). Esas no se usan como testimonio de ESE modelo."""
+    tipo = next((t for t in TIPOS if t in _plano(nombre_producto)), "")
+    if not tipo:
+        return False
+    nombrados = {t for t in TIPOS if re.search(rf"\b{t}e?s?\b", _plano(texto))}
+    return bool(nombrados) and tipo not in nombrados
+
+
+def mejor_testimonio(lista: list[dict], nombre_producto: str = "") -> dict | None:
+    buenas = [x for x in lista if (x.get("star") or 0) >= 5 and len((x.get("content") or "").strip()) >= 20
+              and not habla_de_otra_prenda(x.get("content") or "", nombre_producto)]
     if not buenas:
         return None
     def foto(x):
@@ -107,7 +126,7 @@ def main() -> int:
                 continue
             time.sleep(1.2)
             try:
-                t = mejor_testimonio(reseñas(p["id"]))
+                t = mejor_testimonio(reseñas(p["id"]), p.get("nombre") or "")
             except Exception as e:  # noqa: BLE001
                 print(f"  {cod}: {e}")
                 continue
