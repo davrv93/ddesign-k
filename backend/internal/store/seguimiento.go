@@ -1080,8 +1080,16 @@ func CubrePromo(p PromoConocimiento, prod *Product) bool { return cubrePromo(p, 
 // SalirDeMasAdelante: la clienta que estaba en «Más adelante» volvió a escribir. Si nadie fijó la etapa a mano, la
 // etapa vuelve a decidirla el bot (queda vacía hasta el próximo guardado del contexto).
 func (s *Store) SalirDeMasAdelante(ctx context.Context, convID int64) error {
-	_, err := s.DB.ExecContext(ctx, `UPDATE customers SET etapa='' WHERE tenant_id=? AND etapa='mas_adelante' AND etapa_fijada=0
+	res, err := s.DB.ExecContext(ctx, `UPDATE customers SET etapa='' WHERE tenant_id=? AND etapa='mas_adelante' AND etapa_fijada=0
 		AND id=(SELECT customer_id FROM conversations WHERE id=? AND tenant_id=?)`, s.tid, convID, s.tid)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n > 0 {
+		// Volvió a escribir: el seguimiento que se detuvo al pasarla a «Más adelante» puede volver a armarse.
+		_, err = s.DB.ExecContext(ctx, `UPDATE seguimiento_en_curso SET estado='pausado', actualizado_en=? WHERE tenant_id=?
+			AND conversation_id=? AND estado='detenido'`, now(), s.tid, convID)
+	}
 	return err
 }
 

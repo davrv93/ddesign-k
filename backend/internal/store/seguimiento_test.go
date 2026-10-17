@@ -191,7 +191,12 @@ func TestSeguimientoStore(t *testing.T) {
 			if c, _ := a.st.GetClienta(ctx, a.cust.ID); c.Etapa != "mas_adelante" {
 				t.Fatalf("el contexto no pisa «Más adelante»: %q", c.Etapa)
 			}
+			_ = a.st.ArmarSeguimiento(ctx, a.conv.ID, propia, "V21", time.Now())
+			_ = a.st.DetenerSeguimiento(ctx, a.conv.ID)
 			_ = a.st.SalirDeMasAdelante(ctx, a.conv.ID)
+			if e, _ := a.st.SeguimientoDe(ctx, a.conv.ID); e == nil || e.Estado == "detenido" {
+				t.Fatalf("al volver de «Más adelante», el seguimiento se puede rearmar: %+v", e)
+			}
 			_ = a.st.SetConversationState(ctx, a.conv.ID, "", `{"etapa":"cierre"}`)
 			if c, _ := a.st.GetClienta(ctx, a.cust.ID); c.Etapa != "cierre" {
 				t.Fatalf("al volver, la etapa la decide el bot: %q", c.Etapa)
