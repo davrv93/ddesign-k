@@ -1400,9 +1400,11 @@ func (b *Bot) sendAgentText(ctx context.Context, conv *store.Conversation, r *ag
 	if n := len(partes); len(r.Sugerencias) > 0 && n > 1 && strings.Contains(partes[n-1], "?") {
 		cierre, partes = partes[n-1], partes[:n-1]
 	}
-	// Sin encuestas (13-10-2026, pedido del usuario): la pregunta va en el texto y la clienta contesta escribiendo. Por la
-	// API oficial, en cambio, las respuestas rápidas salen como BOTONES de verdad en el último mensaje (octubre de 2026).
-	botones := b.canalDe(conv) == CanalCloud && len(r.RespuestasRapidas) > 0 && len(r.RespuestasRapidas) <= 10
+	// Sin encuestas ni botones (13-10 y 16-10-2026, pedido del usuario: «que interactúe mediante escritura»): la pregunta
+	// va en el texto y la clienta contesta escribiendo. Solo con el ajuste botones_whatsapp=true y por la API oficial, las
+	// respuestas rápidas salen como botones en el último mensaje.
+	botones := b.canalDe(conv) == CanalCloud && b.ajusteSi(ctx, "botones_whatsapp") && len(r.RespuestasRapidas) > 0 &&
+		len(r.RespuestasRapidas) <= 10
 	ultimo := len(partes) - 1
 	if cierre != "" {
 		ultimo = -1

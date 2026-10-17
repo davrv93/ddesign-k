@@ -34,6 +34,7 @@ func init() {
 		store.SettingSeguimientoHorario:  "08:00-21:00",
 		store.SettingTopePrincipal:       "25",
 		"plantilla_estado_pedido":        "",
+		"botones_whatsapp":               "false", // la clienta contesta escribiendo (pedido del usuario, 16-10-2026)
 	} {
 		settingDefaults[k] = v
 	}

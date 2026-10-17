@@ -237,6 +237,7 @@ func TestCanalCloud(t *testing.T) {
 	sim := simulado.New("tok", "111", "999")
 	t.Cleanup(sim.Close)
 	b.UsarCloud(cloud.New(sim.URL, "", "111", "999", "tok", "sec", "ver"))
+	_ = st.SetSetting(ctx, "botones_whatsapp", "true") // por defecto no hay botones; aquí se prueban
 	var reqs []agente.Request
 	b.Agent = agenteGuion(t, map[string]agente.Reply{
 		"info del vestido": {Accion: "responder", Respuesta: "¡Claro! ¿Qué quieres ver?", Memoria: memProducto("V01", ""),
