@@ -1,14 +1,16 @@
 """Contenido de seguimiento por modelo desde baruka.pe (octubre de 2026, requerimientos de Luis).
 
-    python3 contenido.py            # usa salida/catalogo_baruka_pe.json y salida/catalogo_oficial.json (ya extraídos)
+    python3 contenido.py                 # beneficios, desde salida/catalogo_baruka_pe.json y catalogo_oficial.json
+    python3 contenido.py --testimonios   # además, las reseñas de cada producto (Trustoo, 1,2 s entre peticiones)
 
 Deja `salida/contenido_seguimiento.json`, una lista para `POST /api/contenido/importar` de JMD Ventas:
 [{"codigo": "V50", "clave": "beneficio", "texto": "…", "media_url": ""}, …]
 
 - **beneficio**: la sección «Beneficios» de la descripción del producto, copiada tal cual (sin reescribir), en viñetas.
-- **testimonio**: la web NO lo tiene en un formato que se pueda leer. Las reseñas son de la app Trustoo, que se cargan
-  con JavaScript (el modelo revisado el 16-10-2026 tenía 0), y robots.txt no permite /products/<handle>.js, donde
-  estarían los videos. Se cargan a mano en el panel (Productos → Seguimiento).
+- **testimonio**: la reseña de una clienta real que la web muestra dentro del producto (app Trustoo; el usuario lo
+  aclaró el 16-10-2026). Se lee de la misma API pública que usa la página (api.trustoo.io, get_product_reviews) y se
+  elige UNA por modelo: 5 estrellas, con foto si hay, la más completa. Texto tal cual, con el nombre como lo publica la
+  web («Gisella R.»), y la foto que subió la clienta.
 - **tip**: no está en la web; lo carga Luis en el panel.
 """
 from __future__ import annotations
@@ -17,6 +19,9 @@ import json
 import os
 import re
 import sys
+import time
+import urllib.parse
+import urllib.request
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 SALIDA = os.path.join(AQUI, "salida")
@@ -49,6 +54,34 @@ def beneficios(descripcion: str) -> str:
     return "\n".join("• " + x.rstrip(".") for x in out)
 
 
+TRUSTOO = "https://api.trustoo.io/api/v1/reviews/get_product_reviews"
+SHOP_ID = "82065916194"   # el de baruka.pe (aparece en la página del producto)
+UA = "BarukaCatalogoBot/1.0 (+contenido de seguimiento)"
+
+
+def reseñas(product_id) -> list[dict]:
+    q = urllib.parse.urlencode({"shop_id": SHOP_ID, "product_id": product_id, "page": 1, "limit": 20,
+                                "sort_by": "commented-at-descending"})
+    with urllib.request.urlopen(urllib.request.Request(f"{TRUSTOO}?{q}", headers={"User-Agent": UA}), timeout=30) as r:
+        d = json.loads(r.read().decode("utf-8"))
+    return ((d.get("data") or {}).get("list")) or []
+
+
+def mejor_testimonio(lista: list[dict]) -> dict | None:
+    buenas = [x for x in lista if (x.get("star") or 0) >= 5 and len((x.get("content") or "").strip()) >= 20]
+    if not buenas:
+        return None
+    def foto(x):
+        return next((r.get("src") for r in (x.get("resources") or []) if r.get("resource_type") == 1 and r.get("src")), "")
+    buenas.sort(key=lambda x: (bool(foto(x)), min(len(x.get("content") or ""), 400)), reverse=True)
+    x = buenas[0]
+    texto = re.sub(r"\s+", " ", x["content"]).strip().strip('“”"«» ')
+    if len(texto) > 450:
+        texto = texto[:447].rsplit(" ", 1)[0] + "…"
+    autor = (x.get("author") or "").strip()
+    return {"texto": f"«{texto}»" + (f" — {autor} ⭐⭐⭐⭐⭐" if autor else ""), "media_url": foto(x)}
+
+
 def main() -> int:
     cat = json.load(open(os.path.join(SALIDA, "catalogo_baruka_pe.json"), encoding="utf-8"))["productos"]
     ofi = json.load(open(os.path.join(SALIDA, "catalogo_oficial.json"), encoding="utf-8"))["productos"]
@@ -66,6 +99,24 @@ def main() -> int:
     with open(os.path.join(SALIDA, "contenido_seguimiento.json"), "w", encoding="utf-8") as f:
         json.dump(filas, f, ensure_ascii=False, indent=1)
     print(f"beneficios: {len(filas)} modelos; sin sección «Beneficios» en la web: {len(sin)}")
+    if "--testimonios" in sys.argv:
+        n = 0
+        for p in cat:
+            cod = codigo_de.get(p.get("handle"))
+            if not cod or not p.get("id"):
+                continue
+            time.sleep(1.2)
+            try:
+                t = mejor_testimonio(reseñas(p["id"]))
+            except Exception as e:  # noqa: BLE001
+                print(f"  {cod}: {e}")
+                continue
+            if t:
+                filas.append({"codigo": cod, "clave": "testimonio", **t})
+                n += 1
+        with open(os.path.join(SALIDA, "contenido_seguimiento.json"), "w", encoding="utf-8") as f:
+            json.dump(filas, f, ensure_ascii=False, indent=1)
+        print(f"testimonios: {n} modelos con una reseña de 5 estrellas")
     return 0
 
 
