@@ -119,6 +119,11 @@ def prueba_bienvenida(fichas):
     # «Ver tallas» con el modelo en foco: tallas con stock, sin LLM.
     r = turno(fichas, "Ver tallas", {"producto": "V50", "mostrados": ["V50"], "sabemos": {}}, [C("hola"), B("¡Hola! Te comparto el Salome")])
     si("ver tallas", "S, M y L" in r["respuesta"] and not PROMPTS)
+    # Stock caído: no dice «agotado».
+    RESPUESTA["texto"], RESPUESTA["herramientas"] = "x", []
+    r = agente.conversar(req("Ver tallas", {"producto": "V50", "mostrados": ["V50"], "sabemos": {}}, [C("hola"), B("¡Hola!")]),
+                         fichas, lambda c: {}, pie=lambda f, st: "")
+    si("stock caído: sin «agotado»", "agotado" not in r["respuesta"])
 
 
 def prueba_presupuesto(fichas):

@@ -1515,12 +1515,18 @@ def _tallas_en_foco(f: dict, fichas, consultar_stock) -> str:
     if ficha is None:
         return ""
     try:
-        online = ((consultar_stock([cod]) or {}).get(cod) or {}).get("online") or {}
+        st = (consultar_stock([cod]) or {}).get(cod) or {}
     except Exception:
-        online = {}
+        st = {}
+    online = st.get("online") or {}
     orden = ["XS", "S", "M", "L", "XL", "XXL", "2XL"]
     hay = sorted([t for t, n in online.items() if (n or 0) > 0], key=lambda t: orden.index(t) if t in orden else 99)
     plantillas._marca(f, "talla")
+    if not online:     # el stock no respondió (o no se conoce): las tallas del modelo, sin afirmar que está agotado
+        tallas = (getattr(ficha, "tallas", "") or "").strip()
+        if tallas:
+            return f"El {ficha.nombre} viene en tallas {tallas} 😊 ¿Cuál es la tuya? Te confirmo el stock al toque."
+        return ""
     if not hay:
         return f"Por ahora el {ficha.nombre} está agotado en todas las tallas 😔 ¿Te muestro uno parecido?"
     lista = hay[0] if len(hay) == 1 else ", ".join(hay[:-1]) + " y " + hay[-1]
