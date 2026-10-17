@@ -140,7 +140,11 @@ func ContenidoPaso(ctx context.Context, st *store.Store, conoc *store.Conocimien
 	}
 	switch paso.Tipo {
 	case "emoji", "texto":
-		return PasoListo{Texto: reemplazar(paso.Texto)}
+		l := PasoListo{Texto: reemplazar(paso.Texto), MediaURL: abs(paso.MediaURL)}
+		if l.Texto == "" && l.MediaURL == "" {
+			return PasoListo{Omitido: true, Motivo: "paso vacío"}
+		}
+		return l
 	case "beneficio", "testimonio", "tip":
 		if prod == nil {
 			return PasoListo{Omitido: true, Motivo: "no hay modelo en foco"}

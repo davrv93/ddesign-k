@@ -456,6 +456,13 @@ export const subirFuente = (archivo: File, tipo: TipoFuente, titulo: string) => 
   return api<Fuente>("/api/fuentes/subir", { method: "POST", body: fd });
 };
 
+/** Sube la imagen de un paso de seguimiento (p. ej. un sticker) y devuelve su ruta para guardarla en el paso. */
+export const subirImagenPaso = (archivo: File) => {
+  const fd = new FormData();
+  fd.append("image", archivo);
+  return api<{ media_url: string }>("/api/secuencias/imagen", { method: "POST", body: fd });
+};
+
 export const leerConocimiento = () => api<Conocimiento>("/api/conocimiento");
 export const resumenPromos = () => api<PromoResumen[] | null>("/api/promos/resumen").then((r) => r ?? []);
 export const fuentesDeConversacion = (id: number) => api<FuenteUsada[] | null>(`/api/conversations/${id}/fuentes`).then((r) => r ?? []);
@@ -578,6 +585,8 @@ export interface PasoSecuencia {
   texto: string;
   promo_id: number;
   plantilla: string;
+  /** Imagen del paso emoji/texto («/media/seguimiento/…», la sube subirImagenPaso). */
+  media_url?: string;
 }
 
 export interface CifrasSecuencia {

@@ -20,6 +20,7 @@ import {
   type Secuencia,
   type SecuenciaEditable,
   type TipoPaso,
+  subirImagenPaso,
 } from "~/lib/api";
 import { esperaTexto } from "~/lib/format";
 import { u } from "~/lib/base";
@@ -79,10 +80,11 @@ interface PasoUI extends PasoSecuencia {
 const aUI = (p: PasoSecuencia): PasoUI => {
   const m = Math.max(1, Math.round(p.espera_min || 60));
   const unidad: Unidad = m % 1440 === 0 ? "d" : m % 60 === 0 ? "h" : "min";
-  return { ...p, texto: p.texto ?? "", plantilla: p.plantilla ?? "", promo_id: p.promo_id ?? 0, cantidad: m / FACTOR[unidad], unidad };
+  return { ...p, texto: p.texto ?? "", plantilla: p.plantilla ?? "", promo_id: p.promo_id ?? 0, media_url: p.media_url ?? "",
+    cantidad: m / FACTOR[unidad], unidad };
 };
 
-const pasoNuevo = (): PasoUI => ({ espera_min: 300, tipo: "texto", texto: "", promo_id: 0, plantilla: "", cantidad: 5, unidad: "h" });
+const pasoNuevo = (): PasoUI => ({ espera_min: 300, tipo: "texto", texto: "", promo_id: 0, plantilla: "", media_url: "", cantidad: 5, unidad: "h" });
 
 interface FormSecuencia {
   nombre: string;
@@ -104,7 +106,8 @@ function validar(f: FormSecuencia): string {
   for (let i = 0; i < f.pasos.length; i++) {
     const p = f.pasos[i];
     if (!(p.espera_min >= 1 && p.espera_min <= ESPERA_MAX)) return `Paso ${i + 1}: la espera va de 1 minuto a 14 días.`;
-    if ((p.tipo === "emoji" || p.tipo === "texto") && !p.texto.trim()) return `Paso ${i + 1}: escribe el mensaje.`;
+    if ((p.tipo === "emoji" || p.tipo === "texto") && !p.texto.trim() && !p.media_url)
+      return `Paso ${i + 1}: escribe el mensaje o sube una imagen.`;
     if (p.tipo === "oferta" && !p.promo_id) return `Paso ${i + 1}: elige la promo de la oferta.`;
   }
   return "";
@@ -123,6 +126,7 @@ const aEditable = (f: FormSecuencia): SecuenciaEditable => ({
     texto: p.texto.trim(),
     promo_id: p.tipo === "oferta" ? Number(p.promo_id) || 0 : 0,
     plantilla: f.fuera_de_ventana === "plantilla" ? p.plantilla : "",
+    media_url: p.tipo === "emoji" || p.tipo === "texto" ? p.media_url || "" : "",
   })),
 });
 
@@ -494,6 +498,47 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
                         />
                       )}
                     </label>
+                    {(p.tipo === "emoji" || p.tipo === "texto") && (
+                      <div class="paso-imagen">
+                        <span class="small">Imagen o sticker (opcional)</span>
+                        {p.media_url ? (
+                          <div class="row">
+                            <img src={u(p.media_url)} alt="Imagen del paso" width={96} height={96} style={{ objectFit: "contain", borderRadius: "8px" }} />
+                            {!soloLectura && (
+                              <button
+                                type="button"
+                                class="btn btn-sm btn-ghost"
+                                onClick$={() => {
+                                  f.pasos[i].media_url = "";
+                                  tocar();
+                                }}
+                              >
+                                Quitar imagen
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          !soloLectura && (
+                            <input
+                              type="file"
+                              accept="image/png,image/jpeg,image/webp,image/gif"
+                              aria-label={`Imagen del paso ${i + 1}`}
+                              onChange$={async (_, el) => {
+                                const archivo = el.files?.[0];
+                                if (!archivo) return;
+                                try {
+                                  const r = await subirImagenPaso(archivo);
+                                  f.pasos[i].media_url = r.media_url;
+                                  tocar();
+                                } catch (e) {
+                                  error.value = (e as Error).message;
+                                }
+                              }}
+                            />
+                          )
+                        )}
+                      </div>
+                    )}
                     {f.fuera_de_ventana === "plantilla" && (
                       <label>
                         Plantilla fuera de las 24 h

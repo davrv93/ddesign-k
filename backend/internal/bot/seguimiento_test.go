@@ -289,3 +289,31 @@ func TestCanalCloud(t *testing.T) {
 		t.Fatalf("plantilla de estado: %+v", env[n0:])
 	}
 }
+
+// Un paso puede ser solo una imagen (el sticker «Esperando q me respondas» de Luis): sale como foto, sin texto.
+func TestPasoConImagen(t *testing.T) {
+	b, st, fe := setup(t, `{}`, false)
+	ctx := context.Background()
+	_ = st.SetSetting(ctx, store.SettingSeguimientoHorario, "00:00-24:00")
+	q := &store.Secuencia{Nombre: "Sticker", Activa: true, Pasos: []store.Paso{{EsperaMin: 60, Tipo: "emoji", MediaURL: "/media/seguimiento/esperando.png"}}}
+	if err := st.CrearSecuencia(ctx, q); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.CrearSecuencia(ctx, &store.Secuencia{Nombre: "x", Pasos: []store.Paso{{EsperaMin: 1, Tipo: "emoji", MediaURL: "javascript:x"}}}); err == nil {
+		t.Fatal("imagen con ruta rara: rechazada")
+	}
+	var reqs []agente.Request
+	b.Agent = agenteGuion(t, map[string]agente.Reply{"me gusta": {Accion: "responder", Respuesta: "¡Precioso! 😍", Memoria: memProducto("V01", "")}}, &reqs)
+	handle(b, text("me gusta"))
+	base := enviadosN(fe)
+	if b.TickSeguimiento(ctx, time.Now().Add(61*time.Minute)) != 1 {
+		t.Fatal("el paso con imagen sale")
+	}
+	b.Drain(5 * time.Second)
+	fe.mu.Lock()
+	m := fe.sent[base]
+	fe.mu.Unlock()
+	if m["_path"] != "/send/media" || !strings.Contains(fmt.Sprint(m["url"]), "http://backend:8080/media/seguimiento/esperando.png") {
+		t.Fatalf("sale como imagen con la URL de la empresa: %+v", m)
+	}
+}

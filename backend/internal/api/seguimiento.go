@@ -6,6 +6,7 @@ package api
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/hex"
 	"errors"
@@ -13,6 +14,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -52,6 +55,7 @@ func (s *Server) rutasSeguimiento(p, a func(pattern string, h http.HandlerFunc))
 	a("DELETE /api/secuencias/{id}", s.borrarSecuencia)
 	a("POST /api/secuencias/{id}/activa", s.activarSecuencia)
 	p("GET /api/secuencias/{id}/vista-previa", s.vistaPreviaSecuencia)
+	a("POST /api/secuencias/imagen", s.subirImagenPaso)
 	p("GET /api/conversations/{id}/seguimiento", s.seguimientoConv)
 	p("POST /api/conversations/{id}/seguimiento/detener", s.detenerSeguimiento)
 	p("GET /api/conversations/{id}/origen", s.origenConv)
@@ -239,6 +243,37 @@ func (s *Server) activarSecuencia(w http.ResponseWriter, r *http.Request) {
 	s.pub(r, "seguimiento")
 	out, _ := s.st(r).GetSecuencia(r.Context(), id)
 	writeJSON(w, 200, out)
+}
+
+// subirImagenPaso guarda una imagen para un paso de seguimiento (multipart, campo como el de las fotos de productos) y
+// devuelve su ruta: {"media_url": "/media/seguimiento/<hash>.png"}.
+func (s *Server) subirImagenPaso(w http.ResponseWriter, r *http.Request) {
+	data, mime, err := readUpload(r)
+	if err != nil {
+		writeErr(w, 400, err.Error())
+		return
+	}
+	ext := map[string]string{"image/png": ".png", "image/webp": ".webp", "image/jpeg": ".jpg", "image/gif": ".gif"}[mime]
+	if ext == "" {
+		writeErr(w, 400, "la imagen debe ser PNG, JPG, WEBP o GIF")
+		return
+	}
+	if len(data) > 5<<20 {
+		writeErr(w, 400, "la imagen pesa más de 5 MB")
+		return
+	}
+	dir := filepath.Join(s.mediaRoot(r), "seguimiento")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	sum := sha256.Sum256(data)
+	name := hex.EncodeToString(sum[:8]) + ext
+	if err := os.WriteFile(filepath.Join(dir, name), data, 0o644); err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 200, map[string]string{"media_url": "/media/seguimiento/" + name})
 }
 
 type pasoPrevia struct {

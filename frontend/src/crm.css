@@ -1974,3 +1974,7 @@ button.fu-card:focus-visible {
     background: none;
   }
 }
+
+/* Imagen o sticker de un paso de seguimiento */
+.paso-imagen { display: flex; flex-direction: column; gap: 6px; }
+.paso-imagen .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }

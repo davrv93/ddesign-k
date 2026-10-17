@@ -360,6 +360,9 @@ type Paso struct {
 	Texto     string `json:"texto"`
 	PromoID   int64  `json:"promo_id"`
 	Plantilla string `json:"plantilla"`
+	// MediaURL: imagen que acompaña a un paso emoji/texto (p. ej. el sticker «Esperando q me respondas»). Relativa a la
+	// empresa («/media/seguimiento/x.png», la sube el panel) o https://.
+	MediaURL string `json:"media_url,omitempty"`
 }
 
 type CifrasSecuencia struct {
@@ -423,15 +426,18 @@ func (q *Secuencia) normalizar() error {
 	}
 	for i := range q.Pasos {
 		p := &q.Pasos[i]
-		p.Texto, p.Plantilla = strings.TrimSpace(p.Texto), strings.TrimSpace(p.Plantilla)
+		p.Texto, p.Plantilla, p.MediaURL = strings.TrimSpace(p.Texto), strings.TrimSpace(p.Plantilla), strings.TrimSpace(p.MediaURL)
+		if p.MediaURL != "" && !strings.HasPrefix(p.MediaURL, "/media/") && !strings.HasPrefix(p.MediaURL, "https://") {
+			return fmt.Errorf("%w: paso %d: la imagen debe subirse desde el panel o empezar con https://", ErrSeguimientoInvalido, i+1)
+		}
 		if p.EsperaMin < 1 || p.EsperaMin > MaxEsperaMin {
 			return fmt.Errorf("%w: paso %d: la espera va de 1 minuto a 14 días", ErrSeguimientoInvalido, i+1)
 		}
 		if !enLista(p.Tipo, TiposPaso) {
 			return fmt.Errorf("%w: paso %d: tipo %q", ErrSeguimientoInvalido, i+1, p.Tipo)
 		}
-		if (p.Tipo == "emoji" || p.Tipo == "texto") && p.Texto == "" {
-			return fmt.Errorf("%w: paso %d: falta el texto", ErrSeguimientoInvalido, i+1)
+		if (p.Tipo == "emoji" || p.Tipo == "texto") && p.Texto == "" && p.MediaURL == "" {
+			return fmt.Errorf("%w: paso %d: falta el texto o la imagen", ErrSeguimientoInvalido, i+1)
 		}
 		if p.Tipo == "oferta" && p.PromoID <= 0 {
 			return fmt.Errorf("%w: paso %d: la oferta necesita una promo", ErrSeguimientoInvalido, i+1)
