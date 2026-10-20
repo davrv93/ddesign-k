@@ -72,3 +72,59 @@ func TestFlujosPorHTTP(t *testing.T) {
 	code(llamar(h, "POST", A+"/secuencias/"+id+"/probar", a.admin, `{"telefono":"12"}`), 400, "teléfono malo")
 	code(llamar(h, "POST", A+"/secuencias/"+id+"/probar", a.admin, `{"telefono":"51911222333","escala_min":99}`), 400, "escala fuera de rango")
 }
+
+// Un flujo por modelo y encendido en lote por HTTP: solo admin, y con ids de otra empresa no se toca nada.
+func TestFlujoPorModeloPorHTTP(t *testing.T) {
+	h, st, _ := servidorMulti(t)
+	sfx := strings.ReplaceAll(time.Now().Format("150405.000000"), ".", "")
+	a := prepararEmpresa(t, h, st, "fma"+sfx, "Alfa")
+	b := prepararEmpresa(t, h, st, "fmb"+sfx, "Beta")
+	A, B := "/"+a.slug+"/api", "/"+b.slug+"/api"
+	code := func(w *httptest.ResponseRecorder, want int, que string) *httptest.ResponseRecorder {
+		t.Helper()
+		if w.Code != want {
+			t.Fatalf("%s: %d (esperaba %d) %s", que, w.Code, want, w.Body)
+		}
+		return w
+	}
+	grafo := `{"nodos":[{"id":"i","tipo":"inicio"},{"id":"w","tipo":"esperar","minutos":60},{"id":"m","tipo":"mensaje","mensaje":"modelo","texto":"Mira el {modelo}"}],
+		"aristas":[{"desde":"i","salida":"siguiente","hasta":"w"},{"desde":"w","salida":"siguiente","hasta":"m"}]}`
+	var sec struct {
+		ID int64 `json:"id"`
+	}
+	_ = json.Unmarshal(code(llamar(h, "POST", A+"/secuencias", a.admin, `{"nombre":"Base","alcance":"todas","pasos":[],"grafo":`+grafo+`}`), 201, "base").Body.Bytes(), &sec)
+	id := itoa(sec.ID)
+	code(llamar(h, "POST", A+"/secuencias/"+id+"/por-modelo", a.asesora, `{}`), 403, "asesora")
+	code(llamar(h, "POST", B+"/secuencias/"+id+"/por-modelo", b.admin, `{}`), 404, "otra empresa")
+	w := code(llamar(h, "POST", A+"/secuencias/"+id+"/por-modelo", a.admin, `{}`), 200, "todos los modelos")
+	var r struct {
+		Creadas  []string          `json:"creadas"`
+		Omitidas map[string]string `json:"omitidas"`
+	}
+	_ = json.Unmarshal(w.Body.Bytes(), &r)
+	if len(r.Creadas) != 1 || r.Creadas[0] != "V21" {
+		t.Fatalf("por modelo: %s", w.Body)
+	}
+	_ = json.Unmarshal(code(llamar(h, "POST", A+"/secuencias/"+id+"/por-modelo", a.admin, `{"codigos":["V21"]}`), 200, "otra vez").Body.Bytes(), &r)
+	if len(r.Creadas) != 0 || r.Omitidas["V21"] == "" {
+		t.Fatalf("no duplica: %+v", r)
+	}
+	var lista []struct {
+		ID     int64 `json:"id"`
+		Activa bool  `json:"activa"`
+	}
+	_ = json.Unmarshal(code(llamar(h, "GET", A+"/secuencias", a.admin, ""), 200, "lista").Body.Bytes(), &lista)
+	ids := []string{}
+	for _, x := range lista {
+		ids = append(ids, itoa(x.ID))
+	}
+	cuerpo := `{"ids":[` + strings.Join(ids, ",") + `],"activa":true}`
+	code(llamar(h, "POST", A+"/secuencias/activar-lote", a.asesora, cuerpo), 403, "lote asesora")
+	if w := code(llamar(h, "POST", B+"/secuencias/activar-lote", b.admin, cuerpo), 200, "lote otra empresa"); !strings.Contains(w.Body.String(), `"cambiadas":0`) {
+		t.Fatalf("otra empresa encendió: %s", w.Body)
+	}
+	if w := code(llamar(h, "POST", A+"/secuencias/activar-lote", a.admin, cuerpo), 200, "lote"); !strings.Contains(w.Body.String(), `"cambiadas":2`) {
+		t.Fatalf("lote: %s", w.Body)
+	}
+	code(llamar(h, "POST", A+"/secuencias/activar-lote", a.admin, `{"ids":[]}`), 400, "lote vacío")
+}

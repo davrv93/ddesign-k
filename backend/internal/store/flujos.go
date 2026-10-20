@@ -540,3 +540,67 @@ func leerGrafo(v string) *Grafo {
 	}
 	return &g
 }
+
+// ---------------------------------------------------------------------------
+// Un flujo por modelo (20-10-2026): como en Kommo, donde Luis tenía un Salesbot por modelo. Desde un flujo base se crea
+// una copia por modelo, con alcance en ese modelo (gana sobre el general al encenderla) y editable por separado.
+
+// NombrePorModelo: «<base> · <modelo>» (sin el «(migrado)» del base).
+func NombrePorModelo(base, modelo string) string {
+	b := strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(base), "(migrado)"))
+	n := b + " · " + strings.TrimSpace(modelo)
+	if utf8.RuneCountInString(n) > 200 {
+		n = string([]rune(n)[:200])
+	}
+	return n
+}
+
+// CopiasPorModelo crea, para cada código, una copia del flujo `base` con alcance en ese modelo. Omite los códigos que no
+// existen y los modelos que ya tienen una secuencia con ese alcance (no se pisa lo que alguien ya ajustó). Devuelve los
+// códigos creados y los omitidos con su motivo.
+func (s *Store) CopiasPorModelo(ctx context.Context, base *Secuencia, codigos []string, activar bool) (creadas []string, omitidas map[string]string, err error) {
+	omitidas = map[string]string{}
+	if base == nil || base.Grafo == nil {
+		return nil, nil, fmt.Errorf("%w: la base debe ser un flujo del editor visual", ErrSeguimientoInvalido)
+	}
+	existentes, err := s.ListarSecuencias(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	tiene := map[string]bool{}
+	for _, q := range existentes {
+		if q.Alcance == "productos" && q.ID != base.ID {
+			for _, c := range strings.Split(q.AlcanceValor, ",") {
+				tiene[strings.ToUpper(strings.TrimSpace(c))] = true
+			}
+		}
+	}
+	vistos := map[string]bool{}
+	for _, c := range codigos {
+		c = strings.ToUpper(strings.TrimSpace(c))
+		if c == "" || vistos[c] {
+			continue
+		}
+		vistos[c] = true
+		p, err := s.GetProductByCode(ctx, c)
+		if err != nil {
+			omitidas[c] = "no existe ese modelo"
+			continue
+		}
+		if tiene[c] {
+			omitidas[c] = "ya tiene un flujo propio"
+			continue
+		}
+		var g Grafo
+		b, _ := json.Marshal(base.Grafo)
+		_ = json.Unmarshal(b, &g)
+		q := &Secuencia{Nombre: NombrePorModelo(base.Nombre, p.Name), Activa: activar, Alcance: "productos", AlcanceValor: c,
+			FueraDeVentana: base.FueraDeVentana, AlResponder: base.AlResponder, MarcarPerdida: base.MarcarPerdida,
+			TareaAlResponder: base.TareaAlResponder, Grafo: &g}
+		if err := s.CrearSecuencia(ctx, q); err != nil {
+			return creadas, omitidas, err
+		}
+		creadas = append(creadas, c)
+	}
+	return creadas, omitidas, nil
+}

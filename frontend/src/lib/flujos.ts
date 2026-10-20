@@ -293,3 +293,21 @@ export const simularFlujo = (body: { grafo: Grafo; nombre: string; producto: str
 
 export const probarFlujo = (id: number, body: { telefono: string; producto: string; escala_min: number }) =>
   api<{ conversation_id: number; telefono: string; escala_min: number }>(`/api/secuencias/${id}/probar`, { method: "POST", json: body });
+
+// Un flujo por modelo (como los Salesbots de Kommo): copias del flujo base con alcance en cada modelo, apagadas.
+// Sin códigos, todos los modelos activos. Los modelos que ya tienen su flujo se omiten.
+export const flujoPorModelo = (id: number, codigos: string[]) =>
+  api<{ creadas: string[]; omitidas: Record<string, string> }>(`/api/secuencias/${id}/por-modelo`, { method: "POST", json: { codigos } });
+
+export const activarLote = (ids: number[], activa: boolean) =>
+  api<{ cambiadas: number }>("/api/secuencias/activar-lote", { method: "POST", json: { ids, activa } });
+
+// Modelos que ya tienen un flujo propio (alcance «productos»): código → nombre del flujo.
+export const flujosPropios = (secuencias: { id: number; nombre: string; alcance: string; alcance_valor?: string | null }[], salvo = 0) => {
+  const m: Record<string, string> = {};
+  for (const q of secuencias) {
+    if (q.alcance !== "productos" || q.id === salvo) continue;
+    for (const c of (q.alcance_valor ?? "").split(",")) if (c.trim()) m[c.trim().toUpperCase()] = q.nombre;
+  }
+  return m;
+};

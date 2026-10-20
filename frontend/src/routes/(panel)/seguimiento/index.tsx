@@ -6,12 +6,37 @@ import { activarSecuencia, listarSecuencias, miSesion, tableroSecuencia, type Fi
 import { Confirmar } from "~/components/confirmar";
 import { SecuenciaEditor, alcanceTexto, resumenPasos } from "~/components/seguimiento";
 import { ResumenContenidoTabla } from "~/components/contenido";
+import { activarLote } from "~/lib/flujos";
 
 // Seguimiento: secuencias de mensajes para las clientas que vieron un modelo y dejaron de responder
 // (docs/SEGUIMIENTO_CONTRATO.md §4), y qué modelos tienen contenido para ellas (§3). Todo el equipo mira; solo admin edita.
 // El editor va por ?s=<id> (o ?s=nueva) y la pestaña por ?tab=contenido: el sitio es estático.
 type Pestana = "secuencias" | "tablero" | "contenido";
 type Abierta = { secuencia: Secuencia | null } | null;
+type Filtro = "todas" | "activas" | "apagadas" | "generales" | "por_modelo";
+
+const FILTROS: Record<Filtro, string> = {
+  todas: "Todas",
+  activas: "Activas",
+  apagadas: "Apagadas",
+  generales: "Generales",
+  por_modelo: "Por modelo",
+};
+
+const sinTilde = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+// Las que pasan el filtro y la búsqueda. Se llama también dentro de los manejadores: la lista que se arma en el render
+// queda con la búsqueda de entonces.
+const filtrarLista = (lista: Secuencia[], filtro: Filtro, busca: string) => {
+  const q = sinTilde(busca.trim());
+  return lista.filter((s) => {
+    if (filtro === "activas" && !s.activa) return false;
+    if (filtro === "apagadas" && s.activa) return false;
+    if (filtro === "generales" && s.alcance === "productos") return false;
+    if (filtro === "por_modelo" && s.alcance !== "productos") return false;
+    return !q || sinTilde(`${s.nombre} ${s.alcance_valor ?? ""} ${alcanceTexto(s)}`).includes(q);
+  });
+};
 
 export default component$(() => {
   const pestana = useSignal<Pestana>("secuencias");
@@ -22,6 +47,11 @@ export default component$(() => {
   const abierta = useSignal<Abierta>(null);
   const activando = useSignal<Secuencia | null>(null);
   const toast = useSignal<{ text: string; error?: boolean } | null>(null);
+  // Con un flujo por modelo hay decenas: buscador, filtro y encender o apagar varias a la vez.
+  const busca = useSignal("");
+  const filtro = useSignal<Filtro>("todas");
+  const marcadas = useSignal<number[]>([]);
+  const lote = useSignal(false); // confirmar antes de encender las marcadas
 
   const notify = $((text: string, err = false) => {
     toast.value = { text, error: err };
@@ -91,7 +121,21 @@ export default component$(() => {
     }
   });
 
+  const cambiarLote = $(async (activa: boolean) => {
+    try {
+      const r = await activarLote(marcadas.value, activa);
+      marcadas.value = [];
+      await load();
+      await notify(`${r.cambiadas} ${r.cambiadas === 1 ? "secuencia" : "secuencias"} ${activa ? "activadas" : "apagadas"}`);
+    } catch (e) {
+      await notify((e as Error).message, true);
+      await load();
+    }
+  });
+
   const activas = lista.value.filter((s) => s.activa).length;
+  const visibles = filtrarLista(lista.value, filtro.value, busca.value);
+  const todasMarcadas = visibles.length > 0 && visibles.every((s) => marcadas.value.includes(s.id));
 
   return (
     <div class="page">
@@ -180,12 +224,65 @@ export default component$(() => {
               )}
             </div>
           ) : (
+            <>
+              <div class="seg-filtros">
+                <input type="search" placeholder="Buscar por nombre o modelo" aria-label="Buscar secuencia" value={busca.value} onInput$={(_, el) => (busca.value = el.value)} />
+                <div class="row wrap" role="group" aria-label="Filtrar">
+                  {(Object.keys(FILTROS) as Filtro[]).map((k) => (
+                    <button key={k} class={["chip seg-filtro", filtro.value === k && "on"]} aria-pressed={filtro.value === k} onClick$={() => (filtro.value = k)}>
+                      {FILTROS[k]}
+                    </button>
+                  ))}
+                </div>
+                <span class="muted small">
+                  {visibles.length} de {lista.value.length}
+                </span>
+              </div>
+              {admin.value && visibles.length > 1 && (
+                <div class="seg-lote row wrap">
+                  <label class="check">
+                    <input
+                      type="checkbox"
+                      checked={todasMarcadas}
+                      onChange$={(_, el) => {
+                        const ids = filtrarLista(lista.value, filtro.value, busca.value).map((s) => s.id);
+                        marcadas.value = el.checked ? [...new Set([...marcadas.value, ...ids])] : marcadas.value.filter((id) => !ids.includes(id));
+                      }}
+                    />
+                    Marcar las {visibles.length} que se ven
+                  </label>
+                  {marcadas.value.length > 0 && (
+                    <>
+                      <b>{marcadas.value.length} marcadas</b>
+                      <button class="btn btn-sm btn-primary" onClick$={() => (lote.value = true)}>
+                        Activar
+                      </button>
+                      <button class="btn btn-sm" onClick$={() => cambiarLote(false)}>
+                        Apagar
+                      </button>
+                      <button class="btn btn-sm btn-ghost" onClick$={() => (marcadas.value = [])}>
+                        Quitar marcas
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+              {visibles.length === 0 && <p class="muted">Ninguna secuencia coincide.</p>}
             <div class="seg-lista">
-              {lista.value.map((s) => {
+              {visibles.map((s) => {
                 const c = s.cifras;
                 return (
-                  <article key={s.id} class={["panel seg-card", s.activa && "activa"]}>
+                  <article key={s.id} class={["panel seg-card", s.activa && "activa", marcadas.value.includes(s.id) && "marcada"]}>
                     <div class="seg-card-top">
+                      {admin.value && (
+                        <input
+                          type="checkbox"
+                          class="seg-marca"
+                          aria-label={`Marcar ${s.nombre}`}
+                          checked={marcadas.value.includes(s.id)}
+                          onChange$={(_, el) => (marcadas.value = el.checked ? [...marcadas.value, s.id] : marcadas.value.filter((id) => id !== s.id))}
+                        />
+                      )}
                       <div class="grow">
                         <h2>
                           <button class="link-plain" onClick$={() => abrir(s)}>
@@ -239,6 +336,7 @@ export default component$(() => {
                 );
               })}
             </div>
+            </>
           )}
         </>
       )}
@@ -274,6 +372,19 @@ export default component$(() => {
             activando.value = null;
             await load();
             await notify(`«${s.nombre}» activada`);
+          }}
+        />
+      )}
+
+      {lote.value && (
+        <Confirmar
+          titulo={`¿Activar ${marcadas.value.length} ${marcadas.value.length === 1 ? "secuencia" : "secuencias"}?`}
+          texto="Desde ahora el robot escribirá a clientas reales que vieron esos modelos y dejaron de responder. Si un modelo tiene su propio flujo activo, ese gana sobre el general. No envía mensajes masivos y se detiene si la clienta responde."
+          confirmar="Activar"
+          onCancelar$={() => (lote.value = false)}
+          onConfirmar$={async () => {
+            lote.value = false;
+            await cambiarLote(true);
           }}
         />
       )}

@@ -156,3 +156,62 @@ func TestEstadoDelFlujo(t *testing.T) {
 		})
 	}
 }
+
+// Un flujo por modelo: copias con alcance en cada modelo, sin pisar el que ya tiene uno propio, y solo en su empresa.
+func TestCopiasPorModelo(t *testing.T) {
+	for nombre, base := range backends(t) {
+		t.Run(nombre, func(t *testing.T) {
+			ctx := context.Background()
+			sfx := fmt.Sprintf("%d", time.Now().UnixNano()%1_000_000)
+			a := nuevaEmpresa(t, base, "fpa-"+sfx, "Alfa", 5)
+			b := nuevaEmpresa(t, base, "fpb-"+sfx, "Beta", 5)
+			p2 := &Product{Code: "V22", Name: "Conjunto Xela", Price: 90, Active: true, Variants: []Variant{{Size: "M", Stock: 1}}}
+			if err := a.st.SaveProduct(ctx, p2); err != nil {
+				t.Fatal(err)
+			}
+			q := &Secuencia{Nombre: "Kommo · seguimiento (migrado)", Activa: false, FueraDeVentana: "saltar", Grafo: grafoBase()}
+			if err := a.st.CrearSecuencia(ctx, q); err != nil {
+				t.Fatal(err)
+			}
+			propio := &Secuencia{Nombre: "Propio", Alcance: "productos", AlcanceValor: "V22", Grafo: grafoBase()}
+			if err := a.st.CrearSecuencia(ctx, propio); err != nil {
+				t.Fatal(err)
+			}
+			creadas, omitidas, err := a.st.CopiasPorModelo(ctx, q, []string{"v21", "V22", "V99", "V21"}, false)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(creadas) != 1 || creadas[0] != "V21" || omitidas["V22"] == "" || omitidas["V99"] == "" {
+				t.Fatalf("creadas %v omitidas %v", creadas, omitidas)
+			}
+			lista, _ := a.st.ListarSecuencias(ctx)
+			var copia *Secuencia
+			for _, x := range lista {
+				if x.AlcanceValor == "V21" {
+					copia = x
+				}
+			}
+			if copia == nil || copia.Activa || copia.Alcance != "productos" || copia.Grafo == nil || len(copia.Grafo.Nodos) != 6 ||
+				copia.FueraDeVentana != "saltar" || copia.Nombre != "Kommo · seguimiento · Vestido de Alfa" {
+				t.Fatalf("copia: %+v", copia)
+			}
+			// Repetir no duplica: el V21 ya tiene su flujo.
+			if creadas, _, _ = a.st.CopiasPorModelo(ctx, q, []string{"V21"}, false); len(creadas) != 0 {
+				t.Fatalf("duplicó: %v", creadas)
+			}
+			// Encendida, gana sobre el general solo para su modelo.
+			_ = a.st.ActivarSecuencia(ctx, q.ID, true)
+			_ = a.st.ActivarSecuencia(ctx, copia.ID, true)
+			if s, _ := a.st.SecuenciaPara(ctx, "V21", "vestido"); s == nil || s.ID != copia.ID {
+				t.Fatalf("V21 usa su flujo: %+v", s)
+			}
+			// La otra empresa no ve las copias.
+			if lb, _ := b.st.ListarSecuencias(ctx); len(lb) != 0 {
+				t.Fatalf("Beta ve %d secuencias", len(lb))
+			}
+			if _, _, err := a.st.CopiasPorModelo(ctx, &Secuencia{Nombre: "Lista", Pasos: []Paso{{Tipo: "texto", Texto: "x"}}}, []string{"V21"}, false); err == nil {
+				t.Fatal("una lista de pasos no sirve de base")
+			}
+		})
+	}
+}

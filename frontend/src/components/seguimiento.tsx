@@ -27,8 +27,9 @@ import { u } from "~/lib/base";
 import { Confirmar } from "~/components/confirmar";
 import { FlujoEditor, type EstadoFlujo } from "~/components/flujo-editor";
 import { FlujoProbar } from "~/components/flujo-probar";
+import { FlujoPorModelo } from "~/components/flujo-por-modelo";
 import { listarSecuencias } from "~/lib/api";
-import { grafoDesdePasos, grafoInicial, validarGrafo, type EditableConGrafo, type SecuenciaConGrafo } from "~/lib/flujos";
+import { flujosPropios, grafoDesdePasos, grafoInicial, validarGrafo, type EditableConGrafo, type SecuenciaConGrafo } from "~/lib/flujos";
 
 export const MAX_PASOS = 12;
 export const ESPERA_MAX = 20160; // 14 días
@@ -174,7 +175,8 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
     { deep: true },
   );
   const probando = useSignal(false);
-  const secuencias = useSignal<{ id: number; nombre: string; esFlujo: boolean }[]>([]);
+  const porModelo = useSignal(false);
+  const secuencias = useSignal<{ id: number; nombre: string; esFlujo: boolean; alcance: string; alcance_valor: string }[]>([]);
   const productos = useSignal<Product[]>([]);
   const promos = useSignal<Fuente[]>([]);
   const plantillas = useSignal<PlantillaCloud[]>([]);
@@ -184,6 +186,21 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
   const borrando = useSignal(false);
   const buscaModelo = useSignal("");
   const soloLectura = !admin;
+
+  const cargarSecuencias = $(() =>
+    listarSecuencias()
+      .then(
+        (r) =>
+          (secuencias.value = r.map((q) => ({
+            id: q.id,
+            nombre: q.nombre,
+            esFlujo: !!(q as SecuenciaConGrafo).grafo,
+            alcance: q.alcance,
+            alcance_valor: q.alcance_valor ?? "",
+          }))),
+      )
+      .catch(() => {}),
+  );
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup }) => {
@@ -196,12 +213,11 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
     plantillasCloud()
       .then((r) => (plantillas.value = r))
       .catch(() => (plantillas.value = []));
-    listarSecuencias()
-      .then((r) => (secuencias.value = r.map((q) => ({ id: q.id, nombre: q.nombre, esFlujo: !!(q as SecuenciaConGrafo).grafo }))))
-      .catch(() => {});
+    cargarSecuencias();
     const tecla = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !borrando.value) {
         if (probando.value) probando.value = false;
+        else if (porModelo.value) porModelo.value = false;
         else onClose$();
       }
     };
@@ -359,9 +375,22 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
           <section class="drawer-sec fl-sec">
             <div class="panel-head">
               <h3>Flujo</h3>
-              <button type="button" class="btn btn-sm" onClick$={() => (probando.value = true)} title="Simúlalo aquí o envíalo a tu WhatsApp">
-                ▶ Probar
-              </button>
+              <div class="row wrap">
+                {admin && x && (x as SecuenciaConGrafo).grafo && f.alcance !== "productos" && (
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    disabled={cambiado.value}
+                    onClick$={() => (porModelo.value = true)}
+                    title={cambiado.value ? "Guarda los cambios antes de copiarlo" : "Crea una copia de este flujo para cada modelo, como en Kommo"}
+                  >
+                    ⧉ Uno por modelo…
+                  </button>
+                )}
+                <button type="button" class="btn btn-sm" onClick$={() => (probando.value = true)} title="Simúlalo aquí o envíalo a tu WhatsApp">
+                  ▶ Probar
+                </button>
+              </div>
             </div>
             <p class="muted small">
               Arranca cuando la clienta deja de responder con un modelo en foco. Cada espera cuenta desde el paso anterior.
@@ -453,6 +482,20 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
               onCerrar$={() => (probando.value = false)}
               onRecorrido$={(ids) => {
                 fl.resaltados = ids;
+              }}
+            />
+          )}
+
+          {porModelo.value && x && (
+            <FlujoPorModelo
+              baseId={x.id}
+              baseNombre={x.nombre}
+              productos={productos.value}
+              propios={flujosPropios(secuencias.value, x.id)}
+              onCerrar$={() => (porModelo.value = false)}
+              onHecho$={async () => {
+                await cargarSecuencias();
+                await onSaved$(x);
               }}
             />
           )}

@@ -151,6 +151,15 @@ comportamiento.
   - la tarea lleva «🧪 Prueba:» y el nodo de etapa no cambia la etapa;
   - errores: 400 si no es un flujo, el teléfono no sirve o la escala está fuera de rango; 409 si la empresa no tiene
     WhatsApp; 429 tras 10 pruebas en una hora.
+- `POST /api/secuencias/{id}/por-modelo` (admin), con el cuerpo `{codigos}` → `{creadas: [codigo], omitidas: {codigo:
+  motivo}}`. **Un flujo por modelo**, como los Salesbots por modelo de Kommo: copia el flujo `{id}` (debe tener grafo) a
+  una secuencia nueva por cada código, con `alcance: "productos"`, `alcance_valor` = el código y nombre «<base> · <nombre
+  del modelo>» (sin el «(migrado)» del base). Copia también `fuera_de_ventana`, `al_responder`, `marcar_perdida` y
+  `tarea_al_responder`. Las copias nacen **apagadas** y se editan por separado. Sin `codigos`, todos los modelos activos
+  (máximo 300). Omite el código que no existe y el modelo que ya tiene una secuencia propia: no pisa lo que alguien ya
+  ajustó. Encendida, la copia gana sobre el flujo general solo para su modelo (prioridad de `SecuenciaPara`).
+- `POST /api/secuencias/activar-lote` (admin), con el cuerpo `{ids, activa}` → `{cambiadas}`. Enciende o apaga varias a
+  la vez (de 1 a 500 ids). Los ids de otra empresa no se tocan (no cuentan en `cambiadas`).
 
 ## 5. Números de WhatsApp
 

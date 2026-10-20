@@ -256,3 +256,79 @@ func (s *Server) mediaDeEmpresa(r *http.Request) string {
 	}
 	return media
 }
+
+// POST /api/secuencias/{id}/por-modelo {codigos, activar} (admin) → {creadas: [...], omitidas: {codigo: motivo}}.
+// Sin códigos, todos los modelos activos. Las copias nacen apagadas salvo `activar`.
+func (s *Server) flujoPorModelo(w http.ResponseWriter, r *http.Request) {
+	id, err := pathID(r)
+	if err != nil {
+		writeErr(w, 400, "id inválido")
+		return
+	}
+	var in struct {
+		Codigos []string `json:"codigos"`
+		Activar bool     `json:"activar"`
+	}
+	if err := readJSON(r, &in); err != nil {
+		writeErr(w, 400, "datos inválidos")
+		return
+	}
+	st := s.st(r)
+	ctx := r.Context()
+	base, err := st.GetSecuencia(ctx, id)
+	if err != nil {
+		errSeg(w, err)
+		return
+	}
+	if len(in.Codigos) == 0 {
+		prods, err := st.ListProducts(ctx, true)
+		if err != nil {
+			errStore(w, err)
+			return
+		}
+		for _, p := range prods {
+			in.Codigos = append(in.Codigos, p.Code)
+		}
+	}
+	if len(in.Codigos) > 300 {
+		writeErr(w, 400, "como máximo 300 modelos a la vez")
+		return
+	}
+	creadas, omitidas, err := st.CopiasPorModelo(ctx, base, in.Codigos, in.Activar)
+	if err != nil {
+		errSeg(w, err)
+		return
+	}
+	if creadas == nil {
+		creadas = []string{}
+	}
+	s.hub.PublishTo(s.tenantID(r), "seguimiento")
+	writeJSON(w, 200, map[string]any{"creadas": creadas, "omitidas": omitidas})
+}
+
+// POST /api/secuencias/activar-lote {ids, activa} (admin) → {cambiadas}. Encender o apagar varias a la vez.
+func (s *Server) activarLote(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		IDs    []int64 `json:"ids"`
+		Activa bool    `json:"activa"`
+	}
+	if err := readJSON(r, &in); err != nil || len(in.IDs) == 0 || len(in.IDs) > 500 {
+		writeErr(w, 400, "datos inválidos: se espera {ids: [...], activa}")
+		return
+	}
+	st := s.st(r)
+	n := 0
+	for _, id := range in.IDs {
+		q, err := st.GetSecuencia(r.Context(), id)
+		if err != nil || q.Activa == in.Activa {
+			continue
+		}
+		if err := st.ActivarSecuencia(r.Context(), id, in.Activa); err != nil {
+			errSeg(w, err)
+			return
+		}
+		n++
+	}
+	s.hub.PublishTo(s.tenantID(r), "seguimiento")
+	writeJSON(w, 200, map[string]int{"cambiadas": n})
+}
