@@ -1,0 +1,340 @@
+/* Editor visual de flujos de seguimiento (components/flujo-editor.tsx, 20-10-2026). */
+.fl-sec .panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.fl-editor {
+  --fl-borde: var(--line);
+  border: 1px solid var(--fl-borde);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+.fl-barra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--fl-borde);
+  background: var(--surface-2);
+}
+.fl-grupo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.fl-zoom {
+  min-width: 64px;
+  font-variant-numeric: tabular-nums;
+}
+.fl-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  min-height: 0;
+}
+.fl-lienzo {
+  position: relative;
+  height: max(460px, calc(100vh - 360px));
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  background-color: var(--bg);
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--muted) 35%, transparent) 1px, transparent 1.2px);
+  outline: none;
+}
+.fl-lienzo:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--brand);
+}
+.fl-lienzo.moviendo {
+  cursor: grabbing;
+}
+.fl-mundo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+.fl-aristas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.fl-arista {
+  fill: none;
+  stroke: color-mix(in srgb, var(--muted) 70%, transparent);
+  stroke-width: 2;
+}
+.fl-arista.fl-s-si {
+  stroke: var(--ok);
+}
+.fl-arista.fl-s-no {
+  stroke: var(--danger);
+}
+.fl-arista.recorrida {
+  stroke: var(--brand);
+  stroke-width: 3.5;
+}
+.fl-arista.elegida {
+  stroke: var(--brand-2);
+  stroke-width: 4;
+  stroke-dasharray: 8 5;
+}
+.fl-arista.fl-temporal {
+  stroke: var(--brand);
+  stroke-dasharray: 6 5;
+}
+.fl-arista-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 16;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.fl-nodo {
+  position: absolute;
+  min-height: 76px;
+  background: var(--surface);
+  border: 1px solid var(--fl-borde);
+  border-left: 5px solid var(--fl-color, var(--muted));
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  cursor: move;
+}
+.fl-nodo.elegido {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.fl-nodo.recorrido {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 35%, transparent), var(--shadow);
+}
+.fl-nodo-cab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px 4px 10px;
+  font-size: 0.85rem;
+}
+.fl-icono {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fl-color, var(--muted)) 16%, transparent);
+  color: var(--fl-color, var(--muted));
+  font-size: 0.75rem;
+}
+.fl-nodo-cuerpo {
+  padding: 0 14px 10px 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.fl-mini {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.fl-puerto {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--fl-color, var(--muted));
+}
+.fl-entrada {
+  left: -8px;
+}
+.fl-salida {
+  right: -8px;
+  cursor: crosshair;
+  background: var(--fl-color, var(--muted));
+}
+.fl-salida:hover {
+  transform: scale(1.35);
+}
+.fl-salida.fl-s-si {
+  background: var(--ok);
+  border-color: var(--ok);
+}
+.fl-salida.fl-s-no {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+.fl-salida em {
+  position: absolute;
+  right: 16px;
+  top: -3px;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--muted);
+  pointer-events: none;
+}
+.fl-t-inicio { --fl-color: var(--brand); }
+.fl-t-esperar { --fl-color: #7a6cc2; }
+.fl-t-mensaje { --fl-color: var(--ok); }
+.fl-t-condicion { --fl-color: var(--warn); }
+.fl-t-tarea { --fl-color: #2f7fbf; }
+.fl-t-etapa { --fl-color: #8a5a2b; }
+.fl-t-ir_a { --fl-color: var(--brand-2); }
+.fl-t-fin { --fl-color: var(--muted); }
+.fl-agregar {
+  border-left: 3px solid var(--fl-color);
+}
+.fl-aviso {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.85rem;
+}
+.fl-ayuda {
+  position: absolute;
+  left: 10px;
+  bottom: 6px;
+  margin: 0;
+  pointer-events: none;
+}
+.fl-inspector {
+  border-left: 1px solid var(--fl-borde);
+  background: var(--surface);
+  overflow-y: auto;
+  max-height: max(460px, calc(100vh - 360px));
+}
+.fl-ins {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+}
+.fl-ins h4 {
+  margin: 0;
+}
+.fl-ins label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+.fl-ins textarea {
+  resize: vertical;
+}
+.fl-ins-acc {
+  gap: 6px;
+  margin-top: 4px;
+}
+.fl-guia {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+.fl-imagen img {
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* Probar */
+.fl-probar-capa {
+  z-index: 60;
+}
+.fl-probar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.fl-probar-campos {
+  margin-bottom: 12px;
+}
+.fl-chat {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #e9e2d8;
+  display: grid;
+  gap: 8px;
+  max-height: 52vh;
+  overflow-y: auto;
+}
+.fl-burbuja {
+  justify-self: end;
+  max-width: 82%;
+  background: #d9fdd3;
+  color: #111b21;
+  border-radius: 10px 2px 10px 10px;
+  padding: 6px 10px 8px;
+  box-shadow: 0 1px 1px rgb(0 0 0 / 12%);
+}
+.fl-burbuja p {
+  margin: 2px 0 0;
+  white-space: pre-wrap;
+}
+.fl-burbuja img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+.fl-hora {
+  display: block;
+  font-size: 0.7rem;
+  color: #54656f;
+  text-align: right;
+}
+.fl-evento {
+  justify-self: center;
+  font-size: 0.78rem;
+  color: #54656f;
+  background: #fff5c4;
+  border-radius: 7px;
+  padding: 3px 10px;
+  text-align: center;
+}
+.fl-evento.omitido {
+  background: #f3d6d9;
+}
+.fl-fin {
+  text-align: center;
+  margin: 4px 0 0;
+}
+.fl-ok,
+.fl-confirma {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+@media (max-width: 900px) {
+  .fl-cuerpo {
+    grid-template-columns: 1fr;
+  }
+  .fl-inspector {
+    border-left: 0;
+    border-top: 1px solid var(--fl-borde);
+    max-height: none;
+  }
+  .fl-lienzo {
+    height: 60vh;
+  }
+}

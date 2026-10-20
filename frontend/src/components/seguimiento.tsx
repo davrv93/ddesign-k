@@ -25,6 +25,10 @@ import {
 import { esperaTexto } from "~/lib/format";
 import { u } from "~/lib/base";
 import { Confirmar } from "~/components/confirmar";
+import { FlujoEditor, type EstadoFlujo } from "~/components/flujo-editor";
+import { FlujoProbar } from "~/components/flujo-probar";
+import { listarSecuencias } from "~/lib/api";
+import { grafoDesdePasos, grafoInicial, validarGrafo, type EditableConGrafo, type SecuenciaConGrafo } from "~/lib/flujos";
 
 export const MAX_PASOS = 12;
 export const ESPERA_MAX = 20160; // 14 días
@@ -157,6 +161,20 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
     { deep: true },
   );
 
+  // El editor visual (20-10-2026): toda secuencia se edita como flujo. Una lista de pasos vieja se abre convertida (inicio
+  // → esperar → mensaje → … → fin); al guardar queda como flujo y el motor la recorre igual que antes.
+  const fl = useStore<EstadoFlujo>(
+    {
+      g: JSON.parse(JSON.stringify((x as SecuenciaConGrafo | null)?.grafo ?? (x ? grafoDesdePasos(x.pasos ?? []) : grafoInicial()))),
+      sel: "",
+      selArista: -1,
+      resaltados: [],
+      aviso: "",
+    },
+    { deep: true },
+  );
+  const probando = useSignal(false);
+  const secuencias = useSignal<{ id: number; nombre: string; esFlujo: boolean }[]>([]);
   const productos = useSignal<Product[]>([]);
   const promos = useSignal<Fuente[]>([]);
   const plantillas = useSignal<PlantillaCloud[]>([]);
@@ -178,8 +196,14 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
     plantillasCloud()
       .then((r) => (plantillas.value = r))
       .catch(() => (plantillas.value = []));
+    listarSecuencias()
+      .then((r) => (secuencias.value = r.map((q) => ({ id: q.id, nombre: q.nombre, esFlujo: !!(q as SecuenciaConGrafo).grafo }))))
+      .catch(() => {});
     const tecla = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !borrando.value) onClose$();
+      if (e.key === "Escape" && !borrando.value) {
+        if (probando.value) probando.value = false;
+        else onClose$();
+      }
     };
     window.addEventListener("keydown", tecla);
     cleanup(() => window.removeEventListener("keydown", tecla));
@@ -191,7 +215,8 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
   });
 
   const guardar = $(async () => {
-    const falta = validar(f);
+    // Nombre y alcance con las reglas de siempre (los pasos los valida el flujo).
+    const falta = validar({ ...f, pasos: [{ ...pasoNuevo(), texto: "-" }] }) || validarGrafo(fl.g);
     if (falta) {
       error.value = falta;
       return;
@@ -199,7 +224,7 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
     busy.value = true;
     error.value = "";
     try {
-      const body = aEditable(f);
+      const body: EditableConGrafo = { ...aEditable({ ...f, pasos: [] }), grafo: JSON.parse(JSON.stringify(fl.g)) };
       const s = x ? await guardarSecuencia(x.id, body) : await crearSecuencia(body);
       cambiado.value = false;
       await onSaved$(s);
@@ -216,7 +241,8 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
   const elegidos = new Set(f.alcance_valor.split(",").map((c) => c.trim()).filter(Boolean));
   const qm = buscaModelo.value.trim().toLowerCase();
   const modelos = productos.value.filter((p) => elegidos.has(p.code) || (p.active && (!qm || `${p.code} ${p.name}`.toLowerCase().includes(qm))));
-  const resumen = resumenPasos(f.pasos);
+  const nMensajes = fl.g.nodos.filter((n) => n.tipo === "mensaje").length;
+  const resumen = `${fl.g.nodos.length} pasos en el flujo · ${nMensajes} ${nMensajes === 1 ? "mensaje" : "mensajes"}`;
 
   return (
     <>
@@ -330,267 +356,27 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
             <p class="muted small">Si un modelo entra en varias secuencias activas, gana la más específica: modelos elegidos, luego categoría, luego todos.</p>
           </section>
 
-          <section class="drawer-sec">
+          <section class="drawer-sec fl-sec">
             <div class="panel-head">
-              <h3>
-                Pasos ({f.pasos.length} de {MAX_PASOS})
-              </h3>
-            </div>
-            <p class="muted small">La espera cuenta desde el paso anterior; la del primero, desde que la clienta dejó de responder.</p>
-            <ol class="pasos">
-              {f.pasos.map((p, i) => {
-                const promo = promos.value.find((x) => x.id === Number(p.promo_id));
-                return (
-                  <li key={i} class="paso">
-                    <div class="paso-top">
-                      <span class="paso-num" aria-hidden="true">
-                        {i + 1}
-                      </span>
-                      <strong class="grow">
-                        Paso {i + 1} · {esperaTexto(p.espera_min)} → {TIPOS_PASO[p.tipo]?.label.toLowerCase() ?? p.tipo}
-                      </strong>
-                      {!soloLectura && (
-                        <span class="paso-acc">
-                          <button
-                            type="button"
-                            class="btn btn-ghost btn-sm"
-                            aria-label={`Subir el paso ${i + 1}`}
-                            disabled={i === 0}
-                            onClick$={() => {
-                              const [m] = f.pasos.splice(i, 1);
-                              f.pasos.splice(i - 1, 0, m);
-                              tocar();
-                            }}
-                          >
-                            ↑
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-ghost btn-sm"
-                            aria-label={`Bajar el paso ${i + 1}`}
-                            disabled={i === f.pasos.length - 1}
-                            onClick$={() => {
-                              const [m] = f.pasos.splice(i, 1);
-                              f.pasos.splice(i + 1, 0, m);
-                              tocar();
-                            }}
-                          >
-                            ↓
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-ghost btn-sm btn-borrar"
-                            aria-label={`Quitar el paso ${i + 1}`}
-                            onClick$={() => {
-                              f.pasos.splice(i, 1);
-                              tocar();
-                            }}
-                          >
-                            ✕
-                          </button>
-                        </span>
-                      )}
-                    </div>
-                    <div class="paso-campos">
-                      <div class="paso-espera">
-                        <label>
-                          Espera
-                          <input
-                            type="number"
-                            min="1"
-                            step="1"
-                            class="num"
-                            value={p.cantidad}
-                            disabled={soloLectura}
-                            onInput$={(_, el) => {
-                              const n = Math.max(0, Number(el.value) || 0);
-                              f.pasos[i].cantidad = n;
-                              f.pasos[i].espera_min = Math.round(n * FACTOR[f.pasos[i].unidad]);
-                              tocar();
-                            }}
-                          />
-                        </label>
-                        <label>
-                          <span class="sr-only">Unidad de la espera del paso {i + 1}</span>
-                          <select
-                            value={p.unidad}
-                            disabled={soloLectura}
-                            onChange$={(_, el) => {
-                              f.pasos[i].unidad = el.value as Unidad;
-                              f.pasos[i].espera_min = Math.round(f.pasos[i].cantidad * FACTOR[f.pasos[i].unidad]);
-                              tocar();
-                            }}
-                          >
-                            {(Object.keys(UNIDADES) as Unidad[]).map((k) => (
-                              <option key={k} value={k}>
-                                {UNIDADES[k]}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      </div>
-                      <label>
-                        Tipo
-                        <select
-                          value={p.tipo}
-                          disabled={soloLectura}
-                          onChange$={(_, el) => {
-                            f.pasos[i].tipo = el.value as TipoPaso;
-                            tocar();
-                          }}
-                        >
-                          {(Object.keys(TIPOS_PASO) as TipoPaso[]).map((k) => (
-                            <option key={k} value={k}>
-                              {TIPOS_PASO[k].label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                    {(p.espera_min < 1 || p.espera_min > ESPERA_MAX) && <p class="form-error small">La espera va de 1 minuto a 14 días.</p>}
-                    <p class="muted small">{TIPOS_PASO[p.tipo]?.hint}</p>
-                    {p.tipo === "oferta" && (
-                      <label>
-                        Promo
-                        <select
-                          value={String(p.promo_id || "")}
-                          disabled={soloLectura}
-                          onChange$={(_, el) => {
-                            f.pasos[i].promo_id = Number(el.value) || 0;
-                            tocar();
-                          }}
-                        >
-                          <option value="">Elige una promo…</option>
-                          {promos.value.map((pr) => (
-                            <option key={pr.id} value={String(pr.id)}>
-                              {`${pr.titulo}${pr.vigente ? "" : " (no vigente)"}`}
-                            </option>
-                          ))}
-                        </select>
-                        {promos.value.length === 0 && (
-                          <span class="muted small block">
-                            No hay promos. Créalas en <a href={u("/fuentes?tab=promo")}>Fuentes → Promos</a>.
-                          </span>
-                        )}
-                        {promo && !promo.vigente && <span class="chip warn">Esta promo no está vigente: el paso se saltará</span>}
-                      </label>
-                    )}
-                    <label>
-                      {p.tipo === "emoji" ? "Emoji" : p.tipo === "texto" ? "Mensaje" : "Mensaje (opcional)"}
-                      {p.tipo === "emoji" ? (
-                        <input
-                          value={p.texto}
-                          maxLength={16}
-                          placeholder="🥰"
-                          disabled={soloLectura}
-                          onInput$={(_, el) => {
-                            f.pasos[i].texto = el.value;
-                            tocar();
-                          }}
-                        />
-                      ) : (
-                        <textarea
-                          rows={p.tipo === "texto" ? 3 : 6}
-                          value={p.texto}
-                          disabled={soloLectura}
-                          placeholder={p.tipo === "texto" ? "¿Pudiste ver el modelo? Si quieres te cuento más 😊" : "Olvidé mostrarte sus ventajas 😊\n{contenido}\n¿Qué opinas?"}
-                          onInput$={(_, el) => {
-                            f.pasos[i].texto = el.value;
-                            tocar();
-                          }}
-                        />
-                      )}
-                    </label>
-                    {(p.tipo === "beneficio" || p.tipo === "testimonio" || p.tipo === "tip") && (
-                      <p class="muted small">
-                        Escribe <code>{"{contenido}"}</code> donde va el {p.tipo} del modelo, para cerrar con una pregunta. También
-                        sirven <code>{"{nombre}"}</code> y <code>{"{modelo}"}</code>.
-                      </p>
-                    )}
-                    {(p.tipo === "emoji" || p.tipo === "texto") && (
-                      <div class="paso-imagen">
-                        <span class="small">Imagen o sticker (opcional)</span>
-                        {p.media_url ? (
-                          <div class="row">
-                            <img src={u(p.media_url)} alt="Imagen del paso" width={96} height={96} style={{ objectFit: "contain", borderRadius: "8px" }} />
-                            {!soloLectura && (
-                              <button
-                                type="button"
-                                class="btn btn-sm btn-ghost"
-                                onClick$={() => {
-                                  f.pasos[i].media_url = "";
-                                  tocar();
-                                }}
-                              >
-                                Quitar imagen
-                              </button>
-                            )}
-                          </div>
-                        ) : (
-                          !soloLectura && (
-                            <input
-                              type="file"
-                              accept="image/png,image/jpeg,image/webp,image/gif"
-                              aria-label={`Imagen del paso ${i + 1}`}
-                              onChange$={async (_, el) => {
-                                const archivo = el.files?.[0];
-                                if (!archivo) return;
-                                try {
-                                  const r = await subirImagenPaso(archivo);
-                                  f.pasos[i].media_url = r.media_url;
-                                  tocar();
-                                } catch (e) {
-                                  error.value = (e as Error).message;
-                                }
-                              }}
-                            />
-                          )
-                        )}
-                      </div>
-                    )}
-                    {f.fuera_de_ventana === "plantilla" && (
-                      <label>
-                        Plantilla fuera de las 24 h
-                        {plantillas.value.length > 0 ? (
-                          <select
-                            value={p.plantilla}
-                            disabled={soloLectura}
-                            onChange$={(_, el) => {
-                              f.pasos[i].plantilla = el.value;
-                              tocar();
-                            }}
-                          >
-                            <option value="">Sin plantilla (el paso se salta fuera de la ventana)</option>
-                            {plantillas.value.map((t) => (
-                              <option key={`${t.name}-${t.language}`} value={t.name}>
-                                {`${t.name} · ${t.language}${t.status && t.status !== "APPROVED" ? ` (${t.status.toLowerCase()})` : ""}`}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <span class="muted small block">
-                            No hay plantillas: solo existen con la API oficial de WhatsApp configurada. Sin ella, el paso fuera de la ventana se salta.
-                          </span>
-                        )}
-                      </label>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
-            {!soloLectura && (
-              <button
-                type="button"
-                class="btn btn-sm"
-                disabled={f.pasos.length >= MAX_PASOS}
-                onClick$={() => {
-                  f.pasos.push(pasoNuevo());
-                  tocar();
-                }}
-              >
-                + Paso
+              <h3>Flujo</h3>
+              <button type="button" class="btn btn-sm" onClick$={() => (probando.value = true)} title="Simúlalo aquí o envíalo a tu WhatsApp">
+                ▶ Probar
               </button>
-            )}
+            </div>
+            <p class="muted small">
+              Arranca cuando la clienta deja de responder con un modelo en foco. Cada espera cuenta desde el paso anterior.
+            </p>
+            <FlujoEditor
+              estado={fl}
+              soloLectura={soloLectura}
+              onCambio$={tocar}
+              productos={productos.value}
+              promos={promos.value}
+              plantillas={plantillas.value}
+              usaPlantillas={f.fuera_de_ventana === "plantilla"}
+              secuencias={secuencias.value}
+              secuenciaId={x?.id ?? 0}
+            />
           </section>
 
           <section class="drawer-sec">
@@ -656,6 +442,20 @@ export const SecuenciaEditor = component$<EditorProps>(({ secuencia, admin, onCl
           </section>
 
           {x && <VistaPrevia secuenciaId={x.id} productos={productos.value} cambiado={cambiado.value} />}
+          {probando.value && (
+            <FlujoProbar
+              grafo={fl.g}
+              nombre={f.nombre}
+              secuenciaId={x?.id ?? 0}
+              sinGuardar={cambiado.value}
+              admin={admin}
+              productos={productos.value}
+              onCerrar$={() => (probando.value = false)}
+              onRecorrido$={(ids) => {
+                fl.resaltados = ids;
+              }}
+            />
+          )}
 
           {error.value && (
             <p class="form-error pad" role="alert">

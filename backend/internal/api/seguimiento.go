@@ -56,6 +56,8 @@ func (s *Server) rutasSeguimiento(p, a func(pattern string, h http.HandlerFunc))
 	a("POST /api/secuencias/{id}/activa", s.activarSecuencia)
 	p("GET /api/secuencias/{id}/vista-previa", s.vistaPreviaSecuencia)
 	p("GET /api/secuencias/{id}/tablero", s.tableroSecuencia)
+	p("POST /api/flujos/simular", s.simularFlujo)        // editor visual: recorre el flujo sin enviar (flujos.go)
+	a("POST /api/secuencias/{id}/probar", s.probarFlujo) // editor visual: lo manda de verdad a un número de prueba
 	a("POST /api/secuencias/imagen", s.subirImagenPaso)
 	p("GET /api/conversations/{id}/seguimiento", s.seguimientoConv)
 	p("POST /api/conversations/{id}/seguimiento/detener", s.detenerSeguimiento)

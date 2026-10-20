@@ -264,6 +264,9 @@ func esImagen(u string) bool {
 
 // TickSeguimiento manda los pasos que ya tocan (lo llama cmd/server cada minuto). Devuelve cuántos salieron.
 func (b *Bot) TickSeguimiento(ctx context.Context, ahora time.Time) int {
+	// Un solo trabajador a la vez: «Probar» del editor lo corre fuera del minuto y no debe mandar dos veces el mismo paso.
+	tickSeguimientoMu.Lock()
+	defer tickSeguimientoMu.Unlock()
 	vencidos, err := b.store.SeguimientosVencidos(ctx, ahora, 50)
 	if err != nil {
 		log.Printf("seguimiento: %v", err)
@@ -274,10 +277,17 @@ func (b *Bot) TickSeguimiento(ctx context.Context, ahora time.Time) int {
 	}
 	ini, fin := horarioSeguimiento(b.store.Setting(ctx, store.SettingSeguimientoHorario, "08:00-21:00"))
 	if ap := siguienteApertura(ahora, ini, fin); !ap.Equal(ahora) {
+		quedan := vencidos[:0]
 		for _, e := range vencidos {
+			if e.Prueba { // «Probar» del editor: sale ya, a cualquier hora
+				quedan = append(quedan, e)
+				continue
+			}
 			_ = b.store.PosponerSeguimiento(ctx, e.ConversationID, ap)
 		}
-		return 0
+		if vencidos = quedan; len(vencidos) == 0 {
+			return 0
+		}
 	}
 	n := 0
 	for _, e := range vencidos {
@@ -306,8 +316,11 @@ func (b *Bot) pasoSeguimiento(ctx context.Context, e *store.SeguimientoEnCurso, 
 		return false
 	}
 	q, err := b.store.GetSecuencia(ctx, e.SecuenciaID)
-	if err != nil || !q.Activa {
+	if err != nil || (!q.Activa && !e.Prueba) {
 		return false
+	}
+	if q.Grafo != nil && (e.Nodo != "" || e.Prueba) {
+		return b.pasoFlujo(ctx, conv, q, e, ahora, ini)
 	}
 	idx := e.Indice()
 	if idx >= len(q.Pasos) {
@@ -320,74 +333,91 @@ func (b *Bot) pasoSeguimiento(ctx context.Context, e *store.SeguimientoEnCurso, 
 		b.hito(ctx, conv, fmt.Sprintf("⏭️ Seguimiento «%s», paso %d (%s) no salió: %s", q.Nombre, idx+1, paso.Tipo, motivo))
 		b.terminarPaso(ctx, conv, q, idx, ahora)
 	}
-
-	// Por dónde sale y con qué tope.
-	canal := b.canalDe(conv)
-	numeroID := int64(0)
-	plantilla := ""
-	if b.FueraDeVentana(ctx, conv.ID, ahora) {
-		switch q.FueraDeVentana {
-		case "enviar":
-			if canal == CanalCloud {
-				saltar("la API oficial no deja escribir libre pasadas 24 h; usa una plantilla")
-				return false
-			}
-		case "plantilla":
-			if canal != CanalCloud || b.cloud == nil || paso.Plantilla == "" {
-				saltar("pasaron más de 24 h y el paso no tiene plantilla de la API oficial")
-				return false
-			}
-			plantilla = paso.Plantilla
-		case "numero_secundario":
-			n := b.numeroSalida(ctx)
-			if n == nil {
-				saltar("pasaron más de 24 h y no hay número secundario con cupo")
-				return false
-			}
-			numeroID, canal = n.ID, CanalSecundario(n.ID)
-		default:
-			saltar("pasaron más de 24 h desde su último mensaje")
-			return false
-		}
-	}
-	if numeroID == 0 && strings.HasPrefix(canal, "n:") {
-		fmt.Sscanf(strings.TrimPrefix(canal, "n:"), "%d", &numeroID)
-	}
-	if tope := b.topeNumero(ctx, numeroID); b.store.EnviadosHoy(ctx, numeroID) >= tope {
-		manana := siguienteApertura(time.Date(ahora.In(store.Lima).Year(), ahora.In(store.Lima).Month(), ahora.In(store.Lima).Day(),
-			23, 59, 0, 0, store.Lima), ini, 24*60)
-		_ = b.store.PosponerSeguimiento(ctx, conv.ID, manana.Add(time.Minute))
-		log.Printf("seguimiento: tope diario de %d alcanzado (número %d); la conversación %d sigue mañana", tope, numeroID, conv.ID)
+	res, motivo, numeroID := b.emitirPaso(ctx, conv, q, paso, e.ProductCode, ahora, ini, false)
+	switch res {
+	case emitidoOmitido:
+		saltar(motivo)
 		return false
-	}
-
-	listo := ContenidoPaso(ctx, b.store, b.conocimiento(ctx), b.cfg.MediaBaseURL, paso, e.ProductCode, b.customerName(conv))
-	if listo.Omitido {
-		saltar(listo.Motivo)
+	case emitidoEnviado:
+	default: // pospuesto (tope) o error de envío: se reintenta
 		return false
-	}
-	if plantilla != "" {
-		params := []string{firstNonEmpty(primerNombre(b.customerName(conv)), "hola")}
-		if err := b.enviarPlantilla(ctx, conv, plantilla, params, listo.Texto); err != nil {
-			saltar("la plantilla «" + plantilla + "» falló: " + err.Error())
-			return false
-		}
-	} else {
-		msg := &store.Message{Kind: "text", Body: listo.Texto, Author: "bot"}
-		j := outJob{text: listo.Texto, canal: canal}
-		if listo.MediaURL != "" {
-			msg.Kind, msg.Media = "image", strings.TrimPrefix(listo.MediaURL, b.cfg.MediaBaseURL)
-			j = outJob{image: listo.MediaURL, caption: listo.Texto, canal: canal}
-		}
-		if err := b.queueMessage(ctx, conv, msg, j); err != nil {
-			log.Printf("seguimiento: enviar %d: %v", conv.ID, err)
-			return false
-		}
 	}
 	_ = b.store.AnotarEnvio(ctx, conv.ID, q.ID, idx+1, numeroID, paso.Tipo, "enviado", "")
 	b.hito(ctx, conv, fmt.Sprintf("🔁 Seguimiento «%s», paso %d de %d (%s)", q.Nombre, idx+1, len(q.Pasos), paso.Tipo))
 	b.terminarPaso(ctx, conv, q, idx, ahora)
 	return true
+}
+
+// Resultado de emitirPaso.
+const (
+	emitidoEnviado   = "enviado"
+	emitidoOmitido   = "omitido"
+	emitidoPospuesto = "pospuesto"
+	emitidoError     = "error"
+)
+
+// emitirPaso manda UN mensaje de seguimiento (paso de la lista o nodo de mensaje de un flujo) respetando la ventana de 24
+// h, el número de salida y el tope diario. Devuelve el resultado, el motivo (si se omitió) y el número por el que salió.
+// En una prueba del editor (`prueba`) no mira ventana ni tope: la conversación es el número de prueba de la tienda.
+func (b *Bot) emitirPaso(ctx context.Context, conv *store.Conversation, q *store.Secuencia, paso store.Paso, codigo string,
+	ahora time.Time, ini int, prueba bool) (string, string, int64) {
+	canal := b.canalDe(conv)
+	numeroID := int64(0)
+	plantilla := ""
+	if !prueba && b.FueraDeVentana(ctx, conv.ID, ahora) {
+		switch q.FueraDeVentana {
+		case "enviar":
+			if canal == CanalCloud {
+				return emitidoOmitido, "la API oficial no deja escribir libre pasadas 24 h; usa una plantilla", 0
+			}
+		case "plantilla":
+			if canal != CanalCloud || b.cloud == nil || paso.Plantilla == "" {
+				return emitidoOmitido, "pasaron más de 24 h y el paso no tiene plantilla de la API oficial", 0
+			}
+			plantilla = paso.Plantilla
+		case "numero_secundario":
+			n := b.numeroSalida(ctx)
+			if n == nil {
+				return emitidoOmitido, "pasaron más de 24 h y no hay número secundario con cupo", 0
+			}
+			numeroID, canal = n.ID, CanalSecundario(n.ID)
+		default:
+			return emitidoOmitido, "pasaron más de 24 h desde su último mensaje", 0
+		}
+	}
+	if numeroID == 0 && strings.HasPrefix(canal, "n:") {
+		fmt.Sscanf(strings.TrimPrefix(canal, "n:"), "%d", &numeroID)
+	}
+	if tope := b.topeNumero(ctx, numeroID); !prueba && b.store.EnviadosHoy(ctx, numeroID) >= tope {
+		manana := siguienteApertura(time.Date(ahora.In(store.Lima).Year(), ahora.In(store.Lima).Month(), ahora.In(store.Lima).Day(),
+			23, 59, 0, 0, store.Lima), ini, 24*60)
+		_ = b.store.PosponerSeguimiento(ctx, conv.ID, manana.Add(time.Minute))
+		log.Printf("seguimiento: tope diario de %d alcanzado (número %d); la conversación %d sigue mañana", tope, numeroID, conv.ID)
+		return emitidoPospuesto, "", 0
+	}
+
+	listo := ContenidoPaso(ctx, b.store, b.conocimiento(ctx), b.cfg.MediaBaseURL, paso, codigo, b.customerName(conv))
+	if listo.Omitido {
+		return emitidoOmitido, listo.Motivo, 0
+	}
+	if plantilla != "" {
+		params := []string{firstNonEmpty(primerNombre(b.customerName(conv)), "hola")}
+		if err := b.enviarPlantilla(ctx, conv, plantilla, params, listo.Texto); err != nil {
+			return emitidoOmitido, "la plantilla «" + plantilla + "» falló: " + err.Error(), 0
+		}
+		return emitidoEnviado, "", numeroID
+	}
+	msg := &store.Message{Kind: "text", Body: listo.Texto, Author: "bot"}
+	j := outJob{text: listo.Texto, canal: canal}
+	if listo.MediaURL != "" {
+		msg.Kind, msg.Media = "image", strings.TrimPrefix(listo.MediaURL, b.cfg.MediaBaseURL)
+		j = outJob{image: listo.MediaURL, caption: listo.Texto, canal: canal}
+	}
+	if err := b.queueMessage(ctx, conv, msg, j); err != nil {
+		log.Printf("seguimiento: enviar %d: %v", conv.ID, err)
+		return emitidoError, err.Error(), 0
+	}
+	return emitidoEnviado, "", numeroID
 }
 
 // terminarPaso programa el siguiente; con el último, si la secuencia lo pide, la clienta pasa a «perdida».

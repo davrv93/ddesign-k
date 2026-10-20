@@ -215,7 +215,7 @@ func (s *Store) migrarSeguimiento() error {
 			return fmt.Errorf("secuencias.tarea_al_responder: %w", err)
 		}
 	}
-	return nil
+	return s.migrarFlujos()
 }
 
 // ---------------------------------------------------------------------------
@@ -392,9 +392,12 @@ type Secuencia struct {
 	MarcarPerdida  bool   `json:"marcar_perdida"`
 	// TareaAlResponder: si ella contesta a un paso que sí salió, se crea una tarea para el equipo (en Kommo, Luis la
 	// pasaba a la etapa «Negociación» para que una persona la atienda).
-	TareaAlResponder bool            `json:"tarea_al_responder"`
-	CreadaEn         time.Time       `json:"creada_en"`
-	Cifras           CifrasSecuencia `json:"cifras"`
+	TareaAlResponder bool `json:"tarea_al_responder"`
+	// Grafo: el flujo del editor visual (store/flujos.go). Con grafo, Pasos se deriva de sus mensajes y el motor recorre
+	// el grafo; sin grafo, la secuencia es la lista de pasos de siempre.
+	Grafo    *Grafo          `json:"grafo,omitempty"`
+	CreadaEn time.Time       `json:"creada_en"`
+	Cifras   CifrasSecuencia `json:"cifras"`
 }
 
 func (q *Secuencia) normalizar() error {
@@ -432,6 +435,13 @@ func (q *Secuencia) normalizar() error {
 			return fmt.Errorf("%w: falta al menos un modelo en el alcance", ErrSeguimientoInvalido)
 		}
 	}
+	if q.Grafo != nil {
+		if err := q.Grafo.normalizar(); err != nil {
+			return err
+		}
+		q.Pasos = q.Grafo.PasosDerivados()
+		return nil
+	}
 	if len(q.Pasos) == 0 || len(q.Pasos) > MaxPasos {
 		return fmt.Errorf("%w: la secuencia lleva de 1 a %d pasos", ErrSeguimientoInvalido, MaxPasos)
 	}
@@ -461,16 +471,17 @@ func (q *Secuencia) normalizar() error {
 }
 
 const secuenciaCols = `id, nombre, activa, alcance, alcance_valor, pasos, fuera_de_ventana, al_responder, marcar_perdida, creada_en,
-	tarea_al_responder`
+	tarea_al_responder, COALESCE(grafo, '')`
 
 func scanSecuencia(sc interface{ Scan(...any) error }) (*Secuencia, error) {
 	q := &Secuencia{}
 	var activa, perdida, tarea int
-	var pasos string
+	var pasos, grafo string
 	if err := sc.Scan(&q.ID, &q.Nombre, &activa, &q.Alcance, &q.AlcanceValor, &pasos, &q.FueraDeVentana, &q.AlResponder,
-		&perdida, &q.CreadaEn, &tarea); err != nil {
+		&perdida, &q.CreadaEn, &tarea, &grafo); err != nil {
 		return nil, err
 	}
+	q.Grafo = leerGrafo(grafo)
 	q.Activa, q.MarcarPerdida, q.TareaAlResponder = activa != 0, perdida != 0, tarea != 0
 	_ = json.Unmarshal([]byte(pasos), &q.Pasos)
 	if q.Pasos == nil {
@@ -533,9 +544,9 @@ func (s *Store) CrearSecuencia(ctx context.Context, q *Secuencia) error {
 	pasos, _ := json.Marshal(q.Pasos)
 	t := now()
 	res, err := s.DB.ExecContext(ctx, `INSERT INTO secuencias(tenant_id, nombre, activa, alcance, alcance_valor, pasos, fuera_de_ventana,
-		al_responder, marcar_perdida, tarea_al_responder, creada_en, actualizada_en) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`, s.tid, q.Nombre,
+		al_responder, marcar_perdida, tarea_al_responder, creada_en, actualizada_en, grafo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`, s.tid, q.Nombre,
 		b2i(q.Activa), q.Alcance, q.AlcanceValor, string(pasos), q.FueraDeVentana, q.AlResponder, b2i(q.MarcarPerdida),
-		b2i(q.TareaAlResponder), t, t)
+		b2i(q.TareaAlResponder), t, t, grafoJSON(q.Grafo))
 	if err != nil {
 		return err
 	}
@@ -553,9 +564,9 @@ func (s *Store) GuardarSecuencia(ctx context.Context, q *Secuencia) error {
 	}
 	pasos, _ := json.Marshal(q.Pasos)
 	_, err := s.DB.ExecContext(ctx, `UPDATE secuencias SET nombre=?, activa=?, alcance=?, alcance_valor=?, pasos=?, fuera_de_ventana=?,
-		al_responder=?, marcar_perdida=?, tarea_al_responder=?, actualizada_en=? WHERE id=? AND tenant_id=?`, q.Nombre, b2i(q.Activa),
+		al_responder=?, marcar_perdida=?, tarea_al_responder=?, actualizada_en=?, grafo=? WHERE id=? AND tenant_id=?`, q.Nombre, b2i(q.Activa),
 		q.Alcance, q.AlcanceValor, string(pasos), q.FueraDeVentana, q.AlResponder, b2i(q.MarcarPerdida), b2i(q.TareaAlResponder),
-		now(), q.ID, s.tid)
+		now(), grafoJSON(q.Grafo), q.ID, s.tid)
 	if err == nil && !q.Activa {
 		_, err = s.DB.ExecContext(ctx, `UPDATE seguimiento_en_curso SET estado='detenido', actualizado_en=? WHERE tenant_id=? AND secuencia_id=?
 			AND estado IN ('activo','pausado')`, now(), s.tid, q.ID)
@@ -635,6 +646,9 @@ type SeguimientoEnCurso struct {
 	ProximoEn      *time.Time `json:"proximo_en"`
 	Estado         string     `json:"estado"`
 	ProductCode    string     `json:"-"`
+	Nodo           string     `json:"nodo,omitempty"` // flujos: el próximo nodo a ejecutar
+	Prueba         bool       `json:"prueba,omitempty"`
+	EscalaMin      int        `json:"-"`
 	indice         int
 }
 
@@ -645,9 +659,12 @@ func (s *Store) scanEnCurso(row interface{ Scan(...any) error }) (*SeguimientoEn
 	e := &SeguimientoEnCurso{}
 	var prox sql.NullTime
 	var pasos string
-	if err := row.Scan(&e.ID, &e.ConversationID, &e.SecuenciaID, &e.indice, &prox, &e.Estado, &e.ProductCode, &e.Nombre, &pasos); err != nil {
+	var prueba int
+	if err := row.Scan(&e.ID, &e.ConversationID, &e.SecuenciaID, &e.indice, &prox, &e.Estado, &e.ProductCode, &e.Nombre, &pasos,
+		&e.Nodo, &prueba, &e.EscalaMin); err != nil {
 		return nil, err
 	}
+	e.Prueba = prueba != 0
 	var ps []Paso
 	_ = json.Unmarshal([]byte(pasos), &ps)
 	e.Total, e.Paso = len(ps), e.indice+1
@@ -658,7 +675,8 @@ func (s *Store) scanEnCurso(row interface{ Scan(...any) error }) (*SeguimientoEn
 	return e, nil
 }
 
-const enCursoCols = `e.id, e.conversation_id, e.secuencia_id, e.paso, e.proximo_en, e.estado, e.product_code, q.nombre, q.pasos`
+const enCursoCols = `e.id, e.conversation_id, e.secuencia_id, e.paso, e.proximo_en, e.estado, e.product_code, q.nombre, q.pasos,
+	e.nodo, e.prueba, e.escala_min`
 
 // SeguimientoDe: el de una conversación, o nil.
 func (s *Store) SeguimientoDe(ctx context.Context, convID int64) (*SeguimientoEnCurso, error) {
@@ -679,6 +697,12 @@ func (s *Store) ArmarSeguimiento(ctx context.Context, convID int64, q *Secuencia
 	prev, err := s.SeguimientoDe(ctx, convID)
 	if err != nil {
 		return err
+	}
+	if prev != nil && prev.Prueba && prev.Estado != "terminado" && prev.Estado != "detenido" {
+		return nil // una prueba del editor manda hasta que termine; «Probar» de nuevo la reinicia
+	}
+	if q.Grafo != nil || (prev != nil && prev.Nodo != "") {
+		return s.armarFlujo(ctx, convID, q, prev, codigo, desde)
 	}
 	idx := 0
 	if prev != nil {
@@ -833,7 +857,8 @@ func (s *Store) PosponerSeguimiento(ctx context.Context, convID int64, en time.T
 // SeguimientosVencidos: los activos cuyo próximo paso ya toca, de esta empresa.
 func (s *Store) SeguimientosVencidos(ctx context.Context, hasta time.Time, max int) ([]*SeguimientoEnCurso, error) {
 	rows, err := s.DB.QueryContext(ctx, `SELECT `+enCursoCols+` FROM seguimiento_en_curso e JOIN secuencias q ON q.id=e.secuencia_id
-		AND q.tenant_id=e.tenant_id WHERE e.tenant_id=? AND e.estado='activo' AND q.activa=1 AND e.proximo_en<=? ORDER BY e.proximo_en LIMIT ?`,
+		AND q.tenant_id=e.tenant_id WHERE e.tenant_id=? AND e.estado='activo' AND (q.activa=1 OR e.prueba=1) AND e.proximo_en<=?
+		ORDER BY e.proximo_en LIMIT ?`,
 		s.tid, hasta.UTC(), max)
 	if err != nil {
 		return nil, err

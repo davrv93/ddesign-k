@@ -87,6 +87,71 @@ cuando la clienta elige coordinar más adelante; se crea además una tarea con v
 
 Avisos SSE: tema `seguimiento` cuando cambia una secuencia o sale un paso.
 
+## 4b. Flujos visuales (editor de flujos, 20-10-2026)
+
+Una secuencia puede llevar un **grafo** (`grafo`): se edita en el lienzo del panel (zoom, mover, conectar, deshacer) y el
+motor lo recorre. Sin `grafo`, la secuencia es la lista de pasos de §4 y nada cambia para ella. Al abrir una lista vieja
+en el editor se convierte (inicio → esperar → mensaje → … → fin) y, al guardarla, queda como flujo con el mismo
+comportamiento.
+
+```json
+{"nombre": "Baruka · vestidos", "alcance": "todas", "pasos": [],
+ "grafo": {
+   "nodos": [{"id": "inicio", "tipo": "inicio", "x": 40, "y": 160},
+             {"id": "e1", "tipo": "esperar", "minutos": 60, "x": 320, "y": 160},
+             {"id": "m1", "tipo": "mensaje", "mensaje": "emoji", "texto": "🥰", "media_url": "", "promo_id": 0, "plantilla": "", "x": 600, "y": 160},
+             {"id": "c1", "tipo": "condicion", "condicion": "respondio", "x": 880, "y": 160},
+             {"id": "t1", "tipo": "tarea", "titulo": "Atender a {nombre}", "x": 1160, "y": 60},
+             {"id": "f", "tipo": "fin", "x": 1440, "y": 160}],
+   "aristas": [{"desde": "inicio", "salida": "siguiente", "hasta": "e1"}, {"desde": "e1", "salida": "siguiente", "hasta": "m1"},
+               {"desde": "m1", "salida": "siguiente", "hasta": "c1"}, {"desde": "c1", "salida": "si", "hasta": "t1"},
+               {"desde": "c1", "salida": "no", "hasta": "f"}, {"desde": "t1", "salida": "siguiente", "hasta": "f"}],
+   "vista": {"x": 40, "y": 40, "zoom": 0.8}}}
+```
+
+- **Nodos** (`tipo`):
+  - `inicio`: uno solo. Arranca cuando la clienta deja de responder con un modelo en foco (el alcance de la secuencia).
+  - `esperar`: `minutos`, de 1 a 20160.
+  - `mensaje`: `mensaje` es uno de los tipos de paso de §4 (`emoji`, `texto`, `beneficio`, `testimonio`, `tip`, `oferta`),
+    con `texto`, `media_url`, `promo_id` y `plantilla` como en un paso.
+  - `condicion`: `condicion` ∈ `respondio` (escribió después del último mensaje del flujo), `temperatura` (`valor`:
+    caliente, tibia o fria), `categoria` (`valor`: la categoría del modelo en foco) y `tiene_contenido` (`valor`:
+    beneficio, testimonio o tip). Dos salidas: `si` y `no`.
+  - `tarea`: `titulo` (acepta `{nombre}` y `{modelo}`); vence al crearse.
+  - `etapa`: `etapa` del embudo.
+  - `ir_a`: `destino` es el id de otra secuencia **con grafo**; sigue desde su inicio. Si está apagada, se salta.
+  - `fin`.
+  - `nota` en cualquier nodo: texto para el equipo, no se envía.
+- **Aristas:** de la salida `salida` (`siguiente`, o `si` / `no` en la condición) del nodo `desde` al nodo `hasta`. Cada
+  salida va a un solo nodo; una salida sin conectar termina el flujo.
+- **Validación (400):**
+  - un solo inicio, conectado;
+  - al menos un mensaje (hasta 40) y hasta 80 nodos;
+  - las conexiones apuntan a nodos que existen, nunca al inicio ni al mismo nodo;
+  - **ningún ciclo sin espera** (un ciclo con espera sí vale: un recordatorio que se repite).
+- **`pasos`:** con grafo los deriva el backend de los mensajes (anchura primero, con la espera acumulada). Los usan el
+  tablero, la vista previa y el resumen; el motor recorre el grafo.
+- **Motor:** el estado de cada conversación es el nodo que toca (`seguimiento_en_curso.nodo`) y cuándo. Recorre nodos hasta
+  una espera, un fin o 30 nodos por minuto. Los mensajes salen con las reglas de §4: horario, tope diario, ventana de 24 h
+  y número de salida. Si ella escribe, el flujo se pausa; según `al_responder`, sigue en el mismo nodo (una espera
+  vuelve a contar desde ahí), vuelve al inicio o se detiene.
+
+**Rutas:**
+
+- `POST /api/flujos/simular` (todo el equipo), con el cuerpo `{grafo, nombre, producto, cliente, responde, temperatura}` →
+  `{pasos: [{nodo, tipo, en_min, mensaje, texto, media_url, omitido, motivo, detalle, flujo}], fin}`. Recorre el flujo
+  sin enviar ni guardar, con lo que hay en el lienzo. `responde` decide «¿respondió?» y `temperatura` la condición de
+  temperatura.
+- `POST /api/secuencias/{id}/probar` (admin), con el cuerpo `{telefono, producto, escala_min}` →
+  `{conversation_id, telefono, escala_min}`. **Manda WhatsApp de verdad** al número que escribe la persona, con el flujo
+  GUARDADO:
+  - cada espera dura `escala_min` minutos (de 0 a 60; por defecto 1; 0 = las reales);
+  - corre sin horario, tope ni ventana y aunque la secuencia esté apagada;
+  - los envíos se anotan con resultado `prueba` y no cuentan para el tope ni para las cifras;
+  - la tarea lleva «🧪 Prueba:» y el nodo de etapa no cambia la etapa;
+  - errores: 400 si no es un flujo, el teléfono no sirve o la escala está fuera de rango; 409 si la empresa no tiene
+    WhatsApp; 429 tras 10 pruebas en una hora.
+
 ## 5. Números de WhatsApp
 
 ```json
