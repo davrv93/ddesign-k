@@ -4,7 +4,7 @@
 // avisa con onCambio$. Contrato del grafo: docs/SEGUIMIENTO_CONTRATO.md §4b.
 import { $, component$, useSignal, useStore, useVisibleTask$, type QRL } from "@builder.io/qwik";
 import "~/flujos.css";
-import { subirImagenPaso, type Fuente, type PlantillaCloud, type Product, type TipoPaso } from "~/lib/api";
+import { subirImagenPaso, type Fuente, type PlantillaCloud, type Product } from "~/lib/api";
 import { esperaTexto } from "~/lib/format";
 import { u } from "~/lib/base";
 import {
@@ -29,6 +29,7 @@ import {
   type Grafo,
   type Nodo,
   type Salida,
+  type TipoMensaje,
   type TipoNodo,
 } from "~/lib/flujos";
 
@@ -52,9 +53,10 @@ interface Props {
   secuenciaId: number;
 }
 
-const TIPOS_MSG: Record<TipoPaso, string> = {
+const TIPOS_MSG: Record<TipoMensaje, string> = {
   emoji: "Emoji",
   texto: "Texto",
+  modelo: "Foto del modelo que vio",
   beneficio: "Beneficio del modelo",
   testimonio: "Testimonio del modelo",
   tip: "Tip del modelo",
@@ -599,11 +601,11 @@ const Inspector = component$<InsProps>((p) => {
               value={n.mensaje}
               disabled={ro}
               onChange$={(_, el) => {
-                n.mensaje = el.value as TipoPaso;
+                n.mensaje = el.value as TipoMensaje;
                 p.onCambio$();
               }}
             >
-              {(Object.keys(TIPOS_MSG) as TipoPaso[]).map((t) => (
+              {(Object.keys(TIPOS_MSG) as TipoMensaje[]).map((t) => (
                 <option key={t} value={t}>
                   {TIPOS_MSG[t]}
                 </option>
@@ -611,7 +613,7 @@ const Inspector = component$<InsProps>((p) => {
             </select>
           </label>
           <label>
-            {n.mensaje === "emoji" || n.mensaje === "texto" ? "Mensaje" : "Introducción (opcional)"}
+            {n.mensaje === "emoji" || n.mensaje === "texto" ? "Mensaje" : n.mensaje === "modelo" ? "Texto que acompaña la foto" : "Introducción (opcional)"}
             <textarea
               rows={5}
               value={n.texto ?? ""}
@@ -625,7 +627,10 @@ const Inspector = component$<InsProps>((p) => {
           </label>
           <p class="muted small">
             Usa {"{nombre}"} y {"{modelo}"}
-            {n.mensaje !== "emoji" && n.mensaje !== "texto" && n.mensaje !== "oferta" && <>; {"{contenido}"} dice dónde va el contenido del modelo</>}.
+            {n.mensaje !== "emoji" && n.mensaje !== "texto" && n.mensaje !== "oferta" && n.mensaje !== "modelo" && (
+              <>; {"{contenido}"} dice dónde va el contenido del modelo</>
+            )}
+            {n.mensaje === "modelo" && <>. Va con la foto principal del modelo que vio la clienta</>}.
           </p>
           {n.mensaje === "oferta" && (
             <label>

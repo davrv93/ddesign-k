@@ -195,3 +195,17 @@ func TestFlujoPruebaConIrA(t *testing.T) {
 		t.Fatalf("las pruebas no cuentan para el tope: %d", n)
 	}
 }
+
+// «Foto del modelo»: la foto principal del modelo en foco con el texto del paso; sin modelo, se salta.
+func TestPasoFotoDelModelo(t *testing.T) {
+	_, st, _ := setup(t, `{}`, false)
+	ctx := context.Background()
+	p, _ := st.GetProductByCode(ctx, "V01")
+	l := ContenidoPaso(ctx, st, nil, "https://tienda.test", store.Paso{Tipo: "modelo", Texto: "{nombre} 😊 ¿Es el estilo que buscas?"}, "V01", "Ana López")
+	if l.Omitido || l.Texto != "Ana 😊 ¿Es el estilo que buscas?" || l.MediaURL != "https://tienda.test"+p.Image {
+		t.Fatalf("foto del modelo: %+v (imagen %q)", l, p.Image)
+	}
+	if l := ContenidoPaso(ctx, st, nil, "", store.Paso{Tipo: "modelo", Texto: "hola"}, "", "Ana"); !l.Omitido {
+		t.Fatalf("sin modelo en foco se salta: %+v", l)
+	}
+}

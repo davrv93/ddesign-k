@@ -6,13 +6,16 @@ export type TipoNodo = "inicio" | "esperar" | "mensaje" | "condicion" | "tarea" 
 export type Salida = "siguiente" | "si" | "no";
 export type Condicion = "respondio" | "temperatura" | "categoria" | "tiene_contenido";
 
+// «modelo» (foto del modelo en foco) existe solo en los flujos; TipoPaso de lib/api.ts no se toca (otra línea de trabajo).
+export type TipoMensaje = TipoPaso | "modelo";
+
 export interface Nodo {
   id: string;
   tipo: TipoNodo;
   x: number;
   y: number;
   minutos?: number;
-  mensaje?: TipoPaso;
+  mensaje?: TipoMensaje;
   texto?: string;
   media_url?: string;
   promo_id?: number;
@@ -243,7 +246,15 @@ export function resumenNodo(n: Nodo, nombres: { secuencias: Record<number, strin
       return espera(n.minutos ?? 0);
     case "mensaje": {
       const t = (n.texto ?? "").trim();
-      const tipo: Record<string, string> = { emoji: "Emoji", texto: "Texto", beneficio: "Beneficio del modelo", testimonio: "Testimonio", tip: "Tip", oferta: "Oferta" };
+      const tipo: Record<string, string> = {
+        emoji: "Emoji",
+        texto: "Texto",
+        modelo: "Foto del modelo",
+        beneficio: "Beneficio del modelo",
+        testimonio: "Testimonio",
+        tip: "Tip",
+        oferta: "Oferta",
+      };
       const base = tipo[n.mensaje ?? "texto"] ?? "Mensaje";
       if (n.mensaje === "oferta") return `${base}: ${nombres.promos[n.promo_id ?? 0] ?? "elige la promo"}`;
       return t ? `${base}: ${t.length > 70 ? t.slice(0, 70) + "…" : t}` : n.media_url ? `${base} con imagen` : base;

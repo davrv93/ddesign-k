@@ -179,6 +179,17 @@ func ContenidoPaso(ctx context.Context, st *store.Store, conoc *store.Conocimien
 			return PasoListo{Omitido: true, Motivo: "paso vacío"}
 		}
 		return l
+	case "modelo":
+		// La foto del modelo que vio, con el texto del paso («{nombre} 😊 Este diseño tiene uno de los cortes que más
+		// favorecen… ¿Es el estilo que estás buscando?»), como el «¿Estás ahí?» de los Salesbots de Kommo.
+		if prod == nil {
+			return PasoListo{Omitido: true, Motivo: "no hay modelo en foco"}
+		}
+		l := PasoListo{Texto: reemplazar(paso.Texto), MediaURL: abs(prod.Image)}
+		if l.Texto == "" && l.MediaURL == "" {
+			return PasoListo{Omitido: true, Motivo: "el " + prod.Name + " no tiene foto y el paso no tiene texto"}
+		}
+		return l
 	case "beneficio", "testimonio", "tip":
 		if prod == nil {
 			return PasoListo{Omitido: true, Motivo: "no hay modelo en foco"}

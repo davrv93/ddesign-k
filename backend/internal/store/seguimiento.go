@@ -348,7 +348,8 @@ func (s *Store) ResumenContenidos(ctx context.Context) ([]ResumenContenido, erro
 // Secuencias
 
 var (
-	TiposPaso       = []string{"emoji", "texto", "beneficio", "testimonio", "tip", "oferta"}
+	// «modelo»: la foto del modelo en foco con el texto del paso (el «¿Estás ahí?» de los Salesbots de Kommo de Luis).
+	TiposPaso       = []string{"emoji", "texto", "modelo", "beneficio", "testimonio", "tip", "oferta"}
 	FueraDeVentana  = []string{"saltar", "enviar", "plantilla", "numero_secundario"}
 	AlResponder     = []string{"continuar", "reiniciar", "detener"}
 	AlcancesSecuenc = []string{"todas", "categoria", "productos"}
